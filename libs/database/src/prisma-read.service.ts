@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { PrismaClient } from '../../prisma/generated';
+import { PrismaClient } from '@prisma/client';
 
 /** Read replica Prisma client (ADR-005). Falls back to primary if no read URL configured. */
 @Injectable()

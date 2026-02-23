@@ -1,0 +1,48 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaWriteService } from '@nestlancer/database';
+import { OutboxService } from '@nestlancer/outbox';
+import { BlogStatus } from '../entities/post.entity';
+
+@Injectable()
+export class PostPublishingService {
+    constructor(
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly outboxService: OutboxService,
+    ) { }
+
+    async publish(postId: string) {
+        const result = await this.prismaWrite.$transaction(async (tx) => {
+            const post = await tx.blogPost.update({
+                where: { id: postId },
+                data: {
+                    status: BlogStatus.PUBLISHED,
+                    publishedAt: new Date(),
+                },
+            });
+
+            await this.outboxService.publish('blog.post_published', { postId: post.id }, tx);
+            return post;
+        });
+        // Invalidate cache implicitly or explicitly handled in interceptors typically
+        return result;
+    }
+
+    async unpublish(postId: string) {
+        return this.prismaWrite.blogPost.update({
+            where: { id: postId },
+            data: {
+                status: BlogStatus.DRAFT,
+                publishedAt: null,
+            },
+        });
+    }
+
+    async archive(postId: string) {
+        return this.prismaWrite.blogPost.update({
+            where: { id: postId },
+            data: {
+                status: BlogStatus.ARCHIVED,
+            },
+        });
+    }
+}
