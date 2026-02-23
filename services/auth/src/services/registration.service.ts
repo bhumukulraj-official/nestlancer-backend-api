@@ -1,0 +1,103 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
+import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { ReadOnly } from '@nestlancer/database/decorators/read-only.decorator';
+import { WriteOnly } from '@nestlancer/database/decorators/write-only.decorator';
+import { ConflictException } from '@nestlancer/common/exceptions/conflict.exception';
+import { QueuePublisherService } from '@nestlancer/queue/queue-publisher.service';
+import { ConfigService } from '@nestjs/config';
+import { LoggerService } from '@nestlancer/logger';
+import * as bcrypt from 'bcrypt';
+import { RegisterDto } from '../dto/register.dto';
+import { UserRole } from '@nestlancer/common/enums/role.enum';
+import { UserStatus } from '@nestlancer/common/enums/user-status.enum';
+
+@Injectable()
+export class RegistrationService {
+    constructor(
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
+        private readonly queue: QueuePublisherService,
+        private readonly config: ConfigService,
+        private readonly logger: LoggerService,
+    ) { }
+
+    @WriteOnly()
+    async registerUser(dto: RegisterDto): Promise<{ user: any, emailVerificationToken: string }> {
+        const existingUser = await this.prismaRead.user.findUnique({
+            where: { email: dto.email.toLowerCase() },
+        });
+
+        if (existingUser) {
+            this.logger.warn(`Registration attempt with existing email: ${dto.email}`, 'RegistrationService');
+            throw new ConflictException('Email already registered', 'AUTH_006', { field: 'email', value: dto.email });
+        }
+
+        const saltRounds = this.config.get<number>('authService.security.bcryptSaltRounds') || 12;
+        const passwordHash = await bcrypt.hash(dto.password, saltRounds);
+
+        const emailVerificationToken = `verify_${Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)}`;
+        const verificationExpiresAt = new Date(Date.now() + (this.config.get<number>('authService.tokens.emailVerificationExpiresIn') || 86400) * 1000);
+
+        const user = await this.prismaWrite.$transaction(async (tx) => {
+            const newUser = await tx.user.create({
+                data: {
+                    email: dto.email.toLowerCase(),
+                    passwordHash,
+                    firstName: dto.firstName,
+                    lastName: dto.lastName,
+                    phone: dto.phone,
+                    role: UserRole.USER,
+                    status: UserStatus.PENDING,
+                    emailVerified: false,
+                    marketingConsent: dto.marketingConsent || false,
+                    authConfig: {
+                        create: {
+                            twoFactorEnabled: false,
+                            failedLoginAttempts: 0,
+                        }
+                    },
+                    preferences: {
+                        create: {
+                            currency: 'INR',
+                            timezone: 'Asia/Kolkata',
+                            language: 'en',
+                        }
+                    },
+                    verificationTokens: {
+                        create: {
+                            token: emailVerificationToken,
+                            type: 'EMAIL_VERIFICATION',
+                            expiresAt: verificationExpiresAt,
+                        }
+                    }
+                },
+            });
+
+            // Emit domain event for user creation using outbox pattern
+            await tx.outbox.create({
+                data: {
+                    eventType: 'USER_REGISTERED',
+                    payload: {
+                        userId: newUser.id,
+                        email: newUser.email,
+                        firstName: newUser.firstName,
+                        lastName: newUser.lastName,
+                    },
+                },
+            });
+
+            return newUser;
+        });
+
+        return { user, emailVerificationToken };
+    }
+
+    @ReadOnly()
+    async checkEmail(email: string): Promise<boolean> {
+        const count = await this.prismaRead.user.count({
+            where: { email: email.toLowerCase() },
+        });
+        return count > 0;
+    }
+}

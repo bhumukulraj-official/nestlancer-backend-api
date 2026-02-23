@@ -1,0 +1,109 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
+import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { QueuePublisherService } from '@nestlancer/queue/queue-publisher.service';
+import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
+
+@Injectable()
+export class PasswordService {
+    constructor(
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
+        private readonly queue: QueuePublisherService,
+        private readonly config: ConfigService,
+    ) { }
+
+    async requestPasswordReset(email: string) {
+        const user = await this.prismaRead.user.findUnique({
+            where: { email: email.toLowerCase() },
+        });
+
+        // Always succeed to prevent enumeration
+        if (!user) return true;
+
+        // Delete any existing unused reset tokens for this user
+        await this.prismaWrite.verificationToken.deleteMany({
+            where: {
+                userId: user.id,
+                type: 'PASSWORD_RESET',
+            }
+        });
+
+        const resetToken = `reset_${uuidv4().replace(/-/g, '')}`;
+        const expiresIn = this.config.get<number>('authService.tokens.passwordResetExpiresIn') || 3600;
+
+        await this.prismaWrite.verificationToken.create({
+            data: {
+                userId: user.id,
+                token: resetToken,
+                type: 'PASSWORD_RESET',
+                expiresAt: new Date(Date.now() + expiresIn * 1000),
+            }
+        });
+
+        await this.prismaWrite.outbox.create({
+            data: {
+                eventType: 'PASSWORD_RESET_REQUESTED',
+                payload: {
+                    userId: user.id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    resetToken,
+                }
+            }
+        });
+
+        return true;
+    }
+
+    async resetPassword(token: string, newPassword: string) {
+        const storedToken = await this.prismaRead.verificationToken.findFirst({
+            where: {
+                token,
+                type: 'PASSWORD_RESET',
+                expiresAt: { gt: new Date() },
+            },
+            include: { user: true }
+        });
+
+        if (!storedToken) {
+            throw new BusinessLogicException('Invalid or expired reset token', 'AUTH_013');
+        }
+
+        const saltRounds = this.config.get<number>('authService.security.bcryptSaltRounds') || 12;
+        const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+
+        await this.prismaWrite.$transaction(async (tx) => {
+            await tx.user.update({
+                where: { id: storedToken.userId },
+                data: { passwordHash },
+            });
+
+            // Delete the used token
+            await tx.verificationToken.delete({
+                where: { id: storedToken.id }
+            });
+
+            // Revoke all existing sessions so they have to login again
+            await tx.userSession.updateMany({
+                where: { userId: storedToken.userId, isRevoked: false },
+                data: { isRevoked: true }
+            });
+
+            await tx.outbox.create({
+                data: {
+                    eventType: 'PASSWORD_RESET_COMPLETED',
+                    payload: {
+                        userId: storedToken.userId,
+                        email: storedToken.user.email,
+                    }
+                }
+            });
+        });
+
+        return { passwordChanged: true, changedAt: new Date() };
+    }
+}
