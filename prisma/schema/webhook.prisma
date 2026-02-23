@@ -1,0 +1,30 @@
+// =============================================================================
+// Webhook Domain Models
+// =============================================================================
+
+enum WebhookLogStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+  RETRYING
+}
+
+model WebhookLog {
+  id        String           @id @default(cuid())
+  provider  String
+  event     String
+  payload   Json
+  headers   Json?
+  status    WebhookLogStatus @default(RECEIVED)
+  response  Json?
+  error     String?
+  attempts  Int              @default(0)
+  processedAt DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([provider])
+  @@index([status])
+  @@index([createdAt])
+}

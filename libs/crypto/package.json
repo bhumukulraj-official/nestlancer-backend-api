@@ -1,0 +1,1 @@
+{ "name": "@nestlancer/crypto", "version": "1.0.0", "private": true, "main": "src/index.ts", "dependencies": { "@nestjs/common": "^10.0.0", "bcrypt": "^5.1.0", "@types/bcrypt": "^5.0.0" } }

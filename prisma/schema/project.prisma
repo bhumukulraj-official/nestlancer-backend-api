@@ -1,0 +1,45 @@
+// =============================================================================
+// Project Domain Models
+// =============================================================================
+
+enum ProjectStatus {
+  CREATED
+  PENDING_PAYMENT
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+  ARCHIVED
+  CANCELLED
+  REVISION_REQUESTED
+  ON_HOLD
+}
+
+model Project {
+  id              String        @id @default(cuid())
+  quoteId         String        @unique
+  clientId        String
+  adminId         String?
+  title           String
+  description     String
+  status          ProjectStatus @default(CREATED)
+  overallProgress Int           @default(0)
+  startDate       DateTime?
+  targetEndDate   DateTime?
+  completedAt     DateTime?
+  deletedAt       DateTime?
+  tags            Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  quote           Quote         @relation(fields: [quoteId], references: [id], onDelete: Restrict)
+  client          User          @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Restrict)
+  admin           User?         @relation("AdminProjects", fields: [adminId], references: [id], onDelete: SetNull)
+  milestones      Milestone[]
+  payments        Payment[]
+  messages        Message[]
+  progressEntries ProgressEntry[]
+
+  @@index([clientId])
+  @@index([adminId])
+  @@index([status])
+}

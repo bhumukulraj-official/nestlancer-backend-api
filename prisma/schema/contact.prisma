@@ -1,0 +1,35 @@
+// =============================================================================
+// Contact Domain Models
+// =============================================================================
+
+enum ContactStatus {
+  NEW
+  ACKNOWLEDGED
+  IN_PROGRESS
+  RESOLVED
+  SPAM
+}
+
+model ContactMessage {
+  id                String        @id @default(cuid())
+  name              String
+  email             String
+  phone             String?
+  subject           String
+  message           String
+  status            ContactStatus @default(NEW)
+  category          String?
+  ip                String?
+  userAgent         String?
+  turnstileVerified Boolean       @default(false)
+  referrerUrl       String?
+  resolvedAt        DateTime?
+  resolvedBy        String?
+  resolutionNotes   String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}

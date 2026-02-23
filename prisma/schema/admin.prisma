@@ -1,0 +1,30 @@
+// =============================================================================
+// Admin Domain Models
+// =============================================================================
+
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([key])
+}
+
+model FeatureFlag {
+  id                 String   @id @default(cuid())
+  flag               String   @unique
+  enabled            Boolean  @default(false)
+  description        String?
+  rolloutPercentage  Int      @default(0)
+  metadata           Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([flag])
+}

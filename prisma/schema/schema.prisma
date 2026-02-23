@@ -1,0 +1,18 @@
+// =============================================================================
+// Nestlancer – Main Prisma Schema
+// =============================================================================
+// This is the root schema file that configures the generator and datasource.
+// Domain-specific models are defined in separate .prisma files in this directory
+// and composed via Prisma's native multi-file schema support.
+// =============================================================================
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../generated"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

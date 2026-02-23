@@ -1,0 +1,11 @@
+{
+  "name": "@nestlancer/database",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@prisma/client": "^5.0.0",
+    "prisma": "^5.0.0"
+  }
+}

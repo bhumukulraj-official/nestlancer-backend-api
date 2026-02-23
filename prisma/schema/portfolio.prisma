@@ -1,0 +1,40 @@
+// =============================================================================
+// Portfolio Domain Models
+// =============================================================================
+
+enum PortfolioStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model PortfolioItem {
+  id               String          @id @default(cuid())
+  title            String
+  slug             String          @unique
+  shortDescription String?
+  longDescription  String?
+  category         String
+  tags             Json?
+  status           PortfolioStatus @default(DRAFT)
+  featured         Boolean         @default(false)
+  displayOrder     Int             @default(0)
+  coverImageUrl    String?
+  images           Json?
+  clientName       String?
+  clientTestimonial String?
+  projectUrl       String?
+  startDate        DateTime?
+  endDate          DateTime?
+  technologies     Json?
+  results          Json?
+  seoTitle         String?
+  seoDescription   String?
+  publishedAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([category])
+}

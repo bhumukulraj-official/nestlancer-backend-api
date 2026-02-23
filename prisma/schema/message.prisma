@@ -1,0 +1,33 @@
+// =============================================================================
+// Messaging Domain Models
+// =============================================================================
+
+enum MessageType {
+  TEXT
+  FILE
+  SYSTEM
+  NOTIFICATION
+}
+
+model Message {
+  id          String      @id @default(cuid())
+  projectId   String
+  senderId    String
+  content     String?
+  replyToId   String?
+  type        MessageType @default(TEXT)
+  readBy      Json?
+  reactions   Json?
+  editedAt    DateTime?
+  deletedAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sender      User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo     Message?    @relation("ThreadReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies     Message[]   @relation("ThreadReplies")
+
+  @@index([projectId])
+  @@index([createdAt])
+}

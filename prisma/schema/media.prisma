@@ -1,0 +1,42 @@
+// =============================================================================
+// Media Domain Models
+// =============================================================================
+
+enum MediaStatus {
+  UPLOADING
+  PROCESSING
+  READY
+  FAILED
+  DELETED
+}
+
+model Media {
+  id          String      @id @default(cuid())
+  uploaderId  String
+  filename    String
+  mimeType    String
+  size        Int
+  key         String      @unique
+  url         String?
+  bucket      String
+  context     String
+  contextType String?
+  contextId   String?
+  status      MediaStatus @default(UPLOADING)
+  metadata    Json?
+  blurhash    String?
+  width       Int?
+  height      Int?
+  duration    Int?
+  checksum    String?
+  deletedAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  uploader    User        @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([uploaderId])
+  @@index([contextType, contextId])
+  @@index([key])
+  @@index([status])
+}

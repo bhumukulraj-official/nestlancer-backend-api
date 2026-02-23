@@ -1,0 +1,64 @@
+// =============================================================================
+// Payment Domain Models
+// =============================================================================
+
+enum PaymentStatus {
+  CREATED
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  projectId       String
+  milestoneId     String?
+  clientId        String
+  amount          Int
+  currency        String        @default("INR")
+  status          PaymentStatus @default(CREATED)
+  method          String?
+  intentId        String?       @unique
+  externalId      String?
+  externalStatus  String?
+  providerDetails Json?
+  refundStatus    String?
+  amountRefunded  Int           @default(0)
+  receiptNumber   String?
+  receiptUrl      String?
+  invoiceNumber   String?
+  invoiceUrl      String?
+  customNotes     String?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  milestone       Milestone?    @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  client          User          @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  refunds         Refund[]
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([externalId])
+  @@index([status])
+}
+
+model Refund {
+  id              String   @id @default(cuid())
+  paymentId       String
+  amount          Int
+  currency        String   @default("INR")
+  type            String
+  reason          String?
+  status          String
+  providerDetails Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+}

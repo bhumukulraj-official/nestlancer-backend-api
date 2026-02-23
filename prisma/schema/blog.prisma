@@ -1,0 +1,98 @@
+// =============================================================================
+// Blog Domain Models
+// =============================================================================
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+model BlogCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  parentId    String?
+  displayOrder Int       @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  parent      BlogCategory?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children    BlogCategory[] @relation("CategoryChildren")
+  posts       BlogPost[]
+
+  @@index([slug])
+}
+
+model BlogTag {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  posts     BlogPost[] @relation("BlogPostTags")
+
+  @@index([slug])
+}
+
+model BlogPost {
+  id              String     @id @default(cuid())
+  authorId        String
+  categoryId      String?
+  title           String
+  slug            String     @unique
+  excerpt         String?
+  content         String
+  coverImageUrl   String?
+  status          PostStatus @default(DRAFT)
+  featured        Boolean    @default(false)
+  commentsEnabled Boolean    @default(true)
+  viewCount       Int        @default(0)
+  seoTitle        String?
+  seoDescription  String?
+  publishedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  author          User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category        BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags            BlogTag[]    @relation("BlogPostTags")
+  comments        BlogComment[]
+
+  @@index([authorId])
+  @@index([slug])
+  @@index([status])
+  @@index([categoryId])
+}
+
+model BlogComment {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String?
+  parentId  String?
+  name      String?
+  email     String?
+  content   String
+  status    CommentStatus @default(PENDING)
+  ip        String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  post      BlogPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  parent    BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   BlogComment[] @relation("CommentReplies")
+
+  @@index([postId])
+  @@index([userId])
+  @@index([status])
+}

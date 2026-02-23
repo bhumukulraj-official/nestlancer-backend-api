@@ -1,0 +1,27 @@
+{
+  "name": "@nestlancer/ws-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "dev": "nest start --watch",
+    "start": "node dist/main"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/websockets": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.0.0",
+    "@nestlancer/common": "workspace:*",
+    "@nestlancer/config": "workspace:*",
+    "@nestlancer/database": "workspace:*",
+    "@nestlancer/cache": "workspace:*",
+    "@nestlancer/auth-lib": "workspace:*",
+    "@nestlancer/logger": "workspace:*",
+    "@nestlancer/tracing": "workspace:*",
+    "@nestlancer/websocket": "workspace:*",
+    "socket.io": "^4.7.0",
+    "rxjs": "^7.8.0"
+  }
+}

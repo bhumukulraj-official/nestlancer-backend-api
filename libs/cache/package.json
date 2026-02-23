@@ -1,0 +1,1 @@
+{ "name": "@nestlancer/cache", "version": "1.0.0", "private": true, "main": "src/index.ts", "dependencies": { "@nestjs/common": "^10.0.0", "ioredis": "^5.3.0" } }

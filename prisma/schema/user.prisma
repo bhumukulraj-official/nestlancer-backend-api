@@ -1,0 +1,80 @@
+// =============================================================================
+// User Domain Models
+// =============================================================================
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+model User {
+  id               String       @id @default(cuid())
+  email            String       @unique
+  passwordHash     String
+  name             String
+  role             UserRole     @default(USER)
+  status           UserStatus   @default(ACTIVE)
+  twoFactorEnabled Boolean      @default(false)
+  twoFactorSecret  String?
+  lastLoginAt      DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  preferences      UserPreference?
+  sessions         Session[]
+  requests         ProjectRequest[]
+  clientProjects   Project[]       @relation("ClientProjects")
+  adminProjects    Project[]       @relation("AdminProjects")
+  payments         Payment[]
+  messages         Message[]
+  notifications    Notification[]
+  mediaUploaded    Media[]
+  blogPosts        BlogPost[]
+  blogComments     BlogComment[]
+  auditLogs        AuditLog[]
+  systemConfigs    SystemConfig[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model UserPreference {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  notificationSettings Json?
+  marketingSettings    Json?
+  privacySettings      Json?
+  theme                String   @default("system")
+  timezone             String   @default("UTC")
+  language             String   @default("en")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  ip           String?
+  userAgent    String?
+  deviceInfo   Json?
+  locationData Json?
+  expiresAt    DateTime
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}

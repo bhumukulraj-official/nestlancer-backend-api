@@ -1,0 +1,1 @@
+{ "name": "@nestlancer/middleware", "version": "1.0.0", "private": true, "main": "src/index.ts", "dependencies": { "@nestjs/common": "^10.0.0", "helmet": "^7.0.0", "compression": "^1.7.0" } }

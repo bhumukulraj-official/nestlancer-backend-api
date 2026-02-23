@@ -1,0 +1,7 @@
+// =============================================================================
+// Authentication Models
+// =============================================================================
+// LoginAttempt, RefreshToken, EmailVerificationToken, PasswordResetToken
+// Note: Session model is in user.prisma as it's considered part of the User domain.
+
+// No additional enums needed – auth models use String types for flexibility.

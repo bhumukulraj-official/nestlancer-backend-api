@@ -1,0 +1,23 @@
+import { Module, Global } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { PermissionsGuard } from './guards/permissions.guard';
+
+@Global()
+@Module({
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: process.env.JWT_ACCESS_SECRET,
+        signOptions: { expiresIn: process.env.JWT_ACCESS_EXPIRY || '15m' },
+      }),
+    }),
+  ],
+  providers: [JwtStrategy, JwtAuthGuard, RolesGuard, PermissionsGuard],
+  exports: [JwtModule, PassportModule, JwtAuthGuard, RolesGuard, PermissionsGuard],
+})
+export class AuthLibModule {}
