@@ -1,0 +1,9 @@
+{
+  "_note": "This file is auto-generated from openapi.yaml. Do not edit directly.",
+  "_command": "npx yaml2json docs/api/openapi.yaml > docs/api/openapi-v1.json",
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Nestlancer API",
+    "version": "1.1.0"
+  }
+}

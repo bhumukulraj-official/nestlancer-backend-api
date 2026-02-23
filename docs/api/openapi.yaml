@@ -1,0 +1,555 @@
+openapi: 3.0.3
+info:
+  title: Nestlancer API
+  description: |
+    Nestlancer freelancing platform backend API.
+
+    ## Authentication
+    Most endpoints require JWT Bearer authentication. Public endpoints are marked with `security: []`.
+
+    ## Response Format
+    All responses follow the standard envelope:
+    ```json
+    {
+      "status": "success",
+      "data": { ... },
+      "metadata": { "timestamp": "...", "requestId": "...", "version": "v1" }
+    }
+    ```
+
+    ## Pagination
+    List endpoints support: `?page=1&limit=20&sortBy=createdAt&order=desc`
+
+    ## Rate Limiting
+    - Anonymous: 30 requests/minute
+    - Authenticated: 100 requests/minute
+    - Admin: 300 requests/minute
+  version: 1.1.0
+  contact:
+    name: Nestlancer Engineering
+    email: engineering@nestlancer.com
+  license:
+    name: MIT
+
+servers:
+  - url: https://api.nestlancer.com/api/v1
+    description: Production
+  - url: https://staging-api.nestlancer.com/api/v1
+    description: Staging
+  - url: http://localhost:3000/api/v1
+    description: Local Development
+
+tags:
+  - name: Health
+    description: System health and readiness checks
+  - name: Auth
+    description: Authentication, registration, and session management
+  - name: Users
+    description: User profile and preference management
+  - name: Requests
+    description: Service request submission and management
+  - name: Quotes
+    description: Quote/proposal generation and acceptance
+  - name: Projects
+    description: Project lifecycle management
+  - name: Progress
+    description: Milestones, deliverables, and progress tracking
+  - name: Payments
+    description: Payment processing via Razorpay
+  - name: Messaging
+    description: Real-time project messaging
+  - name: Notifications
+    description: Multi-channel notification management
+  - name: Media
+    description: File upload, processing, and CDN delivery
+  - name: Portfolio
+    description: Public portfolio showcase
+  - name: Blog
+    description: Blog posts, comments, and categories
+  - name: Contact
+    description: Contact form submissions
+  - name: Admin
+    description: System administration and configuration
+  - name: Webhooks
+    description: Inbound and outbound webhook management
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ── Health ──
+  /health:
+    get:
+      tags: [Health]
+      summary: System health check
+      security: []
+      operationId: getHealth
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe
+      security: []
+      operationId: getReadiness
+      responses:
+        '200':
+          description: System is ready
+        '503':
+          description: System is not ready
+
+  /health/live:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      security: []
+      operationId: getLiveness
+      responses:
+        '200':
+          description: System is alive
+
+  # ── Auth ──
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with credentials
+      security: []
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      operationId: refreshToken
+      responses:
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and revoke tokens
+      operationId: logout
+      responses:
+        '200':
+          description: Logged out successfully
+
+  # ── Users ──
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      operationId: getMyProfile
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  # ── Portfolio (Public) ──
+  /portfolio:
+    get:
+      tags: [Portfolio]
+      summary: List published portfolio items
+      security: []
+      operationId: listPortfolioItems
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+      responses:
+        '200':
+          description: Portfolio items list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPortfolioItems'
+
+  # ── Blog (Public) ──
+  /blog/posts:
+    get:
+      tags: [Blog]
+      summary: List published blog posts
+      security: []
+      operationId: listBlogPosts
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Blog posts list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBlogPosts'
+
+  # ── Contact (Public) ──
+  /contact:
+    post:
+      tags: [Contact]
+      summary: Submit contact form
+      security: []
+      operationId: submitContactForm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactFormRequest'
+      responses:
+        '201':
+          description: Contact form submitted
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    webhookSignature:
+      type: apiKey
+      in: header
+      name: X-Razorpay-Signature
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    SortBy:
+      name: sortBy
+      in: query
+      schema:
+        type: string
+        default: createdAt
+    Order:
+      name: order
+      in: query
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    # ── Standard Envelopes ──
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        data:
+          type: object
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    ResponseMetadata:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          format: uuid
+        version:
+          type: string
+          example: v1
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+        hasNextPage:
+          type: boolean
+        hasPreviousPage:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+            timestamp:
+              type: string
+              format: date-time
+            requestId:
+              type: string
+              format: uuid
+            path:
+              type: string
+
+    # ── Auth ──
+    RegisterRequest:
+      type: object
+      required: [email, password, firstName, lastName]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserProfile'
+            accessToken:
+              type: string
+            refreshToken:
+              type: string
+
+    # ── Users ──
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [user, admin]
+        status:
+          type: string
+          enum: [active, suspended, deleted]
+        emailVerified:
+          type: boolean
+        twoFactorEnabled:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Health ──
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [healthy, degraded, unhealthy]
+            checks:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  status:
+                    type: string
+                  responseTime:
+                    type: number
+            version:
+              type: string
+            uptime:
+              type: number
+
+    # ── Portfolio ──
+    PaginatedPortfolioItems:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── Blog ──
+    PaginatedBlogPosts:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── Contact ──
+    ContactFormRequest:
+      type: object
+      required: [name, email, subject, message]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        subject:
+          type: string
+          enum: [GENERAL_INQUIRY, PROJECT_DISCUSSION, PARTNERSHIP, SUPPORT, FEEDBACK, OTHER]
+        message:
+          type: string
+          maxLength: 5000
+        turnstileToken:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Authentication required or token invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

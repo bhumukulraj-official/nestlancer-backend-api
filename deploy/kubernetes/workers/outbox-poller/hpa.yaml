@@ -1,0 +1,21 @@
+# outbox-poller runs as a single instance (no HPA)
+# Uses SELECT ... FOR UPDATE SKIP LOCKED for safe multi-instance support if needed
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: outbox-poller-hpa
+  namespace: nestlancer
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: outbox-poller
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80

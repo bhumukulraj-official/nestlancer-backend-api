@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: nestlancer
+data:
+  rabbitmq.conf: |
+    default_vhost = nestlancer
+    disk_free_limit.absolute = 1GB
+    vm_memory_high_watermark.relative = 0.8
+    prometheus.return_per_object_metrics = true
+    prometheus.tcp.port = 15692
+    consumer_timeout = 1800000
+    channel_max = 128

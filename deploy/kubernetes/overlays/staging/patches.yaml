@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nestlancer-config
+data:
+  NODE_ENV: "staging"
+  LOG_LEVEL: "info"
+  FRONTEND_URL: "https://staging.nestlancer.com"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nestlancer-ingress
+spec:
+  tls:
+    - hosts:
+        - staging-api.nestlancer.com
+      secretName: nestlancer-staging-tls
+  rules:
+    - host: staging-api.nestlancer.com
+      http:
+        paths:
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port:
+                  number: 3000
+          - path: /ws/
+            pathType: Prefix
+            backend:
+              service:
+                name: ws-gateway
+                port:
+                  number: 3001

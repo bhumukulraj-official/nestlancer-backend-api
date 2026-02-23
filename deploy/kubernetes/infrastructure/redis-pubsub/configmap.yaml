@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-pubsub-config
+  namespace: nestlancer
+data:
+  redis.conf: |
+    maxmemory-policy noeviction
+    appendonly no
+    save ""
+    tcp-keepalive 300

@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: nestlancer
+
+resources:
+  - ../../base
+  - ../../services/gateway
+  - ../../services/ws-gateway
+  - ../../services/auth
+  - ../../services/users
+  - ../../services/requests
+  - ../../services/quotes
+  - ../../services/projects
+  - ../../services/progress
+  - ../../services/payments
+  - ../../services/messaging
+  - ../../services/notifications
+  - ../../services/media
+  - ../../services/portfolio
+  - ../../services/blog
+  - ../../services/contact
+  - ../../services/admin
+  - ../../services/webhooks
+  - ../../services/health
+  - ../../workers/email-worker
+  - ../../workers/notification-worker
+  - ../../workers/audit-worker
+  - ../../workers/media-worker
+  - ../../workers/analytics-worker
+  - ../../workers/webhook-worker
+  - ../../workers/cdn-worker
+  - ../../workers/outbox-poller
+  - ../../infrastructure/monitoring
+
+patches:
+  - path: patches.yaml

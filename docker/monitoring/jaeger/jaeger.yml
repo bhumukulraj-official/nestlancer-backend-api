@@ -1,0 +1,27 @@
+# Jaeger all-in-one configuration
+# Used for local development tracing
+
+# Collector settings
+collector:
+  http-server:
+    host-port: ":14268"
+  grpc-server:
+    host-port: ":14250"
+
+# Query settings
+query:
+  base-path: "/"
+
+# Storage (in-memory for development)
+span-storage:
+  type: memory
+
+memory:
+  max-traces: 10000
+
+# Sampling
+sampling:
+  strategies-file: ""
+
+# Logging
+log-level: info

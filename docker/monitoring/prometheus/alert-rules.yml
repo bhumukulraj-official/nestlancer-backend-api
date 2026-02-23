@@ -1,0 +1,88 @@
+groups:
+  - name: nestlancer-service-alerts
+    rules:
+      # ── High Error Rate ──
+      - alert: HighErrorRate
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[5m])) by (service))
+          /
+          (sum(rate(http_requests_total[5m])) by (service)) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }} (>5%) for {{ $labels.service }}"
+
+      # ── High Response Latency ──
+      - alert: HighResponseLatency
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p99 latency on {{ $labels.service }}"
+          description: "p99 latency is {{ $value }}s (>2s) for {{ $labels.service }}"
+
+      # ── Service Down ──
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.instance }} has been unreachable for >1 minute"
+
+  - name: nestlancer-infrastructure-alerts
+    rules:
+      # ── Database Connection Pool ──
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_activity_count / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL connection pool near capacity"
+          description: "Connection usage at {{ $value | humanizePercentage }}"
+
+      # ── Redis Memory ──
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Memory usage at {{ $value | humanizePercentage }}"
+
+      # ── RabbitMQ Queue Backlog ──
+      - alert: QueueBacklog
+        expr: rabbitmq_queue_messages > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ queue backlog: {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has {{ $value }} messages (>1000 for 10min)"
+
+      # ── DLQ Messages ──
+      - alert: DLQMessages
+        expr: rabbitmq_queue_messages{queue=~".*\\.dlq"} > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Dead-letter queue has messages: {{ $labels.queue }}"
+          description: "DLQ {{ $labels.queue }} has {{ $value }} messages"
+
+      # ── Disk Space ──
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space critically low"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
