@@ -1,0 +1,36 @@
+# Nestlancer - Test Environment Overrides
+# Usage: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
+# Containers are ephemeral – removed after test runs
+
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: nestlancer_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    volumes: []
+
+  redis-cache:
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru --save ""
+    tmpfs:
+      - /data
+    volumes: []
+
+  redis-pubsub:
+    command: redis-server --maxmemory 32mb --maxmemory-policy noeviction --save ""
+    tmpfs:
+      - /data
+    volumes: []
+
+  rabbitmq:
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    tmpfs:
+      - /var/lib/rabbitmq
+    volumes: []
+
+  # Disable MailHog in test (emails mocked)
+  mailhog:
+    profiles:
+      - disabled

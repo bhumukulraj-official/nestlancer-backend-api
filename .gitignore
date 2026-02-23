@@ -1,11 +1,42 @@
-# Nestjs specific
-/dist
-/node_modules
-/build
-/tmp
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Turborepo
+.turbo/
+
+# Testing
+coverage/
+*.lcov
+
+# Environment & Secrets
+.env
+.env.*
+infisical.json
+infisical.test.json
+!infisical.json.example
+!infisical.test.json.example
+
+# IDE
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 pnpm-debug.log*
@@ -13,12 +44,34 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# dotenv environment variable files
-.env
-.env.development
-.env.test
-.env.production
+# Docker volumes
+docker/nginx/certs/*.pem
+docker/nginx/certs/*.key
+docker/nginx/certs/*.crt
+!docker/nginx/certs/.gitkeep
 
-# temp directory
-.temp
-.tmp
+# Prisma
+prisma/generated/
+
+# Temporary files
+.temp/
+.tmp/
+tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.csr
+!docker/nginx/certs/.gitkeep
+
+# Misc
+*.tgz
+.npmrc
+!.npmrc.example

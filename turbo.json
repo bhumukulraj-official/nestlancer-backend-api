@@ -1,0 +1,92 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "globalDependencies": [
+        "tsconfig.base.json"
+    ],
+    "globalEnv": [
+        "NODE_ENV",
+        "DATABASE_URL",
+        "DATABASE_READ_REPLICA_URLS",
+        "REDIS_CACHE_URL",
+        "REDIS_PUBSUB_URL",
+        "RABBITMQ_URL",
+        "JWT_ACCESS_SECRET",
+        "JWT_REFRESH_SECRET",
+        "RAZORPAY_KEY_ID",
+        "RAZORPAY_KEY_SECRET"
+    ],
+    "tasks": {
+        "build": {
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                "dist/**"
+            ],
+            "cache": true
+        },
+        "dev": {
+            "dependsOn": [
+                "^build"
+            ],
+            "cache": false,
+            "persistent": true
+        },
+        "test": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "coverage/**"
+            ],
+            "cache": true
+        },
+        "test:unit": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "coverage/**"
+            ],
+            "cache": true
+        },
+        "test:integration": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "coverage/**"
+            ],
+            "cache": false
+        },
+        "test:e2e": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "coverage/**"
+            ],
+            "cache": false
+        },
+        "test:cov": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "coverage/**"
+            ],
+            "cache": true
+        },
+        "lint": {
+            "outputs": [],
+            "cache": true
+        },
+        "lint:fix": {
+            "outputs": [],
+            "cache": false
+        },
+        "clean": {
+            "cache": false
+        }
+    }
+}
