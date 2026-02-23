@@ -1,0 +1,41 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "paths": {
+            "@nestlancer/common": [
+                "../../libs/common/src"
+            ],
+            "@nestlancer/config": [
+                "../../libs/config/src"
+            ],
+            "@nestlancer/logger": [
+                "../../libs/logger/src"
+            ],
+            "@nestlancer/metrics": [
+                "../../libs/metrics/src"
+            ],
+            "@nestlancer/tracing": [
+                "../../libs/tracing/src"
+            ],
+            "@nestlancer/database": [
+                "../../libs/database/src"
+            ],
+            "@nestlancer/queue": [
+                "../../libs/queue/src"
+            ],
+            "@nestlancer/cache": [
+                "../../libs/cache/src"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "tests"
+    ]
+}
