@@ -1,0 +1,52 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "paths": {
+            "@nestlancer/common": [
+                "../../libs/common/src"
+            ],
+            "@nestlancer/config": [
+                "../../libs/config/src"
+            ],
+            "@nestlancer/database": [
+                "../../libs/database/src"
+            ],
+            "@nestlancer/cache": [
+                "../../libs/cache/src"
+            ],
+            "@nestlancer/queue": [
+                "../../libs/queue/src"
+            ],
+            "@nestlancer/auth-lib": [
+                "../../libs/auth-lib/src"
+            ],
+            "@nestlancer/logger": [
+                "../../libs/logger/src"
+            ],
+            "@nestlancer/metrics": [
+                "../../libs/metrics/src"
+            ],
+            "@nestlancer/tracing": [
+                "../../libs/tracing/src"
+            ],
+            "@nestlancer/outbox": [
+                "../../libs/outbox/src"
+            ],
+            "@nestlancer/idempotency": [
+                "../../libs/idempotency/src"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*",
+        "tests/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "**/*.spec.ts",
+        "**/*.e2e-spec.ts"
+    ]
+}
