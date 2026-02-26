@@ -1,14 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { WsAppModule } from './app.module';
-import { RedisIoAdapter } from '@nestlancer/websocket';
+import { CustomRedisIoAdapter } from './adapters/redis-io.adapter';
+import { Logger } from '@nestjs/common';
+import { NestlancerConfigService } from '@nestlancer/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(WsAppModule);
-  app.useWebSocketAdapter(new RedisIoAdapter(app));
+  const logger = new Logger('WsGatewayBootstrap');
+  const app = await NestFactory.create(WsAppModule, { bufferLogs: true });
 
-  const port = process.env.WS_PORT || 3100;
+  // Setup graceful shutdown
+  app.enableShutdownHooks();
+
+  const redisIoAdapter = new CustomRedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
+
+  const configService = app.get(NestlancerConfigService);
+  const port = configService.port || process.env.WS_PORT || 3100;
+
   await app.listen(port);
-  console.log(`🔌 Nestlancer WebSocket Gateway running on ws://localhost:${port}`);
+  logger.log(`🔌 Nestlancer WebSocket Gateway running on wss://localhost:${port}`);
 }
 
 bootstrap();
