@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Seed error code definitions as SystemConfig for reference.
@@ -43,12 +43,19 @@ export async function seedErrorCodes(prisma: PrismaClient): Promise<void> {
                     PAYMENT_003: 'Refund failed',
                     PAYMENT_004: 'Invalid amount',
                 },
+                MEDIA: {
+                    MEDIA_001: 'Upload failed',
+                    MEDIA_002: 'File type not allowed',
+                    MEDIA_003: 'File too large',
+                    MEDIA_004: 'File quarantined',
+                },
                 SYSTEM: {
                     SYS_MAINTENANCE: 'System is under maintenance',
                     INTERNAL_ERROR: 'Internal server error',
                     SERVICE_UNAVAILABLE: 'Service unavailable',
                     GATEWAY_TIMEOUT: 'Gateway timeout',
                     RATE_LIMIT_EXCEEDED: 'Rate limit exceeded',
+                    IDEMPOTENCY_CONFLICT: 'Idempotency key conflict',
                 },
             },
             description: 'Application error code definitions',

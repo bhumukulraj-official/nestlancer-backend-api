@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../../generated';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Seed test projects with milestones and deliverables for development.
@@ -112,6 +112,44 @@ export async function seedTestProjects(prisma: PrismaClient): Promise<void> {
         });
     }
 
+    // Create deliverables for milestone 1
+    const deliverables = [
+        {
+            id: 'test-deliverable-001',
+            milestoneId: 'test-milestone-001',
+            name: 'UI/UX Wireframes',
+            description: 'Complete wireframes for all pages.',
+            status: 'APPROVED' as const,
+            priority: 'HIGH',
+            approvedAt: new Date(),
+        },
+        {
+            id: 'test-deliverable-002',
+            milestoneId: 'test-milestone-001',
+            name: 'System Architecture Document',
+            description: 'Technical architecture and database design.',
+            status: 'APPROVED' as const,
+            priority: 'HIGH',
+            approvedAt: new Date(),
+        },
+        {
+            id: 'test-deliverable-003',
+            milestoneId: 'test-milestone-002',
+            name: 'Backend API Implementation',
+            description: 'RESTful API with authentication and authorization.',
+            status: 'IN_PROGRESS' as const,
+            priority: 'HIGH',
+        },
+    ];
+
+    for (const deliverable of deliverables) {
+        await prisma.deliverable.upsert({
+            where: { id: deliverable.id },
+            update: {},
+            create: deliverable,
+        });
+    }
+
     // Create a test payment
     await prisma.payment.upsert({
         where: { id: 'test-payment-001' },
@@ -128,6 +166,54 @@ export async function seedTestProjects(prisma: PrismaClient): Promise<void> {
             externalId: 'pay_test_001',
             paidAt: new Date(),
             receiptNumber: 'REC-2026-0001',
+        },
+    });
+
+    // Create a progress entry
+    await prisma.progressEntry.upsert({
+        where: { id: 'test-progress-001' },
+        update: {},
+        create: {
+            id: 'test-progress-001',
+            projectId: project.id,
+            milestoneId: 'test-milestone-001',
+            type: 'MILESTONE_COMPLETED',
+            title: 'Design & Architecture phase completed',
+            description: 'All wireframes and architecture documents have been approved.',
+            actorId: 'test-admin-001',
+            visibility: 'client',
+            clientNotified: true,
+        },
+    });
+
+    // Create a test message
+    await prisma.message.upsert({
+        where: { id: 'test-message-001' },
+        update: {},
+        create: {
+            id: 'test-message-001',
+            projectId: project.id,
+            senderId: 'test-admin-001',
+            content: 'Hi! The design phase is complete. Moving on to development.',
+            type: 'TEXT',
+        },
+    });
+
+    // Create a second request (draft)
+    await prisma.projectRequest.upsert({
+        where: { id: 'test-request-002' },
+        update: {},
+        create: {
+            id: 'test-request-002',
+            userId: 'test-user-002',
+            title: 'Corporate Website Redesign',
+            description: 'Modernize our company website with a fresh design and improved UX.',
+            category: 'ui-ux-design',
+            budgetMin: 2000000,
+            budgetMax: 4000000,
+            currency: 'INR',
+            timeframe: '6 weeks',
+            status: 'SUBMITTED',
         },
     });
 

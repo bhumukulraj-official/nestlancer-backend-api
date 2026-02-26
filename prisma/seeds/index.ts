@@ -5,9 +5,18 @@
 // Seeds are split into numbered files for ordering and idempotency.
 // Dev seeds (10-13) only run when NODE_ENV !== 'production'.
 
-import { PrismaClient } from '../generated';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const DATABASE_URL =
+    process.env.DATABASE_URL ||
+    'postgresql://nl_db_user:dev-pg-c2e3f4g5h6i7@100.103.64.83:5432/nl_dev_db?schema=public';
+
+// Prisma 7: requires a driver adapter for direct DB connections
+const pool = new Pool({ connectionString: DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main(): Promise<void> {
     console.log('🌱 Starting database seeding...\n');
@@ -21,6 +30,9 @@ async function main(): Promise<void> {
 
     const { seedCategories } = await import('./03-categories.seed');
     await seedCategories(prisma);
+
+    const { seedTags } = await import('./04-tags.seed');
+    await seedTags(prisma);
 
     const { seedEmailTemplates } = await import('./05-email-templates.seed');
     await seedEmailTemplates(prisma);
@@ -64,4 +76,5 @@ main()
     })
     .finally(async () => {
         await prisma.$disconnect();
+        await pool.end();
     });

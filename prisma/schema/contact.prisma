@@ -4,32 +4,34 @@
 
 enum ContactStatus {
   NEW
-  ACKNOWLEDGED
-  IN_PROGRESS
-  RESOLVED
+  READ
+  RESPONDED
+  ARCHIVED
   SPAM
 }
 
-model ContactMessage {
-  id                String        @id @default(cuid())
-  name              String
-  email             String
-  phone             String?
-  subject           String
-  message           String
-  status            ContactStatus @default(NEW)
-  category          String?
-  ip                String?
-  userAgent         String?
-  turnstileVerified Boolean       @default(false)
-  referrerUrl       String?
-  resolvedAt        DateTime?
-  resolvedBy        String?
-  resolutionNotes   String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+enum ContactSubject {
+  GENERAL
+  SUPPORT
+  BUG_REPORT
+  PARTNERSHIP
+  OTHER
+}
 
-  @@index([email])
+model ContactMessage {
+  id        String         @id @default(cuid())
+  ticketId  String         @unique
+  name      String
+  email     String
+  subject   ContactSubject @default(GENERAL)
+  message   String
+  status    ContactStatus  @default(NEW)
+  ipInfo    Json?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
   @@index([status])
   @@index([createdAt])
+  @@index([ticketId])
+  @@index([email])
 }

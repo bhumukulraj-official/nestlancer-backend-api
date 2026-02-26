@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../../generated';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Seed test users for development environment.

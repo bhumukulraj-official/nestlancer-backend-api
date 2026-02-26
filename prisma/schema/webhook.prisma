@@ -2,29 +2,55 @@
 // Webhook Domain Models
 // =============================================================================
 
-enum WebhookLogStatus {
-  RECEIVED
-  PROCESSING
+enum WebhookIngestionStatus {
+  PENDING
   PROCESSED
   FAILED
-  RETRYING
+}
+
+model Webhook {
+  id          String            @id @default(cuid())
+  name        String
+  url         String
+  secret      String
+  enabled     Boolean           @default(true)
+  events      Json
+  retryPolicy Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  deliveries  WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id              String   @id @default(cuid())
+  webhookId       String
+  event           String
+  payload         Json
+  status          String
+  statusCode      Int?
+  requestHeaders  Json?
+  responseHeaders Json?
+  responseBody    String?
+  createdAt       DateTime @default(now())
+
+  webhook         Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
 }
 
 model WebhookLog {
-  id        String           @id @default(cuid())
-  provider  String
-  event     String
-  payload   Json
-  headers   Json?
-  status    WebhookLogStatus @default(RECEIVED)
-  response  Json?
-  error     String?
-  attempts  Int              @default(0)
+  id          String                 @id @default(cuid())
+  provider    String
+  eventId     String?
+  eventType   String
+  payload     Json
+  status      WebhookIngestionStatus @default(PENDING)
+  error       String?
   processedAt DateTime?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
 
-  @@index([provider])
   @@index([status])
-  @@index([createdAt])
+  @@index([provider, eventId])
 }

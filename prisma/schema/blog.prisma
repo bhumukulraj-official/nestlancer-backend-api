@@ -2,8 +2,9 @@
 // Blog Domain Models
 // =============================================================================
 
-enum PostStatus {
+enum BlogStatus {
   DRAFT
+  SCHEDULED
   PUBLISHED
   ARCHIVED
 }
@@ -15,21 +16,57 @@ enum CommentStatus {
   SPAM
 }
 
-model BlogCategory {
+model BlogPost {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  excerpt         String
+  content         String
+  contentFormat   String        @default("markdown")
+  authorId        String
+  categoryId      String
+  status          BlogStatus    @default(DRAFT)
+  commentsEnabled Boolean       @default(true)
+  featuredImageId String?
+  seo             Json?
+  seriesId        String?
+  seriesPosition  Int?
+  publishedAt     DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  author          User          @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  category        BlogCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  series          BlogSeries?   @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  tags            BlogTag[]     @relation("BlogPostTags")
+  comments        BlogComment[]
+
+  @@index([status])
+  @@index([authorId])
+  @@index([categoryId])
+}
+
+model BlogSeries {
   id          String     @id @default(cuid())
-  name        String     @unique
   slug        String     @unique
+  name        String
   description String?
-  parentId    String?
-  displayOrder Int       @default(0)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  parent      BlogCategory?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: SetNull)
-  children    BlogCategory[] @relation("CategoryChildren")
   posts       BlogPost[]
+}
 
-  @@index([slug])
+model BlogCategory {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  posts       BlogPost[]
 }
 
 model BlogTag {
@@ -40,59 +77,28 @@ model BlogTag {
   updatedAt DateTime   @updatedAt
 
   posts     BlogPost[] @relation("BlogPostTags")
-
-  @@index([slug])
-}
-
-model BlogPost {
-  id              String     @id @default(cuid())
-  authorId        String
-  categoryId      String?
-  title           String
-  slug            String     @unique
-  excerpt         String?
-  content         String
-  coverImageUrl   String?
-  status          PostStatus @default(DRAFT)
-  featured        Boolean    @default(false)
-  commentsEnabled Boolean    @default(true)
-  viewCount       Int        @default(0)
-  seoTitle        String?
-  seoDescription  String?
-  publishedAt     DateTime?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-
-  author          User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  category        BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  tags            BlogTag[]    @relation("BlogPostTags")
-  comments        BlogComment[]
-
-  @@index([authorId])
-  @@index([slug])
-  @@index([status])
-  @@index([categoryId])
 }
 
 model BlogComment {
-  id        String        @id @default(cuid())
-  postId    String
-  userId    String?
-  parentId  String?
-  name      String?
-  email     String?
-  content   String
-  status    CommentStatus @default(PENDING)
-  ip        String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  postId            String
+  authorId          String
+  content           String
+  parentId          String?
+  status            CommentStatus @default(PENDING)
+  likes             Int           @default(0)
+  isPinned          Boolean       @default(false)
+  moderationMessage String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  post      BlogPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  parent    BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   BlogComment[] @relation("CommentReplies")
+  post              BlogPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author            User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent            BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies           BlogComment[] @relation("CommentReplies")
 
   @@index([postId])
-  @@index([userId])
   @@index([status])
+  @@index([authorId])
+  @@index([parentId])
 }

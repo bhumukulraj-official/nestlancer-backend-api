@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Seed notification templates stored in SystemConfig.
@@ -58,6 +58,20 @@ export async function seedNotificationTemplates(prisma: PrismaClient): Promise<v
                     type: 'DELIVERABLE_READY',
                     title: 'Deliverable Ready for Review',
                     message: 'A deliverable is ready for your review in "{{projectTitle}}"',
+                    channels: ['IN_APP', 'EMAIL'],
+                    priority: 'HIGH',
+                },
+                {
+                    type: 'REQUEST_STATUS_CHANGED',
+                    title: 'Request Status Updated',
+                    message: 'Your request "{{requestTitle}}" status changed to {{newStatus}}',
+                    channels: ['IN_APP'],
+                    priority: 'NORMAL',
+                },
+                {
+                    type: 'PROJECT_COMPLETED',
+                    title: 'Project Completed',
+                    message: 'Project "{{projectTitle}}" has been marked as completed! 🎉',
                     channels: ['IN_APP', 'EMAIL'],
                     priority: 'HIGH',
                 },

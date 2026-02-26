@@ -7,11 +7,12 @@ model SystemConfig {
   key         String   @unique
   value       Json
   description String?
-  updatedById String?
+  isPublic    Boolean  @default(false)
+  updatedBy   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  admin       User?    @relation(fields: [updatedBy], references: [id], onDelete: SetNull)
 
   @@index([key])
 }
@@ -27,4 +28,17 @@ model FeatureFlag {
   updatedAt          DateTime @updatedAt
 
   @@index([flag])
+}
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  subject     String
+  body        String
+  variables   Json?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
 }

@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Seed default system configuration values.
@@ -68,6 +68,25 @@ export async function seedSystemConfig(prisma: PrismaClient): Promise<void> {
             key: 'system.currency',
             value: { default: 'INR', symbol: '₹', subunit: 'paise', subunitMultiplier: 100 },
             description: 'Currency configuration (INR-only platform)',
+        },
+        {
+            key: 'system.media',
+            value: {
+                maxVersions: 10,
+                thumbnailSizes: { small: 150, medium: 300, large: 600 },
+                imageSizeLimit: 10485760,
+                videoSizeLimit: 104857600,
+            },
+            description: 'Media processing configuration',
+        },
+        {
+            key: 'system.notifications',
+            value: {
+                maxUnreadCount: 100,
+                expiryDays: 90,
+                batchSize: 50,
+            },
+            description: 'Notification system configuration',
         },
     ];
 

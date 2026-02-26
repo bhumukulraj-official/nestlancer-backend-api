@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Seed default feature flags.
@@ -17,6 +17,8 @@ export async function seedFeatureFlags(prisma: PrismaClient): Promise<void> {
         { flag: 'ADVANCED_ANALYTICS', enabled: false, description: 'Enable advanced analytics dashboard', rolloutPercentage: 0 },
         { flag: 'BLOG_COMMENTS', enabled: true, description: 'Enable blog commenting system', rolloutPercentage: 100 },
         { flag: 'PORTFOLIO_PUBLIC', enabled: true, description: 'Make portfolio items publicly visible', rolloutPercentage: 100 },
+        { flag: 'CHUNKED_UPLOADS', enabled: false, description: 'Enable chunked file upload support', rolloutPercentage: 0 },
+        { flag: 'CDN_PROCESSING', enabled: false, description: 'Enable CDN processing for media files', rolloutPercentage: 0 },
     ];
 
     for (const flag of flags) {

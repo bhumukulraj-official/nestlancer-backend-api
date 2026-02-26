@@ -9,32 +9,45 @@ enum PortfolioStatus {
 }
 
 model PortfolioItem {
-  id               String          @id @default(cuid())
-  title            String
-  slug             String          @unique
-  shortDescription String?
-  longDescription  String?
-  category         String
-  tags             Json?
-  status           PortfolioStatus @default(DRAFT)
-  featured         Boolean         @default(false)
-  displayOrder     Int             @default(0)
-  coverImageUrl    String?
-  images           Json?
-  clientName       String?
-  clientTestimonial String?
-  projectUrl       String?
-  startDate        DateTime?
-  endDate          DateTime?
-  technologies     Json?
-  results          Json?
-  seoTitle         String?
-  seoDescription   String?
-  publishedAt      DateTime?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  id                String            @id @default(cuid())
+  slug              String            @unique
+  title             String
+  shortDescription  String
+  fullDescription   String
+  contentFormat     String            @default("markdown")
+  categoryId        String
+  status            PortfolioStatus   @default(DRAFT)
+  featured          Boolean           @default(false)
+  clientName        String?
+  clientLogo        String?
+  clientIndustry    String?
+  clientWebsite     String?
+  clientTestimonial Json?
+  stats             Json?
+  thumbnailId       String?
+  videoId           String?
+  tags              Json?
+  projectDetails    Json?
+  links             Json?
+  seo               Json?
+  publishedAt       DateTime?
+  completedAt       DateTime?
+  deletedAt         DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
-  @@index([slug])
+  category          PortfolioCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
   @@index([status])
-  @@index([category])
+  @@index([categoryId])
+}
+
+model PortfolioCategory {
+  id        String          @id @default(cuid())
+  name      String
+  slug      String          @unique
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  items     PortfolioItem[]
 }

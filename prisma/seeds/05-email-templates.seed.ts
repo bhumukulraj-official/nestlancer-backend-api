@@ -1,7 +1,7 @@
-import { PrismaClient } from '../../generated';
+import { PrismaClient } from '@prisma/client';
 
 /**
- * Seed email templates stored in SystemConfig.
+ * Seed email templates using the EmailTemplate model.
  * Templates use Handlebars syntax with variables like {{userName}}, {{link}}.
  * Actual rendering is done by @nestlancer/mail template engine.
  */
@@ -10,82 +10,82 @@ export async function seedEmailTemplates(prisma: PrismaClient): Promise<void> {
 
     const templates = [
         {
-            key: 'email.template.verification',
-            value: {
-                name: 'verification',
-                subject: 'Verify your Nestlancer account',
-                html: '<h1>Welcome to Nestlancer, {{userName}}!</h1><p>Please verify your email by clicking the link below:</p><p><a href="{{link}}">Verify Email</a></p><p>This link expires in 24 hours.</p><p>If you did not create an account, please ignore this email.</p>',
-                text: 'Welcome to Nestlancer, {{userName}}! Verify your email: {{link}} (expires in 24 hours)',
-                variables: ['userName', 'link'],
-            },
-            description: 'Email verification template',
+            name: 'verification',
+            subject: 'Verify your Nestlancer account',
+            body: '<h1>Welcome to Nestlancer, {{userName}}!</h1><p>Please verify your email by clicking the link below:</p><p><a href="{{link}}">Verify Email</a></p><p>This link expires in 24 hours.</p><p>If you did not create an account, please ignore this email.</p>',
+            variables: { required: ['userName', 'link'], optional: [] },
+            description: 'Email verification template sent after registration',
         },
         {
-            key: 'email.template.welcome',
-            value: {
-                name: 'welcome',
-                subject: 'Welcome to Nestlancer!',
-                html: '<h1>Welcome, {{userName}}! 🎉</h1><p>Your account is verified and ready to use.</p><p><a href="{{dashboardLink}}">Go to Dashboard</a></p>',
-                text: 'Welcome, {{userName}}! Your account is ready. Visit: {{dashboardLink}}',
-                variables: ['userName', 'dashboardLink'],
-            },
-            description: 'Welcome email after verification',
+            name: 'welcome',
+            subject: 'Welcome to Nestlancer!',
+            body: '<h1>Welcome, {{userName}}! 🎉</h1><p>Your account is verified and ready to use.</p><p><a href="{{dashboardLink}}">Go to Dashboard</a></p>',
+            variables: { required: ['userName', 'dashboardLink'], optional: [] },
+            description: 'Welcome email sent after email verification',
         },
         {
-            key: 'email.template.password-reset',
-            value: {
-                name: 'password-reset',
-                subject: 'Reset your Nestlancer password',
-                html: '<h1>Password Reset Request</h1><p>Hi {{userName}}, click below to reset your password:</p><p><a href="{{link}}">Reset Password</a></p><p>This link expires in 1 hour. If you didn\'t request this, ignore this email.</p>',
-                text: 'Hi {{userName}}, reset your password: {{link}} (expires in 1 hour)',
-                variables: ['userName', 'link'],
-            },
+            name: 'password-reset',
+            subject: 'Reset your Nestlancer password',
+            body: '<h1>Password Reset Request</h1><p>Hi {{userName}}, click below to reset your password:</p><p><a href="{{link}}">Reset Password</a></p><p>This link expires in 1 hour. If you didn\'t request this, ignore this email.</p>',
+            variables: { required: ['userName', 'link'], optional: [] },
             description: 'Password reset email template',
         },
         {
-            key: 'email.template.quote-sent',
-            value: {
-                name: 'quote-sent',
-                subject: 'New quote for your project: {{projectTitle}}',
-                html: '<h1>Quote Ready</h1><p>Hi {{userName}}, a quote has been prepared for "{{projectTitle}}".</p><p>Total: ₹{{amount}}</p><p><a href="{{link}}">View Quote</a></p><p>Valid until {{validUntil}}.</p>',
-                text: 'Hi {{userName}}, your quote for "{{projectTitle}}" is ready. Total: ₹{{amount}}. View: {{link}}',
-                variables: ['userName', 'projectTitle', 'amount', 'link', 'validUntil'],
-            },
+            name: 'quote-sent',
+            subject: 'New quote for your project: {{projectTitle}}',
+            body: '<h1>Quote Ready</h1><p>Hi {{userName}}, a quote has been prepared for "{{projectTitle}}".</p><p>Total: ₹{{amount}}</p><p><a href="{{link}}">View Quote</a></p><p>Valid until {{validUntil}}.</p>',
+            variables: { required: ['userName', 'projectTitle', 'amount', 'link', 'validUntil'], optional: [] },
             description: 'Quote sent notification email',
         },
         {
-            key: 'email.template.payment-receipt',
-            value: {
-                name: 'payment-receipt',
-                subject: 'Payment receipt for {{projectTitle}}',
-                html: '<h1>Payment Received</h1><p>Hi {{userName}}, we received your payment of ₹{{amount}} for "{{projectTitle}}".</p><p>Receipt: {{receiptNumber}}</p><p><a href="{{receiptLink}}">Download Receipt</a></p>',
-                text: 'Hi {{userName}}, payment of ₹{{amount}} received for "{{projectTitle}}". Receipt: {{receiptNumber}}',
-                variables: ['userName', 'projectTitle', 'amount', 'receiptNumber', 'receiptLink'],
-            },
+            name: 'payment-receipt',
+            subject: 'Payment receipt for {{projectTitle}}',
+            body: '<h1>Payment Received</h1><p>Hi {{userName}}, we received your payment of ₹{{amount}} for "{{projectTitle}}".</p><p>Receipt: {{receiptNumber}}</p><p><a href="{{receiptLink}}">Download Receipt</a></p>',
+            variables: { required: ['userName', 'projectTitle', 'amount', 'receiptNumber', 'receiptLink'], optional: [] },
             description: 'Payment receipt email template',
         },
         {
-            key: 'email.template.project-update',
-            value: {
-                name: 'project-update',
-                subject: 'Update on your project: {{projectTitle}}',
-                html: '<h1>Project Update</h1><p>Hi {{userName}}, there\'s a new update on "{{projectTitle}}":</p><p>{{updateMessage}}</p><p><a href="{{link}}">View Progress</a></p>',
-                text: 'Hi {{userName}}, update on "{{projectTitle}}": {{updateMessage}}. View: {{link}}',
-                variables: ['userName', 'projectTitle', 'updateMessage', 'link'],
-            },
+            name: 'project-update',
+            subject: 'Update on your project: {{projectTitle}}',
+            body: '<h1>Project Update</h1><p>Hi {{userName}}, there\'s a new update on "{{projectTitle}}":</p><p>{{updateMessage}}</p><p><a href="{{link}}">View Progress</a></p>',
+            variables: { required: ['userName', 'projectTitle', 'updateMessage', 'link'], optional: [] },
             description: 'Project progress update email',
+        },
+        {
+            name: 'milestone-completed',
+            subject: 'Milestone completed: {{milestoneName}}',
+            body: '<h1>Milestone Completed 🎯</h1><p>Hi {{userName}}, milestone "{{milestoneName}}" for project "{{projectTitle}}" has been completed.</p><p><a href="{{link}}">View Project</a></p>',
+            variables: { required: ['userName', 'milestoneName', 'projectTitle', 'link'], optional: [] },
+            description: 'Milestone completion notification email',
+        },
+        {
+            name: 'new-message',
+            subject: 'New message in {{projectTitle}}',
+            body: '<h1>New Message</h1><p>Hi {{userName}}, {{senderName}} sent you a message in project "{{projectTitle}}".</p><p><a href="{{link}}">View Message</a></p>',
+            variables: { required: ['userName', 'senderName', 'projectTitle', 'link'], optional: [] },
+            description: 'New message notification email',
+        },
+        {
+            name: 'account-suspended',
+            subject: 'Your Nestlancer account has been suspended',
+            body: '<h1>Account Suspended</h1><p>Hi {{userName}}, your account has been suspended.</p><p>Reason: {{reason}}</p><p>If you believe this is an error, please contact support.</p>',
+            variables: { required: ['userName', 'reason'], optional: [] },
+            description: 'Account suspension notification email',
+        },
+        {
+            name: 'contact-received',
+            subject: 'We received your message – Ticket #{{ticketId}}',
+            body: '<h1>Message Received</h1><p>Hi {{name}}, thank you for contacting us.</p><p>Your ticket ID is <strong>{{ticketId}}</strong>. We will respond within 24–48 hours.</p>',
+            variables: { required: ['name', 'ticketId'], optional: [] },
+            description: 'Contact form submission acknowledgment email',
         },
     ];
 
     for (const template of templates) {
-        await prisma.systemConfig.upsert({
-            where: { key: template.key },
+        await prisma.emailTemplate.upsert({
+            where: { name: template.name },
             update: {},
-            create: {
-                key: template.key,
-                value: template.value,
-                description: template.description,
-            },
+            create: template,
         });
     }
 

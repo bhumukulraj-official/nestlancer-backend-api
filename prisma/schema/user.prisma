@@ -40,7 +40,6 @@ model User {
   blogComments     BlogComment[]
   auditLogs        AuditLog[]
   systemConfigs    SystemConfig[]
-  pushSubscriptions UserPushSubscription[]
 
   @@index([email])
   @@index([role])

@@ -1,23 +1,42 @@
-import { PrismaClient } from '../../generated';
+import { PrismaClient } from '@prisma/client';
 
 /**
- * Seed default project request and portfolio categories.
+ * Seed default blog categories, portfolio categories,
+ * and project request categories (stored in SystemConfig).
  */
 export async function seedCategories(prisma: PrismaClient): Promise<void> {
     console.log('  📂 Seeding categories...');
 
     // Blog categories
     const blogCategories = [
-        { name: 'Technology', slug: 'technology', description: 'Tech articles and tutorials', displayOrder: 1 },
-        { name: 'Design', slug: 'design', description: 'UI/UX design insights', displayOrder: 2 },
-        { name: 'Business', slug: 'business', description: 'Business and freelancing tips', displayOrder: 3 },
-        { name: 'Case Studies', slug: 'case-studies', description: 'Project case studies and retrospectives', displayOrder: 4 },
-        { name: 'Tutorials', slug: 'tutorials', description: 'Step-by-step development tutorials', displayOrder: 5 },
-        { name: 'Industry News', slug: 'industry-news', description: 'Latest industry updates', displayOrder: 6 },
+        { name: 'Technology', slug: 'technology', description: 'Tech articles and tutorials' },
+        { name: 'Design', slug: 'design', description: 'UI/UX design insights' },
+        { name: 'Business', slug: 'business', description: 'Business and freelancing tips' },
+        { name: 'Case Studies', slug: 'case-studies', description: 'Project case studies and retrospectives' },
+        { name: 'Tutorials', slug: 'tutorials', description: 'Step-by-step development tutorials' },
+        { name: 'Industry News', slug: 'industry-news', description: 'Latest industry updates' },
     ];
 
     for (const category of blogCategories) {
         await prisma.blogCategory.upsert({
+            where: { slug: category.slug },
+            update: {},
+            create: category,
+        });
+    }
+
+    // Portfolio categories (using the new PortfolioCategory model)
+    const portfolioCategories = [
+        { name: 'Web Development', slug: 'web-development' },
+        { name: 'Mobile App', slug: 'mobile-app' },
+        { name: 'UI/UX Design', slug: 'ui-ux-design' },
+        { name: 'E-Commerce', slug: 'ecommerce' },
+        { name: 'API Development', slug: 'api-development' },
+        { name: 'DevOps & Cloud', slug: 'devops-cloud' },
+    ];
+
+    for (const category of portfolioCategories) {
+        await prisma.portfolioCategory.upsert({
             where: { slug: category.slug },
             update: {},
             create: category,
