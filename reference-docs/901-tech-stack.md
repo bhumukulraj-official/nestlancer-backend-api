@@ -106,7 +106,7 @@ All located in `libs/` and published within the monorepo:
 - `crypto` – Hashing, encryption, HMAC, TOTP.
 - `websocket` – WebSocket adapter, auth, room management.
 - `pdf` – PDF generation (quotes, invoices, receipts).
-- `search` – Dynamic query builders for filtering, sorting, pagination.
+- `search` – Meilisearch integration for efficient filtering and full-text search.
 - `circuit-breaker` – Circuit breaker pattern for external calls.
 - `turnstile` – Turnstile verification guard.
 - `testing` – Factories, mocks, helpers for unit and e2e tests.

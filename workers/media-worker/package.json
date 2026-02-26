@@ -34,7 +34,7 @@
         "rxjs": "^7.8.1",
         "sharp": "^0.32.6",
         "fluent-ffmpeg": "^2.1.2",
-        "clamav.js": "^1.0.0"
+        "clamav.js": "^0.12.0"
     },
     "devDependencies": {
         "@nestjs/cli": "^10.0.0",

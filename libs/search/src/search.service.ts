@@ -7,7 +7,7 @@ export class SearchService {
 
   async search<T>(index: string, options: SearchOptions): Promise<SearchResult<T>> {
     this.logger.debug(`Searching ${index}: ${options.query}`);
-    // In production: delegates to Meilisearch/Elasticsearch
+    // In production: delegates to Meilisearch
     return { hits: [], totalHits: 0, processingTimeMs: 0, page: options.page || 1, limit: options.limit || 20 };
   }
 }
