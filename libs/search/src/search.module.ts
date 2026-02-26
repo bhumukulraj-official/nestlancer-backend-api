@@ -1,6 +1,15 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, DynamicModule } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { SearchIndexerService } from './search-indexer.service';
+
 @Global()
-@Module({ providers: [SearchService, SearchIndexerService], exports: [SearchService, SearchIndexerService] })
-export class SearchModule {}
+@Module({})
+export class SearchModule {
+    static forRoot(): DynamicModule {
+        return {
+            module: SearchModule,
+            providers: [SearchService, SearchIndexerService],
+            exports: [SearchService, SearchIndexerService],
+        };
+    }
+}

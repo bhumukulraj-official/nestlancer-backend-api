@@ -1,4 +1,92 @@
 export function getInvoiceTemplate(data: Record<string, unknown>): string {
-  void data;
-  return '<html><body><h1>Invoice</h1></body></html>';
+  const company = (data.company as Record<string, string>) || {};
+  const client = (data.client as Record<string, string>) || {};
+  const items = (data.items as Array<Record<string, unknown>>) || [];
+  const invoiceNumber = data.invoiceNumber || 'INV-000';
+  const invoiceDate = data.invoiceDate || new Date().toISOString().split('T')[0];
+  const dueDate = data.dueDate || '';
+  const totalPaise = Number(data.totalPaise || 0);
+  const currency = (data.currency as string) || 'INR';
+
+  const formatMoney = (paise: number) => `${currency} ${(paise / 100).toFixed(2)}`;
+
+  const itemRows = items.map((item) => `
+    <tr>
+      <td>${item.description || ''}</td>
+      <td style="text-align:center">${item.quantity || 1}</td>
+      <td style="text-align:right">${formatMoney(Number(item.unitPricePaise || 0))}</td>
+      <td style="text-align:right">${formatMoney(Number(item.totalPaise || 0))}</td>
+    </tr>
+  `).join('');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; margin: 0; padding: 40px; }
+    .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .company-info h1 { margin: 0; color: #2563eb; font-size: 24px; }
+    .invoice-meta { text-align: right; }
+    .invoice-meta h2 { margin: 0; color: #2563eb; font-size: 28px; text-transform: uppercase; }
+    .parties { display: flex; justify-content: space-between; margin-bottom: 30px; }
+    .party { width: 45%; }
+    .party h3 { color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    th { background: #2563eb; color: white; padding: 12px; text-align: left; font-size: 13px; }
+    td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+    .totals { text-align: right; }
+    .totals .total-row { font-size: 18px; font-weight: bold; color: #2563eb; }
+    .footer { margin-top: 40px; text-align: center; color: #999; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="company-info">
+      <h1>${company.name || 'Nestlancer'}</h1>
+      <p>${company.address || ''}</p>
+      <p>${company.email || ''}</p>
+    </div>
+    <div class="invoice-meta">
+      <h2>Invoice</h2>
+      <p><strong>#${invoiceNumber}</strong></p>
+      <p>Date: ${invoiceDate}</p>
+      ${dueDate ? `<p>Due: ${dueDate}</p>` : ''}
+    </div>
+  </div>
+
+  <div class="parties">
+    <div class="party">
+      <h3>Bill To</h3>
+      <p><strong>${client.name || ''}</strong></p>
+      <p>${client.email || ''}</p>
+      <p>${client.address || ''}</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th style="text-align:center">Qty</th>
+        <th style="text-align:right">Unit Price</th>
+        <th style="text-align:right">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${itemRows}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    ${data.subtotalPaise ? `<p>Subtotal: ${formatMoney(Number(data.subtotalPaise))}</p>` : ''}
+    ${data.taxPaise ? `<p>Tax: ${formatMoney(Number(data.taxPaise))}</p>` : ''}
+    <p class="total-row">Total: ${formatMoney(totalPaise)}</p>
+  </div>
+
+  <div class="footer">
+    <p>${data.notes || 'Thank you for your business!'}</p>
+  </div>
+</body>
+</html>`;
 }

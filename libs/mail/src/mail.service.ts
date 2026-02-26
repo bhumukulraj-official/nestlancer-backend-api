@@ -1,19 +1,116 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common';
+import { createTransport, Transporter } from 'nodemailer';
 import { MailOptions } from './interfaces/mail.interface';
+import { renderTemplate } from './templates/handlebars.engine';
+
+export interface MailModuleConfig {
+  provider?: 'smtp' | 'zeptomail' | 'ses';
+  from?: string;
+  smtp?: {
+    host: string;
+    port: number;
+    secure: boolean;
+    auth?: { user: string; pass: string };
+  };
+  zeptomail?: { url: string; token: string };
+}
 
 @Injectable()
-export class MailService {
+export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
-  constructor(@Inject('MAIL_OPTIONS') private readonly options: Record<string, unknown>) {}
+  private transporter!: Transporter;
 
-  async send(mail: MailOptions): Promise<{ messageId: string }> {
-    this.logger.log(`Sending email to ${mail.to}: ${mail.subject}`);
-    // In production: uses Resend/SES/SMTP transporter
-    return { messageId: `msg-${Date.now()}` };
+  constructor(@Inject('MAIL_OPTIONS') private readonly options: MailModuleConfig) { }
+
+  onModuleInit(): void {
+    const provider = this.options.provider || process.env.EMAIL_PROVIDER || 'smtp';
+
+    if (provider === 'smtp') {
+      this.transporter = createTransport({
+        host: this.options.smtp?.host || process.env.SMTP_HOST || 'localhost',
+        port: this.options.smtp?.port || Number(process.env.SMTP_PORT || 587),
+        secure: this.options.smtp?.secure ?? (process.env.SMTP_SECURE === 'true'),
+        auth: this.options.smtp?.auth || (process.env.SMTP_USER ? {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS || '',
+        } : undefined),
+      });
+      this.logger.log('MailService initialized with SMTP transport');
+    } else if (provider === 'zeptomail') {
+      // ZeptoMail uses their own transporter format
+      this.transporter = createTransport({
+        host: 'smtp.zeptomail.com',
+        port: 587,
+        auth: {
+          user: 'emailapikey',
+          pass: this.options.zeptomail?.token || process.env.ZEPTOMAIL_TOKEN || '',
+        },
+      });
+      this.logger.log('MailService initialized with ZeptoMail transport');
+    } else {
+      this.logger.warn(`Unknown email provider: ${provider}, falling back to SMTP`);
+      this.transporter = createTransport({
+        host: 'localhost',
+        port: 587,
+      });
+    }
   }
 
-  async sendTemplate(templateName: string, to: string, variables: Record<string, string>): Promise<{ messageId: string }> {
+  async send(mail: MailOptions): Promise<{ messageId: string }> {
+    const from = mail.from || this.options.from || process.env.SES_FROM_EMAIL || 'noreply@nestlancer.com';
+
+    this.logger.log(`Sending email to ${mail.to}: ${mail.subject}`);
+
+    const result = await this.transporter.sendMail({
+      from,
+      to: mail.to,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      cc: mail.cc?.join(', '),
+      bcc: mail.bcc?.join(', '),
+      replyTo: mail.replyTo,
+      attachments: mail.attachments?.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType,
+      })),
+    });
+
+    this.logger.debug(`Email sent: ${result.messageId}`);
+    return { messageId: result.messageId };
+  }
+
+  async sendTemplate(
+    templateName: string,
+    to: string,
+    variables: Record<string, string>,
+    subject?: string,
+  ): Promise<{ messageId: string }> {
     this.logger.log(`Sending template '${templateName}' to ${to}`);
-    return this.send({ to, subject: templateName, html: JSON.stringify(variables) });
+
+    // Load template from templates directory or use inline
+    const templateHtml = this.getTemplateContent(templateName);
+    const html = renderTemplate(templateHtml, variables);
+
+    return this.send({
+      to,
+      subject: subject || templateName,
+      html,
+    });
+  }
+
+  private getTemplateContent(templateName: string): string {
+    // Template mapping for common email templates
+    const templates: Record<string, string> = {
+      'welcome': '<h1>Welcome to Nestlancer, {{name}}!</h1><p>Your account has been created.</p>',
+      'reset-password': '<h1>Reset Your Password</h1><p>Click <a href="{{resetUrl}}">here</a> to reset your password.</p><p>This link expires in {{expiry}}.</p>',
+      'verify-email': '<h1>Verify Your Email</h1><p>Click <a href="{{verifyUrl}}">here</a> to verify your email address.</p>',
+      'invoice': '<h1>Invoice #{{invoiceNumber}}</h1><p>Amount: {{amount}}</p><p>Due: {{dueDate}}</p>',
+      'payment-receipt': '<h1>Payment Received</h1><p>Amount: {{amount}}</p><p>Transaction: {{transactionId}}</p>',
+      'project-update': '<h1>Project Update: {{projectTitle}}</h1><p>{{message}}</p>',
+    };
+
+    return templates[templateName] || `<h1>{{subject}}</h1><p>{{body}}</p>`;
   }
 }
