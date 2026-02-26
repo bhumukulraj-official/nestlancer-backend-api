@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Processor, Process } from '@nestlancer/queue';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ConsumeMessage } from 'amqplib';
+import { QueueConsumerService } from '@nestlancer/queue';
 import { LoggerService } from '@nestlancer/logger';
 import { AnalyticsJob, AnalyticsJobType } from '../interfaces/analytics-job.interface';
 import { UserAnalyticsProcessor } from '../processors/user-analytics.processor';
@@ -9,11 +10,11 @@ import { PortfolioAnalyticsProcessor } from '../processors/portfolio-analytics.p
 import { BlogAnalyticsProcessor } from '../processors/blog-analytics.processor';
 import { EngagementAnalyticsProcessor } from '../processors/engagement-analytics.processor';
 
-@Processor('analytics')
 @Injectable()
-export class AnalyticsConsumer {
+export class AnalyticsConsumer implements OnModuleInit {
     constructor(
         private readonly logger: LoggerService,
+        private readonly queueConsumer: QueueConsumerService,
         private readonly userAnalytics: UserAnalyticsProcessor,
         private readonly projectAnalytics: ProjectAnalyticsProcessor,
         private readonly revenueAnalytics: RevenueAnalyticsProcessor,
@@ -22,7 +23,13 @@ export class AnalyticsConsumer {
         private readonly engagementAnalytics: EngagementAnalyticsProcessor,
     ) { }
 
-    @Process()
+    async onModuleInit() {
+        await this.queueConsumer.consume('analytics.queue', async (msg: ConsumeMessage) => {
+            const job: AnalyticsJob = JSON.parse(msg.content.toString());
+            await this.handleJob(job);
+        });
+    }
+
     async handleJob(job: AnalyticsJob): Promise<void> {
         this.logger.log(`Received analytics job: ${job.type} (${job.period})`);
 

@@ -11,11 +11,11 @@ export class LeaderElectionService {
     private readonly instanceId: string;
 
     constructor(private readonly configService: ConfigService) {
-        const redisUrl = this.configService.get<string>('REDIS_CACHE_URL');
+        const redisUrl = this.configService.get<string>('REDIS_CACHE_URL') || '';
         this.redis = new Redis(redisUrl);
-        this.lockKey = this.configService.get<string>('outbox.leaderLockKey');
-        this.lockTtl = this.configService.get<number>('outbox.lockTtlSeconds');
-        this.instanceId = this.configService.get<string>('outbox.instanceId');
+        this.lockKey = this.configService.get<string>('outbox.leaderLockKey') || 'outbox:lock';
+        this.lockTtl = this.configService.get<number>('outbox.lockTtlSeconds') || 10;
+        this.instanceId = this.configService.get<string>('outbox.instanceId') || 'unknown';
     }
 
     async acquireLock(): Promise<boolean> {
@@ -41,7 +41,8 @@ export class LeaderElectionService {
             }
 
             return false;
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`Failed to acquire leader lock: ${error.message}`, error.stack);
             return false;
         }
@@ -54,7 +55,8 @@ export class LeaderElectionService {
                 await this.redis.del(this.lockKey);
                 this.logger.debug(`Instance ${this.instanceId} released leader lock`);
             }
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`Failed to release leader lock: ${error.message}`, error.stack);
         }
     }

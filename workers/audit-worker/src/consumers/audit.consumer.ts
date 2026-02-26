@@ -1,25 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConsumeMessage } from 'amqplib';
+import { QueueConsumerService } from '@nestlancer/queue';
 import { AuditWorkerService } from '../services/audit-worker.service';
 import { AuditEntry } from '../interfaces/audit-job.interface';
-import { LoggerService } from '@nestlancer/logger';
 
 @Injectable()
-@Processor('audit')
-export class AuditConsumer extends WorkerHost {
+export class AuditConsumer implements OnModuleInit {
+    private readonly logger = new Logger(AuditConsumer.name);
+
     constructor(
         private readonly auditWorkerService: AuditWorkerService,
-        private readonly logger: LoggerService,
-    ) {
-        super();
+        private readonly queueConsumer: QueueConsumerService,
+    ) { }
+
+    async onModuleInit() {
+        await this.queueConsumer.consume('audit.queue', async (msg: ConsumeMessage) => this.handleMessage(msg));
     }
 
-    async process(job: Job<AuditEntry, any, string>): Promise<void> {
+    private async handleMessage(msg: ConsumeMessage) {
+        const job: AuditEntry = JSON.parse(msg.content.toString());
         try {
-            await this.auditWorkerService.handleAuditEntry(job.data);
-        } catch (error) {
-            this.logger.error(`Error processing audit job ${job.id}: ${error.message}`, error.stack);
+            await this.auditWorkerService.handleAuditEntry(job);
+        } catch (e) {
+            const error = e as Error;
+            this.logger.error(`Error processing audit job: ${error.message}`, error.stack);
             throw error;
         }
     }

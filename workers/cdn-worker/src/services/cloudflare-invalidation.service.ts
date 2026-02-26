@@ -14,8 +14,8 @@ export class CloudflareInvalidationService implements CdnProvider {
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
     ) {
-        this.apiToken = this.configService.get<string>('cdn.cloudflare.apiToken');
-        this.zoneId = this.configService.get<string>('cdn.cloudflare.zoneId');
+        this.apiToken = this.configService.get<string>('cdn.cloudflare.apiToken') || '';
+        this.zoneId = this.configService.get<string>('cdn.cloudflare.zoneId') || '';
     }
 
     async invalidate(paths: string[]): Promise<InvalidationResult> {
@@ -40,7 +40,8 @@ export class CloudflareInvalidationService implements CdnProvider {
                 status: response.data.success ? 'completed' : 'failed',
                 paths,
             };
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`Cloudflare invalidation failed: ${error.message}`, error.stack);
             throw error;
         }
@@ -62,7 +63,8 @@ export class CloudflareInvalidationService implements CdnProvider {
                     },
                 ),
             );
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`Cloudflare purge all failed: ${error.message}`, error.stack);
             throw error;
         }

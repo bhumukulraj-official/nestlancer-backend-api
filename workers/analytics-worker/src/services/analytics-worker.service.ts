@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from '@nestlancer/logger';
-import { RedisCacheService } from '@nestlancer/cache';
+import { CacheService } from '@nestlancer/cache';
 import { AggregationResult } from '../interfaces/aggregation-result.interface';
 import { AnalyticsJobType, Period } from '../interfaces/analytics-job.interface';
 
@@ -8,7 +8,7 @@ import { AnalyticsJobType, Period } from '../interfaces/analytics-job.interface'
 export class AnalyticsWorkerService {
     constructor(
         private readonly logger: LoggerService,
-        private readonly cache: RedisCacheService,
+        private readonly cache: CacheService,
     ) { }
 
     async getLatest(type: AnalyticsJobType): Promise<any> {

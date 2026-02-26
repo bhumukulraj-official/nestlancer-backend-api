@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { WebhookHandler } from '../../interfaces/webhook-handler.interface';
+import { ResourceNotFoundException } from '@nestlancer/common';
 import { PrismaWriteService } from '@nestlancer/database';
 import { LoggerService } from '@nestlancer/logger';
 import { QueueService } from '@nestlancer/queue';
@@ -25,7 +26,7 @@ export class PaymentCapturedHandler implements WebhookHandler {
         });
 
         if (!payment) {
-            throw new Error(`Payment not found for external ID: ${razorpayPaymentId}`);
+            throw new ResourceNotFoundException('Payment', razorpayPaymentId);
         }
 
         if (payment.status === 'CAPTURED') {

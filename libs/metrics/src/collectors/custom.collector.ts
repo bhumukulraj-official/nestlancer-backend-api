@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { MetricsService } from '../metrics.service';
-import * as client from 'prom-client';
+
 
 /**
  * Custom metrics collector for registering application-specific business metrics.

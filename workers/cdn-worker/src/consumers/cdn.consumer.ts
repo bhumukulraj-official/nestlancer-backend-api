@@ -1,19 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConsumeMessage } from 'amqplib';
-import { QueueConsumerService, ROUTING_KEYS } from '@nestlancer/queue';
+import { QueueConsumerService } from '@nestlancer/queue';
 import { CdnWorkerService } from '../services/cdn-worker.service';
 import { CdnJob } from '../interfaces/cdn-job.interface';
 
 @Injectable()
-export class CdnConsumer extends QueueConsumerService {
+export class CdnConsumer {
     private readonly logger = new Logger(CdnConsumer.name);
 
-    constructor(private readonly cdnWorkerService: CdnWorkerService) {
-        super();
-    }
+    constructor(
+        private readonly cdnWorkerService: CdnWorkerService,
+        private readonly queueConsumer: QueueConsumerService,
+    ) { }
 
     async onModuleInit() {
-        await this.setupConsumer('cdn.queue', ROUTING_KEYS.CDN_INVALIDATE, (msg) => this.handleMessage(msg));
+        await this.queueConsumer.consume('cdn.queue', async (msg: ConsumeMessage) => this.handleMessage(msg));
     }
 
     private async handleMessage(msg: ConsumeMessage) {
@@ -38,7 +39,8 @@ export class CdnConsumer extends QueueConsumerService {
                 default:
                     this.logger.warn(`Unknown CDN job type: ${job.type}`);
             }
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`Error processing CDN job ${job.type}: ${error.message}`, error.stack);
             // Re-throw to allow nack/dlq handled by base class
             throw error;

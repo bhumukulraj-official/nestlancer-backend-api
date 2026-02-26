@@ -5,3 +5,4 @@ export * from './formatters/json.formatter';
 export * from './formatters/pretty.formatter';
 export * from './transports/console.transport';
 export * from './transports/file.transport';
+export { NestlancerLoggerService as LoggerService } from './logger.service';

@@ -1,5 +1,5 @@
 import { appendFileSync, mkdirSync, existsSync, statSync, renameSync } from 'fs';
-import { join, dirname } from 'path';
+import { dirname } from 'path';
 
 export interface FileTransportOptions {
     filePath: string;

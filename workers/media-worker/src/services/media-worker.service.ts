@@ -8,6 +8,8 @@ import { LoggerService } from '@nestlancer/logger';
 import { MediaJob } from '../interfaces/media-job.interface';
 import { MediaStatus } from '@prisma/client';
 
+import { ConfigService } from '@nestjs/config';
+
 @Injectable()
 export class MediaWorkerService {
     constructor(
@@ -17,6 +19,7 @@ export class MediaWorkerService {
         private readonly thumbnailGenerator: ThumbnailGeneratorProcessor,
         private readonly prisma: PrismaWriteService,
         private readonly logger: LoggerService,
+        private readonly configService: ConfigService,
     ) { }
 
     async processJob(job: MediaJob): Promise<void> {
@@ -48,7 +51,8 @@ export class MediaWorkerService {
             // 5. Context-specific processing
             let variants: Record<string, string> = {};
             if (job.contentType.startsWith('image/')) {
-                variants = await this.imageResize.process(job.s3Key, 'nestlancer-private'); // Should be dynamic
+                const privateBucket = this.configService.get<string>('storage.privateBucket') || 'nestlancer-private';
+                variants = await this.imageResize.process(job.s3Key, privateBucket);
             }
 
             // 6. Final Status Update

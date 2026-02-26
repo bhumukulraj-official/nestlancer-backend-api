@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ResourceNotFoundException } from '@nestlancer/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as handlebars from 'handlebars';
@@ -45,7 +46,7 @@ export class EmailRendererService {
     async render(templateName: string, data: any): Promise<string> {
         const template = this.templates.get(templateName);
         if (!template) {
-            throw new Error(`Template ${templateName} not found`);
+            throw new ResourceNotFoundException('EmailTemplate', templateName);
         }
 
         const body = template(data);

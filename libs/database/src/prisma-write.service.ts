@@ -8,9 +8,9 @@ export class PrismaWriteService extends PrismaClient implements OnModuleInit, On
 
   constructor() {
     super({
-      datasourceUrl: process.env.DATABASE_URL,
+      datasources: { db: { url: process.env.DATABASE_URL } },
       log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
-    });
+    } as any);
   }
 
   async onModuleInit(): Promise<void> {

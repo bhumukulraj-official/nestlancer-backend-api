@@ -8,11 +8,11 @@ export class BatchCollectorService implements OnModuleInit, OnModuleDestroy {
     private readonly pathSubject = new Subject<string>();
     private readonly batchWindowMs: number;
     private readonly maxBatchSize: number;
-    private flushCallback: (paths: string[]) => Promise<void>;
+    private flushCallback!: (paths: string[]) => Promise<void>;
 
     constructor(private readonly configService: ConfigService) {
-        this.batchWindowMs = this.configService.get<number>('cdn.batchWindowMs');
-        this.maxBatchSize = this.configService.get<number>('cdn.maxBatchSize');
+        this.batchWindowMs = this.configService.get<number>('cdn.batchWindowMs') || 10000;
+        this.maxBatchSize = this.configService.get<number>('cdn.maxBatchSize') || 30;
     }
 
     onModuleInit() {
@@ -30,7 +30,8 @@ export class BatchCollectorService implements OnModuleInit, OnModuleDestroy {
                     if (this.flushCallback) {
                         try {
                             await this.flushCallback(chunk);
-                        } catch (error) {
+                        } catch (e) {
+                            const error = e as Error;
                             this.logger.error(`Failed to flush batch: ${error.message}`, error.stack);
                         }
                     }

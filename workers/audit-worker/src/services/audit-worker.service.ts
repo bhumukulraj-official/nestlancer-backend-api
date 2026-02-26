@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { BatchBufferService } from './batch-buffer.service';
 import { AuditBatchInsertProcessor } from '../processors/audit-batch-insert.processor';
-import { LoggerService } from '@nestlancer/logger';
+import { Logger } from '@nestjs/common';
 import { MetricsService } from '@nestlancer/metrics';
 import { AuditEntry } from '../interfaces/audit-job.interface';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +14,7 @@ export class AuditWorkerService implements OnModuleInit, OnModuleDestroy {
     constructor(
         private readonly bufferService: BatchBufferService,
         private readonly processor: AuditBatchInsertProcessor,
-        private readonly logger: LoggerService,
+        private readonly logger: Logger,
         private readonly metrics: MetricsService,
         private readonly configService: ConfigService,
     ) {
@@ -34,9 +34,9 @@ export class AuditWorkerService implements OnModuleInit, OnModuleDestroy {
     }
 
     async handleAuditEntry(entry: AuditEntry): Promise<void> {
-        this.metrics.increment('audit.entries_received');
+        this.metrics.incrementCounter('audit.entries_received');
         const shouldFlush = this.bufferService.add(entry);
-        this.metrics.gauge('audit.buffer_size', this.bufferService.size());
+        this.metrics.setGauge('audit.buffer_size', this.bufferService.size());
 
         if (shouldFlush) {
             await this.flush();
@@ -53,9 +53,9 @@ export class AuditWorkerService implements OnModuleInit, OnModuleDestroy {
         await this.processor.insertBatch(entries);
         const duration = Date.now() - startTime;
 
-        this.metrics.increment('audit.batch_inserted', entries.length);
-        this.metrics.timing('audit.flush_duration', duration);
-        this.metrics.gauge('audit.buffer_size', this.bufferService.size());
+        this.metrics.incrementCounter('audit.batch_inserted', undefined, entries.length);
+        this.metrics.observeHistogram('audit.flush_duration', duration);
+        this.metrics.setGauge('audit.buffer_size', this.bufferService.size());
     }
 
     private startFlushTimer() {

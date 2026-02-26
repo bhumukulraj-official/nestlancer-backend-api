@@ -76,6 +76,16 @@ export class MetricsService implements OnModuleInit {
     }
   }
 
+  increment(name: string, labels?: Record<string, string>, value: number = 1): void {
+    this.incrementCounter(name, labels, value);
+  }
+  gauge(name: string, value: number, labels?: Record<string, string>): void {
+    this.setGauge(name, value, labels);
+  }
+  timing(name: string, value: number, labels?: Record<string, string>): void {
+    this.observeHistogram(name, value, labels);
+  }
+
   async getMetrics(): Promise<string> {
     return this.registry.metrics();
   }

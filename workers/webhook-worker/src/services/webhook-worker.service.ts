@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { ResourceNotFoundException } from '@nestlancer/common';
 import { WebhookHandler } from '../interfaces/webhook-handler.interface';
 import { PaymentCapturedHandler } from '../handlers/razorpay/payment-captured.handler';
 import { PaymentFailedHandler } from '../handlers/razorpay/payment-failed.handler';
@@ -32,7 +33,7 @@ export class WebhookWorkerService implements OnModuleInit {
         if (handler) {
             await handler.handle(payload);
         } else {
-            throw new Error(`No handler found for provider: ${provider}, eventType: ${eventType}`);
+            throw new ResourceNotFoundException('WebhookHandler', `${provider}:${eventType}`);
         }
     }
 }

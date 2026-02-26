@@ -10,8 +10,8 @@ export class CloudFrontInvalidationService implements CdnProvider {
     private readonly distributionId: string;
 
     constructor(private readonly configService: ConfigService) {
-        const region = this.configService.get<string>('cdn.cloudfront.region');
-        this.distributionId = this.configService.get<string>('cdn.cloudfront.distributionId');
+        const region = this.configService.get<string>('cdn.cloudfront.region') || 'ap-south-1';
+        this.distributionId = this.configService.get<string>('cdn.cloudfront.distributionId') || '';
         this.client = new CloudFrontClient({ region });
     }
 
@@ -37,7 +37,8 @@ export class CloudFrontInvalidationService implements CdnProvider {
                 status: response.Invalidation?.Status || 'pending',
                 paths,
             };
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`CloudFront invalidation failed: ${error.message}`, error.stack);
             throw error;
         }

@@ -35,7 +35,8 @@ export class CdnWorkerService implements OnModuleInit {
         try {
             const result = await this.provider.invalidate(paths);
             this.logger.log(`Successfully invalidated batch. Invalidation ID: ${result.id}`);
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`Failed to invalidate batch: ${error.message}`, error.stack);
             throw error;
         }
@@ -46,7 +47,8 @@ export class CdnWorkerService implements OnModuleInit {
         try {
             await this.provider.purgeAll();
             this.logger.log('Successfully purged all cache');
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`Failed to purge all cache: ${error.message}`, error.stack);
             throw error;
         }

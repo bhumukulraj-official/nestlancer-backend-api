@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { QueuePublisherService, DlqService } from '@nestlancer/queue';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class EmailRetryService {
@@ -10,7 +9,6 @@ export class EmailRetryService {
     constructor(
         private readonly publisher: QueuePublisherService,
         private readonly dlqService: DlqService,
-        private readonly configService: ConfigService,
     ) { }
 
     async handleFailure(queueName: string, message: any, error: any): Promise<void> {
@@ -31,10 +29,11 @@ export class EmailRetryService {
 
         const updatedMessage = { ...message, retryCount };
 
-        // Simulate delay for retry (Not recommended for high volume, but fits simple requirement)
-        setTimeout(async () => {
-            await this.publisher.sendToQueue(queueName, updatedMessage);
-        }, delay);
+        // Re-queue the message. We pass x-delay header for RabbitMQ delayed message plugin.
+        // This avoids holding the message in Node.js memory (which causes message loss on restarts).
+        await this.publisher.sendToQueue(queueName, updatedMessage, {
+            headers: { 'x-delay': delay },
+        });
     }
 
     private getDelayForRetry(retryCount: number): number {

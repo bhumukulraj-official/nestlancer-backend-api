@@ -2,12 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuditWorkerService } from '../../src/services/audit-worker.service';
 import { BatchBufferService } from '../../src/services/batch-buffer.service';
 import { AuditBatchInsertProcessor } from '../../src/processors/audit-batch-insert.processor';
-import { LoggerService } from '@nestlancer/logger';
+import { Logger } from '@nestjs/common';
 import { MetricsService } from '@nestlancer/metrics';
 import { ConfigService } from '@nestjs/config';
 
 describe('AuditWorkerService', () => {
     let service: AuditWorkerService;
+    let logger: jest.Mocked<Logger>;
     let bufferService: BatchBufferService;
     let processor: AuditBatchInsertProcessor;
 
@@ -30,7 +31,7 @@ describe('AuditWorkerService', () => {
                     },
                 },
                 {
-                    provide: LoggerService,
+                    provide: Logger,
                     useValue: {
                         log: jest.fn(),
                         debug: jest.fn(),
@@ -41,9 +42,9 @@ describe('AuditWorkerService', () => {
                 {
                     provide: MetricsService,
                     useValue: {
-                        increment: jest.fn(),
-                        gauge: jest.fn(),
-                        timing: jest.fn(),
+                        incrementCounter: jest.fn(),
+                        setGauge: jest.fn(),
+                        observeHistogram: jest.fn(),
                     },
                 },
                 {

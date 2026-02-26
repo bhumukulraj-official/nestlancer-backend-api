@@ -31,7 +31,7 @@ import { WeeklyReportCron } from './cron/weekly-report.cron';
         ScheduleModule.forRoot(),
         DatabaseModule,
         CacheModule,
-        QueueModule.forConsumer('analytics'),
+        QueueModule.forRoot(),
         LoggerModule,
         MetricsModule,
         TracingModule,

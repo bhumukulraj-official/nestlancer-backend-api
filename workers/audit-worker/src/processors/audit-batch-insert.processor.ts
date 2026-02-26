@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaWriteService } from '@nestlancer/database';
-import { LoggerService } from '@nestlancer/logger';
+import { Logger } from '@nestjs/common';
 import { AuditEntry } from '../interfaces/audit-job.interface';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
@@ -11,7 +11,7 @@ export class AuditBatchInsertProcessor {
 
     constructor(
         private readonly prisma: PrismaWriteService,
-        private readonly logger: LoggerService,
+        private readonly logger: Logger,
         private readonly configService: ConfigService,
     ) {
         this.fallbackFilePath = this.configService.get<string>('audit.fallbackFilePath', '/tmp/audit-fallback.jsonl');
@@ -51,7 +51,7 @@ export class AuditBatchInsertProcessor {
         } catch (err) {
             this.logger.error(`CRITICAL: Failed to write to fallback file: ${err.message}`);
             // At this point, we might want to log the data directly to console as a last resort
-            console.error('Audit fallback data:', data);
+            this.logger.error('Audit fallback data:', data);
         }
     }
 }

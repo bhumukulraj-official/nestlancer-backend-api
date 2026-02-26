@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { PrismaWriteService } from '@nestlancer/database';
 import { LeaderElectionService } from './leader-election.service';
 import { OutboxPublisherService } from './outbox-publisher.service';
@@ -18,7 +18,7 @@ export class OutboxPollerService {
         private readonly publisher: OutboxPublisherService,
         private readonly configService: ConfigService,
     ) {
-        this.batchSize = this.configService.get<number>('outbox.batchSize');
+        this.batchSize = this.configService.get<number>('outbox.batchSize') || 100;
     }
 
     @Cron('*/2 * * * * *') // Every 2 seconds
@@ -31,7 +31,8 @@ export class OutboxPollerService {
         this.isProcessing = true;
         try {
             await this.processBatch();
-        } catch (error) {
+        } catch (e) {
+            const error = e as Error;
             this.logger.error(`Error in outbox polling loop: ${error.message}`, error.stack);
         } finally {
             this.isProcessing = false;
@@ -63,16 +64,17 @@ export class OutboxPollerService {
                         publishedAt: new Date(),
                     },
                 });
-            } catch (error) {
+            } catch (e) {
+                const error = e as Error;
                 this.logger.error(`Failed to process outbox event ${event.id}: ${error.message}`);
 
                 // 4. Update retry count or mark as failed
                 await this.prisma.outboxEvent.update({
                     where: { id: event.id },
                     data: {
-                        retryCount: { increment: 1 },
-                        lastError: error.message,
-                        status: event.retryCount >= 5 ? OutboxEventStatus.FAILED : OutboxEventStatus.PENDING,
+                        retries: { increment: 1 },
+                        error: error.message,
+                        status: event.retries >= 5 ? OutboxEventStatus.FAILED : OutboxEventStatus.PENDING,
                     },
                 });
             }

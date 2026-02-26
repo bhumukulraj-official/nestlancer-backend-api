@@ -4,14 +4,14 @@ import * as amqp from 'amqplib';
 @Injectable()
 export class QueuePublisherService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(QueuePublisherService.name);
-  private connection!: amqp.Connection;
+  private connection!: any;
   private channel!: amqp.Channel;
 
-  constructor(@Inject('QUEUE_OPTIONS') private readonly options: { url?: string }) {}
+  constructor(@Inject('QUEUE_OPTIONS') private readonly options: { url?: string }) { }
 
   async onModuleInit(): Promise<void> {
     const url = this.options.url || process.env.RABBITMQ_URL || 'amqp://localhost:5672';
-    this.connection = await amqp.connect(url);
+    this.connection = (await amqp.connect(url)) as any;
     this.channel = await this.connection.createChannel();
     this.logger.log('Queue publisher connected');
   }
@@ -31,8 +31,8 @@ export class QueuePublisherService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async sendToQueue(queue: string, payload: unknown): Promise<void> {
+  async sendToQueue(queue: string, payload: unknown, options?: amqp.Options.Publish): Promise<void> {
     const message = Buffer.from(JSON.stringify(payload));
-    this.channel.sendToQueue(queue, message, { persistent: true, contentType: 'application/json' });
+    this.channel.sendToQueue(queue, message, { persistent: true, contentType: 'application/json', ...options });
   }
 }

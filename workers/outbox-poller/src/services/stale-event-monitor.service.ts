@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { PrismaWriteService } from '@nestlancer/database';
 import { ConfigService } from '@nestjs/config';
 import { OutboxEventStatus } from '../interfaces/outbox-event.interface';
@@ -13,7 +13,7 @@ export class StaleEventMonitorService {
         private readonly prisma: PrismaWriteService,
         private readonly configService: ConfigService,
     ) {
-        this.staleThresholdMinutes = this.configService.get<number>('outbox.staleThresholdMinutes');
+        this.staleThresholdMinutes = this.configService.get<number>('outbox.staleThresholdMinutes') || 60;
     }
 
     @Cron('0 */5 * * * *') // Every 5 minutes
