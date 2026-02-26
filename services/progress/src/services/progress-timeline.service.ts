@@ -11,10 +11,8 @@ export class ProgressTimelineService {
         const { page = 1, limit = 20 } = query;
         const skip = (page - 1) * limit;
 
-        // A real implementation would UNION across progress entries, milestones, deliverables
-        // For now, we query progress entries which acts as the aggregated log.
         const entries = await this.prismaRead.progressEntry.findMany({
-            where: { projectId, visibility: 'CLIENT_VISIBLE' },
+            where: { projectId, visibility: 'client' },
             skip,
             take: limit,
             orderBy: { createdAt: 'desc' },
@@ -26,7 +24,7 @@ export class ProgressTimelineService {
         });
 
         const total = await this.prismaRead.progressEntry.count({
-            where: { projectId, visibility: 'CLIENT_VISIBLE' }
+            where: { projectId, visibility: 'client' }
         });
 
         const timeline: TimelineEntry[] = entries.map(entry => ({

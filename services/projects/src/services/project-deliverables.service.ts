@@ -19,12 +19,26 @@ export class ProjectDeliverablesService {
 
         if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
 
-        // In full implementation, fetch deliverables for project
+        const milestones = await this.prismaRead.milestone.findMany({
+            where: { projectId }
+        });
+
+        const milestoneIds = milestones.map(m => m.id);
+
+        const items = await this.prismaRead.deliverable.findMany({
+            where: { milestoneId: { in: milestoneIds } },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        const total = items.length;
+        const completed = items.filter(i => i.status === 'APPROVED').length;
+        const pending = items.filter(i => i.status === 'PENDING' || i.status === 'IN_PROGRESS').length;
+
         return {
-            total: 0,
-            completed: 0,
-            pending: 0,
-            items: []
+            total,
+            completed,
+            pending,
+            items
         };
     }
 

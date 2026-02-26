@@ -30,3 +30,20 @@ model Notification {
   @@index([userId])
   @@index([read])
 }
+
+model NotificationTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  eventType   String
+  titleTemplate   String
+  messageTemplate String
+  channels    Json
+  priority    NotificationPriority @default(NORMAL)
+  isActive    Boolean  @default(true)
+  variables   Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventType])
+  @@index([name])
+}

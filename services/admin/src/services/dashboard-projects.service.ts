@@ -1,20 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { PrismaReadService } from '@nestlancer/database';
 import { ProjectMetrics } from '../interfaces/dashboard.interface';
 
 @Injectable()
 export class DashboardProjectsService {
-    constructor(private readonly httpService: HttpService) { }
+    constructor(
+        private readonly httpService: HttpService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     async getProjectMetrics(): Promise<ProjectMetrics> {
-        // In actual implementation, makes HTTP call to Projects service
+        const total = await this.prismaRead.project.count();
+        const active = await this.prismaRead.project.count({ where: { status: 'IN_PROGRESS' } });
+        const completed = await this.prismaRead.project.count({ where: { status: 'COMPLETED' } });
+        const onHold = await this.prismaRead.project.count({ where: { status: 'ON_HOLD' } });
+        const cancelled = await this.prismaRead.project.count({ where: { status: 'CANCELLED' } });
+
         return {
-            total: 150,
+            total,
             byStatus: {
-                ACTIVE: 45,
-                COMPLETED: 80,
-                ON_HOLD: 10,
-                CANCELLED: 15,
+                ACTIVE: active,
+                COMPLETED: completed,
+                ON_HOLD: onHold,
+                CANCELLED: cancelled,
             },
             avgCompletionTimeDays: 42,
             onTimeRate: 92.5,
@@ -22,16 +31,22 @@ export class DashboardProjectsService {
     }
 
     async getProjectOverview(period: string): Promise<any> {
+        const active = await this.prismaRead.project.count({ where: { status: 'IN_PROGRESS' } });
+        const completed = await this.prismaRead.project.count({ where: { status: 'COMPLETED' } });
+        const pendingPayment = await this.prismaRead.project.count({ where: { status: 'PENDING_PAYMENT' } });
+        const review = await this.prismaRead.project.count({ where: { status: 'REVIEW' } });
+        const onHold = await this.prismaRead.project.count({ where: { status: 'ON_HOLD' } });
+
         return {
-            active: 45,
-            completed: 12,
-            trend: { current: 45, previous: 42, change: 7.14, trend: 'up' },
+            active,
+            completed,
+            trend: { current: active, previous: active, change: 0, trend: 'up' },
             byStatus: {
-                inProgress: 45,
-                pendingPayment: 8,
-                review: 5,
-                completed: 12,
-                onHold: 3,
+                inProgress: active,
+                pendingPayment,
+                review,
+                completed,
+                onHold,
             },
         };
     }

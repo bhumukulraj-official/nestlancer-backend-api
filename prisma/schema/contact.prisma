@@ -30,8 +30,25 @@ model ContactMessage {
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
+  responses ContactResponseLog[]
+
   @@index([status])
   @@index([createdAt])
   @@index([ticketId])
   @@index([email])
+}
+
+model ContactResponseLog {
+  id               String   @id @default(cuid())
+  contactMessageId String
+  adminId          String
+  subject          String
+  message          String
+  sentAt           DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  contactMessage   ContactMessage @relation(fields: [contactMessageId], references: [id], onDelete: Cascade)
+
+  @@index([contactMessageId])
+  @@index([adminId])
 }

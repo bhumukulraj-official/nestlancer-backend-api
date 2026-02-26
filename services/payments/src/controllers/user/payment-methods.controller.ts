@@ -1,6 +1,7 @@
-import { Controller, Post, Get, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Patch, Body, Param } from '@nestjs/common';
 import { Auth, CurrentUser } from '@nestlancer/auth-lib';
 import { PaymentMethodsService } from '../../services/payment-methods.service';
+import { AddPaymentMethodDto } from '../../dto/add-payment-method.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Payment Methods')
@@ -21,9 +22,9 @@ export class PaymentMethodsController {
     @ApiOperation({ summary: 'Add a new payment method' })
     async addMethod(
         @CurrentUser('userId') userId: string,
-        @Body() data: any, // Placeholder for DTO
+        @Body() dto: AddPaymentMethodDto,
     ) {
-        const result = await this.paymentMethodsService.addMethod(userId, data);
+        const result = await this.paymentMethodsService.addMethod(userId, dto);
         return { status: 'success', data: result };
     }
 
@@ -35,5 +36,26 @@ export class PaymentMethodsController {
     ) {
         await this.paymentMethodsService.removeMethod(userId, methodId);
         return { status: 'success' };
+    }
+
+    @Patch(':id/default')
+    @ApiOperation({ summary: 'Set a payment method as default' })
+    async setDefault(
+        @CurrentUser('userId') userId: string,
+        @Param('id') methodId: string,
+    ) {
+        const result = await this.paymentMethodsService.setDefaultMethod(userId, methodId);
+        return { status: 'success', data: result };
+    }
+
+    @Patch(':id/nickname')
+    @ApiOperation({ summary: 'Update payment method nickname' })
+    async updateNickname(
+        @CurrentUser('userId') userId: string,
+        @Param('id') methodId: string,
+        @Body('nickname') nickname: string,
+    ) {
+        const result = await this.paymentMethodsService.updateNickname(userId, methodId, nickname);
+        return { status: 'success', data: result };
     }
 }

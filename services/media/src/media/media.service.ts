@@ -92,9 +92,14 @@ export class MediaService {
     async directUpload(userId: string, dto: DirectUploadDto, file: Express.Multer.File) {
         const key = this.storageService.generateStorageKey(userId, file.originalname);
 
-        // Simulate direct upload
-        // using multi-part or direct put via StorageService if it was implemented fully with buffer
-        // For scaffolding, we just mark it READY.
+        const bucket = dto.projectId ? 'nestlancer-private' : 'nestlancer-public';
+
+        await this.storageService.upload(
+            bucket,
+            key,
+            file.buffer,
+            file.mimetype
+        );
 
         const media = await this.prismaWrite.media.create({
             data: {

@@ -47,11 +47,9 @@ export class DeliverablesService {
         // Generate download URLs dynamically for each attachment
         for (const d of deliverables) {
             if (d.attachments && Array.isArray(d.attachments)) {
-                // Mocking signed url generation via StorageService
                 const mediaUrls = await Promise.all(d.attachments.map(async (mediaId) => {
                     return {
-                        mediaId,
-                        url: await this.storage.getSignedUrl(`deliverables/${mediaId}`), // Example proxy generated URL
+                        url: await this.storage.getSignedUrl({ bucket: 'nestlancer-private', key: `deliverables/${mediaId}`, expiresIn: 3600 }),
                     };
                 }));
                 (d as any).mediaUrls = mediaUrls;

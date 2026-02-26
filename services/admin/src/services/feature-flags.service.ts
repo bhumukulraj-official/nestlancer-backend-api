@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { CacheService } from '@nestlancer/cache';
+import { QueueProducerService } from '@nestlancer/queue';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -10,6 +11,7 @@ export class FeatureFlagsService {
         private readonly prismaWrite: PrismaWriteService,
         private readonly prismaRead: PrismaReadService,
         private readonly cacheService: CacheService,
+        private readonly queueService: QueueProducerService,
     ) { }
 
     async findAll() {
@@ -31,8 +33,11 @@ export class FeatureFlagsService {
 
         await this.cacheService.del(`${this.CACHE_PREFIX}${flag}`);
 
-        // In actual implementation, we'd trigger a PUB/SUB event 
-        // to all services to update their in-memory flag caches immediately.
+        await this.queueService.publish('events', 'FEATURE_FLAG_UPDATED', {
+            flag,
+            enabled,
+            timestamp: new Date().toISOString()
+        });
 
         return feature;
     }

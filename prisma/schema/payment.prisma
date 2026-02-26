@@ -62,3 +62,28 @@ model Refund {
 
   @@index([paymentId])
 }
+
+model SavedPaymentMethod {
+  id              String   @id @default(cuid())
+  userId          String
+  provider        String   @default("razorpay")
+  type            String   // card, upi, netbanking, wallet
+  tokenId         String?  // Provider token for saved method
+  last4           String?  // Last 4 digits for cards
+  cardBrand       String?  // visa, mastercard, etc.
+  cardExpMonth    Int?
+  cardExpYear     Int?
+  upiVpa          String?  // UPI VPA handle
+  bankName        String?  // For netbanking
+  walletProvider  String?  // paytm, phonepe, etc.
+  nickname        String?  // User-defined name
+  isDefault       Boolean  @default(false)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tokenId])
+  @@index([userId])
+}

@@ -27,19 +27,20 @@ model User {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
-  preferences      UserPreference?
-  sessions         Session[]
-  requests         ProjectRequest[]
-  clientProjects   Project[]       @relation("ClientProjects")
-  adminProjects    Project[]       @relation("AdminProjects")
-  payments         Payment[]
-  messages         Message[]
-  notifications    Notification[]
-  mediaUploaded    Media[]
-  blogPosts        BlogPost[]
-  blogComments     BlogComment[]
-  auditLogs        AuditLog[]
-  systemConfigs    SystemConfig[]
+  preferences         UserPreference?
+  sessions            Session[]
+  requests            ProjectRequest[]
+  clientProjects      Project[]       @relation("ClientProjects")
+  adminProjects       Project[]       @relation("AdminProjects")
+  payments            Payment[]
+  savedPaymentMethods SavedPaymentMethod[]
+  messages            Message[]
+  notifications       Notification[]
+  mediaUploaded       Media[]
+  blogPosts           BlogPost[]
+  blogComments        BlogComment[]
+  auditLogs           AuditLog[]
+  systemConfigs       SystemConfig[]
 
   @@index([email])
   @@index([role])

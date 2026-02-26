@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { QueueProducerService } from '@nestlancer/queue';
+import { StorageService } from '@nestlancer/storage';
 import { CreateBackupDto } from '../dto/create-backup.dto';
 import { RestoreBackupDto } from '../dto/restore-backup.dto';
 
@@ -10,6 +11,7 @@ export class BackupsService {
         private readonly prismaWrite: PrismaWriteService,
         private readonly prismaRead: PrismaReadService,
         private readonly queueService: QueueProducerService,
+        private readonly storageService: StorageService,
     ) { }
 
     async createBackup(dto: CreateBackupDto, adminId: string) {
@@ -72,8 +74,13 @@ export class BackupsService {
         if (backup.status !== 'COMPLETED' || !backup.s3Key) {
             throw new NotFoundException('Backup not ready or file missing');
         }
-        // Generate signed S3 URL here
-        const url = `https://mock-s3-bucket.s3.amazonaws.com/${backup.s3Key}?signed=true`;
+
+        const url = await this.storageService.getSignedUrl({
+            bucket: 'nestlancer-private',
+            key: backup.s3Key,
+            expiresIn: 3600
+        });
+
         return { downloadUrl: url };
     }
 }

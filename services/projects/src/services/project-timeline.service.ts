@@ -13,27 +13,28 @@ export class ProjectTimelineService {
 
         if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
 
-        // In a real implementation we'd fetch from an event/history table
-        // For now we mock the timeline response based on standard status
-        const events = [
-            {
-                id: 'evt1',
-                type: 'projectCreated',
-                title: 'Project Created',
-                description: 'Project created from accepted quote',
-                timestamp: project.createdAt,
-            }
-        ];
+        const progressEntries = await this.prismaRead.progressEntry.findMany({
+            where: { projectId, visibility: 'client' },
+            orderBy: { createdAt: 'desc' }
+        });
 
-        if (project.status !== 'CREATED' && project.status !== 'PENDING_PAYMENT') {
-            events.push({
-                id: 'evt2',
-                type: 'statusChange',
-                title: 'Project Started',
-                description: 'Status changed to In Progress',
-                timestamp: project.updatedAt,
-            });
-        }
+        const events = progressEntries.map(entry => ({
+            id: entry.id,
+            type: entry.type,
+            title: entry.title,
+            description: entry.description,
+            timestamp: entry.createdAt,
+        }));
+
+        events.push({
+            id: `evt-creation-${project.id}`,
+            type: 'projectCreated',
+            title: 'Project Created',
+            description: 'Project created from accepted quote',
+            timestamp: project.createdAt,
+        });
+
+        events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
         return {
             projectId,

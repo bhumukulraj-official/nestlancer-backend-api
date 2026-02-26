@@ -42,8 +42,22 @@ export class EmailTemplatesAdminController {
     @SuccessResponse('Template previewed')
     async preview(@Param('id') id: string) {
         const template = await this.emailService.findOne(id);
-        // Real implementation would compile handlebars with mock data here
-        return { html: template.htmlBody, text: template.textBody };
+
+        let html = template.htmlBody;
+        let text = template.textBody;
+
+        try {
+            const Handlebars = require('handlebars');
+            const mockData = { name: 'John Doe', action_url: 'https://example.com' };
+            const compiledHtml = Handlebars.compile(template.htmlBody);
+            const compiledText = Handlebars.compile(template.textBody);
+            html = compiledHtml(mockData);
+            text = compiledText(mockData);
+        } catch (e) {
+            // Fallback if compilation fails
+        }
+
+        return { html, text };
     }
 
     @Post(':id/test')

@@ -8,16 +8,23 @@ enum PortfolioStatus {
   ARCHIVED
 }
 
+enum PortfolioVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
 model PortfolioItem {
-  id                String            @id @default(cuid())
-  slug              String            @unique
+  id                String               @id @default(cuid())
+  slug              String               @unique
   title             String
   shortDescription  String
   fullDescription   String
-  contentFormat     String            @default("markdown")
+  contentFormat     String               @default("markdown")
   categoryId        String
-  status            PortfolioStatus   @default(DRAFT)
-  featured          Boolean           @default(false)
+  status            PortfolioStatus      @default(DRAFT)
+  visibility        PortfolioVisibility  @default(PUBLIC)
+  featured          Boolean              @default(false)
   clientName        String?
   clientLogo        String?
   clientIndustry    String?
@@ -33,13 +40,14 @@ model PortfolioItem {
   publishedAt       DateTime?
   completedAt       DateTime?
   deletedAt         DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
-  category          PortfolioCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category          PortfolioCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 
   @@index([status])
   @@index([categoryId])
+  @@index([visibility])
 }
 
 model PortfolioCategory {

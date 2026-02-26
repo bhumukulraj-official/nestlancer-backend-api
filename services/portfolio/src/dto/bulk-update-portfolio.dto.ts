@@ -1,9 +1,11 @@
-import { IsEnum, IsArray, IsUUID } from 'class-validator';
+import { IsEnum, IsArray, IsString } from 'class-validator';
 
 export enum BulkOperation {
     PUBLISH = 'PUBLISH',
     ARCHIVE = 'ARCHIVE',
     DELETE = 'DELETE',
+    FEATURE = 'FEATURE',
+    UNFEATURE = 'UNFEATURE',
 }
 
 export class BulkUpdatePortfolioDto {
@@ -11,6 +13,6 @@ export class BulkUpdatePortfolioDto {
     operation: BulkOperation;
 
     @IsArray()
-    @IsUUID('4', { each: true })
+    @IsString({ each: true })
     ids: string[];
 }

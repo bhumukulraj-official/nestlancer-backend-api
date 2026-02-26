@@ -1,37 +1,43 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { PrismaReadService } from '@nestlancer/database';
 import { RevenueQueryDto } from '../dto/revenue-query.dto';
 import { RevenueData } from '../interfaces/dashboard.interface';
 
 @Injectable()
 export class DashboardRevenueService {
-    constructor(private readonly httpService: HttpService) { }
+    constructor(
+        private readonly httpService: HttpService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     async getRevenue(query: RevenueQueryDto): Promise<RevenueData> {
-        // In actual implementation, makes HTTP call to Payments service
+        const sumResult = await this.prismaRead.payment.aggregate({
+            where: { status: 'COMPLETED' },
+            _sum: { amount: true }
+        });
+        const total = sumResult._sum.amount || 0;
+
         return {
-            total: 1250000,
+            total,
             currency: 'INR',
-            trends: { current: 1250000, previous: 1100000, change: 13.64, trend: 'up' },
-            byCategory: [
-                { category: 'Web Development', amount: 800000 },
-                { category: 'Mobile App', amount: 450000 },
-            ],
-            chartData: [
-                { date: '2024-01-01', amount: 1100000 },
-                { date: '2024-02-01', amount: 1250000 },
-            ],
+            trends: { current: total, previous: total, change: 0, trend: 'up' },
+            byCategory: [],
+            chartData: [],
         };
     }
 
     async getRevenueOverview(period: string): Promise<any> {
+        const sumResult = await this.prismaRead.payment.aggregate({
+            where: { status: 'COMPLETED' },
+            _sum: { amount: true }
+        });
+        const total = sumResult._sum.amount || 0;
+
         return {
-            total: 125000,
-            trend: { current: 125000, previous: 110000, change: 13.64, trend: 'up' },
-            chartData: [
-                { month: '2024-01', revenue: 110000 },
-                { month: '2024-02', revenue: 125000 },
-            ],
+            total,
+            trend: { current: total, previous: total, change: 0, trend: 'up' },
+            chartData: [],
         };
     }
 }

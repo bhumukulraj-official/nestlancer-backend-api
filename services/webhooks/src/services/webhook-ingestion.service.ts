@@ -5,7 +5,27 @@ import { RazorpayProvider } from '../providers/razorpay.provider';
 import { CloudflareProvider } from '../providers/cloudflare.provider';
 import { WebhookProvider } from '../interfaces/webhook-provider.interface';
 import { WebhookEvent } from '../interfaces/webhook-event.interface';
-import { WebhookLogStatus } from '@prisma/client';
+
+// Using the enum values from the schema
+const WebhookLogStatus = {
+    PENDING: 'PENDING',
+    PROCESSED: 'PROCESSED',
+    FAILED: 'FAILED',
+} as const;
+
+interface StoredWebhookLog {
+    id: string;
+    provider: string;
+    eventId?: string | null;
+    eventType: string;
+    payload: unknown;
+    headers?: Record<string, string> | null;
+    status: string;
+    error?: string | null;
+    processedAt?: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+}
 
 @Injectable()
 export class WebhookIngestionService {
@@ -36,7 +56,7 @@ export class WebhookIngestionService {
             });
         }
 
-        let payloadUrlDecoded: Record<string, any>;
+        let payloadUrlDecoded: Record<string, unknown>;
         try {
             payloadUrlDecoded = JSON.parse(rawBody.toString('utf8'));
         } catch (e) {
@@ -51,10 +71,11 @@ export class WebhookIngestionService {
         const webhookLog = await this.prismaWrite.webhookLog.create({
             data: {
                 provider: providerId,
-                event: event.eventType,
+                eventId: event.eventId,
+                eventType: event.eventType,
                 payload: payloadUrlDecoded,
-                headers: headers as any,
-                status: WebhookLogStatus.RECEIVED,
+                headers: headers,
+                status: WebhookLogStatus.PENDING,
             },
         });
 
@@ -81,16 +102,19 @@ export class WebhookIngestionService {
         }
     }
 
-    async processStoredWebhook(webhookLog: any): Promise<void> {
+    async processStoredWebhook(webhookLog: StoredWebhookLog): Promise<void> {
         const provider = this.providers.get(webhookLog.provider);
         if (!provider) {
-            throw new Error(`Provider ${webhookLog.provider} not supported`);
+            throw new BadRequestException(`Provider ${webhookLog.provider} not supported`);
         }
 
         let event: WebhookEvent;
         try {
-            let payloadData = typeof webhookLog.payload === 'string' ? JSON.parse(webhookLog.payload) : webhookLog.payload;
-            event = provider.parseEvent(payloadData, (webhookLog.headers as Record<string, string>) || {});
+            const payloadData = typeof webhookLog.payload === 'string'
+                ? JSON.parse(webhookLog.payload)
+                : webhookLog.payload;
+            const headersData = webhookLog.headers || {};
+            event = provider.parseEvent(payloadData as Record<string, unknown>, headersData);
         } catch (e) {
             this.logger.error('Failed to parse event from payload', e);
             throw e;
@@ -118,5 +142,25 @@ export class WebhookIngestionService {
             });
             throw err;
         }
+    }
+
+    async retryFailedWebhooks(limit: number = 10): Promise<number> {
+        const failedWebhooks = await this.prismaWrite.webhookLog.findMany({
+            where: { status: WebhookLogStatus.FAILED },
+            orderBy: { createdAt: 'asc' },
+            take: limit,
+        });
+
+        let processedCount = 0;
+        for (const webhook of failedWebhooks) {
+            try {
+                await this.processStoredWebhook(webhook as StoredWebhookLog);
+                processedCount++;
+            } catch (err) {
+                this.logger.error(`Retry failed for webhook ${webhook.id}`, err);
+            }
+        }
+
+        return processedCount;
     }
 }

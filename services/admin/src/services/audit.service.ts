@@ -1,7 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { QueryAuditDto } from '../dto/query-audit.dto';
-import { AuditLogResponseDto } from '../dto/audit-response.dto';
+
+interface AuditQueryWhere {
+    userId?: string;
+    action?: string;
+    resourceType?: string;
+    category?: string;
+    createdAt?: {
+        gte?: Date;
+        lte?: Date;
+    };
+}
+
+interface AuditStats {
+    totalLogs: number;
+    byAction: Record<string, number>;
+    byCategory: Record<string, number>;
+    recentActivity: Array<{
+        date: string;
+        count: number;
+    }>;
+}
 
 @Injectable()
 export class AuditService {
@@ -15,7 +35,7 @@ export class AuditService {
         const limit = query.limit || 50;
         const skip = (page - 1) * limit;
 
-        const where: any = {};
+        const where: AuditQueryWhere = {};
         if (query.userId) where.userId = query.userId;
         if (query.action) where.action = query.action;
         if (query.resourceType) where.resourceType = query.resourceType;
@@ -31,6 +51,11 @@ export class AuditService {
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
+                include: {
+                    user: {
+                        select: { id: true, name: true, email: true }
+                    }
+                }
             }),
             this.prismaRead.auditLog.count({ where }),
         ]);
@@ -51,7 +76,14 @@ export class AuditService {
     }
 
     async findOne(id: string) {
-        const log = await this.prismaRead.auditLog.findUnique({ where: { id } });
+        const log = await this.prismaRead.auditLog.findUnique({
+            where: { id },
+            include: {
+                user: {
+                    select: { id: true, name: true, email: true }
+                }
+            }
+        });
         if (!log) throw new NotFoundException('Audit log not found');
         return log;
     }
@@ -60,6 +92,11 @@ export class AuditService {
         return this.prismaRead.auditLog.findMany({
             where: { resourceType: type, resourceId: id },
             orderBy: { createdAt: 'desc' },
+            include: {
+                user: {
+                    select: { id: true, name: true, email: true }
+                }
+            }
         });
     }
 
@@ -67,14 +104,98 @@ export class AuditService {
         return this.prismaRead.auditLog.findMany({
             where: { userId },
             orderBy: { createdAt: 'desc' },
+            take: 100,
         });
     }
 
-    async getStats() {
-        // Generate some basic statistics (e.g. actions by type)
+    async getStats(): Promise<AuditStats> {
+        const [totalLogs, actionGroups, categoryGroups, recentLogs] = await Promise.all([
+            this.prismaRead.auditLog.count(),
+            this.prismaRead.auditLog.groupBy({
+                by: ['action'],
+                _count: { id: true },
+                orderBy: { _count: { id: 'desc' } },
+                take: 20,
+            }),
+            this.prismaRead.auditLog.groupBy({
+                by: ['category'],
+                _count: { id: true },
+                orderBy: { _count: { id: 'desc' } },
+            }),
+            this.getRecentActivityByDay(7),
+        ]);
+
+        const byAction = actionGroups.reduce((acc, item) => {
+            acc[item.action] = item._count.id;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const byCategory = categoryGroups.reduce((acc, item) => {
+            acc[item.category] = item._count.id;
+            return acc;
+        }, {} as Record<string, number>);
+
         return {
-            totalLogs: await this.prismaRead.auditLog.count(),
-            byAction: { 'LOGIN': 150, 'UPDATE': 400 }, // Mock aggregation
+            totalLogs,
+            byAction,
+            byCategory,
+            recentActivity: recentLogs,
         };
+    }
+
+    private async getRecentActivityByDay(days: number): Promise<Array<{ date: string; count: number }>> {
+        const results: Array<{ date: string; count: number }> = [];
+        const now = new Date();
+
+        for (let i = 0; i < days; i++) {
+            const date = new Date(now);
+            date.setDate(date.getDate() - i);
+            date.setHours(0, 0, 0, 0);
+
+            const nextDate = new Date(date);
+            nextDate.setDate(nextDate.getDate() + 1);
+
+            const count = await this.prismaRead.auditLog.count({
+                where: {
+                    createdAt: {
+                        gte: date,
+                        lt: nextDate,
+                    }
+                }
+            });
+
+            results.push({
+                date: date.toISOString().split('T')[0],
+                count,
+            });
+        }
+
+        return results.reverse();
+    }
+
+    async createLog(data: {
+        userId?: string;
+        action: string;
+        category: string;
+        description: string;
+        resourceType?: string;
+        resourceId?: string;
+        metadata?: Record<string, unknown>;
+        ip?: string;
+        userAgent?: string;
+    }) {
+        return this.prismaWrite.auditLog.create({
+            data: {
+                userId: data.userId,
+                action: data.action,
+                category: data.category,
+                description: data.description,
+                resourceType: data.resourceType,
+                resourceId: data.resourceId,
+                metadata: data.metadata,
+                ip: data.ip,
+                userAgent: data.userAgent,
+            }
+        });
     }
 }

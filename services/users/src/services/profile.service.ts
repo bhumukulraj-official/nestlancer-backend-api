@@ -2,7 +2,33 @@ import { Injectable } from '@nestjs/common';
 import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
 import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
 import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { ProjectStatus, PaymentStatus } from '@nestlancer/common';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+
+interface UserStats {
+    projectsCompleted: number;
+    totalSpent: number;
+    projectsInProgress: number;
+    totalProjects: number;
+}
+
+interface UserProfile {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    twoFactorEnabled: boolean;
+    timezone?: string;
+    language?: string;
+    preferences: {
+        notifications: Record<string, unknown>;
+        privacy: Record<string, unknown>;
+    };
+    stats: UserStats;
+    createdAt: Date;
+    updatedAt: Date;
+    lastLoginAt?: Date;
+}
 
 @Injectable()
 export class ProfileService {
@@ -11,12 +37,11 @@ export class ProfileService {
         private readonly prismaRead: PrismaReadService,
     ) { }
 
-    async getProfile(userId: string) {
+    async getProfile(userId: string): Promise<UserProfile> {
         const user = await this.prismaRead.user.findUnique({
             where: { id: userId },
             include: {
                 preferences: true,
-                authConfig: true,
             }
         });
 
@@ -24,64 +49,96 @@ export class ProfileService {
             throw new BusinessLogicException('User not found', 'USER_001');
         }
 
-        return this.formatProfileResponse(user);
+        const stats = await this.getUserStats(userId);
+        return this.formatProfileResponse(user, stats);
     }
 
-    async updateProfile(userId: string, dto: UpdateProfileDto) {
+    async updateProfile(userId: string, dto: UpdateProfileDto): Promise<UserProfile> {
         const user = await this.prismaWrite.user.update({
             where: { id: userId },
             data: {
-                firstName: dto.firstName,
-                lastName: dto.lastName,
-                phone: dto.phone,
-                preferences: {
-                    update: {
-                        timezone: dto.timezone,
-                        language: dto.language,
+                name: dto.name,
+                preferences: dto.timezone || dto.language ? {
+                    upsert: {
+                        create: {
+                            timezone: dto.timezone || 'UTC',
+                            language: dto.language || 'en',
+                        },
+                        update: {
+                            ...(dto.timezone && { timezone: dto.timezone }),
+                            ...(dto.language && { language: dto.language }),
+                        }
                     }
-                } // Country omitted for simplicity, but easily addable
+                } : undefined
             },
             include: {
                 preferences: true,
-                authConfig: true,
             }
         });
 
-        await this.prismaWrite.outbox.create({
+        await this.prismaWrite.outboxEvent.create({
             data: {
-                eventType: 'USER_PROFILE_UPDATED',
-                payload: { userId: user.id }
+                type: 'USER_PROFILE_UPDATED',
+                aggregateType: 'User',
+                aggregateId: user.id,
+                payload: { userId: user.id, updatedFields: Object.keys(dto) }
             }
         });
 
-        return this.formatProfileResponse(user);
+        const stats = await this.getUserStats(userId);
+        return this.formatProfileResponse(user, stats);
     }
 
-    private formatProfileResponse(user: any) {
+    private async getUserStats(userId: string): Promise<UserStats> {
+        const [projectStats, paymentStats] = await Promise.all([
+            this.prismaRead.project.groupBy({
+                by: ['status'],
+                where: { clientId: userId, deletedAt: null },
+                _count: { id: true }
+            }),
+            this.prismaRead.payment.aggregate({
+                where: {
+                    clientId: userId,
+                    status: PaymentStatus.COMPLETED
+                },
+                _sum: { amount: true }
+            })
+        ]);
+
+        const statusCounts = projectStats.reduce((acc, item) => {
+            acc[item.status] = item._count.id;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const totalProjects = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+        const projectsCompleted = statusCounts[ProjectStatus.COMPLETED] || 0;
+        const projectsInProgress = statusCounts[ProjectStatus.IN_PROGRESS] || 0;
+
+        return {
+            projectsCompleted,
+            totalSpent: paymentStats._sum.amount || 0,
+            projectsInProgress,
+            totalProjects,
+        };
+    }
+
+    private formatProfileResponse(user: any, stats: UserStats): UserProfile {
         return {
             id: user.id,
             email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phone: user.phone,
-            avatar: user.avatar,
+            name: user.name,
             role: user.role,
-            emailVerified: user.emailVerified,
-            twoFactorEnabled: user.authConfig?.twoFactorEnabled || false,
+            twoFactorEnabled: user.twoFactorEnabled || false,
             timezone: user.preferences?.timezone,
             language: user.preferences?.language,
-            country: user.preferences?.country || 'US',
             preferences: {
-                notifications: user.preferences?.emailNotifications || {},
+                notifications: user.preferences?.notificationSettings || {},
                 privacy: user.preferences?.privacySettings || {}
             },
-            stats: {
-                projectsCompleted: 0, // Placeholder
-                totalSpent: 0, // Placeholder
-            },
+            stats,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
-            lastLoginAt: user.authConfig?.lastFailedLoginAttempt // Map properly later
+            lastLoginAt: user.lastLoginAt,
         };
     }
 }

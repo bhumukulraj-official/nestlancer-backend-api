@@ -60,7 +60,7 @@ export class QuotesAdminService {
                 validUntil: new Date(dto.validUntil),
                 termsAndConditions: dto.terms,
                 internalNotes: dto.notes,
-                // paymentBreakdown would go to a related table
+                paymentBreakdown: dto.paymentBreakdown as any,
             }
         });
 

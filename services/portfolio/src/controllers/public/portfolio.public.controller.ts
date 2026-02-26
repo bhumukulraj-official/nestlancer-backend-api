@@ -44,9 +44,15 @@ export class PortfolioPublicController {
     @Public()
     @Get('tags')
     @Cacheable({ ttl: 3600 })
-    getTags() {
-        // In a real implementation this would fetch from a specific tags service or prisma query
-        return [];
+    async getTags() {
+        const items = await this.portfolioService.findPublished({} as any);
+        const tagsSet = new Set<string>();
+        for (const item of items.data) {
+            if (item.tags && Array.isArray(item.tags)) {
+                item.tags.forEach(t => tagsSet.add(t));
+            }
+        }
+        return Array.from(tagsSet);
     }
 
     @Public()

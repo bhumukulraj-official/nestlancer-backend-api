@@ -15,6 +15,7 @@ model Webhook {
   secret      String
   enabled     Boolean           @default(true)
   events      Json
+  headers     Json?
   retryPolicy Json?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -32,11 +33,14 @@ model WebhookDelivery {
   requestHeaders  Json?
   responseHeaders Json?
   responseBody    String?
+  attempts        Int      @default(1)
+  nextRetryAt     DateTime?
   createdAt       DateTime @default(now())
 
   webhook         Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@index([webhookId])
+  @@index([status])
 }
 
 model WebhookLog {
@@ -45,6 +49,7 @@ model WebhookLog {
   eventId     String?
   eventType   String
   payload     Json
+  headers     Json?
   status      WebhookIngestionStatus @default(PENDING)
   error       String?
   processedAt DateTime?
