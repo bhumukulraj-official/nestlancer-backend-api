@@ -1,30 +1,63 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { ContactService } from './contact.service';
+import { Request } from 'express';
+import { Public } from '@nestlancer/common';
+import { HttpProxyService } from '../../proxy';
 
+/**
+ * Contact Gateway Controller
+ * Routes contact requests to the Contact Service
+ */
 @Controller('contact')
 @ApiTags('contact')
-@ApiBearerAuth()
 export class ContactController {
-  constructor(private readonly service: ContactService) {}
+  constructor(private readonly proxy: HttpProxyService) {}
 
-  @Get()
-  @ApiOperation({ summary: 'List contact' })
-  findAll(@Query() query: Record<string, unknown>) { void query; return []; }
+  @Post('inquiries')
+  @Public()
+  @ApiOperation({ summary: 'Submit contact inquiry' })
+  async submitInquiry(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get contact by ID' })
-  findOne(@Param('id') id: string) { void id; return {}; }
+  @Get('inquiries')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List contact inquiries' })
+  async findAll(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
 
-  @Post()
-  @ApiOperation({ summary: 'Create contact' })
-  create(@Body() body: Record<string, unknown>) { void body; return {}; }
+  @Get('inquiries/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get inquiry by ID' })
+  async findOne(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
 
-  @Put(':id')
-  @ApiOperation({ summary: 'Update contact' })
-  update(@Param('id') id: string, @Body() body: Record<string, unknown>) { void id; void body; return {}; }
+  @Patch('inquiries/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update inquiry status' })
+  async update(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete contact' })
-  remove(@Param('id') id: string) { void id; return {}; }
+  @Delete('inquiries/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete inquiry' })
+  async remove(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
+
+  @Post('inquiries/:id/respond')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Respond to inquiry' })
+  async respond(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
+
+  @Get('health')
+  @ApiOperation({ summary: 'Contact service health check' })
+  async health(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
 }

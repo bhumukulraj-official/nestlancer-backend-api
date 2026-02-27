@@ -19,6 +19,9 @@ import { CircuitBreakerModule } from '@nestlancer/circuit-breaker';
 import { CorrelationIdMiddleware } from '@nestlancer/tracing';
 import { RequestLoggerMiddleware } from '@nestlancer/logger';
 
+// Proxy infrastructure
+import { ProxyModule } from './proxy';
+
 // Domain modules
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -40,6 +43,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
   imports: [
     // Infrastructure
     ConfigModule.forRoot(),
+    ProxyModule,
     DatabaseModule.forRoot(),
     CacheModule.forRoot(),
     QueueModule.forRoot(),

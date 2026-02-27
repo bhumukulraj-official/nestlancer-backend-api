@@ -5,9 +5,22 @@ import { AppValidationPipe, AllExceptionsFilter, TransformResponseInterceptor, L
 import { getCorsConfig } from '@nestlancer/middleware';
 import helmet from 'helmet';
 import { getHelmetConfig } from '@nestlancer/middleware';
+import * as compression from 'compression';
 
+/**
+ * Bootstrap the Nestlancer API Gateway
+ */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, { 
+    bufferLogs: true,
+    bodyParser: true,
+  });
+
+  // Trust proxy (for getting real client IP behind load balancer)
+  app.getHttpAdapter().getInstance().set('trust proxy', true);
+
+  // Compression middleware
+  app.use(compression());
 
   // Security
   app.use(helmet(getHelmetConfig()));
@@ -21,7 +34,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor(), new TransformResponseInterceptor(), new TimeoutInterceptor());
 
-  // Swagger
+  // Swagger/OpenAPI documentation
   const config = new DocumentBuilder()
     .setTitle('Nestlancer API')
     .setDescription('Nestlancer Backend API – Professional freelance platform')
@@ -40,15 +53,21 @@ async function bootstrap() {
     .addTag('blog', 'Blog management')
     .addTag('contact', 'Contact form')
     .addTag('admin', 'Administration')
+    .addTag('webhooks', 'Webhook management')
     .addTag('health', 'Health checks')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
+  // Graceful shutdown
+  app.enableShutdownHooks();
+
   const port = process.env.PORT || DEFAULT_GATEWAY_PORT;
   await app.listen(port);
+  
   console.log(`🚀 Nestlancer API Gateway running on http://localhost:${port}`);
   console.log(`📚 Swagger docs: http://localhost:${port}/docs`);
+  console.log(`🔒 API Base URL: http://localhost:${port}/${API_PREFIX}/${API_VERSION}`);
 }
 
 bootstrap();

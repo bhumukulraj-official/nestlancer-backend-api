@@ -1,30 +1,77 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { BlogService } from './blog.service';
+import { Request } from 'express';
+import { Public } from '@nestlancer/common';
+import { HttpProxyService } from '../../proxy';
 
+/**
+ * Blog Gateway Controller
+ * Routes blog requests to the Blog Service
+ */
 @Controller('blog')
 @ApiTags('blog')
-@ApiBearerAuth()
 export class BlogController {
-  constructor(private readonly service: BlogService) {}
+  constructor(private readonly proxy: HttpProxyService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List blog' })
-  findAll(@Query() query: Record<string, unknown>) { void query; return []; }
+  @Public()
+  @ApiOperation({ summary: 'List blog posts' })
+  async findAll(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get blog by ID' })
-  findOne(@Param('id') id: string) { void id; return {}; }
+  @Get('posts')
+  @Public()
+  @ApiOperation({ summary: 'List blog posts' })
+  async listPosts(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
 
-  @Post()
-  @ApiOperation({ summary: 'Create blog' })
-  create(@Body() body: Record<string, unknown>) { void body; return {}; }
+  @Get('posts/:slug')
+  @Public()
+  @ApiOperation({ summary: 'Get blog post by slug' })
+  async getPostBySlug(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
 
-  @Put(':id')
-  @ApiOperation({ summary: 'Update blog' })
-  update(@Param('id') id: string, @Body() body: Record<string, unknown>) { void id; void body; return {}; }
+  @Post('posts')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create blog post' })
+  async create(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete blog' })
-  remove(@Param('id') id: string) { void id; return {}; }
+  @Patch('posts/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update blog post' })
+  async update(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Delete('posts/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete blog post' })
+  async remove(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Get('categories')
+  @Public()
+  @ApiOperation({ summary: 'List blog categories' })
+  async getCategories(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Get('tags')
+  @Public()
+  @ApiOperation({ summary: 'List blog tags' })
+  async getTags(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Get('health')
+  @ApiOperation({ summary: 'Blog service health check' })
+  async health(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
 }

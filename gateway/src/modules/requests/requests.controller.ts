@@ -1,30 +1,69 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { RequestsService } from './requests.service';
+import { Request } from 'express';
+import { HttpProxyService } from '../../proxy';
 
+/**
+ * Requests Gateway Controller
+ * Routes project requests to the Requests Service
+ */
 @Controller('requests')
 @ApiTags('requests')
 @ApiBearerAuth()
 export class RequestsController {
-  constructor(private readonly service: RequestsService) {}
+  constructor(private readonly proxy: HttpProxyService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List requests' })
-  findAll(@Query() query: Record<string, unknown>) { void query; return []; }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Get requests by ID' })
-  findOne(@Param('id') id: string) { void id; return {}; }
+  @ApiOperation({ summary: 'List project requests' })
+  async findAll(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
 
   @Post()
-  @ApiOperation({ summary: 'Create requests' })
-  create(@Body() body: Record<string, unknown>) { void body; return {}; }
+  @ApiOperation({ summary: 'Create project request' })
+  async create(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
 
-  @Put(':id')
-  @ApiOperation({ summary: 'Update requests' })
-  update(@Param('id') id: string, @Body() body: Record<string, unknown>) { void id; void body; return {}; }
+  @Get(':id')
+  @ApiOperation({ summary: 'Get request by ID' })
+  async findOne(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update request' })
+  async update(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete requests' })
-  remove(@Param('id') id: string) { void id; return {}; }
+  @ApiOperation({ summary: 'Delete request' })
+  async remove(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
+
+  @Post(':id/submit')
+  @ApiOperation({ summary: 'Submit request for review' })
+  async submit(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
+
+  @Post(':id/cancel')
+  @ApiOperation({ summary: 'Cancel request' })
+  async cancel(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
+
+  @Get(':id/quotes')
+  @ApiOperation({ summary: 'Get quotes for request' })
+  async getQuotes(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
+
+  @Get('health')
+  @ApiOperation({ summary: 'Requests service health check' })
+  async health(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
 }
