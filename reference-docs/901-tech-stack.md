@@ -76,7 +76,7 @@
 ## ⚙️ Workers (Async Processing)
 All workers are NestJS applications consuming from RabbitMQ:
 - **Email Worker** – Sends emails with retries, backoff, circuit breaker.
-- **Notification Worker** – Delivers in-app, push, SMS, and real-time notifications via Redis Pub/Sub.
+- **Notification Worker** – Delivers in-app, push, and real-time notifications via Redis Pub/Sub.
 - **Audit Worker** – Batch inserts audit logs.
 - **Media Worker** – Image resizing (Sharp), thumbnail generation, video transcoding (FFmpeg), virus scanning (ClamAV).
 - **Analytics Worker** – Aggregates data for reports.

@@ -2488,12 +2488,10 @@
 │   │   │   ├── processors/
 │   │   │   │   ├── in-app-notification.processor.ts
 │   │   │   │   ├── push-notification.processor.ts
-│   │   │   │   ├── sms-notification.processor.ts
 │   │   │   │   └── realtime-fanout.processor.ts
 │   │   │   ├── services/
 │   │   │   │   ├── notification-worker.service.ts
 │   │   │   │   ├── push-provider.service.ts
-│   │   │   │   ├── sms-provider.service.ts
 │   │   │   │   └── redis-publisher.service.ts
 │   │   │   ├── config/
 │   │   │   │   └── notification-worker.config.ts

@@ -110,8 +110,7 @@ X-RateLimit-Reset: 1705323000
     "preferences": {
       "notifications": {
         "email": true,
-        "push": true,
-        "sms": false
+        "push": true
       },
       "privacy": {
         "profileVisibility": "private",
@@ -577,9 +576,6 @@ Content-Type: application/json
     "push": {
       "messages": true,
       "projectUpdates": true
-    },
-    "sms": {
-      "enabled": false
     }
   },
   "privacy": {
@@ -612,9 +608,6 @@ X-Request-ID: reqAbc123
       "push": {
         "messages": true,
         "projectUpdates": true
-      },
-      "sms": {
-        "enabled": false
       }
     },
     "privacy": {

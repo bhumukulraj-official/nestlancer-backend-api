@@ -7,7 +7,7 @@
 **WebSocket**: `wss://api.yourdomain.com/ws/notifications`
 
 ### 11.1 Overview
-Manages user notifications across multiple channels (in-app, email, push, SMS). Supports real-time delivery via WebSocket, customizable preferences, and notification grouping.
+Manages user notifications across multiple channels (in-app, email, push). Supports real-time delivery via WebSocket, customizable preferences, and notification grouping.
 
 ### 11.2 Notification Types
 
@@ -21,7 +21,7 @@ Manages user notifications across multiple channels (in-app, email, push, SMS). 
 | `quote.expired` | Quote has expired | in-app, email | normal |
 | `payment.received` | Payment confirmed | in-app, email | high |
 | `payment.due` | Payment reminder | in-app, email, push | high |
-| `payment.failed` | Payment failed | in-app, email, push, sms | critical |
+| `payment.failed` | Payment failed | in-app, email, push | critical |
 | `payment.refunded` | Refund processed | in-app, email | normal |
 | `message.new` | New message received | in-app, push | normal |
 | `message.mention` | Mentioned in message | in-app, push | high |
@@ -356,14 +356,6 @@ Content-Type: application/json
         "exceptCritical": true
       }
     },
-    "sms": {
-      "enabled": false,
-      "types": {
-        "payment.failed": true,
-        "security.login": true
-      },
-      "phoneNumber": "+14155552671"
-    },
     "inApp": {
       "enabled": true,
       "sound": true,
@@ -408,9 +400,6 @@ X-Request-ID: reqAbc123
           "start": "22:00",
           "end": "08:00"
         }
-      },
-      "sms": {
-        "enabled": false
       },
       "inApp": {
         "enabled": true

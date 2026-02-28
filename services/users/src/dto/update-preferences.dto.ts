@@ -13,14 +13,9 @@ class PushNotificationsDto {
     @IsOptional() @IsBoolean() projectUpdates?: boolean;
 }
 
-class SmsNotificationsDto {
-    @IsOptional() @IsBoolean() enabled?: boolean;
-}
-
 class NotificationsDto {
     @IsOptional() @ValidateNested() @Type(() => EmailNotificationsDto) email?: EmailNotificationsDto;
     @IsOptional() @ValidateNested() @Type(() => PushNotificationsDto) push?: PushNotificationsDto;
-    @IsOptional() @ValidateNested() @Type(() => SmsNotificationsDto) sms?: SmsNotificationsDto;
 }
 
 class PrivacyPreferencesDto {

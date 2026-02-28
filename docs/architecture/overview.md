@@ -61,7 +61,7 @@ All requests pass through this ordered middleware pipeline:
 | Worker | Queue | Description |
 |--------|-------|-------------|
 | Email Worker | `email.queue` | Sends transactional emails via ZeptoMail/SES |
-| Notification Worker | `notification.queue` | Sends push notifications, SMS, in-app |
+| Notification Worker | `notification.queue` | Sends push notifications, in-app |
 | Audit Worker | `audit.queue` | Batch-inserts audit logs to PostgreSQL |
 | Media Worker | `media.queue` | Image resize, video transcode, virus scan |
 | Analytics Worker | `analytics.queue` | Aggregates view counts, statistics |

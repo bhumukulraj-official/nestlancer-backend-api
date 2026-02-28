@@ -16,13 +16,5 @@ export const notificationWorkerConfig = registerAs('notification-worker', () => 
         privateKey: process.env.VAPID_PRIVATE_KEY,
         subject: process.env.VAPID_SUBJECT || 'mailto:hello@nestlancer.com',
     },
-    sms: {
-        provider: process.env.SMS_PROVIDER || 'twilio',
-        twilio: {
-            accountSid: process.env.TWILIO_ACCOUNT_SID,
-            authToken: process.env.TWILIO_AUTH_TOKEN,
-            fromNumber: process.env.TWILIO_FROM_NUMBER,
-        },
-    },
     concurrency: parseInt(process.env.NOTIFICATION_CONCURRENCY || '10', 10),
 }));

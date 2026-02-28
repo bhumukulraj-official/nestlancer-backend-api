@@ -76,8 +76,7 @@ export class PreferencesService {
         return [
             { id: 'inApp', name: 'In-App Notifications', status: 'available' },
             { id: 'email', name: 'Email Notifications', status: 'available' },
-            { id: 'push', name: 'Push Notifications', status: 'requires_subscription' },
-            { id: 'sms', name: 'SMS Notifications', status: 'unavailable' }
+            { id: 'push', name: 'Push Notifications', status: 'requires_subscription' }
         ];
     }
 }
