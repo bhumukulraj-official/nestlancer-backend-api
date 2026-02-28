@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
-import { ConfigModule } from '@nestlancer/config';
+import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
@@ -28,7 +28,7 @@ import healthConfig from './config/health.config';
             load: [healthConfig],
         }),
         LoggerModule.forRoot(),
-        MetricsModule.forRoot(),
+        MetricsModule,
         TracingModule.forRoot(),
         TerminusModule,
         HealthLibModule,

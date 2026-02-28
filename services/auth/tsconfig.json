@@ -16,7 +16,6 @@
         "noImplicitAny": true,
         "strictBindCallApply": true,
         "forceConsistentCasingInFileNames": true,
-        "noFallbackBumps": true,
         "paths": {
             "@nestlancer/common": [
                 "../../libs/common/src"

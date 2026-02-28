@@ -1,4 +1,5 @@
 {
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "module": "commonjs",
         "declaration": true,
@@ -9,32 +10,88 @@
         "target": "ES2021",
         "sourceMap": true,
         "outDir": "./dist",
-        "baseUrl": "./",
+        "baseUrl": "../../",
         "incremental": true,
         "skipLibCheck": true,
-        "strictNullChecks": true,
-        "noImplicitAny": true,
-        "strictBindCallApply": true,
-        "forceConsistentCasingInFileNames": true,
-        "noFallbackBumps": true,
+        "strictNullChecks": false,
+        "noImplicitAny": false,
+        "strictBindCallApply": false,
+        "forceConsistentCasingInFileNames": false,
+        "strict": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
         "paths": {
             "@nestlancer/common": [
-                "../../libs/common/src"
+                "libs/common/src"
+            ],
+            "@nestlancer/common/*": [
+                "libs/common/src/*"
             ],
             "@nestlancer/config": [
-                "../../libs/config/src"
+                "libs/config/src"
+            ],
+            "@nestlancer/config/*": [
+                "libs/config/src/*"
+            ],
+            "@nestlancer/database": [
+                "libs/database/src"
+            ],
+            "@nestlancer/database/*": [
+                "libs/database/src/*"
+            ],
+            "@nestlancer/cache": [
+                "libs/cache/src"
+            ],
+            "@nestlancer/cache/*": [
+                "libs/cache/src/*"
+            ],
+            "@nestlancer/queue": [
+                "libs/queue/src"
+            ],
+            "@nestlancer/queue/*": [
+                "libs/queue/src/*"
+            ],
+            "@nestlancer/outbox": [
+                "libs/outbox/src"
+            ],
+            "@nestlancer/outbox/*": [
+                "libs/outbox/src/*"
+            ],
+            "@nestlancer/auth-lib": [
+                "libs/auth-lib/src"
+            ],
+            "@nestlancer/auth-lib/*": [
+                "libs/auth-lib/src/*"
             ],
             "@nestlancer/logger": [
-                "../../libs/logger/src"
+                "libs/logger/src"
+            ],
+            "@nestlancer/logger/*": [
+                "libs/logger/src/*"
             ],
             "@nestlancer/metrics": [
-                "../../libs/metrics/src"
+                "libs/metrics/src"
+            ],
+            "@nestlancer/metrics/*": [
+                "libs/metrics/src/*"
             ],
             "@nestlancer/tracing": [
-                "../../libs/tracing/src"
+                "libs/tracing/src"
+            ],
+            "@nestlancer/tracing/*": [
+                "libs/tracing/src/*"
             ],
             "@nestlancer/health-lib": [
-                "../../libs/health-lib/src"
+                "libs/health-lib/src"
+            ],
+            "@nestlancer/health-lib/*": [
+                "libs/health-lib/src/*"
+            ],
+            "@nestlancer/storage": [
+                "libs/storage/src"
+            ],
+            "@nestlancer/storage/*": [
+                "libs/storage/src/*"
             ]
         }
     },

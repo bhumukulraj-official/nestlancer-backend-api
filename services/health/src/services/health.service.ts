@@ -73,7 +73,7 @@ export class HealthService {
             version: this.configService.get<string>('healthService.version') || '1.0.0',
             environment: this.configService.get<string>('NODE_ENV') || 'development',
             services,
-            checks as any,
+            checks: checks as any,
         };
     }
 

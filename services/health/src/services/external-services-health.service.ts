@@ -4,7 +4,7 @@ import { HealthCheckResult } from '../interfaces/health-check-result.interface';
 
 @Injectable()
 export class ExternalServicesHealthService {
-    constructor(private readonly logger: LoggerService) { }
+    constructor() { }
 
     async check(): Promise<HealthCheckResult> {
         const startTime = Date.now();

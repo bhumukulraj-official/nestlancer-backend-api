@@ -20,19 +20,20 @@
     },
     "dependencies": {
         "@nestjs/common": "^10.0.0",
-        "@nestjs/core": "^10.0.0",
         "@nestjs/config": "^3.1.1",
+        "@nestjs/core": "^10.0.0",
+        "@nestlancer/cache": "workspace:*",
         "@nestlancer/common": "workspace:*",
         "@nestlancer/config": "workspace:*",
+        "@nestlancer/database": "workspace:*",
         "@nestlancer/logger": "workspace:*",
         "@nestlancer/metrics": "workspace:*",
-        "@nestlancer/tracing": "workspace:*",
-        "@nestlancer/database": "workspace:*",
         "@nestlancer/queue": "workspace:*",
-        "@nestlancer/cache": "workspace:*",
-        "web-push": "^3.6.6",
+        "@nestlancer/tracing": "workspace:*",
+        "ioredis": "^5.10.0",
         "reflect-metadata": "^0.1.13",
-        "rxjs": "^7.8.1"
+        "rxjs": "^7.8.1",
+        "web-push": "^3.6.6"
     },
     "devDependencies": {
         "@nestjs/cli": "^10.0.0",

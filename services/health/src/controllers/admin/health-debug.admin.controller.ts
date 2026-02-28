@@ -1,6 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { Roles } from '@nestlancer/common/decorators/roles.decorator';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
 import { HealthService } from '../../services/health.service';
 import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
 import { RolesGuard } from '@nestlancer/auth-lib/guards/roles.guard';

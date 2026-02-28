@@ -20,7 +20,7 @@ export class WorkersHealthService {
             for (const worker of workers) {
                 const lastHeartbeat = await this.cacheService.get(`worker_heartbeat:${worker}`);
                 if (lastHeartbeat) {
-                    const diff = Date.now() - parseInt(lastHeartbeat, 10);
+                    const diff = Date.now() - parseInt(lastHeartbeat as string, 10);
                     const isHealthy = diff < 60000;
                     details[worker] = isHealthy ? 'healthy' : 'degraded';
                     if (!isHealthy) allHealthy = false;
@@ -41,7 +41,7 @@ export class WorkersHealthService {
             return {
                 status: 'unhealthy',
                 responseTime: Date.now() - startTime,
-                error: error.message,
+                error: (error as Error).message,
             };
         }
     }

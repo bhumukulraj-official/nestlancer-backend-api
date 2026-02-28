@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailService } from '@nestlancer/mail';
-import { EmailJob, EmailAttachment } from '../interfaces/email-job.interface';
+import { EmailJob } from '../interfaces/email-job.interface';
 import { EmailRendererService } from './email-renderer.service';
 import { EmailRetryService } from './email-retry.service';
 import { ConfigService } from '@nestjs/config';

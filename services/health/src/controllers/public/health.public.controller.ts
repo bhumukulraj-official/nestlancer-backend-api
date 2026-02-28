@@ -1,4 +1,4 @@
-import { Controller, Get, Head, HttpCode, HttpStatus, Res, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Head, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { Public } from '@nestlancer/common/decorators/public.decorator';
 import { Cacheable } from '@nestlancer/cache/decorators/cacheable.decorator';

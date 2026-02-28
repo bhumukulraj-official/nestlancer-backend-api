@@ -36,6 +36,7 @@ model User {
   savedPaymentMethods SavedPaymentMethod[]
   messages            Message[]
   notifications       Notification[]
+  pushSubscriptions   UserPushSubscription[]
   mediaUploaded       Media[]
   blogPosts           BlogPost[]
   blogComments        BlogComment[]

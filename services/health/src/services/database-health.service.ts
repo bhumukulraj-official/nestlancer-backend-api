@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '@nestlancer/database/prisma/prisma.service';
+import { PrismaReadService as PrismaService } from '@nestlancer/database';
 import { LoggerService } from '@nestlancer/logger';
 import { HealthCheckResult } from '../interfaces/health-check-result.interface';
 
@@ -30,7 +30,7 @@ export class DatabaseHealthService {
             // Get connection pool metrics if possible (Prisma metrics must be enabled)
             let metrics;
             try {
-                metrics = await this.prisma.$metrics.json();
+                metrics = await (this.prisma as any).$metrics.json();
             } catch (e) {
                 // Metrics might not be enabled, ignore
             }

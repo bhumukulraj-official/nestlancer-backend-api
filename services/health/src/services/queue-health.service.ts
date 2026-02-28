@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
 import { HealthCheckResult } from '../interfaces/health-check-result.interface';
-import { connect, Connection } from 'amqplib';
+import * as amqp from 'amqplib';
 
 interface QueueStats {
     pendingJobs: number;
@@ -33,7 +33,7 @@ export class QueueHealthService {
 
     async check(): Promise<HealthCheckResult> {
         const startTime = Date.now();
-        let connection: Connection | null = null;
+        let connection: any = null;
 
         try {
             const timeoutMs = this.configService.get<number>('healthService.timeouts.queue') || 2000;
@@ -41,7 +41,7 @@ export class QueueHealthService {
 
             // Attempt to connect with timeout
             connection = await Promise.race([
-                connect(rabbitUrl),
+                amqp.connect(rabbitUrl),
                 new Promise<never>((_, reject) =>
                     setTimeout(() => reject(new Error('Queue connection timeout')), timeoutMs)
                 )
@@ -78,7 +78,7 @@ export class QueueHealthService {
         }
     }
 
-    private async getQueueStats(connection: Connection): Promise<QueueStats> {
+    private async getQueueStats(connection: any): Promise<QueueStats> {
         const channel = await connection.createChannel();
         const queues: QueueStats['queues'] = [];
         let totalPendingJobs = 0;
