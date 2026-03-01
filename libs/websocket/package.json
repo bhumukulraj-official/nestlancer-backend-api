@@ -1,1 +1,15 @@
-{ "name": "@nestlancer/websocket", "version": "1.0.0", "private": true, "main": "src/index.ts", "dependencies": { "@nestjs/common": "^10.0.0", "@nestjs/websockets": "^10.0.0", "@nestjs/platform-socket.io": "^10.0.0", "socket.io": "^4.7.0", "ioredis": "^5.3.0" } }
+{
+  "name": "@nestlancer/websocket",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/websockets": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.0.0",
+    "socket.io": "^4.7.0",
+    "ioredis": "^5.3.0",
+    "@nestjs/core": "^10.0.0",
+    "rxjs": "^7.8.1"
+  }
+}

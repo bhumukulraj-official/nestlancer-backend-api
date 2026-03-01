@@ -29,7 +29,7 @@ kubectl apply -k deploy/kubernetes/overlays/vps
 
 # Monitor rollout
 echo "  ⏳ Monitoring rollout..."
-SERVICES="gateway ws-gateway auth users requests quotes projects progress payments messaging notifications media portfolio blog contact admin webhooks health"
+SERVICES="admin auth blog contact gateway health media messaging notifications payments portfolio progress projects quotes requests users webhooks ws-gateway"
 for svc in ${SERVICES}; do
   echo "    ⏳ ${svc}..."
   kubectl -n nestlancer rollout status deployment/${svc} --timeout=300s || {

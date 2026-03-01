@@ -21,14 +21,14 @@ COPY --from=deps /app/gateway ./gateway
 COPY --from=deps /app/prisma ./prisma
 COPY --from=deps /app/pnpm-workspace.yaml ./
 COPY --from=deps /app/turbo.json ./
-COPY --from=deps /app/package.json ./
+COPY --from=deps /app/package.json /app/pnpm-lock.yaml ./
 
 COPY gateway/ ./gateway/
 COPY libs/ ./libs/
 COPY tsconfig.base.json ./
 
-RUN pnpm prisma generate
-RUN pnpm turbo build --filter=@nestlancer/gateway
+RUN pnpm prisma generate --schema prisma/schema/schema.prisma
+RUN pnpm turbo build --filter=./gateway
 
 # ── Stage 3: Production ──
 FROM node:20-alpine AS runner

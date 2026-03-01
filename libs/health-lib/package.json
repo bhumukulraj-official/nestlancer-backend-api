@@ -1,1 +1,11 @@
-{ "name": "@nestlancer/health-lib", "version": "1.0.0", "private": true, "main": "src/index.ts", "dependencies": { "@nestjs/common": "^10.0.0" } }
+{
+  "name": "@nestlancer/health-lib",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "rxjs": "^7.8.1"
+  }
+}

@@ -22,22 +22,17 @@ WORKERS=(
   "analytics-worker" "webhook-worker" "cdn-worker" "outbox-poller"
 )
 
-# Build base images first
-echo "  📦 Building service-base..."
-docker build -f docker/service-base/Dockerfile.base -t "${REGISTRY}/service-base:${TAG}" .
-
-echo "  📦 Building worker-base..."
-docker build -f docker/worker-base/Dockerfile.base -t "${REGISTRY}/worker-base:${TAG}" .
+# COMPONENTS and WORKERS arrays are defined above
 
 # Build gateway images
 for component in "${COMPONENTS[@]}"; do
   echo "  📦 Building ${component}..."
   if [[ -f "docker/${component}/Dockerfile" ]]; then
-    docker build -f "docker/${component}/Dockerfile" -t "${REGISTRY}/${component}:${TAG}" .
+    docker build -f "docker/${component}/Dockerfile" -t "${REGISTRY}/nestlancer-${component}:${TAG}" .
   else
     docker build -f docker/service-base/Dockerfile.base \
       --build-arg SERVICE_NAME="${component}" \
-      -t "${REGISTRY}/${component}:${TAG}" .
+      -t "${REGISTRY}/nestlancer-${component}:${TAG}" .
   fi
 done
 
@@ -46,7 +41,7 @@ for worker in "${WORKERS[@]}"; do
   echo "  📦 Building ${worker}..."
   docker build -f docker/worker-base/Dockerfile.base \
     --build-arg SERVICE_NAME="${worker}" \
-    -t "${REGISTRY}/${worker}:${TAG}" .
+    -t "${REGISTRY}/nestlancer-${worker}:${TAG}" .
 done
 
 echo ""

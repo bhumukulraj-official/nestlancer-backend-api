@@ -4,6 +4,32 @@ kind: Kustomization
 resources:
   - ../../base
   - external-connectivity.yaml
+  - ../../services/admin
+  - ../../services/auth
+  - ../../services/blog
+  - ../../services/contact
+  - ../../services/gateway
+  - ../../services/health
+  - ../../services/media
+  - ../../services/messaging
+  - ../../services/notifications
+  - ../../services/payments
+  - ../../services/portfolio
+  - ../../services/progress
+  - ../../services/projects
+  - ../../services/quotes
+  - ../../services/requests
+  - ../../services/users
+  - ../../services/webhooks
+  - ../../services/ws-gateway
+  - ../../workers/analytics-worker
+  - ../../workers/audit-worker
+  - ../../workers/cdn-worker
+  - ../../workers/email-worker
+  - ../../workers/media-worker
+  - ../../workers/notification-worker
+  - ../../workers/outbox-poller
+  - ../../workers/webhook-worker
 
 patches:
   - path: config-patch.yaml
