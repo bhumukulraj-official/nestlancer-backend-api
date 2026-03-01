@@ -15,14 +15,14 @@ install: ## Install dependencies + generate Prisma client
 # ─── Development ───────────────────────────────────
 
 dev: ## Start Docker services + run all apps in dev mode
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+	docker compose -f docker-compose.yml up -d
 	pnpm dev
 
-dev-services: ## Start only infrastructure services (DB, Redis, RabbitMQ, MailHog)
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+dev-services: ## Start only infrastructure services (MailHog, MinIO, Jaeger)
+	docker compose -f docker-compose.yml up -d
 
 dev-full: ## Start all infra including MinIO and Jaeger
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile full up -d
+	docker compose -f docker-compose.yml --profile full up -d
 
 # ─── Build ─────────────────────────────────────────
 
@@ -83,19 +83,19 @@ db-studio: ## Open Prisma Studio
 # ─── Docker ────────────────────────────────────────
 
 docker-up: ## Start infrastructure services for development
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+	docker compose -f docker-compose.yml up -d
 
 docker-down: ## Stop all Docker services
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+	docker compose -f docker-compose.yml down
 
 docker-up-full: ## Start all services including MinIO and Jaeger
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile full up -d
+	docker compose -f docker-compose.yml --profile full up -d
 
 docker-test: ## Start test infrastructure
-	docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
+	docker compose -f docker-compose.yml up -d
 
 docker-test-down: ## Stop test infrastructure
-	docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
+	docker compose -f docker-compose.yml down -v
 
 docker-build: ## Build all Docker images
 	bash scripts/docker/build-all.sh

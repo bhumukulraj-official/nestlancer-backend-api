@@ -162,7 +162,7 @@ jobs:
 
       - name: Apply Kubernetes manifests
         run: |
-          kubectl apply -k deploy/kubernetes/overlays/production
+          kubectl apply -k deploy/kubernetes/overlays/vps
 
       - name: Monitor rolling update
         run: |

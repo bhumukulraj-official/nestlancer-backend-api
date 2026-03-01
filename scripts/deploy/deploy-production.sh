@@ -24,8 +24,8 @@ if [[ "${CONTEXT}" != *"production"* ]]; then
 fi
 
 # Apply manifests
-echo "  �� Applying production manifests..."
-kubectl apply -k deploy/kubernetes/overlays/production
+echo "  📋 Applying VPS manifests..."
+kubectl apply -k deploy/kubernetes/overlays/vps
 
 # Monitor rollout
 echo "  ⏳ Monitoring rollout..."

@@ -1,2 +1,0 @@
-variable "environment" { type = string }
-variable "s3_bucket_domain" { type = string }
