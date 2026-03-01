@@ -52,7 +52,9 @@ export class OutboxPollerService implements OnModuleInit, OnModuleDestroy {
       for (const event of events) {
         try {
           if (this.queuePublisher) {
+            const exchange = process.env.OUTBOX_EXCHANGE || 'events';
             await this.queuePublisher.publish(
+              exchange,
               event.routingKey || event.eventType,
               {
                 eventType: event.eventType,

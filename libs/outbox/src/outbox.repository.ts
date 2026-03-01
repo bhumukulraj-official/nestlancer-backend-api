@@ -34,11 +34,11 @@ export class OutboxRepository {
         aggregateId: event.aggregateId,
         aggregateType: event.aggregateType,
         payload: event.payload as any,
-        routingKey: event.routingKey || event.eventType,
+        routingKey: (event as any).routingKey || event.eventType,
         status: 'PENDING',
         retryCount: 0,
         createdAt: new Date(),
-      },
+      } as any, // Cast to any to bypass strict type checking for routingKey/status fields in create logic
     });
 
     this.logger.debug(`Created outbox event: ${record.id} (${event.eventType})`);

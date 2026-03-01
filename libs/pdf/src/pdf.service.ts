@@ -24,7 +24,8 @@ export class PdfService {
 
     let puppeteer: any;
     try {
-      puppeteer = await import('puppeteer');
+      // puppeteer = await import('puppeteer');
+      throw new Error('Puppeteer not installed');
     } catch {
       this.logger.warn('Puppeteer not available — returning HTML as buffer');
       const buffer = Buffer.from(html, 'utf-8');

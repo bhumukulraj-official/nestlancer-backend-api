@@ -1,6 +1,6 @@
 export class MockQueueService {
-  private readonly store = new Map<string, unknown>();
-  async get(key: string) { return this.store.get(key) || null; }
-  async set(key: string, value: unknown) { this.store.set(key, value); }
-  async del(key: string) { this.store.delete(key); }
+  async publish(exchange: string, routingKey: string, payload: unknown) { return Promise.resolve(); }
+  async sendToQueue(queue: string, payload: unknown) { return Promise.resolve(); }
+  async consume(queue: string, handler: Function) { return Promise.resolve(); }
+  getChannel() { return { assertQueue: jest.fn(), assertExchange: jest.fn(), bindQueue: jest.fn(), consume: jest.fn() }; }
 }

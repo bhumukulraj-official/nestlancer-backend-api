@@ -3,6 +3,8 @@ export * from './factories/user.factory';
 export * from './factories/project.factory';
 export * from './helpers/test-database.helper';
 export * from './helpers/test-auth.helper';
+export * from './helpers/test-redis.helper';
+export * from './helpers/test-queue.helper';
 export * from './mocks/cache.mock';
 export * from './mocks/queue.mock';
 export * from './mocks/storage.mock';

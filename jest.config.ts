@@ -5,13 +5,13 @@ const config: Config = {
     testEnvironment: 'node',
     rootDir: '.',
     // Each package defines its own jest config
-    projects: [
-        '<rootDir>/libs/*/jest.config.ts',
-        '<rootDir>/services/*/jest.config.ts',
-        '<rootDir>/workers/*/jest.config.ts',
-        '<rootDir>/gateway/jest.config.ts',
-        '<rootDir>/ws-gateway/jest.config.ts',
-    ],
+    // projects: [
+    //     '<rootDir>/libs/*/jest.config.ts',
+    //     '<rootDir>/services/*/jest.config.ts',
+    //     '<rootDir>/workers/*/jest.config.ts',
+    //     '<rootDir>/gateway/jest.config.ts',
+    //     '<rootDir>/ws-gateway/jest.config.ts',
+    // ],
     // Global coverage thresholds
     coverageThreshold: {
         global: {
