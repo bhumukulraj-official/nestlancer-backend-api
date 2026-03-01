@@ -55,7 +55,7 @@ describe('OutboxPollerService', () => {
         await Promise.resolve();
 
         expect(mockRepository.findPending).toHaveBeenCalled();
-        expect(mockPublisher.publish).toHaveBeenCalledWith('rk', expect.objectContaining({ eventType: 'test' }));
+        expect(mockPublisher.publish).toHaveBeenCalledWith('events', 'rk', expect.objectContaining({ eventType: 'test' }));
         expect(mockRepository.markPublished).toHaveBeenCalledWith('1');
     });
 

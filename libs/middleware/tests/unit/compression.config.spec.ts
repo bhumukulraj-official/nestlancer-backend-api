@@ -1,4 +1,4 @@
-import { getCompressionConfig } from '../../../../src/compression.config';
+import { getCompressionConfig } from '../../src/compression.config';
 
 describe('Compression Config', () => {
     it('should return default compression configuration', () => {

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { RequireTurnstile, REQUIRE_TURNSTILE_KEY } from '../../../../src/decorators/require-turnstile.decorator';
+import { RequireTurnstile, REQUIRE_TURNSTILE_KEY } from '../../../src/decorators/require-turnstile.decorator';
 
 describe('RequireTurnstile Decorator', () => {
     it('should apply requireTurnstile metadata', () => {

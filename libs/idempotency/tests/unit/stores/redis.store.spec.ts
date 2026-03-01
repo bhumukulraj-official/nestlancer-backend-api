@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RedisIdempotencyStore } from '../../src/stores/redis.store';
+import { RedisIdempotencyStore } from '../../../src/stores/redis.store';
 import Redis from 'ioredis';
 
 jest.mock('ioredis', () => {

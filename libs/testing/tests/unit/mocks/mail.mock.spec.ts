@@ -1,4 +1,4 @@
-import { MockMailService } from '../../../../src/mocks/mail.mock';
+import { MockMailService } from '../../../src/mocks/mail.mock';
 
 describe('MockMailService', () => {
     let mockService: MockMailService;

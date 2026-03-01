@@ -1,24 +1,20 @@
-import { AllExceptionsFilter } from '../../src/filters/all-exceptions.filter';
-import { ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import { HttpAdapterHost } from '@nestjs/core';
+import { AllExceptionsFilter } from '../../../src/filters/all-exceptions.filter';
+import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 
 describe('AllExceptionsFilter', () => {
     let filter: AllExceptionsFilter;
-    let mockHttpAdapterHost: HttpAdapterHost;
     let mockArgumentsHost: ArgumentsHost;
+    let mockResponse: any;
 
     beforeEach(() => {
-        mockHttpAdapterHost = {
-            httpAdapter: {
-                reply: jest.fn(),
-                getRequestUrl: jest.fn().mockReturnValue('/test'),
-                getRequestMethod: jest.fn().mockReturnValue('GET'),
-            },
-        } as any;
+        mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
 
         mockArgumentsHost = {
             switchToHttp: () => ({
-                getResponse: () => ({}),
+                getResponse: () => mockResponse,
                 getRequest: () => ({
                     headers: {},
                     url: '/test',
@@ -26,7 +22,7 @@ describe('AllExceptionsFilter', () => {
             }),
         } as any;
 
-        filter = new AllExceptionsFilter(mockHttpAdapterHost);
+        filter = new AllExceptionsFilter();
     });
 
     it('should be defined', () => {
@@ -38,16 +34,15 @@ describe('AllExceptionsFilter', () => {
 
         filter.catch(exception, mockArgumentsHost);
 
-        expect(mockHttpAdapterHost.httpAdapter.reply).toHaveBeenCalledWith(
-            expect.any(Object),
+        expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+        expect(mockResponse.json).toHaveBeenCalledWith(
             expect.objectContaining({
                 status: 'error',
                 error: expect.objectContaining({
-                    code: 'BAD_REQUEST',
+                    code: 'HTTP_400',
                     message: 'Test error',
                 }),
-            }),
-            HttpStatus.BAD_REQUEST
+            })
         );
     });
 
@@ -56,15 +51,14 @@ describe('AllExceptionsFilter', () => {
 
         filter.catch(exception, mockArgumentsHost);
 
-        expect(mockHttpAdapterHost.httpAdapter.reply).toHaveBeenCalledWith(
-            expect.any(Object),
+        expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+        expect(mockResponse.json).toHaveBeenCalledWith(
             expect.objectContaining({
                 status: 'error',
                 error: expect.objectContaining({
-                    code: 'INTERNAL_SERVER_ERROR',
+                    code: 'INTERNAL_ERROR',
                 }),
-            }),
-            HttpStatus.INTERNAL_SERVER_ERROR
+            })
         );
     });
 });

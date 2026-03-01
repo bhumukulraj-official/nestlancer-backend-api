@@ -1,6 +1,6 @@
 import { ExecutionContext } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { WsAuthGuard } from '../../../../src/guards/ws-auth.guard';
+import { WsAuthGuard } from '../../../src/guards/ws-auth.guard';
 
 describe('WsAuthGuard', () => {
     let guard: WsAuthGuard;

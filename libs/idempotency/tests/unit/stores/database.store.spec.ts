@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseIdempotencyStore } from '../../src/stores/database.store';
+import { DatabaseIdempotencyStore } from '../../../src/stores/database.store';
 import { Logger } from '@nestjs/common';
 
 describe('DatabaseIdempotencyStore', () => {

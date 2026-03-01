@@ -1,4 +1,4 @@
-import { JwtStrategy } from '../../src/strategies/jwt.strategy';
+import { JwtStrategy } from '../../../src/strategies/jwt.strategy';
 
 describe('JwtStrategy', () => {
     let strategy: JwtStrategy;

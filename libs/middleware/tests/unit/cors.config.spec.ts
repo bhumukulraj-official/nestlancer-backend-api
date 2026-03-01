@@ -1,4 +1,4 @@
-import { getCorsConfig } from '../../../../src/cors.config';
+import { getCorsConfig } from '../../src/cors.config';
 
 describe('CORS Config', () => {
     it('should return CORS options with provided origins', () => {

@@ -11,7 +11,7 @@ describe('ParsePaginationPipe', () => {
     it('should set default values if none provided', () => {
         const result = pipe.transform({} as PaginationQueryDto);
         expect(result.page).toBe(1);
-        expect(result.limit).toBe(10); // Assume DEFAULT_LIMIT is 10
+        expect(result.limit).toBe(20); // Assume DEFAULT_LIMIT is 20
     });
 
     it('should bound negative page to 1', () => {

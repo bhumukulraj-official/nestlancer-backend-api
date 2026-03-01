@@ -1,6 +1,6 @@
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { DateRangeQueryDto } from '../../../../src/dto/date-range-query.dto';
+import { DateRangeQueryDto } from '../../../src/dto/date-range-query.dto';
 
 describe('DateRangeQueryDto', () => {
     it('should validate with valid ISO dates', async () => {

@@ -1,4 +1,4 @@
-import { databaseConfigSchema } from '../../../../src/schemas/database.schema';
+import { databaseConfigSchema } from '../../../src/schemas/database.schema';
 
 describe('DatabaseConfig Schema', () => {
     it('should validate valid DATABASE_URL', () => {

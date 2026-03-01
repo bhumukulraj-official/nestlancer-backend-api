@@ -1,4 +1,4 @@
-import { getReceiptTemplate } from '../../../../src/templates/receipt.template';
+import { getReceiptTemplate } from '../../../src/templates/receipt.template';
 
 describe('Receipt Template', () => {
     it('should render a valid HTML receipt with basic data', () => {

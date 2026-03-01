@@ -1,5 +1,5 @@
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
-import { IdempotencyKey } from '../../../../src/decorators/idempotency-key.decorator';
+import { IdempotencyKey } from '../../../src/decorators/idempotency-key.decorator';
 import { ExecutionContext } from '@nestjs/common';
 
 describe('IdempotencyKey Decorator', () => {

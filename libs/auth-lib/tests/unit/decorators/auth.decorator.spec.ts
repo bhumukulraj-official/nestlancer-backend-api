@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Auth } from '../../../../src/decorators/auth.decorator';
+import { Auth } from '../../../src/decorators/auth.decorator';
 import { ROLES_KEY } from '@nestlancer/common';
 
 describe('Auth Decorator', () => {

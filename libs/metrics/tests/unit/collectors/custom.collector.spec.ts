@@ -1,5 +1,5 @@
-import { CustomMetricsCollector } from '../../../../src/collectors/custom.collector';
-import { MetricsService } from '../../../../src/metrics.service';
+import { CustomMetricsCollector } from '../../../src/collectors/custom.collector';
+import { MetricsService } from '../../../src/metrics.service';
 
 describe('CustomMetricsCollector', () => {
     let collector: CustomMetricsCollector;

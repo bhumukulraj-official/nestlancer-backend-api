@@ -1,5 +1,5 @@
-import { DlqService } from '../../../../src/dlq.service';
-import { QueuePublisherService } from '../../../../src/queue-publisher.service';
+import { DlqService } from '../../src/dlq.service';
+import { QueuePublisherService } from '../../src/queue-publisher.service';
 import { Logger } from '@nestjs/common';
 
 jest.mock('@nestjs/common', () => {

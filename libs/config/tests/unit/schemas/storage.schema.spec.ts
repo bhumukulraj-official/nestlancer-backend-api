@@ -1,4 +1,4 @@
-import { storageConfigSchema } from '../../../../src/schemas/storage.schema';
+import { storageConfigSchema } from '../../../src/schemas/storage.schema';
 
 describe('StorageConfig Schema', () => {
     it('should validate empty input and set defaults', () => {
@@ -20,6 +20,18 @@ describe('StorageConfig Schema', () => {
         expect(result.success).toBe(true);
         if (result.success) {
             expect(result.data.STORAGE_PROVIDER).toBe('s3');
+        }
+    });
+
+    it('should coerce string numbers to numbers during validation', () => {
+        const result = storageConfigSchema.safeParse({
+            B2_PRESIGNED_URL_EXPIRY: '7200',
+            STORAGE_MAX_FILE_SIZE: '500000',
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data.B2_PRESIGNED_URL_EXPIRY).toBe(7200);
+            expect(result.data.STORAGE_MAX_FILE_SIZE).toBe(500000);
         }
     });
 });

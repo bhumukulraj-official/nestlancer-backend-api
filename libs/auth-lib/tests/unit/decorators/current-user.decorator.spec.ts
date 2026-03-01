@@ -1,4 +1,4 @@
-import { CurrentUser } from '../../../../src/decorators/current-user.decorator';
+import { CurrentUser } from '../../../src/decorators/current-user.decorator';
 
 describe('CurrentUser Re-export', () => {
     it('should be defined', () => {

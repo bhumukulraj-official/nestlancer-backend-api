@@ -4,11 +4,11 @@ import { join } from 'path';
 
 jest.mock('fs', () => ({
     promises: {
-        mkdir: jest.fn(),
-        writeFile: jest.fn(),
-        readFile: jest.fn(),
-        unlink: jest.fn(),
-        access: jest.fn(),
+        mkdir: jest.fn().mockResolvedValue(undefined),
+        writeFile: jest.fn().mockResolvedValue(undefined),
+        readFile: jest.fn().mockResolvedValue(undefined),
+        unlink: jest.fn().mockResolvedValue(undefined),
+        access: jest.fn().mockResolvedValue(undefined),
     }
 }));
 

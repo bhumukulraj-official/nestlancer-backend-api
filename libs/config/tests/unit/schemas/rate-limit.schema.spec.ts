@@ -1,4 +1,4 @@
-import { rateLimitConfigSchema } from '../../../../src/schemas/rate-limit.schema';
+import { rateLimitConfigSchema } from '../../../src/schemas/rate-limit.schema';
 
 describe('RateLimitConfig Schema', () => {
     it('should populate all defaults if empty input', () => {

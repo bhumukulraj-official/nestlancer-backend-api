@@ -1,5 +1,5 @@
 import * as jwt from 'jsonwebtoken';
-import { createTestJwt, createTestRefreshToken, createAuthHeader } from '../../../../src/helpers/test-auth.helper';
+import { createTestJwt, createTestRefreshToken, createAuthHeader } from '../../../src/helpers/test-auth.helper';
 
 describe('TestAuthHelper', () => {
     const mockSecret = 'test-secret-key-for-testing-only-32char';

@@ -1,4 +1,4 @@
-import { SearchIndexerService } from '../../../src/search-indexer.service';
+import { SearchIndexerService } from '../../src/search-indexer.service';
 import { MeiliSearch } from 'meilisearch';
 
 jest.mock('meilisearch');

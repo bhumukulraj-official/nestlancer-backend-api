@@ -1,4 +1,4 @@
-import { SanitizePipe } from '../../../../src/pipes/sanitize.pipe';
+import { SanitizePipe } from '../../../src/pipes/sanitize.pipe';
 
 describe('SanitizePipe', () => {
     let pipe: SanitizePipe;

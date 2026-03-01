@@ -1,6 +1,6 @@
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { BulkOperationDto } from '../../../../src/dto/bulk-operation.dto';
+import { BulkOperationDto } from '../../../src/dto/bulk-operation.dto';
 
 describe('BulkOperationDto', () => {
     it('should validate successfully with an array of strings', async () => {

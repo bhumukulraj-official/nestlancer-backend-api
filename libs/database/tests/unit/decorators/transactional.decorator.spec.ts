@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Transactional, IS_TRANSACTIONAL } from '../../../../src/decorators/transactional.decorator';
+import { Transactional, IS_TRANSACTIONAL } from '../../../src/decorators/transactional.decorator';
 
 describe('Transactional Decorator', () => {
     it('should mark method as transactional by setting metadata to true', () => {

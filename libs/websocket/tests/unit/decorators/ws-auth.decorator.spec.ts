@@ -1,5 +1,5 @@
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
-import { WsCurrentUser } from '../../../../src/decorators/ws-auth.decorator';
+import { WsCurrentUser } from '../../../src/decorators/ws-auth.decorator';
 import { ExecutionContext } from '@nestjs/common';
 
 describe('WsCurrentUser Decorator', () => {

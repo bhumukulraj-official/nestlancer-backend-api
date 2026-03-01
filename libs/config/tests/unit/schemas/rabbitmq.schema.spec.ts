@@ -1,4 +1,4 @@
-import { rabbitmqConfigSchema } from '../../../../src/schemas/rabbitmq.schema';
+import { rabbitmqConfigSchema } from '../../../src/schemas/rabbitmq.schema';
 
 describe('RabbitMQConfig Schema', () => {
     it('should validate valid input with defaults', () => {

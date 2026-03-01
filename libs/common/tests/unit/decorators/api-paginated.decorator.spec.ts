@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ApiPaginated } from '../../../../src/decorators/api-paginated.decorator';
+import { ApiPaginated } from '../../../src/decorators/api-paginated.decorator';
 
 describe('ApiPaginated Decorator', () => {
     it('should be defined and applicable to a method', () => {

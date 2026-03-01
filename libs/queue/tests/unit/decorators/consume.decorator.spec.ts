@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Consume, CONSUME_KEY } from '../../../../src/decorators/consume.decorator';
+import { Consume, CONSUME_KEY } from '../../../src/decorators/consume.decorator';
 
 describe('Consume Decorator', () => {
     it('should set consume metadata with the queue name', () => {

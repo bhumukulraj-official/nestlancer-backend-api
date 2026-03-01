@@ -1,8 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaReadService } from '../../src/prisma-read.service';
 
+jest.mock('@prisma/client', () => {
+    return {
+        PrismaClient: class {
+            constructor(options: any) {
+                (this as any).datasourceUrl =
+                    options?.datasources?.db?.url ||
+                    options?.datasourceUrl ||
+                    process.env.DATABASE_READ_URL ||
+                    process.env.DATABASE_URL;
+            }
+            async $connect() { }
+            async $disconnect() { }
+        },
+    };
+});
+
 describe('PrismaReadService', () => {
     let service: PrismaReadService;
+
+    beforeAll(() => {
+        delete process.env.DATABASE_READ_URL;
+        delete process.env.DATABASE_URL;
+        process.env.DATABASE_URL = 'prisma://accelerate.net/?api_key=test';
+    });
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({

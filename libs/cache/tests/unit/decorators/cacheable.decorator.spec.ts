@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Cacheable, CACHEABLE_KEY } from '../../../../src/decorators/cacheable.decorator';
+import { Cacheable, CACHEABLE_KEY } from '../../../src/decorators/cacheable.decorator';
 
 describe('Cacheable Decorator', () => {
     it('should set caching options correctly', () => {

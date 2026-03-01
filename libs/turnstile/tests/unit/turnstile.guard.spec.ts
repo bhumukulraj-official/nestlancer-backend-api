@@ -1,7 +1,7 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { TurnstileGuard } from '../../../src/turnstile.guard';
-import { TurnstileService } from '../../../src/turnstile.service';
+import { TurnstileGuard } from '../../src/turnstile.guard';
+import { TurnstileService } from '../../src/turnstile.service';
 
 describe('TurnstileGuard', () => {
     let guard: TurnstileGuard;

@@ -1,4 +1,4 @@
-import { MockQueueService } from '../../../../src/mocks/queue.mock';
+import { MockQueueService } from '../../../src/mocks/queue.mock';
 
 describe('MockQueueService', () => {
     let mockService: MockQueueService;

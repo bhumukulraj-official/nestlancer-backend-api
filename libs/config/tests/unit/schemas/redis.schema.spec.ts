@@ -1,4 +1,4 @@
-import { redisConfigSchema } from '../../../../src/schemas/redis.schema';
+import { redisConfigSchema } from '../../../src/schemas/redis.schema';
 
 describe('RedisConfig Schema', () => {
     it('should validate correct REDIS_URL', () => {

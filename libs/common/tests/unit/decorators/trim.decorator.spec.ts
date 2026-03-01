@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { Trim } from '../../../../src/decorators/trim.decorator';
+import { Trim } from '../../../src/decorators/trim.decorator';
 
 class TestClass {
     @Trim()

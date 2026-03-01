@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Idempotent, IDEMPOTENT_KEY } from '../../../../src/decorators/idempotent.decorator';
+import { Idempotent, IDEMPOTENT_KEY } from '../../../src/decorators/idempotent.decorator';
 
 describe('Idempotent Decorator', () => {
     it('should mark method as idempotent by setting metadata to true', () => {

@@ -1,4 +1,4 @@
-import { getHelmetConfig } from '../../../../src/helmet.config';
+import { getHelmetConfig } from '../../src/helmet.config';
 
 describe('Helmet Config', () => {
     it('should return strict security headers configuration', () => {

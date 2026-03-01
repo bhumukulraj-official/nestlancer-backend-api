@@ -1,6 +1,6 @@
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { IdParamDto } from '../../../../src/dto/id-param.dto';
+import { IdParamDto } from '../../../src/dto/id-param.dto';
 
 describe('IdParamDto', () => {
     it('should validate with a non-empty string', async () => {

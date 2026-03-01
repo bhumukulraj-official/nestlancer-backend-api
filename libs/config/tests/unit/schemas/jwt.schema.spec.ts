@@ -1,4 +1,4 @@
-import { jwtConfigSchema } from '../../../../src/schemas/jwt.schema';
+import { jwtConfigSchema } from '../../../src/schemas/jwt.schema';
 
 describe('JwtConfig Schema', () => {
     it('should validate successfully', () => {

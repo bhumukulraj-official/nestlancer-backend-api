@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Auditable, AUDITABLE_KEY } from '../../../../src/decorators/auditable.decorator';
+import { Auditable, AUDITABLE_KEY } from '../../../src/decorators/auditable.decorator';
 
 describe('Auditable Decorator', () => {
     it('should set metadata correctly', () => {

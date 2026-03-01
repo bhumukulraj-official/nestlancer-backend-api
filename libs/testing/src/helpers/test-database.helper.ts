@@ -9,9 +9,8 @@ export async function setupTestDatabase(): Promise<PrismaClient> {
     const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/nestlancer_test';
 
     prismaClient = new PrismaClient({
-        datasources: { db: { url: databaseUrl } } as object,
         log: ['error'],
-    } as any);
+    });
 
     await prismaClient.$connect();
     return prismaClient;

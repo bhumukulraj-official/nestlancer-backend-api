@@ -1,4 +1,4 @@
-import { renderTemplate } from '../../../../src/templates/handlebars.engine';
+import { renderTemplate } from '../../../src/templates/handlebars.engine';
 
 describe('Handlebars Engine', () => {
     it('should replace variables in template string', () => {

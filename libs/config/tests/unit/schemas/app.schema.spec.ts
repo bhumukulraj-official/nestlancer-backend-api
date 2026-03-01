@@ -1,4 +1,4 @@
-import { appConfigSchema } from '../../../../src/schemas/app.schema';
+import { appConfigSchema } from '../../../src/schemas/app.schema';
 
 describe('AppConfig Schema', () => {
     it('should validate correctly with valid data', () => {

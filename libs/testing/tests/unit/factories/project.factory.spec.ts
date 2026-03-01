@@ -1,4 +1,4 @@
-import { createTestProject } from '../../../../src/factories/project.factory';
+import { createTestProject } from '../../../src/factories/project.factory';
 
 describe('Project Factory', () => {
     it('should create a project with default values', () => {

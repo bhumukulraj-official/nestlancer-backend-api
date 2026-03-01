@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 describe('IdempotencyInterceptor', () => {
     let interceptor: IdempotencyInterceptor;
     let reflector: Reflector;
+    let store: RedisIdempotencyStore;
 
 
     const mockStore = {

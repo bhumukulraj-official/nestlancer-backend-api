@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { WithCircuitBreaker, CIRCUIT_BREAKER_KEY } from '../../../../src/decorators/circuit-breaker.decorator';
+import { WithCircuitBreaker, CIRCUIT_BREAKER_KEY } from '../../../src/decorators/circuit-breaker.decorator';
 
 describe('WithCircuitBreaker Decorator', () => {
     it('should set circuit breaker name metadata', () => {

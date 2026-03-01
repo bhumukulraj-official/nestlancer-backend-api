@@ -18,6 +18,7 @@ describe('RedisIoAdapter', () => {
 
         expect(createIOServerSpy).toHaveBeenCalledWith(3000, {
             path: '/ws',
+            cleanupEmptyChildNamespaces: false,
             cors: { origin: '*', credentials: true }
         });
         expect(server).toBeDefined();

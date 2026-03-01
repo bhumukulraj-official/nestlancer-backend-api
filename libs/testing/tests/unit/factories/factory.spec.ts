@@ -1,5 +1,5 @@
-import { createTestUser, createTestAdmin } from '../../src/factories/user.factory';
-import { createTestProject } from '../../src/factories/project.factory';
+import { createTestUser, createTestAdmin } from '../../../src/factories/user.factory';
+import { createTestProject } from '../../../src/factories/project.factory';
 
 describe('Testing Factories', () => {
     describe('UserFactory', () => {
