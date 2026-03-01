@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthPublicController } from '../../src/controllers/auth.public.controller';
-import { AuthService } from '../../src/services/auth.service';
+import { AuthPublicController } from '../../../src/controllers/auth.public.controller';
+import { AuthService } from '../../../src/services/auth.service';
 import { Response } from 'express';
 
 describe('AuthPublicController', () => {

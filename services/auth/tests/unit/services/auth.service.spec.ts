@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '../../src/services/auth.service';
-import { RegistrationService } from '../../src/services/registration.service';
-import { LoginService } from '../../src/services/login.service';
-import { TokenService } from '../../src/services/token.service';
-import { PasswordService } from '../../src/services/password.service';
-import { TwoFactorService } from '../../src/services/two-factor.service';
-import { EmailVerificationService } from '../../src/services/email-verification.service';
-import { TurnstileService } from '../../src/services/turnstile.service';
+import { AuthService } from '../../../src/services/auth.service';
+import { RegistrationService } from '../../../src/services/registration.service';
+import { LoginService } from '../../../src/services/login.service';
+import { TokenService } from '../../../src/services/token.service';
+import { PasswordService } from '../../../src/services/password.service';
+import { TwoFactorService } from '../../../src/services/two-factor.service';
+import { EmailVerificationService } from '../../../src/services/email-verification.service';
+import { TurnstileService } from '../../../src/services/turnstile.service';
 
 describe('AuthService', () => {
     let service: AuthService;

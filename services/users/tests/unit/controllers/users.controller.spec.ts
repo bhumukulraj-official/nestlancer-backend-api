@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from '../../src/controllers/users.controller';
-import { ProfileService } from '../../src/services/profile.service';
-import { PreferencesService } from '../../src/services/preferences.service';
-import { AvatarService } from '../../src/services/avatar.service';
-import { SessionsService } from '../../src/services/sessions.service';
-import { AccountService } from '../../src/services/account.service';
+import { UsersController } from '../../../src/controllers/users.controller';
+import { ProfileService } from '../../../src/services/profile.service';
+import { PreferencesService } from '../../../src/services/preferences.service';
+import { AvatarService } from '../../../src/services/avatar.service';
+import { SessionsService } from '../../../src/services/sessions.service';
+import { AccountService } from '../../../src/services/account.service';
 
 describe('UsersController', () => {
     let controller: UsersController;

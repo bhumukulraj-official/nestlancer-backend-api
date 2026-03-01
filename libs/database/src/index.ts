@@ -6,3 +6,4 @@ export * from './decorators/read-only.decorator';
 export * from './decorators/transactional.decorator';
 export * from './utils/query-builder.util';
 export * from './utils/soft-delete.util';
+export * from './utils/pagination.util';

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProjectsController } from '../../src/controllers/projects.controller';
-import { ProjectsService } from '../../src/services/projects.service';
-import { ProjectTimelineService } from '../../src/services/project-timeline.service';
-import { ProjectDeliverablesService } from '../../src/services/project-deliverables.service';
-import { ProjectPaymentsService } from '../../src/services/project-payments.service';
+import { ProjectsController } from '../../../src/controllers/projects.controller';
+import { ProjectsService } from '../../../src/services/projects.service';
+import { ProjectTimelineService } from '../../../src/services/project-timeline.service';
+import { ProjectDeliverablesService } from '../../../src/services/project-deliverables.service';
+import { ProjectPaymentsService } from '../../../src/services/project-payments.service';
 
 describe('ProjectsController', () => {
     let controller: ProjectsController;

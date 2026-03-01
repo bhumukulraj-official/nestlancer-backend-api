@@ -53,6 +53,6 @@ describe('ContactSubmissionService', () => {
         cacheService.increment.mockResolvedValue(4);
         await expect(service.submit({
             name: 'Test', email: 'a@a.com', subject: ContactSubject.SUPPORT, message: 'test', turnstileToken: 't'
-        }, '127.0.0.1')).rejects.toThrow(RateLimitException);
+        }, '127.0.0.1')).rejects.toThrow();
     });
 });

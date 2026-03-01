@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RequestsController } from '../../src/controllers/requests.controller';
-import { RequestsService } from '../../src/services/requests.service';
-import { RequestAttachmentsService } from '../../src/services/request-attachments.service';
-import { RequestStatsService } from '../../src/services/request-stats.service';
+import { RequestsController } from '../../../src/controllers/requests.controller';
+import { RequestsService } from '../../../src/services/requests.service';
+import { RequestAttachmentsService } from '../../../src/services/request-attachments.service';
+import { RequestStatsService } from '../../../src/services/request-stats.service';
 import { Response } from 'express';
 
 describe('RequestsController', () => {

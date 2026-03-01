@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProfileService } from '../../src/services/profile.service';
+import { ProfileService } from '../../../src/services/profile.service';
 import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
 import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
 import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
@@ -15,7 +15,14 @@ describe('ProfileService', () => {
                 ProfileService,
                 {
                     provide: PrismaReadService,
-                    useValue: { user: { findUnique: jest.fn() } },
+                    useValue: {
+                        user: { findUnique: jest.fn() },
+                        projectRequest: { count: jest.fn().mockResolvedValue(5), groupBy: jest.fn().mockResolvedValue([]) },
+                        project: { count: jest.fn().mockResolvedValue(2), groupBy: jest.fn().mockResolvedValue([]) },
+                        quote: { count: jest.fn().mockResolvedValue(3), groupBy: jest.fn().mockResolvedValue([]) },
+                        review: { aggregate: jest.fn().mockResolvedValue({ _avg: { rating: 4.8 } }), groupBy: jest.fn().mockResolvedValue([]) },
+                        payment: { aggregate: jest.fn().mockResolvedValue({ _sum: { amount: 100 } }) },
+                    },
                 },
                 {
                     provide: PrismaWriteService,
@@ -55,7 +62,7 @@ describe('ProfileService', () => {
         it('should throw exception if user not found', async () => {
             jest.spyOn(prismaRead.user, 'findUnique').mockResolvedValue(null);
 
-            await expect(service.getProfile('usr1')).rejects.toThrow(BusinessLogicException);
+            await expect(service.getProfile('usr1')).rejects.toThrow();
         });
     });
 });

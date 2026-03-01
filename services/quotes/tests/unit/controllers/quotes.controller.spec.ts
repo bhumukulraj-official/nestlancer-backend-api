@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QuotesController } from '../../src/controllers/quotes.controller';
-import { QuotesService } from '../../src/services/quotes.service';
-import { QuoteStatusService } from '../../src/services/quote-status.service';
-import { QuotePdfService } from '../../src/services/quote-pdf.service';
-import { QuoteStatsService } from '../../src/services/quote-stats.service';
+import { QuotesController } from '../../../src/controllers/quotes.controller';
+import { QuotesService } from '../../../src/services/quotes.service';
+import { QuoteStatusService } from '../../../src/services/quote-status.service';
+import { QuotePdfService } from '../../../src/services/quote-pdf.service';
+import { QuoteStatsService } from '../../../src/services/quote-stats.service';
 import { Response } from 'express';
 
 describe('QuotesController', () => {

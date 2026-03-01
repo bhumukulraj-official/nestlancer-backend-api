@@ -1,23 +1,70 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsService } from '../../../src/notifications/notifications.service';
-import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 describe('NotificationsService', () => {
     let service: NotificationsService;
+    let mockPrismaWrite: any;
+    let mockPrismaRead: any;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                NotificationsService,
-                { provide: PrismaWriteService, useValue: {} },
-                { provide: PrismaReadService, useValue: {} },
-            ],
-        }).compile();
+    const mockNotification = { id: 'notif-1', userId: 'user-1', type: 'INFO', readAt: null, dismissedAt: null, createdAt: new Date() };
 
-        service = module.get<NotificationsService>(NotificationsService);
+    beforeEach(() => {
+        mockPrismaRead = {
+            notification: {
+                findMany: jest.fn().mockResolvedValue([mockNotification]),
+                count: jest.fn().mockResolvedValue(1),
+            },
+        };
+        mockPrismaWrite = {
+            notification: {
+                findFirst: jest.fn().mockResolvedValue(mockNotification),
+                update: jest.fn().mockResolvedValue({ ...mockNotification, readAt: new Date() }),
+                updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+            },
+        };
+        service = new NotificationsService(mockPrismaWrite, mockPrismaRead);
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    describe('findByUser', () => {
+        it('should return paginated notifications', async () => {
+            const result = await service.findByUser('user-1', { page: 1, limit: 20 } as any);
+            expect(result.data).toHaveLength(1);
+        });
+    });
+
+    describe('getUnreadCount', () => {
+        it('should return unread count', async () => {
+            const result = await service.getUnreadCount('user-1');
+            expect(result.count).toBe(1);
+        });
+    });
+
+    describe('markRead', () => {
+        it('should mark notification as read', async () => {
+            const result = await service.markRead('notif-1', 'user-1', true);
+            expect(result.readAt).toBeDefined();
+        });
+
+        it('should throw for non-existent notification', async () => {
+            mockPrismaWrite.notification.findFirst.mockResolvedValue(null);
+            await expect(service.markRead('invalid', 'user-1', true)).rejects.toThrow();
+        });
+    });
+
+    describe('markAllRead', () => {
+        it('should mark all notifications as read', async () => {
+            await service.markAllRead('user-1');
+            expect(mockPrismaWrite.notification.updateMany).toHaveBeenCalledWith(
+                expect.objectContaining({ where: expect.objectContaining({ userId: 'user-1', readAt: null }) })
+            );
+        });
+    });
+
+    describe('softDelete', () => {
+        it('should set dismissedAt on notification', async () => {
+            await service.softDelete('notif-1', 'user-1');
+            expect(mockPrismaWrite.notification.updateMany).toHaveBeenCalledWith(
+                expect.objectContaining({ data: expect.objectContaining({ dismissedAt: expect.any(Date) }) })
+            );
+        });
     });
 });

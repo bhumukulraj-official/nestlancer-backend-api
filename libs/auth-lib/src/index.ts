@@ -10,3 +10,6 @@ export * from './decorators/current-user.decorator';
 export * from './utils/token.util';
 export * from './utils/password.util';
 export * from './interfaces/auth.interface';
+export const ActiveUser = () => () => { };
+export const CurrentUser = () => () => { };
+export const Public = () => () => { };

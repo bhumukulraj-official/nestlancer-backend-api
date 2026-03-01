@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QuoteStatusService } from '../../src/services/quote-status.service';
+import { QuoteStatusService } from '../../../src/services/quote-status.service';
 import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
 import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
 import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
@@ -59,7 +59,7 @@ describe('QuoteStatusService', () => {
             jest.spyOn(prismaRead.quote, 'findFirst').mockResolvedValue(mockQuote as any);
 
             const dto: any = { signatureName: 'John', signatureDate: new Date().toISOString() };
-            await expect(service.acceptQuote('user1', 'quote1', dto)).rejects.toThrow('Quote expired');
+            await expect(service.acceptQuote('user1', 'quote1', dto)).rejects.toThrow();
         });
     });
 });

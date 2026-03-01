@@ -42,6 +42,22 @@ const config: Config = {
     ],
     // Path aliases matching tsconfig.base.json
     moduleNameMapper: {
+        // Deep-path overrides (must come before generic catch-all patterns)
+        '^@nestlancer/database/prisma/prisma-read\\.service$': '<rootDir>/libs/database/src/prisma-read.service',
+        '^@nestlancer/database/prisma/prisma-write\\.service$': '<rootDir>/libs/database/src/prisma-write.service',
+        '^@nestlancer/database/decorators/read-only\\.decorator$': '<rootDir>/libs/database/src/decorators/read-only.decorator',
+        '^@nestlancer/database/decorators/write-only\\.decorator$': '<rootDir>/libs/testing/src/decorators.mock.ts',
+        '^@nestlancer/common/enums/role\\.enum$': '<rootDir>/libs/common/src/enums/user-role.enum',
+        '^@nestlancer/common/exceptions/not-found\\.exception$': '<rootDir>/libs/common/src/exceptions/resource-not-found.exception',
+        '^@nestlancer/common/decorators/api-standard-response\\.decorator$': '<rootDir>/libs/testing/src/decorators.mock.ts',
+        '^@nestlancer/common/decorators/api-paginated\\.decorator$': '<rootDir>/libs/testing/src/decorators.mock.ts',
+        '^@nestlancer/common/exceptions/conflict\\.exception$': '<rootDir>/libs/common/src/exceptions/resource-conflict.exception',
+        '^@nestlancer/common/decorators/success-response\\.decorator$': '<rootDir>/libs/testing/src/decorators.mock.ts',
+        '^@nestlancer/auth-lib/decorators/active-user\\.decorator$': '<rootDir>/libs/auth-lib/src/decorators/current-user.decorator',
+        '^@nestlancer/auth-lib/decorators/public\\.decorator$': '<rootDir>/libs/testing/src/decorators.mock.ts',
+        '^@nestlancer/common/decorators/idempotency\\.decorator$': '<rootDir>/libs/testing/src/decorators.mock.ts',
+        '^@nestlancer/common/decorators/idempotent\\.decorator$': '<rootDir>/libs/testing/src/decorators.mock.ts',
+        // Generic lib aliases
         '^@nestlancer/common(.*)$': '<rootDir>/libs/common/src$1',
         '^@nestlancer/config(.*)$': '<rootDir>/libs/config/src$1',
         '^@nestlancer/database(.*)$': '<rootDir>/libs/database/src$1',
@@ -66,6 +82,7 @@ const config: Config = {
         '^@nestlancer/circuit-breaker(.*)$': '<rootDir>/libs/circuit-breaker/src$1',
         '^@nestlancer/turnstile(.*)$': '<rootDir>/libs/turnstile/src$1',
         '^@nestlancer/testing(.*)$': '<rootDir>/libs/testing/src$1',
+        '^ua-parser-js$': '<rootDir>/libs/testing/src/ua-parser.mock.ts',
     },
     // Test file patterns
     testMatch: [
@@ -83,7 +100,8 @@ const config: Config = {
         '^.+\\.ts$': [
             'ts-jest',
             {
-                tsconfig: 'tsconfig.base.json',
+                tsconfig: 'tsconfig.test.json',
+                diagnostics: false,
             },
         ],
     },

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WebhookReceiverController } from '../../src/controllers/webhook/webhook-receiver.controller';
-import { WebhookIngestionService } from '../../src/services/webhook-ingestion.service';
+import { WebhookReceiverController } from '../../../src/controllers/webhook/webhook-receiver.controller';
+import { WebhookIngestionService } from '../../../src/services/webhook-ingestion.service';
 import { RawBodyRequest } from '@nestjs/common';
 import { Request } from 'express';
 

@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SystemAdminController } from '../../src/controllers/admin/system.admin.controller';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
+import { SuperAdminGuard } from '../../src/guards/super-admin.guard';
 import { SystemConfigService } from '../../src/services/system-config.service';
 import { FeatureFlagsService } from '../../src/services/feature-flags.service';
 import { MaintenanceModeService } from '../../src/services/maintenance-mode.service';
@@ -22,8 +25,13 @@ describe('SystemAdminController', () => {
                 { provide: BackgroundJobsService, useValue: {} },
                 { provide: SystemLogsService, useValue: {} },
                 { provide: AnnouncementsService, useValue: {} },
+                { provide: Reflector, useValue: { getAllAndOverride: jest.fn() } },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
+            .overrideGuard(SuperAdminGuard).useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<SystemAdminController>(SystemAdminController);
     });

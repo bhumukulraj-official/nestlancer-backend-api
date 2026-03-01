@@ -31,3 +31,22 @@ export function toPaginationMeta(result: PaginatedResult<unknown>): PaginationMe
 export function calculateSkip(page: number, limit: number): number {
   return (page - 1) * limit;
 }
+
+export function buildPrismaSkipTake(pageStr?: string | number, limitStr?: string | number) {
+  const page = Number(pageStr) || 1;
+  const limit = Number(limitStr) || 10;
+  return { skip: (page - 1) * limit, take: limit };
+}
+
+export function createPaginationMeta(totalItems: number, page: number, limit: number) {
+  return {
+    page,
+    limit,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit),
+    hasNextPage: page * limit < totalItems,
+    hasPreviousPage: page > 1,
+  };
+}
+
+

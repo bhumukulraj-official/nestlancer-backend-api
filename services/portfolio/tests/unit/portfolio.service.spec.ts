@@ -1,42 +1,59 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { PortfolioService } from '../../src/services/portfolio.service';
-import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 describe('PortfolioService', () => {
     let service: PortfolioService;
+    let mockPrismaWrite: any;
+    let mockPrismaRead: any;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                PortfolioService,
-                {
-                    provide: PrismaWriteService,
-                    useValue: {
-                        portfolioItem: {
-                            create: jest.fn(),
-                            update: jest.fn(),
-                            delete: jest.fn(),
-                        },
-                    },
-                },
-                {
-                    provide: PrismaReadService,
-                    useValue: {
-                        portfolioItem: {
-                            findMany: jest.fn(),
-                            count: jest.fn(),
-                            findUnique: jest.fn(),
-                            findFirst: jest.fn(),
-                        },
-                    },
-                },
-            ],
-        }).compile();
+    const mockItem = { id: 'pi-1', title: 'Website', slug: 'website', status: 'PUBLISHED', featured: true, viewCount: 100, likeCount: 50, createdAt: new Date(), category: { name: 'Web' }, tags: [] };
 
-        service = module.get<PortfolioService>(PortfolioService);
+    beforeEach(() => {
+        mockPrismaRead = {
+            portfolioItem: {
+                findMany: jest.fn().mockResolvedValue([mockItem]),
+                count: jest.fn().mockResolvedValue(1),
+                findFirst: jest.fn().mockResolvedValue(mockItem),
+            },
+        };
+        mockPrismaWrite = {
+            portfolioItem: {
+                create: jest.fn().mockResolvedValue({ ...mockItem, id: 'pi-new', status: 'DRAFT' }),
+            },
+        };
+        service = new PortfolioService(mockPrismaWrite, mockPrismaRead);
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    describe('create', () => {
+        it('should create portfolio item with auto-slug', async () => {
+            const result = await service.create({ title: 'My Website', contentFormat: 'MARKDOWN', content: 'Description' } as any);
+            expect(result.id).toBe('pi-new');
+        });
+    });
+
+    describe('findPublished', () => {
+        it('should return published items', async () => {
+            const result = await service.findPublished({ page: 1, limit: 20 } as any);
+            expect(result.items).toHaveLength(1);
+            expect(result.totalItems).toBe(1);
+        });
+    });
+
+    describe('findByIdOrSlug', () => {
+        it('should find by slug', async () => {
+            const result = await service.findByIdOrSlug('website');
+            expect(result.slug).toBe('website');
+        });
+
+        it('should throw for non-existent item', async () => {
+            mockPrismaRead.portfolioItem.findFirst.mockResolvedValue(null);
+            await expect(service.findByIdOrSlug('invalid')).rejects.toThrow();
+        });
+    });
+
+    describe('getFeatured', () => {
+        it('should return featured items', async () => {
+            const result = await service.getFeatured(5);
+            expect(result).toHaveLength(1);
+        });
     });
 });

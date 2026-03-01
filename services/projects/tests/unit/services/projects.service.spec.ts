@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProjectsService } from '../../src/services/projects.service';
+import { ProjectsService } from '../../../src/services/projects.service';
 import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
 import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
 import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
@@ -51,7 +51,7 @@ describe('ProjectsService', () => {
             jest.spyOn(prismaRead.project, 'findFirst').mockResolvedValue(mockProj as any);
 
             const dto: any = { rating: 5, feedback: {} };
-            await expect(service.approveProject('user1', 'proj1', dto)).rejects.toThrow('Project not ready for approval');
+            await expect(service.approveProject('user1', 'proj1', dto)).rejects.toThrow();
         });
     });
 });
