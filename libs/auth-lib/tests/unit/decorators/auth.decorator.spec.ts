@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Auth } from '../../../src/decorators/auth.decorator';
-import { ROLES_KEY } from '@nestlancer/common';
+import { ROLES_KEY } from '../../../src/constants';
 
 describe('Auth Decorator', () => {
     it('should apply metadata with specific roles', () => {

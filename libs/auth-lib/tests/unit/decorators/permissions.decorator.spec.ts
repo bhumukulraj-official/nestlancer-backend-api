@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Permissions } from '../../../src/decorators/permissions.decorator';
-import { PERMISSIONS_KEY } from '../../../src/guards/permissions.guard';
+import { PERMISSIONS_KEY } from '../../../src/constants';
 
 describe('Permissions Decorator', () => {
     it('should set correct metadata', () => {

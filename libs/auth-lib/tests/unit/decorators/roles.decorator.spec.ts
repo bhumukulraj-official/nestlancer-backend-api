@@ -1,4 +1,5 @@
-import { Roles, ROLES_KEY } from '../../../src/decorators/roles.decorator';
+import { Roles } from '../../../src/decorators/roles.decorator';
+import { ROLES_KEY } from '../../../src/constants';
 
 describe('Roles Re-export', () => {
     it('should be defined', () => {

@@ -1,11 +1,10 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-
-export const PERMISSIONS_KEY = 'permissions';
+import { PERMISSIONS_KEY } from '../constants';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) { }
   canActivate(context: ExecutionContext): boolean {
     const requiredPerms = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
     if (!requiredPerms) return true;
