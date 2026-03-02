@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 let prismaClient: PrismaClient | null = null;
 
@@ -6,9 +8,13 @@ let prismaClient: PrismaClient | null = null;
  * Set up the test database: connect PrismaClient and run migrations.
  */
 export async function setupTestDatabase(): Promise<PrismaClient> {
-    const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/nestlancer_test';
+    const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/nestlancer_test';
+
+    const pool = new Pool({ connectionString: databaseUrl });
+    const adapter = new PrismaPg(pool);
 
     prismaClient = new PrismaClient({
+        adapter,
         log: ['error'],
     });
 
@@ -33,13 +39,13 @@ export async function teardownTestDatabase(): Promise<void> {
 export async function resetTestDatabase(): Promise<void> {
     if (!prismaClient) return;
 
-    const tables = await prismaClient.$queryRaw<Array<{ tablename: string }>>`
-    SELECT tablename FROM pg_tables
-    WHERE schemaname = 'public'
-    AND tablename != '_prisma_migrations'
-  `;
+    const tables = await prismaClient.$queryRawUnsafe<Array<{ table_name: string }>>(`
+      SELECT table_name FROM information_schema.tables
+      WHERE table_schema = 'public'
+      AND table_name != '_prisma_migrations'
+    `);
 
-    const tableNames = tables.map((t) => `"${t.tablename}"`).join(', ');
+    const tableNames = tables.map((t) => `"${t.table_name}"`).join(', ');
 
     if (tableNames.length > 0) {
         await prismaClient.$executeRawUnsafe(`TRUNCATE TABLE ${tableNames} CASCADE`);

@@ -12,5 +12,8 @@
   },
   "devDependencies": {
     "@types/nodemailer": "^7.0.11"
+  },
+  "scripts": {
+    "test:integration": "jest --config jest.integration.json"
   }
 }

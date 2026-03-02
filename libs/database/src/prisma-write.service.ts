@@ -1,5 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 /** Primary Prisma client for write operations (ADR-005) */
 @Injectable()
@@ -7,8 +9,11 @@ export class PrismaWriteService extends PrismaClient implements OnModuleInit, On
   private readonly logger = new Logger(PrismaWriteService.name);
 
   constructor() {
+    const connectionString = process.env.DATABASE_URL;
+    const pool = new Pool({ connectionString });
+    const adapter = new PrismaPg(pool);
     super({
-      datasources: { db: { url: process.env.DATABASE_URL } },
+      adapter,
       log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
     } as any);
   }

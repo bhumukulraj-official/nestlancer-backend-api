@@ -1,13 +1,13 @@
-import { ObjectStorageService } from '../../../src/storage.service';
-import { StorageProvider } from '../../../src/interfaces/storage.interface';
-import { LocalProvider } from '../../../src/providers/local.provider';
+import { StorageService } from '../../src/storage.service';
+import { StorageProvider } from '../../src/interfaces/storage.interface';
+import { LocalProvider } from '../../src/providers/local.provider';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { Test, TestingModule } from '@nestjs/testing';
-import { StorageModule } from '../../../src/storage.module';
+import { StorageModule } from '../../src/storage.module';
 
 describe('StorageIntegration', () => {
-    let storageService: ObjectStorageService;
+    let storageService: StorageService;
     let provider: StorageProvider;
     const testBucket = 'test-int-bucket';
     const basePath = join(process.cwd(), 'tmp', 'storage-int');
@@ -16,7 +16,13 @@ describe('StorageIntegration', () => {
         // Use LocalProvider for integration tests to avoid real AWS/R2 bills
         provider = new LocalProvider({ basePath });
 
-        storageService = new ObjectStorageService(provider);
+        storageService = new StorageService(
+            { provider: 'local' },
+            {},
+            { basePath }
+        );
+
+        storageService.onModuleInit();
 
         await fs.mkdir(basePath, { recursive: true }).catch(() => { });
     });

@@ -1,5 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 /** Read replica Prisma client (ADR-005). Falls back to primary if no read URL configured. */
 @Injectable()
@@ -7,8 +9,11 @@ export class PrismaReadService extends PrismaClient implements OnModuleInit, OnM
   private readonly logger = new Logger(PrismaReadService.name);
 
   constructor() {
+    const connectionString = process.env.DATABASE_READ_URL || process.env.DATABASE_URL;
+    const pool = new Pool({ connectionString });
+    const adapter = new PrismaPg(pool);
     super({
-      datasources: { db: { url: process.env.DATABASE_READ_URL || process.env.DATABASE_URL } },
+      adapter,
       log: process.env.NODE_ENV === 'development' ? ['query', 'warn', 'error'] : ['error'],
     } as any);
   }

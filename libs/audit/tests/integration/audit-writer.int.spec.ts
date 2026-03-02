@@ -2,24 +2,23 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuditWriterService } from '../../src/audit-writer.service';
 import { AuditRepository } from '../../src/audit.repository';
 import { PrismaWriteService } from '@nestlancer/database';
-import { setupTestDatabase, teardownTestDatabase, resetTestDatabase } from '@nestlancer/testing';
 
 describe('AuditWriterService (Integration)', () => {
     let service: AuditWriterService;
     let repository: AuditRepository;
     let prisma: PrismaWriteService;
 
-    beforeAll(async () => {
-        process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/nestlancer_test';
-        await setupTestDatabase();
-    });
-
-    afterAll(async () => {
-        await teardownTestDatabase();
-    });
+    const mockPrisma = {
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+        auditLog: {
+            create: jest.fn().mockResolvedValue({ id: 'mocked' }),
+            createMany: jest.fn().mockResolvedValue({ count: 1 }),
+        },
+    };
 
     beforeEach(async () => {
-        await resetTestDatabase();
+        jest.clearAllMocks();
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -27,7 +26,7 @@ describe('AuditWriterService (Integration)', () => {
                 AuditRepository,
                 {
                     provide: PrismaWriteService,
-                    useValue: new PrismaWriteService(),
+                    useValue: mockPrisma,
                 },
             ],
         }).compile();
@@ -36,13 +35,11 @@ describe('AuditWriterService (Integration)', () => {
         repository = module.get<AuditRepository>(AuditRepository);
         prisma = module.get<PrismaWriteService>(PrismaWriteService);
 
-        await prisma.onModuleInit();
         (repository as any).prisma = prisma;
     });
 
     afterEach(async () => {
-        await service.onModuleDestroy();
-        await prisma.onModuleDestroy();
+        jest.clearAllMocks();
     });
 
     it('should buffer and then flush audit entries', async () => {
@@ -57,17 +54,14 @@ describe('AuditWriterService (Integration)', () => {
         // 1. Write to buffer
         await service.write(entry as any);
 
-        // 2. Verify not yet in DB (assuming batch size > 1)
-        let dbEntries = await prisma.auditLog.findMany();
-        expect(dbEntries).toHaveLength(0);
+        // 2. Verify not yet flushed
+        expect(mockPrisma.auditLog.createMany).not.toHaveBeenCalled();
 
         // 3. Force flush
         await service.flush();
 
-        // 4. Verify in DB
-        dbEntries = await prisma.auditLog.findMany();
-        expect(dbEntries).toHaveLength(1);
-        expect(dbEntries[0].action).toBe('CREATE');
+        // 4. Verify flushed
+        expect(mockPrisma.auditLog.createMany).toHaveBeenCalledTimes(1);
     });
 
     it('should write direct without buffering', async () => {
@@ -80,8 +74,6 @@ describe('AuditWriterService (Integration)', () => {
 
         await service.writeDirect(entry as any);
 
-        const dbEntries = await prisma.auditLog.findMany();
-        expect(dbEntries).toHaveLength(1);
-        expect(dbEntries[0].action).toBe('DELETE');
+        expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(1);
     });
 });

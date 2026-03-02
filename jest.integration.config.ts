@@ -9,8 +9,6 @@ const config: Config = {
     ],
     // Integration tests might need longer timeout
     testTimeout: 30000,
-    // Ensure sequential execution if tests share resources (like a single Redis instance)
-    runInBand: true,
 };
 
 export default config;

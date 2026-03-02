@@ -8,5 +8,8 @@
     "prom-client": "^15.0.0",
     "rxjs": "^7.8.1",
     "@nestjs/core": "^10.0.0"
+  },
+  "scripts": {
+    "test:integration": "jest --config jest.integration.json"
   }
 }

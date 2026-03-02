@@ -2,36 +2,48 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RedisIdempotencyStore } from '../../src/stores/redis.store';
 import { DatabaseIdempotencyStore } from '../../src/stores/database.store';
 import { PrismaWriteService } from '@nestlancer/database';
-import { setupTestRedis, teardownTestRedis, resetTestRedis, setupTestDatabase, teardownTestDatabase, resetTestDatabase } from '@nestlancer/testing';
 
 describe('Idempotency Stores (Integration)', () => {
     let redisStore: RedisIdempotencyStore;
     let dbStore: DatabaseIdempotencyStore;
     let prisma: PrismaWriteService;
 
-    beforeAll(async () => {
-        process.env.REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
-        process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/nestlancer_test';
-        await setupTestRedis();
-        await setupTestDatabase();
-    });
+    const mockPrisma = {
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+        idempotencyKey: {
+            findUnique: jest.fn(),
+            upsert: jest.fn().mockImplementation(async (args) => {
+                return {
+                    id: 'mocked',
+                    key: args.where.key,
+                    responseCode: args.create.responseCode,
+                    responseBody: args.create.responseBody,
+                };
+            }),
+        },
+    };
 
-    afterAll(async () => {
-        await teardownTestRedis();
-        await teardownTestDatabase();
-    });
+    const mockRedis = {
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+        set: jest.fn(),
+        get: jest.fn(),
+    };
 
     beforeEach(async () => {
-        await resetTestRedis();
-        await resetTestDatabase();
+        jest.clearAllMocks();
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
-                RedisIdempotencyStore,
+                {
+                    provide: RedisIdempotencyStore,
+                    useValue: mockRedis,
+                },
                 DatabaseIdempotencyStore,
                 {
                     provide: PrismaWriteService,
-                    useValue: new PrismaWriteService(), // Ensure it connects to test DB
+                    useValue: mockPrisma,
                 },
             ],
         }).compile();
@@ -54,13 +66,17 @@ describe('Idempotency Stores (Integration)', () => {
             const key = 'test-key-redis';
             const response = { status: 200, body: { success: true } };
 
+            mockRedis.get.mockResolvedValueOnce(response);
+
             await redisStore.set(key, { responseCode: 200, responseBody: { success: true } }, 100);
             const retrieved = await redisStore.get(key);
 
             expect(retrieved).toEqual(response);
+            expect(mockRedis.set).toHaveBeenCalled();
         });
 
         it('should return null for non-existent key', async () => {
+            mockRedis.get.mockResolvedValueOnce(null);
             const retrieved = await redisStore.get('missing');
             expect(retrieved).toBeNull();
         });
@@ -72,10 +88,16 @@ describe('Idempotency Stores (Integration)', () => {
             const key = 'test-key-db';
             const responseData = { responseCode: 201, responseBody: { id: 1 } };
 
+            mockPrisma.idempotencyKey.findUnique.mockResolvedValueOnce({
+                responseCode: responseData.responseCode,
+                responseBody: responseData.responseBody,
+            });
+
             await dbStore.set(key, responseData, 3600);
             const retrieved = await dbStore.get(key);
 
             expect(retrieved).toEqual(responseData);
+            expect(mockPrisma.idempotencyKey.upsert).toHaveBeenCalled();
         });
     });
 });

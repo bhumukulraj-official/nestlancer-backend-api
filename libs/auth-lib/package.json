@@ -13,5 +13,8 @@
     "@nestlancer/common": "workspace:*",
     "@nestjs/core": "^10.0.0",
     "rxjs": "^7.8.1"
+  },
+  "scripts": {
+    "test:integration": "jest --config jest.integration.json"
   }
 }

@@ -1,83 +1,71 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CacheModule } from '../../src/cache.module';
 import { CacheService } from '../../src/cache.service';
-import { setupTestRedis, teardownTestRedis, resetTestRedis } from '@nestlancer/testing';
 
-describe('CacheService (Integration)', () => {
-    let service: CacheService;
+describe('Cache Integration', () => {
+    let cacheService: CacheService;
 
     beforeAll(async () => {
-        // Ensure REDIS_URL is set for the service to connect
-        process.env.REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
-        await setupTestRedis();
+        const module: TestingModule = await Test.createTestingModule({
+            imports: [CacheModule.forRoot({ redisUrl: process.env.REDIS_URL || 'redis://localhost:6379' })],
+        }).compile();
+
+        cacheService = module.get<CacheService>(CacheService);
+        await cacheService.onModuleInit();
     });
 
     afterAll(async () => {
-        await teardownTestRedis();
+        await cacheService.onModuleDestroy();
     });
 
-    beforeEach(async () => {
-        await resetTestRedis();
+    it('should set, get, and delete values', async () => {
+        const key = `test-key-${Date.now()}`;
+        const value = { foo: 'bar' };
 
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                CacheService,
-                {
-                    provide: 'CACHE_OPTIONS',
-                    useValue: { redisUrl: process.env.REDIS_URL },
-                },
-            ],
-        }).compile();
+        // Set
+        await cacheService.set(key, value);
 
-        service = module.get<CacheService>(CacheService);
-        await service.onModuleInit();
-    });
+        // Exists
+        expect(await cacheService.exists(key)).toBe(true);
 
-    afterEach(async () => {
-        await service.onModuleDestroy();
-    });
+        // Get
+        const result = await cacheService.get<{ foo: string }>(key);
+        expect(result).toEqual(value);
 
-    it('should set and get a value', async () => {
-        const key = 'test-key';
-        const value = { name: 'Nestlancer', type: 'Platform' };
-
-        await service.set(key, value);
-        const retrieved = await service.get(key);
-
-        expect(retrieved).toEqual(value);
+        // Delete
+        await cacheService.del(key);
+        expect(await cacheService.exists(key)).toBe(false);
     });
 
     it('should respect TTL', async () => {
-        const key = 'ttl-key';
-        const value = 'transient';
+        const key = `test-ttl-${Date.now()}`;
+        await cacheService.set(key, 'value', 1); // 1 second TTL
 
-        await service.set(key, value, 1); // 1 second
-        expect(await service.get(key)).toEqual(value);
+        expect(await cacheService.exists(key)).toBe(true);
 
-        // Wait for TTL to expire
+        // Wait 1.1s
         await new Promise(resolve => setTimeout(resolve, 1100));
-        expect(await service.get(key)).toBeNull();
+
+        expect(await cacheService.exists(key)).toBe(false);
     });
 
-    it('should handle tagging and invalidation', async () => {
-        const tag = 'user:123';
-        const key1 = 'user:123:profile';
-        const key2 = 'user:123:settings';
+    it('should handle tag-based invalidation', async () => {
+        const key1 = `test-tag-1-${Date.now()}`;
+        const key2 = `test-tag-2-${Date.now()}`;
+        const tag = `test-tag-group-${Date.now()}`;
 
-        await service.set(key1, { profile: 'data' });
-        await service.set(key2, { settings: 'data' });
+        await cacheService.set(key1, 'val1');
+        await cacheService.set(key2, 'val2');
 
-        await service.tagKey(key1, [tag]);
-        await service.tagKey(key2, [tag]);
+        await cacheService.tagKey(key1, [tag]);
+        await cacheService.tagKey(key2, [tag]);
 
-        // Verify they exist
-        expect(await service.get(key1)).toBeDefined();
-        expect(await service.get(key2)).toBeDefined();
+        expect(await cacheService.exists(key1)).toBe(true);
+        expect(await cacheService.exists(key2)).toBe(true);
 
-        // Invalidate by tag
-        await service.invalidateByTag(tag);
+        await cacheService.invalidateByTag(tag);
 
-        // Verify they are gone
-        expect(await service.get(key1)).toBeNull();
-        expect(await service.get(key2)).toBeNull();
+        expect(await cacheService.exists(key1)).toBe(false);
+        expect(await cacheService.exists(key2)).toBe(false);
     });
 });
