@@ -28,7 +28,7 @@ export function createTestJwt(
       iat: Math.floor(Date.now() / 1000),
     },
     secret,
-    { expiresIn },
+    { expiresIn: expiresIn as any },
   );
 }
 
@@ -44,7 +44,7 @@ export function createTestRefreshToken(
   return jwt.sign(
     { sub: userId, type: 'refresh' },
     secret,
-    { expiresIn: options?.expiresIn || '30d' },
+    { expiresIn: (options?.expiresIn || '30d') as any },
   );
 }
 

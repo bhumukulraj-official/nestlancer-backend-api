@@ -1,7 +1,7 @@
 import * as amqp from 'amqplib';
 
-let amqpConnection: amqp.Connection | null = null;
-let amqpChannel: amqp.Channel | null = null;
+let amqpConnection: any = null;
+let amqpChannel: any = null;
 
 /**
  * Set up the test RabbitMQ connection and channel.
@@ -9,10 +9,13 @@ let amqpChannel: amqp.Channel | null = null;
 export async function setupTestQueue(): Promise<{ connection: amqp.Connection; channel: amqp.Channel }> {
     const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672';
 
-    amqpConnection = await amqp.connect(rabbitmqUrl);
-    amqpChannel = await amqpConnection.createChannel();
+    const connection = await amqp.connect(rabbitmqUrl);
+    const channel = await connection.createChannel();
 
-    return { connection: amqpConnection, channel: amqpChannel };
+    amqpConnection = connection;
+    amqpChannel = channel;
+
+    return { connection: connection as any, channel: channel as any };
 }
 
 /**

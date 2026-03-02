@@ -1,6 +1,6 @@
 export class UAParser {
     constructor() { }
-    setUA(ua: string) { return this; }
+    setUA(_ua: string) { return this; }
     getResult() { return this; }
     getBrowser() { return { name: 'Chrome', version: '100.0' }; }
     getOS() { return { name: 'Mac OS', version: '12.0' }; }
