@@ -12,7 +12,7 @@ jest.mock('@prisma/client', () => {
             return {
                 $connect: jest.fn().mockResolvedValue(undefined),
                 $disconnect: jest.fn().mockResolvedValue(undefined),
-                $queryRaw: jest.fn().mockResolvedValue([{ tablename: 'user' }, { tablename: 'post' }]),
+                $queryRawUnsafe: jest.fn().mockResolvedValue([{ table_name: 'user' }, { table_name: 'post' }]),
                 $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
             };
         }),
@@ -43,16 +43,16 @@ describe('Test Database Helper', () => {
         const client = await setupTestDatabase();
         await resetTestDatabase();
 
-        expect(client.$queryRaw).toHaveBeenCalled();
+        expect(client.$queryRawUnsafe).toHaveBeenCalled();
         expect(client.$executeRawUnsafe).toHaveBeenCalledWith('TRUNCATE TABLE "user", "post" CASCADE');
     });
 
     it('should do nothing on truncate if no tables are found', async () => {
         const client = await setupTestDatabase();
-        (client.$queryRaw as jest.Mock).mockResolvedValueOnce([]); // Mock empty tables array
+        (client.$queryRawUnsafe as jest.Mock).mockResolvedValueOnce([]); // Mock empty tables array
         await resetTestDatabase();
 
-        expect(client.$queryRaw).toHaveBeenCalled();
+        expect(client.$queryRawUnsafe).toHaveBeenCalled();
         expect(client.$executeRawUnsafe).not.toHaveBeenCalled();
     });
 

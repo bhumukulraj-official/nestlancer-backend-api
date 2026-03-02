@@ -30,18 +30,17 @@ export class OutboxRepository {
 
     const record = await client.outboxEvent.create({
       data: {
-        eventType: event.eventType,
+        type: event.type || (event as any).eventType,
         aggregateId: event.aggregateId,
         aggregateType: event.aggregateType,
         payload: event.payload as any,
-        routingKey: (event as any).routingKey || event.eventType,
         status: 'PENDING',
-        retryCount: 0,
+        retries: 0,
         createdAt: new Date(),
-      } as any, // Cast to any to bypass strict type checking for routingKey/status fields in create logic
+      } as any,
     });
 
-    this.logger.debug(`Created outbox event: ${record.id} (${event.eventType})`);
+    this.logger.debug(`Created outbox event: ${record.id} (${event.type})`);
     return record.id;
   }
 
@@ -50,19 +49,18 @@ export class OutboxRepository {
    */
   async findPending(limit: number): Promise<Array<{
     id: string;
-    eventType: string;
+    type: string;
     aggregateId: string;
     aggregateType: string;
     payload: unknown;
-    routingKey: string;
-    retryCount: number;
+    retries: number;
   }>> {
     if (!this.prisma) return [];
 
     return this.prisma.outboxEvent.findMany({
       where: {
         status: 'PENDING',
-        retryCount: { lt: Number(process.env.OUTBOX_MAX_RETRIES || 5) },
+        retries: { lt: Number(process.env.OUTBOX_MAX_RETRIES || 5) },
       },
       orderBy: { createdAt: 'asc' },
       take: limit,
@@ -96,9 +94,8 @@ export class OutboxRepository {
       where: { id },
       data: {
         status: 'FAILED',
-        lastError: error,
-        retryCount: { increment: 1 },
-        lastAttemptAt: new Date(),
+        error: error,
+        retries: { increment: 1 },
       },
     });
 

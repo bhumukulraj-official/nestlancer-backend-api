@@ -73,8 +73,7 @@ describe('Outbox System (Integration)', () => {
         publisher = module.get<QueuePublisherService>(QueuePublisherService);
 
         (repository as any).prisma = prisma;
-        (poller as any).prisma = prisma;
-        (poller as any).publisher = publisher;
+        poller.setQueuePublisher(publisher);
     });
 
     afterEach(async () => {

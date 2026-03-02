@@ -7,11 +7,11 @@ import { OutboxEventPayload } from './interfaces/outbox-event.interface';
 export class OutboxService {
   private readonly logger = new Logger(OutboxService.name);
 
-  constructor(private readonly repository: OutboxRepository) {}
+  constructor(private readonly repository: OutboxRepository) { }
 
   async createEvent(event: OutboxEventPayload, tx?: unknown): Promise<string> {
     const id = await this.repository.create(event, tx);
-    this.logger.debug(`Outbox event created: ${event.eventType} for ${event.aggregateType}:${event.aggregateId}`);
+    this.logger.debug(`Outbox event created: ${event.type} for ${event.aggregateType}:${event.aggregateId}`);
     return id;
   }
 }

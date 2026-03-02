@@ -42,7 +42,7 @@ describe('OutboxPollerService', () => {
 
     it('should poll and publish events', async () => {
         const events = [
-            { id: '1', eventType: 'test', aggregateId: 'a1', aggregateType: 'T', payload: {}, routingKey: 'rk' },
+            { id: '1', type: 'test', aggregateId: 'a1', aggregateType: 'T', payload: {}, retries: 0 },
         ];
         mockRepository.findPending.mockResolvedValue(events);
 
@@ -55,13 +55,13 @@ describe('OutboxPollerService', () => {
         await Promise.resolve();
 
         expect(mockRepository.findPending).toHaveBeenCalled();
-        expect(mockPublisher.publish).toHaveBeenCalledWith('events', 'rk', expect.objectContaining({ eventType: 'test' }));
+        expect(mockPublisher.publish).toHaveBeenCalledWith('events', 'test', expect.objectContaining({ type: 'test' }));
         expect(mockRepository.markPublished).toHaveBeenCalledWith('1');
     });
 
     it('should mark as failed if publish fails', async () => {
         const events = [
-            { id: '1', eventType: 'test', aggregateId: 'a1', aggregateType: 'T', payload: {}, routingKey: 'rk' },
+            { id: '1', type: 'test', aggregateId: 'a1', aggregateType: 'T', payload: {}, retries: 0 },
         ];
         mockRepository.findPending.mockResolvedValue(events);
         mockPublisher.publish.mockRejectedValue(new Error('MQ Error'));
