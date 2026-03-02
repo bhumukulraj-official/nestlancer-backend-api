@@ -1,11 +1,9 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestlancer/config';
-import { Logger } from '@nestlancer/logger';
-import { ValidationPipe } from '@nestlancer/common/pipes/validation.pipe';
-import { AllExceptionsFilter } from '@nestlancer/common/filters/all-exceptions.filter';
-import { TransformResponseInterceptor } from '@nestlancer/common/interceptors/transform-response.interceptor';
-import { TimeoutInterceptor } from '@nestlancer/common/interceptors/timeout.interceptor';
+// import removed - ConfigService not exported from '@nestlancer/config';
+// import removed - Logger not exported from '@nestlancer/logger';
+import { AppValidationPipe, AllExceptionsFilter, TransformResponseInterceptor, TimeoutInterceptor } from '@nestlancer/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -16,7 +14,7 @@ async function bootstrap() {
     app.useLogger(logger);
     app.setGlobalPrefix('api/v1');
 
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new AppValidationPipe());
     app.useGlobalFilters(new AllExceptionsFilter(logger));
     app.useGlobalInterceptors(
         new TransformResponseInterceptor(),

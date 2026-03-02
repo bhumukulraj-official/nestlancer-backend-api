@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService, ReadOnly } from '@nestlancer/database';
 import { QueryMediaDto } from '../dto/query-media.dto';
 import { MediaStatus } from '../interfaces/media.interface';
-import { buildPrismaSkipTake, createPaginationMeta } from '@nestlancer/common/utils/pagination.util';
+import { buildPrismaSkipTake, createPaginationMeta } from '@nestlancer/common';
 
 @Injectable()
 export class MediaAdminService {
@@ -24,7 +24,7 @@ export class MediaAdminService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sortBy || 'createdAt']: query.order || 'desc' },
+                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
             }),
             this.prismaRead.media.count({ where }),
         ]);
@@ -46,7 +46,7 @@ export class MediaAdminService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sortBy || 'createdAt']: query.order || 'desc' },
+                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
             }),
             this.prismaRead.media.count({ where }),
         ]);

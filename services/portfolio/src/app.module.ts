@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { CommonModule } from '@nestlancer/common';
+import { } from '@nestlancer/common';
 import { DatabaseModule } from '@nestlancer/database';
 import { AuthLibModule } from '@nestlancer/auth-lib';
 import { LoggerModule } from '@nestlancer/logger';
@@ -21,11 +21,7 @@ import { PortfolioAdminService } from './services/portfolio-admin.service';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [portfolioConfig],
-        }),
-        CommonModule,
+        ConfigModule,
         DatabaseModule,
         AuthLibModule,
         LoggerModule,

@@ -24,14 +24,11 @@ import { WeeklyReportCron } from './cron/weekly-report.cron';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [analyticsConfig],
-        }),
-        ScheduleModule.forRoot(),
+        ConfigModule,
+        ScheduleModule,
         DatabaseModule,
         CacheModule,
-        QueueModule.forRoot(),
+        QueueModule,
         LoggerModule,
         MetricsModule,
         TracingModule,

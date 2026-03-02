@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 interface SavedPaymentMethodResponse {
     id: string;

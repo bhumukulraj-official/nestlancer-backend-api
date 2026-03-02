@@ -31,7 +31,7 @@ export class DatabaseHealthService {
             let metrics;
             try {
                 metrics = await (this.prisma as any).$metrics.json();
-            } catch (e) {
+            } catch (e: any) {
                 // Metrics might not be enabled, ignore
             }
 
@@ -51,7 +51,7 @@ export class DatabaseHealthService {
                     }
                 }
             };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('Database health check failed', error.stack, 'DatabaseHealthService');
             return {
                 status: 'unhealthy',

@@ -34,7 +34,7 @@ export class InAppNotificationProcessor {
             await this.redisPublisher.publish(`user:${userId}`, 'notification.new', created);
 
             this.logger.log(`In-app notification created for user ${userId}: ${created.id}`);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Failed to process in-app notification for user ${userId}:`, error);
             throw error;
         }

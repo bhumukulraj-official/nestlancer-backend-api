@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ConfigService } from '@nestjs/config';
 import { DeleteAccountDto } from '../dto/delete-account.dto';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { BusinessLogicException } from '@nestlancer/common';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -29,7 +28,7 @@ export class AccountService {
         const deletionDate = new Date();
         deletionDate.setDate(deletionDate.getDate() + gracePeriodDays);
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.user.update({
                 where: { id: userId },
                 data: {
@@ -67,7 +66,7 @@ export class AccountService {
             return true; // Already active
         }
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.user.update({
                 where: { id: userId },
                 data: {

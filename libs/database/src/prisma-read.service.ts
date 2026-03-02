@@ -6,6 +6,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 /** Read replica Prisma client (ADR-005). Falls back to primary if no read URL configured. */
 @Injectable()
 export class PrismaReadService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  [key: string]: any;
   private readonly logger = new Logger(PrismaReadService.name);
 
   constructor() {

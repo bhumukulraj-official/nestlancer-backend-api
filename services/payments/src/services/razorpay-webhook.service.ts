@@ -51,7 +51,7 @@ export class RazorpayWebhookService {
             // For webhooks, we could create a method in `PaymentConfirmationService` that doesn't need signature verification
             // since the webhook is already verified.
             this.logger.log(`Payment captured via webhook for order ${orderId}, payment ${paymentId}`);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Error processing webhook payment.captured: ${error.message}`);
         }
     }

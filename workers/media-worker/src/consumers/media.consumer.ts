@@ -18,7 +18,7 @@ export class MediaConsumer extends WorkerHost {
     async process(job: Job<MediaJob, any, string>): Promise<void> {
         try {
             await this.mediaWorkerService.processJob(job.data);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Error processing media job ${job.id}: ${error.message}`, error.stack);
             throw error;
         }

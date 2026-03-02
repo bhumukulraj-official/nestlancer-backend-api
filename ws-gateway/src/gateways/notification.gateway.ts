@@ -20,7 +20,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         await this.connectionService.addConnection(userId, client.id);
       }
       this.logger.log(`Notification client connected: ${client.id}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling notification connection: ${client.id}`, error);
     }
   }
@@ -32,7 +32,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         await this.connectionService.removeConnection(userId, client.id);
       }
       this.logger.log(`Notification client disconnected: ${client.id}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling notification disconnection: ${client.id}`, error);
     }
   }
@@ -43,7 +43,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       if (!userId) throw new WsException('Missing userId');
       this.server.to(`user:${userId}`).emit('notification:new', notification);
       this.logger.debug(`Notification sent to user ${userId}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to send notification to user ${userId}`, error);
     }
   }
@@ -54,7 +54,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       if (!event) throw new WsException('Missing event name');
       this.server.emit(event, data);
       this.logger.debug(`Broadcast event ${event} sent`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to broadcast event ${event}`, error);
     }
   }

@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
+import { UserRole } from '@nestlancer/common';
 
 @Injectable()
 export class SuperAdminGuard implements CanActivate {

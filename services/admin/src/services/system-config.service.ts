@@ -35,7 +35,6 @@ export class SystemConfigService {
             create: {
                 key: dto.key,
                 value: dto.value,
-                category: 'general',
                 updatedBy,
             },
             update: {

@@ -30,7 +30,7 @@ export class BatchCollectorService implements OnModuleInit, OnModuleDestroy {
                     if (this.flushCallback) {
                         try {
                             await this.flushCallback(chunk);
-                        } catch (e) {
+                        } catch (e: any) {
                             const error = e as Error;
                             this.logger.error(`Failed to flush batch: ${error.message}`, error.stack);
                         }

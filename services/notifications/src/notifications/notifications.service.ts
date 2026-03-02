@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService, ReadOnly } from '@nestlancer/database';
 import { QueryNotificationsDto } from '../dto/query-notifications.dto';
-import { buildPrismaSkipTake, createPaginationMeta } from '@nestlancer/common/utils/pagination.util';
-import { ResourceNotFoundException } from '@nestlancer/common/exceptions/not-found.exception';
+import { buildPrismaSkipTake, createPaginationMeta, ResourceNotFoundException } from '@nestlancer/common';
 
 @Injectable()
 export class NotificationsService {
@@ -17,7 +16,6 @@ export class NotificationsService {
 
         const where: any = {
             userId,
-            dismissedAt: null,
         };
 
         if (query.type) {
@@ -33,7 +31,7 @@ export class NotificationsService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sortBy || 'createdAt']: query.order || 'desc' },
+                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
             }),
             this.prismaRead.notification.count({ where }),
         ]);
@@ -58,7 +56,7 @@ export class NotificationsService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sortBy || 'createdAt']: query.order || 'desc' },
+                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
             }),
             this.prismaRead.notification.count({ where }),
         ]);
@@ -75,7 +73,6 @@ export class NotificationsService {
             where: {
                 userId,
                 readAt: null,
-                dismissedAt: null,
             },
         });
 
@@ -84,7 +81,7 @@ export class NotificationsService {
 
     async findByIdAndUser(id: string, userId: string) {
         const notification = await this.prismaWrite.notification.findFirst({
-            where: { id, userId, dismissedAt: null },
+            where: { id, userId },
         });
 
         if (!notification) {
@@ -100,7 +97,7 @@ export class NotificationsService {
 
     async markRead(id: string, userId: string, read: boolean) {
         const notification = await this.prismaWrite.notification.findFirst({
-            where: { id, userId, dismissedAt: null },
+            where: { id, userId },
         });
 
         if (!notification) {
@@ -115,7 +112,7 @@ export class NotificationsService {
 
     async markAllRead(userId: string) {
         return this.prismaWrite.notification.updateMany({
-            where: { userId, readAt: null, dismissedAt: null },
+            where: { userId, readAt: null },
             data: { readAt: new Date() },
         });
     }
@@ -125,23 +122,20 @@ export class NotificationsService {
             where: {
                 id: { in: notificationIds },
                 userId,
-                dismissedAt: null,
             },
             data: { readAt: new Date() },
         });
     }
 
     async clearRead(userId: string) {
-        return this.prismaWrite.notification.updateMany({
-            where: { userId, readAt: { not: null }, dismissedAt: null },
-            data: { dismissedAt: new Date() },
+        return this.prismaWrite.notification.deleteMany({
+            where: { userId, readAt: { not: null } },
         });
     }
 
     async softDelete(id: string, userId: string) {
-        return this.prismaWrite.notification.updateMany({
+        return this.prismaWrite.notification.deleteMany({
             where: { id, userId },
-            data: { dismissedAt: new Date() },
         });
     }
 }

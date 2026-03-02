@@ -1,8 +1,7 @@
 import { Controller, Get, Patch, Post, Delete, Body, Param, UseGuards, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ActiveUser } from '@nestlancer/auth-lib/decorators/active-user.decorator';
-import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
+import { ApiStandardResponse } from '@nestlancer/common';
+import { ActiveUser, JwtAuthGuard } from '@nestlancer/auth-lib';
 import { ProfileService } from '../services/profile.service';
 import { PreferencesService } from '../services/preferences.service';
 import { AvatarService } from '../services/avatar.service';

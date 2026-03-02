@@ -1,7 +1,6 @@
 import { Controller, Post, Get, Body, Query, Headers, Ip, Res, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { Public } from '@nestlancer/common/decorators/public.decorator';
+import { ApiStandardResponse, Public } from '@nestlancer/common';
 import { AuthService } from '../services/auth.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
@@ -11,7 +10,7 @@ import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { RefreshTokenDto } from '../dto/refresh.dto';
 import { ResendVerificationDto } from '../dto/resend-verification.dto';
-import { UserAgent } from '@nestlancer/common/decorators/user-agent.decorator'; // Assumption: basic custom decor
+import { UserAgent } from '@nestlancer/common'; // Assumption: basic custom decor
 
 @Controller()
 @Public() // Most routes in this controller do not require standard JWT access token yet

@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProgressService } from './progress.service';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { OutboxService } from '@nestlancer/outbox';
 import { ProgressEntryType, Visibility } from '../interfaces/progress.interface';
 

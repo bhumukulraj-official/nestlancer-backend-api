@@ -31,7 +31,7 @@ export class BackupsService {
             });
 
             return backup;
-        } catch (err) {
+        } catch (err: any) {
             throw new InternalServerErrorException({
                 code: 'ADMIN_011',
                 message: 'Backup creation failed to initiate',

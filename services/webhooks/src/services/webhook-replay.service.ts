@@ -22,6 +22,6 @@ export class WebhookReplayService {
 
         this.logger.log(`Admin triggered replay for webhook log ${webhookId}`);
 
-        await this.webhookIngestionService.processStoredWebhook(webhook);
+        await this.webhookIngestionService.processStoredWebhook(webhook as any);
     }
 }

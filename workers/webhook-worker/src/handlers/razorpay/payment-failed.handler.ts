@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { WebhookHandler } from '../../interfaces/webhook-handler.interface';
 import { PrismaWriteService } from '@nestlancer/database';
 import { LoggerService } from '@nestlancer/logger';
-import { QueueService } from '@nestlancer/queue';
+import { QueuePublisherService } from '@nestlancer/queue';
 
 @Injectable()
 export class PaymentFailedHandler implements WebhookHandler {
     constructor(
         private readonly prisma: PrismaWriteService,
         private readonly logger: LoggerService,
-        private readonly queue: QueueService,
+        private readonly queue: QueuePublisherService,
     ) { }
 
     canHandle(provider: string, eventType: string): boolean {

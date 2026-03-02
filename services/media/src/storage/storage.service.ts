@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { S3StorageService } from '@nestlancer/storage';
+import { S3StorageProvider } from '@nestlancer/storage';
 import { MediaConfig } from '../config/media.config';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
@@ -8,7 +8,7 @@ import * as path from 'path';
 export class StorageService {
     private readonly logger = new Logger(StorageService.name);
 
-    constructor(private readonly s3StorageService: S3StorageService) { }
+    constructor(private readonly s3StorageService: S3StorageProvider) { }
 
     generateStorageKey(userId: string, filename: string): string {
         const ext = path.extname(filename);

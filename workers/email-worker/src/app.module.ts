@@ -13,10 +13,7 @@ import { EmailConsumer } from './consumers/email.consumer';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [emailWorkerConfig],
-        }),
+        ConfigModule,
         LoggerModule,
         MetricsModule,
         TracingModule,

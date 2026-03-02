@@ -15,10 +15,7 @@ import { NotificationConsumer } from './consumers/notification.consumer';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [notificationWorkerConfig],
-        }),
+        ConfigModule,
         LoggerModule,
         MetricsModule,
         TracingModule,

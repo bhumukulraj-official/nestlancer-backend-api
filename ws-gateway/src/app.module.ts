@@ -13,12 +13,12 @@ import { WsPresenceService } from './services/presence.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    DatabaseModule.forRoot(),
-    CacheModule.forRoot(),
+    ConfigModule,
+    DatabaseModule,
+    CacheModule,
     AuthLibModule,
-    LoggerModule.forRoot(),
-    TracingModule.forRoot(),
+    LoggerModule,
+    TracingModule,
   ],
   providers: [
     ProjectGateway,

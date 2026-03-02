@@ -1,8 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
-import { SuccessResponse } from '@nestlancer/common/decorators/success-response.decorator';
+import { UserRole, SuccessResponse } from '@nestlancer/common';
 import { SuperAdminGuard } from '../../guards/super-admin.guard';
 import { DashboardService } from '../../services/dashboard.service';
 import { DashboardQueryDto } from '../../dto/dashboard-query.dto';

@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { RazorpayService } from './razorpay.service';
 import { PaymentStatus } from '../interfaces/payments.interface';
 
@@ -206,7 +205,7 @@ export class PaymentReconciliationService {
                     }
                     reconciled++;
                 }
-            } catch (error) {
+            } catch (error: any) {
                 // Log error but continue with other payments
                 mismatches.push({
                     paymentId: payment.id,

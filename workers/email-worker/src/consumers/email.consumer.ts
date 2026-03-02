@@ -23,7 +23,7 @@ export class EmailConsumer implements OnModuleInit {
             try {
                 const job: EmailJob = JSON.parse(content);
                 await this.emailWorkerService.processEmail(job);
-            } catch (error) {
+            } catch (error: any) {
                 this.logger.error(`Error processing email message: ${content}`, error);
                 throw error; // Let QueueConsumerService handle nack
             }

@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { StorageService } from '@nestlancer/storage';
 import { UploadDeliverableDto } from '../dto/upload-deliverable.dto';
 import { UpdateDeliverableDto } from '../dto/update-deliverable.dto';

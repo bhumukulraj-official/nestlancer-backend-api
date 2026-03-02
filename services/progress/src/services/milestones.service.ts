@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { CreateMilestoneDto } from '../dto/create-milestone.dto';
 import { UpdateMilestoneDto } from '../dto/update-milestone.dto';
 import { OutboxService } from '@nestlancer/outbox';
@@ -49,7 +48,7 @@ export class MilestonesService {
         const milestone = await this.prismaRead.milestone.findUnique({ where: { id } });
         if (!milestone) throw new NotFoundException('Milestone not found');
 
-        const updated = await this.prismaWrite.$transaction(async (tx) => {
+        const updated = await this.prismaWrite.$transaction(async (tx: any) => {
             const ms = await tx.milestone.update({
                 where: { id },
                 data: {

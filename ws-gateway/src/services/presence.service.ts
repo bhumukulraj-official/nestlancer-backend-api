@@ -13,7 +13,7 @@ export class WsPresenceService {
     try {
       await this.redisService.set(`${this.PRESENCE_PREFIX}${userId}`, 'online', this.PRESENCE_TTL);
       this.logger.debug(`User ${userId} is marked online in Redis`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to set user ${userId} online`, error);
     }
   }
@@ -22,7 +22,7 @@ export class WsPresenceService {
     try {
       await this.redisService.del(`${this.PRESENCE_PREFIX}${userId}`);
       this.logger.debug(`User ${userId} is marked offline in Redis`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to set user ${userId} offline`, error);
     }
   }
@@ -31,7 +31,7 @@ export class WsPresenceService {
     try {
       const keys = await this.redisService.keys(`${this.PRESENCE_PREFIX}*`);
       return keys.map((key) => key.replace(this.PRESENCE_PREFIX, ''));
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to get online users', error);
       return [];
     }
@@ -41,7 +41,7 @@ export class WsPresenceService {
     try {
       const status = await this.redisService.get(`${this.PRESENCE_PREFIX}${userId}`);
       return status === 'online';
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to check if user ${userId} is online`, error);
       return false;
     }

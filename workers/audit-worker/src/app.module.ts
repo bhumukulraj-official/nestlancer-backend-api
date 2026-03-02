@@ -13,15 +13,12 @@ import { auditConfig } from './config/audit-worker.config';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [auditConfig],
-        }),
-        LoggerModule.forRoot({ name: 'audit-worker' } as any),
+        ConfigModule,
+        LoggerModule,
         MetricsModule,
         TracingModule,
         DatabaseModule,
-        QueueModule.forRoot(),
+        QueueModule,
     ],
     providers: [
         AuditConsumer,

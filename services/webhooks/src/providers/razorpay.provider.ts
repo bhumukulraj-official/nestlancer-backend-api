@@ -34,7 +34,7 @@ export class RazorpayProvider implements WebhookProvider {
                 Buffer.from(signature, 'utf8'),
                 Buffer.from(expectedSignature, 'utf8'),
             );
-        } catch (err) {
+        } catch (err: any) {
             this.logger.error('Error verifying Razorpay signature', err);
             return false;
         }

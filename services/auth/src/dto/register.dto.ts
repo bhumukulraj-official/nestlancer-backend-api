@@ -1,5 +1,5 @@
 import { IsEmail, IsString, MinLength, MaxLength, Matches, IsBoolean, IsOptional, ValidateIf } from 'class-validator';
-import { Trim } from '@nestlancer/common/decorators/trim.decorator';
+import { Trim } from '@nestlancer/common';
 
 export class RegisterDto {
     @IsEmail()

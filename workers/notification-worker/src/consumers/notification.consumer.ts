@@ -23,7 +23,7 @@ export class NotificationConsumer implements OnModuleInit {
             try {
                 const job: NotificationJob = JSON.parse(content);
                 await this.notificationWorkerService.processNotification(job);
-            } catch (error) {
+            } catch (error: any) {
                 this.logger.error(`Error processing notification message: ${content}`, error);
                 throw error;
             }

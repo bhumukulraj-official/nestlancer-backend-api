@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
-import { QuoteStatus } from '@nestlancer/common';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException, QuoteStatus } from '@nestlancer/common';
 
 interface QuoteSummary {
     id: string;

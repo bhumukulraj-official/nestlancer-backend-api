@@ -36,13 +36,10 @@ import {
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [paymentsConfig],
-        }),
-        LoggerModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
         MetricsModule,
-        TracingModule.forRoot(),
+        TracingModule,
         DatabaseModule,
         AuthLibModule,
         StorageModule,

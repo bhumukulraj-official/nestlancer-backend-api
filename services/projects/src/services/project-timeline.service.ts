@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 
 @Injectable()
 export class ProjectTimelineService {

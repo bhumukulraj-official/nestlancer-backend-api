@@ -26,7 +26,7 @@ export class WebhookDispatcherService {
 
             this.logger.log(`Dispatched event ${event.eventId || 'null'} to ${event.targetQueue}`);
             return true;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Failed to dispatch event to ${event.targetQueue}`, error);
             throw error;
         }

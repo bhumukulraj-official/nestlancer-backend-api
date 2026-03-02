@@ -60,7 +60,7 @@ export class QueueHealthService {
                     queues: queueStats.queues,
                 }
             };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('Queue health check failed', error.stack, 'QueueHealthService');
             return {
                 status: 'unhealthy',

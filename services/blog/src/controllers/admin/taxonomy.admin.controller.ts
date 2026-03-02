@@ -1,5 +1,6 @@
+import { UserRole } from '@nestlancer/common';
 import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
-import { Auth, UserRole } from '@nestlancer/auth-lib';
+import { Auth } from '@nestlancer/auth-lib';
 import { CategoriesService, TagsService } from '../../services/taxonomy.service';
 import { CreateCategoryDto, UpdateCategoryDto, CreateTagDto, UpdateTagDto, MergeTagsDto } from '../../dto/create-category.dto';
 

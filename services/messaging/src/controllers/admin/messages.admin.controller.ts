@@ -1,7 +1,6 @@
 import { Controller, Get, Delete, Param, Query } from '@nestjs/common';
 import { Auth } from '@nestlancer/auth-lib';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
+import { PrismaReadService, PrismaWriteService } from '@nestlancer/database';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Admin Messages')

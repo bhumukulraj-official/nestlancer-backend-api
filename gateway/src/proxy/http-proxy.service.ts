@@ -13,7 +13,7 @@ import { getServiceConfig, isServiceRegistered } from './service-registry';
 export class HttpProxyService {
   private readonly logger = new Logger(HttpProxyService.name);
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly httpService: HttpService) { }
 
   /**
    * Forward a request to a downstream service
@@ -74,7 +74,7 @@ export class HttpProxyService {
       // If response object provided, stream the response
       if (res) {
         res.status(response.status);
-        
+
         // Forward response headers
         const headersToForward = ['content-type', 'x-request-id', 'x-api-version'];
         headersToForward.forEach((header) => {
@@ -93,7 +93,7 @@ export class HttpProxyService {
 
       // Return data directly
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       return this.handleProxyError(error as AxiosError, serviceName);
     }
   }
@@ -140,7 +140,7 @@ export class HttpProxyService {
         status: response.status,
         headers: response.headers as Record<string, unknown>,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.handleProxyError(error as AxiosError, serviceName);
       throw error;
     }
@@ -186,13 +186,13 @@ export class HttpProxyService {
 
     try {
       const response = await firstValueFrom(this.httpService.request(config));
-      
+
       if (response.status >= 400) {
         throw new HttpException(response.data, response.status);
       }
-      
+
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof HttpException) {
         throw error;
       }
@@ -209,15 +209,15 @@ export class HttpProxyService {
     // The gateway prefix is /api/v1
     // For auth service: /api/v1/auth/login → /api/v1/auth/login
     // For users service: /api/v1/users/profile → /profile (users service runs at /api/v1)
-    
+
     const gatewayPrefix = '/api/v1';
-    
+
     if (!originalPath.startsWith(gatewayPrefix)) {
       return originalPath;
     }
 
     const pathWithoutGateway = originalPath.slice(gatewayPrefix.length);
-    
+
     // Special handling for services with different base paths
     switch (serviceName) {
       case 'auth':
@@ -244,7 +244,7 @@ export class HttpProxyService {
    */
   private prepareHeaders(req: Request): Record<string, string> {
     const headers: Record<string, string> = {};
-    
+
     // Headers to forward
     const headersToForward = [
       'authorization',
@@ -313,7 +313,7 @@ export class HttpProxyService {
     // If we got a response from the service, pass it through
     if (error.response) {
       const { status, data } = error.response;
-      throw new HttpException(data, status);
+      throw new HttpException(data as string | Record<string, any>, status);
     }
 
     // Unknown error

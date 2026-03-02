@@ -1,16 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ReadOnly } from '@nestlancer/database/decorators/read-only.decorator';
 import { WriteOnly } from '@nestlancer/database/decorators/write-only.decorator';
-import { ConflictException } from '@nestlancer/common/exceptions/conflict.exception';
-import { QueuePublisherService } from '@nestlancer/queue/queue-publisher.service';
+import { ConflictException, UserRole, UserStatus } from '@nestlancer/common';
+import { QueuePublisherService } from '@nestlancer/queue';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from '../dto/register.dto';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
-import { UserStatus } from '@nestlancer/common/enums/user-status.enum';
 
 @Injectable()
 export class RegistrationService {
@@ -39,7 +36,7 @@ export class RegistrationService {
         const emailVerificationToken = `verify_${Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)}`;
         const verificationExpiresAt = new Date(Date.now() + (this.config.get<number>('authService.tokens.emailVerificationExpiresIn') || 86400) * 1000);
 
-        const user = await this.prismaWrite.$transaction(async (tx) => {
+        const user = await this.prismaWrite.$transaction(async (tx: any) => {
             const newUser = await tx.user.create({
                 data: {
                     email: dto.email.toLowerCase(),

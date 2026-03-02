@@ -25,11 +25,8 @@ import {
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [messagingConfig],
-        }),
-        LoggerModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
         DatabaseModule,
         AuthLibModule,
         StorageModule,

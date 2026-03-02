@@ -36,7 +36,7 @@ export class WorkersHealthService {
                 responseTime: Date.now() - startTime,
                 details
             };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('Worker health check failed', error.stack, 'WorkersHealthService');
             return {
                 status: 'unhealthy',

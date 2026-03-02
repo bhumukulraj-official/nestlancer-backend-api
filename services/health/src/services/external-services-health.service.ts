@@ -19,7 +19,7 @@ export class ExternalServicesHealthService {
                     zeptomail: 'pass'
                 }
             };
-        } catch (error) {
+        } catch (error: any) {
             return {
                 status: 'degraded',
                 responseTime: Date.now() - startTime,

@@ -1,5 +1,6 @@
+import { UserRole } from '@nestlancer/common';
 import { Controller, Post, Delete, Param, Req } from '@nestjs/common';
-import { Auth, UserRole } from '@nestlancer/auth-lib';
+import { Auth } from '@nestlancer/auth-lib';
 import { PostInteractionsService } from '../../services/post-interactions.service';
 import { Request } from 'express';
 

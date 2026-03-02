@@ -37,7 +37,7 @@ export class CloudFrontInvalidationService implements CdnProvider {
                 status: response.Invalidation?.Status || 'pending',
                 paths,
             };
-        } catch (e) {
+        } catch (e: any) {
             const error = e as Error;
             this.logger.error(`CloudFront invalidation failed: ${error.message}`, error.stack);
             throw error;

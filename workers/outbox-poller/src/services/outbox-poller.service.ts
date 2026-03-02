@@ -31,7 +31,7 @@ export class OutboxPollerService {
         this.isProcessing = true;
         try {
             await this.processBatch();
-        } catch (e) {
+        } catch (e: any) {
             const error = e as Error;
             this.logger.error(`Error in outbox polling loop: ${error.message}`, error.stack);
         } finally {
@@ -64,7 +64,7 @@ export class OutboxPollerService {
                         publishedAt: new Date(),
                     },
                 });
-            } catch (e) {
+            } catch (e: any) {
                 const error = e as Error;
                 this.logger.error(`Failed to process outbox event ${event.id}: ${error.message}`);
 

@@ -1,5 +1,6 @@
+import { UserRole } from '@nestlancer/common';
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query } from '@nestjs/common';
-import { Auth, UserRole } from '@nestlancer/auth-lib';
+import { Auth } from '@nestlancer/auth-lib';
 import { PortfolioAdminService } from '../../services/portfolio-admin.service';
 import { PortfolioAnalyticsService } from '../../services/portfolio-analytics.service';
 import { PortfolioOrderingService } from '../../services/portfolio-ordering.service';

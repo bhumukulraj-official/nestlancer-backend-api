@@ -3,8 +3,7 @@ import { NotificationTemplatesService } from './notification-templates.service';
 import { CreateNotificationTemplateDto } from '../dto/create-notification-template.dto';
 import { UpdateNotificationTemplateDto } from '../dto/update-notification-template.dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
+import { UserRole, ApiStandardResponse } from '@nestlancer/common';
 
 @Controller('admin/notification-templates')
 @UseGuards(JwtAuthGuard, RolesGuard)

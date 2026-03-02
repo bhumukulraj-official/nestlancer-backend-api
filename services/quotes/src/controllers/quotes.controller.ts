@@ -1,8 +1,7 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Res, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ActiveUser } from '@nestlancer/auth-lib/decorators/active-user.decorator';
-import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
+import { ApiStandardResponse, Public } from '@nestlancer/common';
+import { ActiveUser, JwtAuthGuard } from '@nestlancer/auth-lib';
 import { QuotesService } from '../services/quotes.service';
 import { QuoteStatusService } from '../services/quote-status.service';
 import { QuotePdfService } from '../services/quote-pdf.service';
@@ -10,7 +9,6 @@ import { QuoteStatsService } from '../services/quote-stats.service';
 import { AcceptQuoteDto } from '../dto/accept-quote.dto';
 import { DeclineQuoteDto } from '../dto/decline-quote.dto';
 import { RequestQuoteChangesDto } from '../dto/request-quote-changes.dto';
-import { Public } from '@nestlancer/common/decorators/public.decorator';
 
 @Controller()
 @UseGuards(JwtAuthGuard)

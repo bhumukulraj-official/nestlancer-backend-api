@@ -1,9 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { UserRole } from '@nestlancer/common';
-import { Roles } from '@nestlancer/common/decorators/roles.decorator';
+import { UserRole, Roles } from '@nestlancer/common';
 import { HealthService } from '../../services/health.service';
-import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
-import { RolesGuard } from '@nestlancer/auth-lib/guards/roles.guard';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 @Controller('debug')
 @UseGuards(JwtAuthGuard, RolesGuard)

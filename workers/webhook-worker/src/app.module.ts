@@ -25,10 +25,7 @@ import { GithubDeploymentHandler } from './handlers/github/deployment.handler';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [webhookConfig],
-        }),
+        ConfigModule,
         HttpModule,
         DatabaseModule,
         QueueModule.forConsumer(['webhook', 'payments.webhook']),

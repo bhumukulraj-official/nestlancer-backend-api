@@ -1,7 +1,7 @@
 import { Controller, Get, Head, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { Public } from '@nestlancer/common/decorators/public.decorator';
-import { Cacheable } from '@nestlancer/cache/decorators/cacheable.decorator';
+import { Public } from '@nestlancer/common';
+import { Cacheable } from '@nestlancer/cache';
 import { HealthService } from '../../services/health.service';
 import { DatabaseHealthService } from '../../services/database-health.service';
 import { CacheHealthService } from '../../services/cache-health.service';

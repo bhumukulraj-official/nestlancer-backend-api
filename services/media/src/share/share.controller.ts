@@ -2,7 +2,7 @@ import { Controller, Post, Param, Body, UseGuards } from '@nestjs/common';
 import { ShareService } from './share.service';
 import { ShareMediaDto } from '../dto/share-media.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
+import { ApiStandardResponse } from '@nestlancer/common';
 
 @Controller('media')
 @UseGuards(JwtAuthGuard)

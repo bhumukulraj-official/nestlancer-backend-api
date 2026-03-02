@@ -14,13 +14,10 @@ import requestsConfig from './config/requests.config';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [requestsConfig],
-        }),
-        LoggerModule.forRoot(),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
         DatabaseModule,
         QueueModule,
         OutboxModule,

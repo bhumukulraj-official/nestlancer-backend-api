@@ -2,9 +2,7 @@ import { Controller, Get, Post, Delete, Param, Query, Body, UseGuards } from '@n
 import { MediaAdminService } from './media-admin.service';
 import { QueryMediaDto } from '../dto/query-media.dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ApiPaginatedResponse } from '@nestlancer/common/decorators/api-paginated.decorator';
+import { UserRole, ApiStandardResponse, ApiPaginatedResponse } from '@nestlancer/common';
 
 @Controller('admin/media')
 @UseGuards(JwtAuthGuard, RolesGuard)

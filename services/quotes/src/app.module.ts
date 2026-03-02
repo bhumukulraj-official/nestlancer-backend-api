@@ -14,13 +14,10 @@ import quotesConfig from './config/quotes.config';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [quotesConfig],
-        }),
-        LoggerModule.forRoot(),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
         DatabaseModule,
         QueueModule,
         OutboxModule,

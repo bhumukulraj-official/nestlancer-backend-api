@@ -19,7 +19,7 @@ export class ProjectGateway implements OnGatewayConnection, OnGatewayDisconnect 
         await this.connectionService.addConnection(userId, client.id);
       }
       this.logger.log(`Client connected: ${client.id}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling connection for client ${client.id}`, error);
     }
   }
@@ -31,7 +31,7 @@ export class ProjectGateway implements OnGatewayConnection, OnGatewayDisconnect 
         await this.connectionService.removeConnection(userId, client.id);
       }
       this.logger.log(`Client disconnected: ${client.id}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling disconnection for client ${client.id}`, error);
     }
   }
@@ -43,7 +43,7 @@ export class ProjectGateway implements OnGatewayConnection, OnGatewayDisconnect 
       client.join(`project:${data.projectId}`);
       this.logger.debug(`Client ${client.id} joined project room: ${data.projectId}`);
       return { event: 'subscribed', data: { projectId: data.projectId } };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error subscribing to project`, error);
       throw new WsException('Internal server error');
     }
@@ -55,7 +55,7 @@ export class ProjectGateway implements OnGatewayConnection, OnGatewayDisconnect 
       if (!data?.projectId || data?.progress === undefined) throw new WsException('Invalid payload');
       this.server.to(`project:${data.projectId}`).emit('progress:updated', data);
       this.logger.debug(`Progress update emitted for project: ${data.projectId}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling progress update`, error);
       throw new WsException('Internal server error');
     }

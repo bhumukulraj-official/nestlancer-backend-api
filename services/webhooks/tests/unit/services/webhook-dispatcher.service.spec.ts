@@ -2,11 +2,11 @@ import { WebhookDispatcherService } from '../../../src/services/webhook-dispatch
 
 describe('WebhookDispatcherService', () => {
     let service: WebhookDispatcherService;
-    let mockQueueService: any;
+    let mockQueueConsumerService: any;
 
     beforeEach(() => {
-        mockQueueService = { sendToQueue: jest.fn().mockResolvedValue(undefined) };
-        service = new WebhookDispatcherService(mockQueueService);
+        mockQueueConsumerService = { sendToQueue: jest.fn().mockResolvedValue(undefined) };
+        service = new WebhookDispatcherService(mockQueueConsumerService);
     });
 
     describe('dispatch', () => {
@@ -22,7 +22,7 @@ describe('WebhookDispatcherService', () => {
         it('should dispatch event to target queue', async () => {
             const result = await service.dispatch(mockEvent as any, 'raw-1');
             expect(result).toBe(true);
-            expect(mockQueueService.sendToQueue).toHaveBeenCalledWith('payments-queue', expect.objectContaining({ eventId: 'evt-1' }));
+            expect(mockQueueConsumerService.sendToQueue).toHaveBeenCalledWith('payments-queue', expect.objectContaining({ eventId: 'evt-1' }));
         });
 
         it('should return false when no target queue defined', async () => {
@@ -31,7 +31,7 @@ describe('WebhookDispatcherService', () => {
         });
 
         it('should throw when queue dispatch fails', async () => {
-            mockQueueService.sendToQueue.mockRejectedValue(new Error('Queue down'));
+            mockQueueConsumerService.sendToQueue.mockRejectedValue(new Error('Queue down'));
             await expect(service.dispatch(mockEvent as any, 'raw-1')).rejects.toThrow();
         });
     });

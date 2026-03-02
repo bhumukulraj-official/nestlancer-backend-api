@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 
@@ -89,7 +88,7 @@ export class UsersAdminService {
         const saltRounds = this.config.get<number>('authService.security.bcryptSaltRounds') || 12;
         const passwordHash = await bcrypt.hash(pWord, saltRounds);
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.user.update({
                 where: { id: userId },
                 data: { passwordHash }

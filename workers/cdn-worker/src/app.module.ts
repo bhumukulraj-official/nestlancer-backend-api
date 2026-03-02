@@ -16,10 +16,7 @@ import { BatchInvalidationProcessor } from './processors/batch-invalidation.proc
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [cdnConfig],
-        }),
+        ConfigModule,
         HttpModule,
         LoggerModule,
         MetricsModule,

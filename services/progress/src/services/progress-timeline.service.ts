@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaReadService } from '@nestlancer/database';
 import { QueryProgressDto } from '../dto/query-progress.dto';
 import { TimelineEntry } from '../interfaces/progress.interface';
 
@@ -31,7 +31,7 @@ export class ProgressTimelineService {
             id: entry.id,
             type: 'PROGRESS',
             title: entry.title,
-            description: entry.description,
+            description: entry.description || '',
             date: entry.createdAt,
             metadata: {
                 entryType: entry.type,

@@ -21,7 +21,7 @@ export class AuditConsumer implements OnModuleInit {
         const job: AuditEntry = JSON.parse(msg.content.toString());
         try {
             await this.auditWorkerService.handleAuditEntry(job);
-        } catch (e) {
+        } catch (e: any) {
             const error = e as Error;
             this.logger.error(`Error processing audit job: ${error.message}`, error.stack);
             throw error;

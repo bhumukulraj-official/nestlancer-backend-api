@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { OutboxService } from '@nestlancer/outbox';
 import { CreateMessageDto } from '../dto/create-message.dto';
 import { UpdateMessageDto } from '../dto/update-message.dto';
@@ -18,7 +17,7 @@ export class MessagingService {
             throw new BadRequestException('Content is required for text messages');
         }
 
-        const message = await this.prismaWrite.$transaction(async (tx) => {
+        const message = await this.prismaWrite.$transaction(async (tx: any) => {
             const msg = await tx.message.create({
                 data: {
                     projectId: dto.projectId,

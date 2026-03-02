@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { CacheService } from '@nestlancer/cache';
-import { QueueProducerService } from '@nestlancer/queue';
+import { QueuePublisherService } from '@nestlancer/queue';
 
 @Injectable()
 export class FeatureFlagsService {
@@ -11,7 +11,7 @@ export class FeatureFlagsService {
         private readonly prismaWrite: PrismaWriteService,
         private readonly prismaRead: PrismaReadService,
         private readonly cacheService: CacheService,
-        private readonly queueService: QueueProducerService,
+        private readonly queueService: QueuePublisherService,
     ) { }
 
     async findAll() {

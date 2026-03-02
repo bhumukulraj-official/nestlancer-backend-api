@@ -5,7 +5,7 @@ describe('FeatureFlagsService', () => {
     let mockPrismaWrite: any;
     let mockPrismaRead: any;
     let mockCacheService: any;
-    let mockQueueService: any;
+    let mockQueueConsumerService: any;
 
     beforeEach(() => {
         mockPrismaRead = {
@@ -20,8 +20,8 @@ describe('FeatureFlagsService', () => {
             },
         };
         mockCacheService = { del: jest.fn().mockResolvedValue(undefined) };
-        mockQueueService = { publish: jest.fn().mockResolvedValue(undefined) };
-        service = new FeatureFlagsService(mockPrismaWrite, mockPrismaRead, mockCacheService, mockQueueService);
+        mockQueueConsumerService = { publish: jest.fn().mockResolvedValue(undefined) };
+        service = new FeatureFlagsService(mockPrismaWrite, mockPrismaRead, mockCacheService, mockQueueConsumerService);
     });
 
     describe('findAll', () => {
@@ -48,7 +48,7 @@ describe('FeatureFlagsService', () => {
             const result = await service.toggleFeature('dark_mode', false);
             expect(result.enabled).toBe(false);
             expect(mockCacheService.del).toHaveBeenCalledWith('feature_flag:dark_mode');
-            expect(mockQueueService.publish).toHaveBeenCalled();
+            expect(mockQueueConsumerService.publish).toHaveBeenCalled();
         });
     });
 });

@@ -40,7 +40,7 @@ export class CloudflareInvalidationService implements CdnProvider {
                 status: response.data.success ? 'completed' : 'failed',
                 paths,
             };
-        } catch (e) {
+        } catch (e: any) {
             const error = e as Error;
             this.logger.error(`Cloudflare invalidation failed: ${error.message}`, error.stack);
             throw error;
@@ -63,7 +63,7 @@ export class CloudflareInvalidationService implements CdnProvider {
                     },
                 ),
             );
-        } catch (e) {
+        } catch (e: any) {
             const error = e as Error;
             this.logger.error(`Cloudflare purge all failed: ${error.message}`, error.stack);
             throw error;

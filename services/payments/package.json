@@ -32,6 +32,7 @@
         "@nestlancer/logger": "workspace:*",
         "@nestlancer/metrics": "workspace:*",
         "@nestlancer/outbox": "workspace:*",
+        "@nestlancer/pdf": "workspace:*",
         "@nestlancer/queue": "workspace:*",
         "@nestlancer/storage": "workspace:*",
         "@nestlancer/tracing": "workspace:*",
@@ -39,7 +40,9 @@
         "class-validator": "^0.14.1",
         "razorpay": "^2.9.6",
         "reflect-metadata": "^0.1.13",
-        "rxjs": "^7.8.1"
+        "rxjs": "^7.8.1",
+        "@nestjs/swagger": "^7.0.0",
+        "uuid": "^9.0.0"
     },
     "devDependencies": {
         "@nestjs/cli": "^10.0.0",

@@ -39,7 +39,7 @@ export class CdnConsumer {
                 default:
                     this.logger.warn(`Unknown CDN job type: ${job.type}`);
             }
-        } catch (e) {
+        } catch (e: any) {
             const error = e as Error;
             this.logger.error(`Error processing CDN job ${job.type}: ${error.message}`, error.stack);
             // Re-throw to allow nack/dlq handled by base class

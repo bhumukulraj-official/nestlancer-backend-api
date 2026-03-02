@@ -1,5 +1,6 @@
+import { UserRole } from '@nestlancer/common';
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, Req } from '@nestjs/common';
-import { Auth, UserRole } from '@nestlancer/auth-lib';
+import { Auth } from '@nestlancer/auth-lib';
 import { BlogAdminService } from '../../services/blog-admin.service';
 import { PostsService } from '../../services/posts.service';
 import { PostPublishingService } from '../../services/post-publishing.service';

@@ -22,15 +22,12 @@ import { mediaWorkerConfig } from './config/media-worker.config';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [mediaWorkerConfig],
-        }),
-        LoggerModule.forRoot({ serviceName: 'media-worker' }),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot({ serviceName: 'media-worker' }),
-        DatabaseModule.forRoot(),
-        StorageModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
+        DatabaseModule,
+        StorageModule,
         QueueModule.forConsumer('media'),
     ],
     providers: [

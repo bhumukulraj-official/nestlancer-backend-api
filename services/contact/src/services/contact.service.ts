@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService, buildPrismaSkipTake } from '@nestlancer/database';
-import { ContactStatus, ResourceNotFoundException } from '@nestlancer/common';
+import { ResourceNotFoundException } from '@nestlancer/common';
+import { ContactStatus } from '@prisma/client';
 import { QueryContactsDto } from '../dto/query-contacts.dto';
 import { ContactWithResponses } from '../interfaces/contact.interface';
 

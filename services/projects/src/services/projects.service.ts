@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 import { ApproveProjectDto } from '../dto/approve-project.dto';
 import { RequestProjectRevisionDto } from '../dto/request-project-revision.dto';
 
@@ -64,7 +63,7 @@ export class ProjectsService {
         if (project.status === 'COMPLETED') throw new BusinessLogicException('Project already completed', 'PROJECT_005');
         if (project.status !== 'REVIEW') throw new BusinessLogicException('Project not ready for approval', 'PROJECT_008');
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.project.update({
                 where: { id: projectId },
                 data: {
@@ -98,7 +97,7 @@ export class ProjectsService {
         if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
         if (project.status === 'COMPLETED') throw new BusinessLogicException('Cannot modify completed project', 'PROJECT_005');
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.project.update({
                 where: { id: projectId },
                 data: { status: 'REVISION_REQUESTED' }

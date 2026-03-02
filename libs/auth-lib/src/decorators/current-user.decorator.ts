@@ -1,2 +1,2 @@
 export { CurrentUser } from '@nestlancer/common';
-export const ActiveUser = () => () => { };
+export { ActiveUser } from './active-user.decorator';

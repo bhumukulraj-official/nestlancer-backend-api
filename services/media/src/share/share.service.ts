@@ -2,7 +2,7 @@ import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { HashingService } from '@nestlancer/crypto';
 import { ShareMediaDto } from '../dto/share-media.dto';
-import { ResourceNotFoundException } from '@nestlancer/common/exceptions/not-found.exception';
+import { ResourceNotFoundException } from '@nestlancer/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 

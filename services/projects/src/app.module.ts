@@ -14,13 +14,10 @@ import projectsConfig from './config/projects.config';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [projectsConfig],
-        }),
-        LoggerModule.forRoot(),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
         DatabaseModule,
         QueueModule,
         OutboxModule,

@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional, MaxLength, MinLength, IsIn, ValidateNested, IsNumber, Min, IsBoolean, IsArray, ArrayMaxSize } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Trim } from '@nestlancer/common/decorators/trim.decorator';
+import { Trim } from '@nestlancer/common';
 
 class BudgetDto {
     @IsNumber()

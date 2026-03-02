@@ -3,39 +3,12 @@
     "compilerOptions": {
         "outDir": "./dist",
         "baseUrl": "./",
-        "paths": {
-            "@nestlancer/common": [
-                "../../libs/common/src"
-            ],
-            "@nestlancer/config": [
-                "../../libs/config/src"
-            ],
-            "@nestlancer/logger": [
-                "../../libs/logger/src"
-            ],
-            "@nestlancer/metrics": [
-                "../../libs/metrics/src"
-            ],
-            "@nestlancer/tracing": [
-                "../../libs/tracing/src"
-            ],
-            "@nestlancer/database": [
-                "../../libs/database/src"
-            ],
-            "@nestlancer/queue": [
-                "../../libs/queue/src"
-            ],
-            "@nestlancer/cache": [
-                "../../libs/cache/src"
-            ]
-        }
+        "allowSyntheticDefaultImports": true,
+        "strictPropertyInitialization": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noImplicitReturns": false
     },
-    "include": [
-        "src/**/*.ts"
-    ],
-    "exclude": [
-        "node_modules",
-        "dist",
-        "tests"
-    ]
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist", "tests"]
 }

@@ -30,6 +30,7 @@ export * from './decorators/roles.decorator';
 export * from './decorators/current-user.decorator';
 export * from './decorators/idempotency-key.decorator';
 export * from './decorators/api-paginated.decorator';
+export * from './decorators/api-standard-response.decorator';
 export * from './decorators/trim.decorator';
 
 // DTOs
@@ -74,9 +75,3 @@ export * from './utils/retry.util';
 export * from './utils/sanitize.util';
 export * from './utils/uuid.util';
 export * from './enums/contact-subject.enum';
-export const Public = () => () => { };
-export const ApiPaginatedResponse = () => () => { };
-export const ApiStandardResponse = () => () => { };
-export const SuccessResponse = () => () => { };
-export const Idempotent = () => () => { };
-export const IdempotencyKey = () => () => { };

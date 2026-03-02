@@ -10,13 +10,13 @@ import { AuthLibModule } from '@nestlancer/auth-lib';
 
 @Module({
     imports: [
-        ConfigModule.forRoot(),
-        LoggerModule.forRoot({ serviceName: 'admin-service' }),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        CacheModule.forRoot(),
-        QueueModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
+        DatabaseModule,
+        CacheModule,
+        QueueModule,
         AuthLibModule, // Provides JwtAuthGuard and RolesGuard
     ],
     controllers: [],

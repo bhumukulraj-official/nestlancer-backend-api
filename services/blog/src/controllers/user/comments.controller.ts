@@ -1,5 +1,6 @@
+import { UserRole } from '@nestlancer/common';
 import { Controller, Post, Put, Delete, Body, Param, Req } from '@nestjs/common';
-import { Auth, UserRole } from '@nestlancer/auth-lib';
+import { Auth } from '@nestlancer/auth-lib';
 import { CommentsService } from '../../services/comments.service';
 import { CreateCommentDto, UpdateCommentDto } from '../../dto/create-comment.dto';
 

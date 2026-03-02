@@ -1,12 +1,11 @@
 import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
-import { Auth } from '@nestlancer/auth-lib';
+import { Auth, CurrentUser } from '@nestlancer/auth-lib';
 import { PaymentsService } from '../../services/payments.service';
 import { RefundService } from '../../services/refund.service';
 import { PaymentStatsService } from '../../services/admin-tasks.service';
 import { ProcessRefundDto } from '../../dto/process-refund.dto';
 import { QueryPaymentsDto } from '../../dto/query-payments.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { CurrentUser } from '@nestlancer/auth-lib';
 
 @ApiTags('Admin Payments')
 @ApiBearerAuth()

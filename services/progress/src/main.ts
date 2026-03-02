@@ -3,7 +3,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
-import { setupSwagger } from '@nestlancer/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -31,7 +31,14 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
     const port = configService.get<number>('PROGRESS_SERVICE_PORT', 3009);
 
-    setupSwagger(app, 'Progress Service API', 'API documentation for the Progress service');
+    const config = new DocumentBuilder()
+        .setTitle('Progress Service API')
+        .setDescription('API documentation for the Progress service')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app as any, document);
 
     await app.listen(port);
     logger.log(`Progress service is running on: http://localhost:${port}`);

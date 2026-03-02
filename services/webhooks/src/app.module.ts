@@ -16,15 +16,12 @@ import { webhooksConfig } from './config/webhooks.config';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [webhooksConfig],
-        }),
-        LoggerModule.forRoot(),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        QueueModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
+        DatabaseModule,
+        QueueModule,
     ],
     controllers: [WebhookReceiverController],
     providers: [

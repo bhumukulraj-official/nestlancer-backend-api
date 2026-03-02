@@ -1,60 +1,14 @@
 {
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "module": "commonjs",
-        "declaration": true,
-        "removeComments": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "allowSyntheticDefaultImports": true,
-        "target": "ES2021",
-        "sourceMap": true,
         "outDir": "./dist",
         "baseUrl": "./",
-        "incremental": true,
-        "skipLibCheck": true,
-        "strictNullChecks": true,
-        "noImplicitAny": true,
-        "strictBindCallApply": true,
-        "forceConsistentCasingInFileNames": true,
-        "paths": {
-            "@nestlancer/common": [
-                "../../libs/common/src"
-            ],
-            "@nestlancer/config": [
-                "../../libs/config/src"
-            ],
-            "@nestlancer/logger": [
-                "../../libs/logger/src"
-            ],
-            "@nestlancer/metrics": [
-                "../../libs/metrics/src"
-            ],
-            "@nestlancer/tracing": [
-                "../../libs/tracing/src"
-            ],
-            "@nestlancer/database": [
-                "../../libs/database/src"
-            ],
-            "@nestlancer/queue": [
-                "../../libs/queue/src"
-            ],
-            "@nestlancer/outbox": [
-                "../../libs/outbox/src"
-            ],
-            "@nestlancer/cache": [
-                "../../libs/cache/src"
-            ],
-            "@nestlancer/auth-lib": [
-                "../../libs/auth-lib/src"
-            ],
-            "@nestlancer/idempotency": [
-                "../../libs/idempotency/src"
-            ]
-        }
+        "allowSyntheticDefaultImports": true,
+        "strictPropertyInitialization": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noImplicitReturns": false
     },
-    "exclude": [
-        "node_modules",
-        "dist",
-        "tests"
-    ]
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist", "tests"]
 }

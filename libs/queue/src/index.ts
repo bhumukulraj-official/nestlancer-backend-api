@@ -5,4 +5,6 @@ export * from './dlq.service';
 export * from './exchanges';
 export * from './routing-keys';
 export * from './decorators/consume.decorator';
+export * from './decorators/processor.decorator';
+export * from './decorators/process.decorator';
 export * from './interfaces/queue-message.interface';

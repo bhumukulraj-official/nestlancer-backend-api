@@ -6,9 +6,9 @@ import { QueueModule } from '@nestlancer/queue';
 import { OutboxModule } from '@nestlancer/outbox';
 import { AuthLibModule } from '@nestlancer/auth-lib';
 import { CryptoModule } from '@nestlancer/crypto';
-import { LoggerModule } from '@nestlancer/logger';
+import { LoggerModule, RequestLoggerMiddleware } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
-import { TracingModule } from '@nestlancer/tracing';
+import { TracingModule, CorrelationIdMiddleware } from '@nestlancer/tracing';
 import { HealthLibModule } from '@nestlancer/health-lib';
 import { AuditModule } from '@nestlancer/audit';
 import { StorageModule } from '@nestlancer/storage';
@@ -16,8 +16,6 @@ import { MailModule } from '@nestlancer/mail';
 import { PdfModule } from '@nestlancer/pdf';
 import { SearchModule } from '@nestlancer/search';
 import { CircuitBreakerModule } from '@nestlancer/circuit-breaker';
-import { CorrelationIdMiddleware } from '@nestlancer/tracing';
-import { RequestLoggerMiddleware } from '@nestlancer/logger';
 
 // Proxy infrastructure
 import { ProxyModule } from './proxy';
@@ -42,27 +40,27 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
 @Module({
   imports: [
     // Infrastructure
-    ConfigModule.forRoot(),
+    ConfigModule,
     ProxyModule,
-    DatabaseModule.forRoot(),
-    CacheModule.forRoot(),
-    QueueModule.forRoot(),
-    OutboxModule.forRoot(),
+    DatabaseModule,
+    CacheModule,
+    QueueModule,
+    OutboxModule,
     AuthLibModule,
     CryptoModule,
-    LoggerModule.forRoot(),
+    LoggerModule,
     MetricsModule,
-    TracingModule.forRoot(),
+    TracingModule,
     HealthLibModule,
     AuditModule,
-    StorageModule.forRoot(),
-    MailModule.forRoot(),
+    StorageModule,
+    MailModule,
     PdfModule,
     SearchModule,
     CircuitBreakerModule,
 
     // Domain modules
-    AuthModule,
+    AuthLibModule,
     UsersModule,
     RequestsModule,
     QuotesModule,

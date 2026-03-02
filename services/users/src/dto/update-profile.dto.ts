@@ -1,5 +1,5 @@
 import { IsString, IsOptional, MaxLength, MinLength, Matches } from 'class-validator';
-import { Trim } from '@nestlancer/common/decorators/trim.decorator';
+import { Trim } from '@nestlancer/common';
 
 export class UpdateProfileDto {
     @IsOptional()

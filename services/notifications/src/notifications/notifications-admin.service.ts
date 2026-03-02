@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService, ReadOnly } from '@nestlancer/database';
 import { QueryNotificationsDto } from '../dto/query-notifications.dto';
 import { SendNotificationDto } from '../dto/send-notification.dto';
-import { buildPrismaSkipTake, createPaginationMeta } from '@nestlancer/common/utils/pagination.util';
+import { buildPrismaSkipTake, createPaginationMeta } from '@nestlancer/common';
 
 @Injectable()
 export class NotificationsAdminService {
@@ -25,7 +25,7 @@ export class NotificationsAdminService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sortBy || 'createdAt']: query.order || 'desc' },
+                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
             }),
             this.prismaRead.notification.count({ where }),
         ]);

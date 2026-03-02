@@ -23,13 +23,10 @@ import healthConfig from './config/health.config';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [healthConfig],
-        }),
-        LoggerModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
         MetricsModule,
-        TracingModule.forRoot(),
+        TracingModule,
         TerminusModule,
         HealthLibModule,
         CacheModule,

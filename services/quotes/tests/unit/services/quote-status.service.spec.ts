@@ -1,8 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuoteStatusService } from '../../../src/services/quote-status.service';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 
 describe('QuoteStatusService', () => {
     let service: QuoteStatusService;

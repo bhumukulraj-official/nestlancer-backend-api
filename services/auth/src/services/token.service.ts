@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
-import { JwtPayload } from '@nestlancer/common/types/jwt-payload.type';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
+import { JwtPayload } from '@nestlancer/auth-lib';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -80,7 +79,7 @@ export class TokenService {
                 role: user.role,
                 avatar: user.avatar,
                 emailVerified: user.emailVerified,
-                twoFactorEnabled: user.authConfig?.twoFactorEnabled || false,
+                twoFactorEnabled: user.twoFactorEnabled || false,
             }
         };
     }
@@ -111,8 +110,7 @@ export class TokenService {
             }
 
             const user = await this.prismaRead.user.findUnique({
-                where: { id: payload.sub },
-                include: { authConfig: true }
+                where: { id: payload.sub }
             });
 
             if (!user || user.status !== 'ACTIVE') {
@@ -136,7 +134,7 @@ export class TokenService {
                 tokenType: result.tokenType
             };
 
-        } catch (error) {
+        } catch (error: any) {
             if (error instanceof BusinessLogicException) throw error;
             throw new BusinessLogicException('Invalid or expired refresh token', 'AUTH_004', { reason: 'tokenExpired' });
         }

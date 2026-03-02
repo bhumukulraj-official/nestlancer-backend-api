@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { CreateProgressEntryDto } from '../dto/create-progress-entry.dto';
 import { UpdateProgressEntryDto } from '../dto/update-progress-entry.dto';
 import { QueryProgressDto } from '../dto/query-progress.dto';
@@ -34,15 +33,12 @@ export class ProgressService {
         });
 
         if (entry.visibility === Visibility.CLIENT_VISIBLE && entry.clientNotified) {
-            await this.outbox.create({
-                eventType: 'PROGRESS_ENTRY_CREATED',
-                payload: {
-                    id: entry.id,
-                    projectId: entry.projectId,
-                    type: entry.type,
-                    title: entry.title,
-                }
-            });
+            await this.outbox.createEvent('PROGRESS_ENTRY_CREATED', {
+                id: entry.id,
+                projectId: entry.projectId,
+                type: entry.type,
+                title: entry.title,
+            } as any);
         }
 
         return entry;

@@ -38,7 +38,7 @@ export class EmailRendererService {
                 }
             }
             this.logger.log(`Loaded ${this.templates.size} email templates`);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('Failed to load email templates:', error);
         }
     }

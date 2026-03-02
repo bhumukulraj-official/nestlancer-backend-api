@@ -2,7 +2,7 @@ import { Controller, Post, Delete, Body, UseGuards } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { RegisterPushSubscriptionDto } from '../dto/register-push-subscription.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
+import { ApiStandardResponse } from '@nestlancer/common';
 
 @Controller('notifications/push-subscription')
 @UseGuards(JwtAuthGuard)
@@ -15,7 +15,7 @@ export class SubscriptionsController {
         @CurrentUser() user: AuthenticatedUser,
         @Body() dto: RegisterPushSubscriptionDto,
     ) {
-        return this.subscriptionsService.register(user.id, dto);
+        return this.subscriptionsService.register(user.userId, dto);
     }
 
     @Delete()
@@ -24,6 +24,6 @@ export class SubscriptionsController {
         @CurrentUser() user: AuthenticatedUser,
         @Body('endpoint') endpoint: string,
     ) {
-        return this.subscriptionsService.unregister(user.id, endpoint);
+        return this.subscriptionsService.unregister(user.userId, endpoint);
     }
 }

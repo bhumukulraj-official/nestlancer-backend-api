@@ -35,7 +35,9 @@
         "@nestlancer/cache": "workspace:*",
         "@nestlancer/outbox": "workspace:*",
         "@nestlancer/auth-lib": "workspace:*",
-        "@nestlancer/storage": "workspace:*"
+        "@nestlancer/storage": "workspace:*",
+        "@nestjs/config": "^3.1.1",
+        "uuid": "^9.0.0"
     },
     "devDependencies": {
         "@nestjs/cli": "^10.0.0",

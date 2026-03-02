@@ -1,13 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { WebhooksManagementService } from './webhooks-management.service';
-import { QueueProducerService } from '@nestlancer/queue';
+import { QueuePublisherService } from '@nestlancer/queue';
 import { TestWebhookDto } from '../dto/test-webhook.dto';
 
 @Injectable()
 export class WebhookTestingService {
     constructor(
         private readonly webhooksService: WebhooksManagementService,
-        private readonly queueService: QueueProducerService,
+        private readonly queueService: QueuePublisherService,
     ) { }
 
     async testDelivery(id: string, dto: TestWebhookDto) {

@@ -1,4 +1,4 @@
-import { IsString, MaxLength, IsOptional } from 'class-validator';
+import { IsString, MaxLength, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateCategoryDto {
     @IsString()
@@ -30,7 +30,6 @@ export class UpdateTagDto {
     name: string;
 }
 
-import { IsUUID } from 'class-validator';
 
 export class MergeTagsDto {
     @IsUUID('4')

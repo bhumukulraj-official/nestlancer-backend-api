@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { QueueProducerService } from '@nestlancer/queue';
+import { QueuePublisherService } from '@nestlancer/queue';
 import { UpdateEmailTemplateDto } from '../dto/update-email-template.dto';
 
 @Injectable()
@@ -8,7 +8,7 @@ export class EmailTemplatesService {
     constructor(
         private readonly prismaWrite: PrismaWriteService,
         private readonly prismaRead: PrismaReadService,
-        private readonly queueService: QueueProducerService,
+        private readonly queueService: QueuePublisherService,
     ) { }
 
     async findAll() {
@@ -27,7 +27,7 @@ export class EmailTemplatesService {
             where: { id },
             data: {
                 subject: dto.subject,
-                htmlBody: dto.body,
+                body: dto.body,
             },
         });
     }

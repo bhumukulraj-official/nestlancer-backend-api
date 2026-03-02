@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { TurnstileService } from '../services/turnstile.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { BusinessLogicException } from '@nestlancer/common';
 
 @Injectable()
 export class TurnstileGuard implements CanActivate {

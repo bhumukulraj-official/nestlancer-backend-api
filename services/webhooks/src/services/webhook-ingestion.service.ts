@@ -59,7 +59,7 @@ export class WebhookIngestionService {
         let payloadUrlDecoded: Record<string, unknown>;
         try {
             payloadUrlDecoded = JSON.parse(rawBody.toString('utf8'));
-        } catch (e) {
+        } catch (e: any) {
             throw new UnprocessableEntityException({
                 code: 'WEBHOOK_003',
                 message: 'Unprocessable webhook payload',
@@ -89,7 +89,7 @@ export class WebhookIngestionService {
                     processedAt: new Date(),
                 },
             });
-        } catch (err) {
+        } catch (err: any) {
             this.logger.error(`Error processing webhook ${webhookLog.id}`, err);
             await this.prismaWrite.webhookLog.update({
                 where: { id: webhookLog.id },
@@ -115,7 +115,7 @@ export class WebhookIngestionService {
                 : webhookLog.payload;
             const headersData = webhookLog.headers || {};
             event = provider.parseEvent(payloadData as Record<string, unknown>, headersData);
-        } catch (e) {
+        } catch (e: any) {
             this.logger.error('Failed to parse event from payload', e);
             throw e;
         }
@@ -131,7 +131,7 @@ export class WebhookIngestionService {
                     error: null,
                 },
             });
-        } catch (err) {
+        } catch (err: any) {
             this.logger.error(`Error processing stored webhook ${webhookLog.id}`, err);
             await this.prismaWrite.webhookLog.update({
                 where: { id: webhookLog.id },
@@ -156,7 +156,7 @@ export class WebhookIngestionService {
             try {
                 await this.processStoredWebhook(webhook as StoredWebhookLog);
                 processedCount++;
-            } catch (err) {
+            } catch (err: any) {
                 this.logger.error(`Retry failed for webhook ${webhook.id}`, err);
             }
         }

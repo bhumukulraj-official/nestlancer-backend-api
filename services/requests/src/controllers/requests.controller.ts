@@ -1,15 +1,13 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, UseInterceptors, UploadedFile, HttpStatus, Res } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ActiveUser } from '@nestlancer/auth-lib/decorators/active-user.decorator';
-import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
+import { ApiStandardResponse, Public } from '@nestlancer/common';
+import { ActiveUser, JwtAuthGuard } from '@nestlancer/auth-lib';
 import { RequestsService } from '../services/requests.service';
 import { RequestAttachmentsService } from '../services/request-attachments.service';
 import { RequestStatsService } from '../services/request-stats.service';
 import { CreateRequestDto } from '../dto/create-request.dto';
 import { UpdateRequestDto } from '../dto/update-request.dto';
-import { Public } from '@nestlancer/common/decorators/public.decorator';
 
 @Controller()
 @UseGuards(JwtAuthGuard)

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaReadService } from '@nestlancer/database';
 import { PdfService } from '@nestlancer/pdf';
 import { StorageService } from '@nestlancer/storage';
 import { ConfigService } from '@nestjs/config';

@@ -5,8 +5,7 @@ import { CacheService } from '@nestlancer/cache';
 import { QueuePublisherService } from '@nestlancer/queue';
 import { TurnstileService } from '@nestlancer/turnstile';
 import { SpamFilterService } from '../../src/services/spam-filter.service';
-import { RateLimitException } from '@nestlancer/common';
-import { ContactSubject } from '@nestlancer/common';
+import { RateLimitException, ContactSubject } from '@nestlancer/common';
 
 describe('ContactSubmissionService', () => {
     let service: ContactSubmissionService;

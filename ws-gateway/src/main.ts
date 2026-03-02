@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { WsAppModule } from './app.module';
 import { CustomRedisIoAdapter } from './adapters/redis-io.adapter';

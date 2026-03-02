@@ -2,9 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppValidationPipe, AllExceptionsFilter, TransformResponseInterceptor, LoggingInterceptor, TimeoutInterceptor, API_PREFIX, API_VERSION, DEFAULT_GATEWAY_PORT, MAX_PAYLOAD_SIZE } from '@nestlancer/common';
-import { getCorsConfig } from '@nestlancer/middleware';
+import { getCorsConfig, getHelmetConfig } from '@nestlancer/middleware';
 import helmet from 'helmet';
-import { getHelmetConfig } from '@nestlancer/middleware';
 import * as compression from 'compression';
 
 /**
@@ -56,8 +55,8 @@ async function bootstrap() {
     .addTag('webhooks', 'Webhook management')
     .addTag('health', 'Health checks')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  const document = SwaggerModule.createDocument(app as any, config);
+  SwaggerModule.setup('docs', app as any, document);
 
   // Graceful shutdown
   app.enableShutdownHooks();

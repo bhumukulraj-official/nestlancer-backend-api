@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 import * as puppeteer from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -64,7 +64,7 @@ export class QuotePdfService {
             await page.setContent(html);
             const pdfBuffer = await page.pdf({ format: 'A4' });
             return pdfBuffer;
-        } catch (e) {
+        } catch (e: any) {
             console.error('PDF Generation failed', e);
             throw new BusinessLogicException('Failed to generate PDF', 'SYS_001');
         } finally {

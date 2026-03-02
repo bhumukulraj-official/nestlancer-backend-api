@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 import { CreateRequestDto } from '../dto/create-request.dto';
 import { UpdateRequestDto } from '../dto/update-request.dto';
 
@@ -13,7 +12,7 @@ export class RequestsService {
     ) { }
 
     async createRequest(userId: string, dto: CreateRequestDto) {
-        const request = await this.prismaWrite.$transaction(async (tx) => {
+        const request = await this.prismaWrite.$transaction(async (tx: any) => {
             const newReq = await tx.projectRequest.create({
                 data: {
                     userId,
@@ -141,7 +140,7 @@ export class RequestsService {
         const estimatedQuoteDate = new Date();
         estimatedQuoteDate.setDate(estimatedQuoteDate.getDate() + 2); // 48 hour SLA
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.projectRequest.update({
                 where: { id: requestId },
                 data: {

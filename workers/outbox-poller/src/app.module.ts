@@ -14,11 +14,8 @@ import { StaleEventMonitorService } from './services/stale-event-monitor.service
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [outboxConfig],
-        }),
-        ScheduleModule.forRoot(),
+        ConfigModule,
+        ScheduleModule,
         DatabaseModule,
         LoggerModule,
         MetricsModule,

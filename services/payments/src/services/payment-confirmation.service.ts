@@ -1,6 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { RazorpayService } from './razorpay.service';
 import { ConfirmPaymentDto } from '../dto/confirm-payment.dto';
 import { PaymentStatus } from '../interfaces/payments.interface';
@@ -39,7 +38,7 @@ export class PaymentConfirmationService {
             return payment; // Already processed
         }
 
-        const updated = await this.prismaWrite.$transaction(async (tx) => {
+        const updated = await this.prismaWrite.$transaction(async (tx: any) => {
             const p = await tx.payment.update({
                 where: { id: payment.id },
                 data: {

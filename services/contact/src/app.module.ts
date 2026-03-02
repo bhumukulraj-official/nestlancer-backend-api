@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AppConfigModule } from '@nestlancer/config';
+import { ConfigModule } from '@nestlancer/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
 import { CacheModule } from '@nestlancer/cache';
 import { DatabaseModule } from '@nestlancer/database';
 import { QueueModule } from '@nestlancer/queue';
-import { AuthModule } from '@nestlancer/auth-lib';
+import { AuthLibModule } from '@nestlancer/auth-lib';
 import { TurnstileModule } from '@nestlancer/turnstile';
 import { ContactPublicController } from './controllers/public/contact.public.controller';
 import { ContactAdminController } from './controllers/admin/contact.admin.controller';
@@ -18,15 +18,15 @@ import { ContactAdminService } from './services/contact-admin.service';
 
 @Module({
     imports: [
-        AppConfigModule.forRoot(),
-        LoggerModule.forRoot({ serviceName: 'contact-service' }),
-        MetricsModule.forRoot({ serviceName: 'contact-service' }),
-        TracingModule.forRoot({ serviceName: 'contact-service' }),
-        DatabaseModule.forRoot(),
-        CacheModule.forRoot(),
-        QueueModule.forRoot(),
-        AuthModule.forRoot(),
-        TurnstileModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
+        DatabaseModule,
+        CacheModule,
+        QueueModule,
+        AuthLibModule,
+        TurnstileModule,
     ],
     controllers: [
         ContactPublicController,

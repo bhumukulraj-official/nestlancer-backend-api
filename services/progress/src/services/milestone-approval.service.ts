@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ApproveMilestoneDto } from '../dto/approve-milestone.dto';
 import { RequestMilestoneRevisionDto } from '../dto/request-milestone-revision.dto';
 import { OutboxService } from '@nestlancer/outbox';
@@ -20,7 +19,7 @@ export class MilestoneApprovalService {
             throw new BadRequestException('Only COMPLETED milestones can be approved');
         }
 
-        const updated = await this.prismaWrite.$transaction(async (tx) => {
+        const updated = await this.prismaWrite.$transaction(async (tx: any) => {
             const ms = await tx.milestone.update({
                 where: { id: milestoneId },
                 data: {
@@ -68,7 +67,7 @@ export class MilestoneApprovalService {
             throw new BadRequestException('Can only request revision on COMPLETED milestones');
         }
 
-        const updated = await this.prismaWrite.$transaction(async (tx) => {
+        const updated = await this.prismaWrite.$transaction(async (tx: any) => {
             const ms = await tx.milestone.update({
                 where: { id: milestoneId },
                 data: {

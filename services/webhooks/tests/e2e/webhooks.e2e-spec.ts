@@ -18,7 +18,7 @@ describe('WebhooksService (e2e)', () => {
                     findFirst: jest.fn().mockResolvedValue(null),
                 }
             })
-            .overrideProvider('QueueService')
+            .overrideProvider('QueueConsumerService')
             .useValue({
                 publishMessage: jest.fn().mockResolvedValue(true)
             })

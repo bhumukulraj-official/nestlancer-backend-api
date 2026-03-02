@@ -7,8 +7,7 @@ import { DirectUploadDto } from '../dto/direct-upload.dto';
 import { UpdateMediaMetadataDto } from '../dto/update-media-metadata.dto';
 import { QueryMediaDto } from '../dto/query-media.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ApiPaginatedResponse } from '@nestlancer/common/decorators/api-paginated.decorator';
+import { ApiStandardResponse, ApiPaginatedResponse } from '@nestlancer/common';
 
 @Controller('media')
 @UseGuards(JwtAuthGuard)

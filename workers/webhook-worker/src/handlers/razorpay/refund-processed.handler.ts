@@ -24,7 +24,7 @@ export class RefundProcessedHandler implements WebhookHandler {
 
         if (!refund) return;
 
-        await this.prisma.$transaction(async (tx) => {
+        await this.prisma.$transaction(async (tx: any) => {
             await tx.refund.update({
                 where: { id: refund.id },
                 data: { status: 'PROCESSED', processedAt: new Date() },

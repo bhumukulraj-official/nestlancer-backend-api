@@ -130,7 +130,7 @@ export class HealthService {
         responseTime,
         error: isHealthy ? undefined : `HTTP ${response.status}`,
       };
-    } catch (error) {
+    } catch (error: any) {
       const responseTime = Date.now() - startTime;
       this.logger.warn(`Health check failed for ${name}: ${(error as Error).message}`);
 

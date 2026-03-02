@@ -24,7 +24,7 @@ export class StorageHealthService {
                     provider: process.env.STORAGE_PROVIDER || 'local'
                 }
             };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('Storage health check failed', error.stack, 'StorageHealthService');
             return {
                 status: 'unhealthy',

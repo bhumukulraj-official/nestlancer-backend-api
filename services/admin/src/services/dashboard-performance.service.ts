@@ -22,7 +22,7 @@ export class DashboardPerformanceService {
                 memoryUsage: memUsage,
                 cpuUsage: 12.5,
             };
-        } catch (e) {
+        } catch (e: any) {
             return {
                 responseTime: { p50: 45, p95: 120, p99: 250 },
                 errorRate: 0.15,

@@ -1,8 +1,9 @@
+import { ConfigService } from '@nestjs/config';
 import { Injectable, ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestlancer/config';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
+// import removed - ConfigService not exported from '@nestlancer/config';
+import { UserRole } from '@nestlancer/common';
 import { ImpersonateUserDto } from '../dto/impersonate-user.dto';
 import { ADMIN_CONFIG } from '../config/admin.config';
 

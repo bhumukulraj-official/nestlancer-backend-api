@@ -1,18 +1,14 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, HttpStatus, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ActiveUser } from '@nestlancer/auth-lib/decorators/active-user.decorator';
-import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
-import { RolesGuard } from '@nestlancer/auth-lib/guards/roles.guard';
-import { Roles } from '@nestlancer/auth-lib/decorators/roles.decorator';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
+import { ApiStandardResponse, UserRole } from '@nestlancer/common';
+import { ActiveUser, JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { QuotesAdminService } from '../services/quotes.admin.service';
 import { QuoteStatsService } from '../services/quote-stats.service';
 import { CreateQuoteAdminDto } from '../dto/create-quote.admin.dto';
 
 @Controller('admin/quotes')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+@Roles(UserRole.ADMIN, 'SUPER_ADMIN' as any)
 export class QuotesAdminController {
     constructor(
         private readonly adminService: QuotesAdminService,

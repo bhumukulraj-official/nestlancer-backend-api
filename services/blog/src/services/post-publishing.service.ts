@@ -11,7 +11,7 @@ export class PostPublishingService {
     ) { }
 
     async publish(postId: string) {
-        const result = await this.prismaWrite.$transaction(async (tx) => {
+        const result = await this.prismaWrite.$transaction(async (tx: any) => {
             const post = await tx.blogPost.update({
                 where: { id: postId },
                 data: {

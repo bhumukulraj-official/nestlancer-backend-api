@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
-import { QueuePublisherService } from '@nestlancer/queue/queue-publisher.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
+import { QueuePublisherService } from '@nestlancer/queue';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -31,7 +30,7 @@ export class EmailVerificationService {
             });
         }
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.user.update({
                 where: { id: verificationToken.userId },
                 data: { emailVerified: true },
@@ -80,7 +79,7 @@ export class EmailVerificationService {
         const emailVerificationToken = `verify_${Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)}`;
         const verificationExpiresAt = new Date(Date.now() + (this.config.get<number>('authService.tokens.emailVerificationExpiresIn') || 86400) * 1000);
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.verificationToken.create({
                 data: {
                     userId: user.id,

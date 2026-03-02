@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
-import { StorageService } from '@nestlancer/storage/storage.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
+import { StorageService } from '@nestlancer/storage';
 
 @Injectable()
 export class ProjectDeliverablesService {

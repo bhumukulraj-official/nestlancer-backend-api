@@ -66,7 +66,7 @@ export class MediaWorkerService {
             });
 
             this.logger.log(`Media processing complete for ID: ${job.mediaId}`);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Error processing media ${job.mediaId}: ${error.message}`, error.stack);
             await this.prisma.media.update({
                 where: { id: job.mediaId },

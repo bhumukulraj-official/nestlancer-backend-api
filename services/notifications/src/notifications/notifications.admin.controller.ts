@@ -7,9 +7,7 @@ import { SendNotificationDto } from '../dto/send-notification.dto';
 import { BroadcastNotificationDto } from '../dto/broadcast-notification.dto';
 import { SegmentNotificationDto } from '../dto/segment-notification.dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ApiPaginatedResponse } from '@nestlancer/common/decorators/api-paginated.decorator';
+import { UserRole, ApiStandardResponse, ApiPaginatedResponse } from '@nestlancer/common';
 
 @Controller('admin/notifications')
 @UseGuards(JwtAuthGuard, RolesGuard)

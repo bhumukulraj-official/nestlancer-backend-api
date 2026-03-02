@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 import { CreateQuoteDto } from '../dto/create-quote.dto';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -27,7 +26,7 @@ export class QuotesAdminService {
         const taxAmount = subtotal * (dto.taxPercentage / 100);
         const totalAmount = subtotal + taxAmount;
 
-        const quote = await this.prismaWrite.$transaction(async (tx) => {
+        const quote = await this.prismaWrite.$transaction(async (tx: any) => {
             const newQuote = await tx.quote.create({
                 data: {
                     requestId,

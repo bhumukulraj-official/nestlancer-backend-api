@@ -14,13 +14,10 @@ import usersConfig from './config/users.config';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [usersConfig],
-        }),
-        LoggerModule.forRoot(),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
         DatabaseModule,
         QueueModule,
         OutboxModule,

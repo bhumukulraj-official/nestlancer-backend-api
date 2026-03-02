@@ -33,7 +33,7 @@ export class ContactResponseService {
         }
 
         // Create response log and update status in one transaction
-        const result = await this.prismaWrite.$transaction(async (tx) => {
+        const result = await this.prismaWrite.$transaction(async (tx: any) => {
             // Create the response log
             const responseLog = await tx.contactResponseLog.create({
                 data: {

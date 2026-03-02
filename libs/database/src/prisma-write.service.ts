@@ -6,6 +6,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 /** Primary Prisma client for write operations (ADR-005) */
 @Injectable()
 export class PrismaWriteService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  [key: string]: any;
   private readonly logger = new Logger(PrismaWriteService.name);
 
   constructor() {

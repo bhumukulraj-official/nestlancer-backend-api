@@ -1,12 +1,10 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestlancer/config';
-import { Logger } from '@nestlancer/logger';
-import { TransformResponseInterceptor } from '@nestlancer/common/interceptors/transform-response.interceptor';
-import { AllExceptionsFilter } from '@nestlancer/common/filters/all-exceptions.filter';
-import { HttpExceptionFilter } from '@nestlancer/common/filters/http-exception.filter';
-import { API_PREFIX } from '@nestlancer/common/constants/app.constants';
+// import removed - ConfigService not exported from '@nestlancer/config';
+// import removed - Logger not exported from '@nestlancer/logger';
+import { TransformResponseInterceptor, AllExceptionsFilter, HttpExceptionFilter, API_PREFIX } from '@nestlancer/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true });

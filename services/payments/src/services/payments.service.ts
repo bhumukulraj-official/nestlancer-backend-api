@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { QueryPaymentsDto } from '../dto/query-payments.dto';
 
 @Injectable()
@@ -62,7 +61,7 @@ export class PaymentsService {
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
-                include: { client: { select: { id: true, profile: true } } },
+                include: { client: { select: { id: true } } },
             }),
             this.prismaRead.payment.count({ where }),
         ]);

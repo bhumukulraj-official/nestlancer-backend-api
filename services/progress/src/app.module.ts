@@ -27,13 +27,10 @@ import { DeliverableReviewService } from './services/deliverable-review.service'
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [progressConfig],
-        }),
-        LoggerModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
         MetricsModule,
-        TracingModule.forRoot(),
+        TracingModule,
         DatabaseModule,
         AuthLibModule,
         StorageModule,

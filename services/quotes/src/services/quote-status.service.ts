@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 import { AcceptQuoteDto } from '../dto/accept-quote.dto';
 import { DeclineQuoteDto } from '../dto/decline-quote.dto';
 import { RequestQuoteChangesDto } from '../dto/request-quote-changes.dto';
@@ -32,7 +31,7 @@ export class QuoteStatusService {
             throw new BusinessLogicException('Invalid quote status', 'QUOTE_005');
         }
 
-        const result = await this.prismaWrite.$transaction(async (tx) => {
+        const result = await this.prismaWrite.$transaction(async (tx: any) => {
             const accQuote = await tx.quote.update({
                 where: { id: quoteId },
                 data: {
@@ -83,7 +82,7 @@ export class QuoteStatusService {
             throw new BusinessLogicException('Quote already processed', 'QUOTE_003');
         }
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.quote.update({
                 where: { id: quoteId },
                 data: {
@@ -127,7 +126,7 @@ export class QuoteStatusService {
             throw new BusinessLogicException('Cannot modify accepted/declined quote', 'QUOTE_006');
         }
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.quote.update({
                 where: { id: quoteId },
                 data: {

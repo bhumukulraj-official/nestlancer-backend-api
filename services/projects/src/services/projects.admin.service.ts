@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 import { UpdateProjectStatusAdminDto } from '../dto/update-project-status.admin.dto';
 import { UpdateProjectAdminDto } from '../dto/update-project.admin.dto';
 
@@ -39,7 +38,7 @@ export class ProjectsAdminService {
         const project = await this.prismaRead.project.findUnique({ where: { id: projectId } });
         if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
 
-        const result = await this.prismaWrite.$transaction(async (tx) => {
+        const result = await this.prismaWrite.$transaction(async (tx: any) => {
             const updated = await tx.project.update({
                 where: { id: projectId },
                 data: { status: dto.status.toUpperCase() }

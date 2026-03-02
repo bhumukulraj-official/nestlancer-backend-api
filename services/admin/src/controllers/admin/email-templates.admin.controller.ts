@@ -1,8 +1,7 @@
 import { Controller, Get, Patch, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
-import { SuccessResponse } from '@nestlancer/common/decorators/success-response.decorator';
+import { UserRole, SuccessResponse } from '@nestlancer/common';
 import { SuperAdminGuard } from '../../guards/super-admin.guard';
 
 import { EmailTemplatesService } from '../../services/email-templates.service';
@@ -53,7 +52,7 @@ export class EmailTemplatesAdminController {
             const compiledText = Handlebars.compile(template.textBody);
             html = compiledHtml(mockData);
             text = compiledText(mockData);
-        } catch (e) {
+        } catch (e: any) {
             // Fallback if compilation fails
         }
 

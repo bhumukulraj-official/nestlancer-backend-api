@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
+import { PrismaWriteService } from '@nestlancer/database';
 import { RazorpayService } from './razorpay.service';
 import { CreatePaymentIntentDto } from '../dto/create-payment-intent.dto';
 import { PaymentStatus } from '../interfaces/payments.interface';

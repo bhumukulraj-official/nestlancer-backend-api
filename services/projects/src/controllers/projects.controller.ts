@@ -1,14 +1,12 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Res } from '@nestjs/common';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ActiveUser } from '@nestlancer/auth-lib/decorators/active-user.decorator';
-import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
+import { ApiStandardResponse, Public } from '@nestlancer/common';
+import { ActiveUser, JwtAuthGuard } from '@nestlancer/auth-lib';
 import { ProjectsService } from '../services/projects.service';
 import { ProjectTimelineService } from '../services/project-timeline.service';
 import { ProjectDeliverablesService } from '../services/project-deliverables.service';
 import { ProjectPaymentsService } from '../services/project-payments.service';
 import { ApproveProjectDto } from '../dto/approve-project.dto';
 import { RequestProjectRevisionDto } from '../dto/request-project-revision.dto';
-import { Public } from '@nestlancer/common/decorators/public.decorator';
 
 @Controller()
 @UseGuards(JwtAuthGuard)

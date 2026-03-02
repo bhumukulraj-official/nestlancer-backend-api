@@ -1,8 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { Public } from '@nestlancer/common/decorators/public.decorator';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { ApiStandardResponse, Public, BusinessLogicException } from '@nestlancer/common';
+import { PrismaReadService } from '@nestlancer/database';
 
 @Controller('public')
 export class ProjectsPublicController {

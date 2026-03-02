@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaReadService } from '@nestlancer/database';
 import { RequestStatus, QuoteStatus } from '@nestlancer/common';
 
 interface UserRequestStats {

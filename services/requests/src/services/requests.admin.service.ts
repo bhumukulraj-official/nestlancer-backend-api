@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 
 @Injectable()
 export class RequestsAdminService {
@@ -77,7 +76,7 @@ export class RequestsAdminService {
             throw new BusinessLogicException('Invalid status transition', 'REQUEST_005');
         }
 
-        const updated = await this.prismaWrite.$transaction(async (tx) => {
+        const updated = await this.prismaWrite.$transaction(async (tx: any) => {
             const updatedReq = await tx.projectRequest.update({
                 where: { id: requestId },
                 data: { status: dbStatus as any }

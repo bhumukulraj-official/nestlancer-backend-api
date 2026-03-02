@@ -7,22 +7,22 @@ import { TracingModule } from '@nestlancer/tracing';
 import { OutboxModule } from '@nestlancer/outbox';
 import { QueueModule } from '@nestlancer/queue';
 import { CacheModule } from '@nestlancer/cache';
-import { AuthModule } from '@nestlancer/auth-lib';
+import { AuthLibModule } from '@nestlancer/auth-lib';
 import { StorageModule } from './storage/storage.module';
 import { MediaModule } from './media/media.module';
 import { ShareModule } from './share/share.module';
 
 @Module({
     imports: [
-        ConfigModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        CacheModule.forRoot(),
-        QueueModule.forRoot(),
-        OutboxModule.forRoot(),
-        AuthModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
+        DatabaseModule,
+        CacheModule,
+        QueueModule,
+        OutboxModule,
+        AuthLibModule,
         StorageModule,
         MediaModule,
         ShareModule,

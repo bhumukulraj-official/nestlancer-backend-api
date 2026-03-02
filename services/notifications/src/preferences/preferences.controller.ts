@@ -2,7 +2,7 @@ import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
 import { PreferencesService } from './preferences.service';
 import { UpdatePreferencesDto } from '../dto/update-preferences.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
+import { ApiStandardResponse } from '@nestlancer/common';
 
 @Controller('notifications/preferences')
 @UseGuards(JwtAuthGuard)
@@ -12,7 +12,7 @@ export class PreferencesController {
     @Get()
     @ApiStandardResponse(Object)
     async getPreferences(@CurrentUser() user: AuthenticatedUser) {
-        return this.preferencesService.getPreferences(user.id);
+        return this.preferencesService.getPreferences(user.userId);
     }
 
     @Patch()
@@ -21,7 +21,7 @@ export class PreferencesController {
         @CurrentUser() user: AuthenticatedUser,
         @Body() dto: UpdatePreferencesDto,
     ) {
-        return this.preferencesService.updatePreferences(user.id, dto);
+        return this.preferencesService.updatePreferences(user.userId, dto);
     }
 
     @Get('channels')

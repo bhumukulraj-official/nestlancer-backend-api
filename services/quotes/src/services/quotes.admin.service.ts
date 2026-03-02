@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { BusinessLogicException } from '@nestlancer/common';
 import { CreateQuoteAdminDto } from '../dto/create-quote.admin.dto';
 
 @Injectable()
@@ -76,7 +75,7 @@ export class QuotesAdminService {
         const quote = await this.prismaRead.quote.findUnique({ where: { id: quoteId } });
         if (!quote) throw new BusinessLogicException('Quote not found', 'QUOTE_001');
 
-        await this.prismaWrite.$transaction(async (tx) => {
+        await this.prismaWrite.$transaction(async (tx: any) => {
             await tx.quote.update({
                 where: { id: quoteId },
                 data: { status: 'SENT' }

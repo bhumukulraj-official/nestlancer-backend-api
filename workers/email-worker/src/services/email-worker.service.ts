@@ -36,7 +36,7 @@ export class EmailWorkerService {
             });
 
             this.logger.log(`Email of type ${type} sent to ${to}`);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Failed to process email of type ${type} to ${to}:`, error);
             await this.retryService.handleFailure(
                 this.configService.get('email-worker.rabbitmq.queue') || 'email.queue',

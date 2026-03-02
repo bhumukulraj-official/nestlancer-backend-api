@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RateLimitException } from '@nestlancer/common';
+import { RateLimitException, ContactStatus, generateShortId } from '@nestlancer/common';
 import { PrismaWriteService } from '@nestlancer/database';
 import { CacheService } from '@nestlancer/cache';
 import { QueuePublisherService, EVENTS_EXCHANGE, NOTIFICATION_SYSTEM } from '@nestlancer/queue';
@@ -7,8 +7,6 @@ import { TurnstileService } from '@nestlancer/turnstile';
 import { SubmitContactDto } from '../dto/submit-contact.dto';
 import { SpamFilterService } from './spam-filter.service';
 import { contactConfig } from '../config/contact.config';
-import { ContactStatus } from '@nestlancer/common';
-import { generateShortId } from '@nestlancer/common';
 
 @Injectable()
 export class ContactSubmissionService {

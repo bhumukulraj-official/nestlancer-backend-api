@@ -41,7 +41,7 @@ export class LeaderElectionService {
             }
 
             return false;
-        } catch (e) {
+        } catch (e: any) {
             const error = e as Error;
             this.logger.error(`Failed to acquire leader lock: ${error.message}`, error.stack);
             return false;
@@ -55,7 +55,7 @@ export class LeaderElectionService {
                 await this.redis.del(this.lockKey);
                 this.logger.debug(`Instance ${this.instanceId} released leader lock`);
             }
-        } catch (e) {
+        } catch (e: any) {
             const error = e as Error;
             this.logger.error(`Failed to release leader lock: ${error.message}`, error.stack);
         }

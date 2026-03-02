@@ -1,5 +1,5 @@
 import { IsEmail, IsString, IsBoolean, IsOptional } from 'class-validator';
-import { Trim } from '@nestlancer/common/decorators/trim.decorator';
+import { Trim } from '@nestlancer/common';
 
 export class LoginDto {
     @IsEmail()

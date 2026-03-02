@@ -1,17 +1,13 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, HttpStatus, Res } from '@nestjs/common';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ActiveUser } from '@nestlancer/auth-lib/decorators/active-user.decorator';
-import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
-import { RolesGuard } from '@nestlancer/auth-lib/guards/roles.guard';
-import { Roles } from '@nestlancer/auth-lib/decorators/roles.decorator';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
+import { ApiStandardResponse, UserRole } from '@nestlancer/common';
+import { ActiveUser, JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { ProjectsAdminService } from '../services/projects.admin.service';
 import { UpdateProjectStatusAdminDto } from '../dto/update-project-status.admin.dto';
 import { UpdateProjectAdminDto } from '../dto/update-project.admin.dto';
 
 @Controller('admin/projects')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+@Roles(UserRole.ADMIN, 'SUPER_ADMIN' as any)
 export class ProjectsAdminController {
     constructor(
         private readonly adminService: ProjectsAdminService,

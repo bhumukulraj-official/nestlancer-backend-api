@@ -3,9 +3,7 @@ import { NotificationsService } from './notifications.service';
 import { QueryNotificationsDto } from '../dto/query-notifications.dto';
 import { MarkReadDto } from '../dto/mark-read.dto';
 import { MarkSelectedReadDto } from '../dto/mark-selected-read.dto';
-import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { ApiPaginatedResponse } from '@nestlancer/common/decorators/api-paginated.decorator';
+import { ApiStandardResponse, ApiPaginated } from '@nestlancer/common';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -13,27 +11,27 @@ export class NotificationsController {
     constructor(private readonly notificationsService: NotificationsService) { }
 
     @Get()
-    @ApiPaginatedResponse(Object)
+    @ApiPaginated()
     async getNotifications(
         @CurrentUser() user: AuthenticatedUser,
         @Query() query: QueryNotificationsDto,
     ) {
-        return this.notificationsService.findByUser(user.id, query);
+        return this.notificationsService.findByUser(user.userId, query);
     }
 
     @Get('unread-count')
     @ApiStandardResponse(Object)
     async getUnreadCount(@CurrentUser() user: AuthenticatedUser) {
-        return this.notificationsService.getUnreadCount(user.id);
+        return this.notificationsService.getUnreadCount(user.userId);
     }
 
     @Get('history')
-    @ApiPaginatedResponse(Object)
+    @ApiPaginated()
     async getHistory(
         @CurrentUser() user: AuthenticatedUser,
         @Query() query: QueryNotificationsDto,
     ) {
-        return this.notificationsService.getHistory(user.id, query);
+        return this.notificationsService.getHistory(user.userId, query);
     }
 
     @Get(':id')
@@ -42,7 +40,7 @@ export class NotificationsController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('id') id: string,
     ) {
-        return this.notificationsService.findByIdAndUser(id, user.id);
+        return this.notificationsService.findByIdAndUser(id, user.userId);
     }
 
     @Patch(':id/read')
@@ -52,7 +50,7 @@ export class NotificationsController {
         @Param('id') id: string,
         @Body() dto: MarkReadDto,
     ) {
-        return this.notificationsService.markRead(id, user.id, dto.read ?? true);
+        return this.notificationsService.markRead(id, user.userId, dto.read ?? true);
     }
 
     @Patch(':id/unread')
@@ -61,13 +59,13 @@ export class NotificationsController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('id') id: string,
     ) {
-        return this.notificationsService.markRead(id, user.id, false);
+        return this.notificationsService.markRead(id, user.userId, false);
     }
 
     @Post('read-all')
     @ApiStandardResponse(Object)
     async markAllAsRead(@CurrentUser() user: AuthenticatedUser) {
-        return this.notificationsService.markAllRead(user.id);
+        return this.notificationsService.markAllRead(user.userId);
     }
 
     @Post('read-selected')
@@ -76,13 +74,13 @@ export class NotificationsController {
         @CurrentUser() user: AuthenticatedUser,
         @Body() dto: MarkSelectedReadDto,
     ) {
-        return this.notificationsService.markSelectedRead(user.id, dto.notificationIds);
+        return this.notificationsService.markSelectedRead(user.userId, dto.notificationIds);
     }
 
     @Delete('clear-read')
     @ApiStandardResponse(Object)
     async clearReadNotifications(@CurrentUser() user: AuthenticatedUser) {
-        return this.notificationsService.clearRead(user.id);
+        return this.notificationsService.clearRead(user.userId);
     }
 
     @Delete(':id')
@@ -91,6 +89,6 @@ export class NotificationsController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('id') id: string,
     ) {
-        return this.notificationsService.softDelete(id, user.id);
+        return this.notificationsService.softDelete(id, user.userId);
     }
 }

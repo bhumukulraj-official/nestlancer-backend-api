@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Processor, Process } from '@nestlancer/queue';
+// Processor/Process removed - using @Injectable() instead;
 import { HttpService } from '@nestjs/axios';
 import { LoggerService } from '@nestlancer/logger';
 import { SignatureVerifierService } from '../services/signature-verifier.service';
@@ -46,7 +46,7 @@ export class OutgoingWebhookProcessor {
                 responseTime: Date.now() - startTime,
                 attempt: job.attempt,
             });
-        } catch (error) {
+        } catch (error: any) {
             await this.webhookLogger.logDelivery(webhook.id, {
                 statusCode: error.response?.status || 500,
                 responseBody: JSON.stringify(error.response?.data || error.message),

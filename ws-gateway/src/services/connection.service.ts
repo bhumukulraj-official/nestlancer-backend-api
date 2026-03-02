@@ -14,7 +14,7 @@ export class WsConnectionService {
       await this.redisService.sadd(`${this.CONNECTIONS_PREFIX}${userId}`, socketId);
       await this.redisService.expire(`${this.CONNECTIONS_PREFIX}${userId}`, this.CONNECTIONS_TTL);
       this.logger.debug(`Added connection for user ${userId}: ${socketId}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to add connection for user ${userId}: ${socketId}`, error);
     }
   }
@@ -23,7 +23,7 @@ export class WsConnectionService {
     try {
       await this.redisService.srem(`${this.CONNECTIONS_PREFIX}${userId}`, socketId);
       this.logger.debug(`Removed connection for user ${userId}: ${socketId}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to remove connection for user ${userId}: ${socketId}`, error);
     }
   }
@@ -32,7 +32,7 @@ export class WsConnectionService {
     try {
       const count = await this.redisService.scard(`${this.CONNECTIONS_PREFIX}${userId}`);
       return count > 0;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to check if user ${userId} is online`, error);
       return false;
     }
@@ -41,7 +41,7 @@ export class WsConnectionService {
   async getUserConnections(userId: string): Promise<string[]> {
     try {
       return await this.redisService.smembers(`${this.CONNECTIONS_PREFIX}${userId}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to get connections for user ${userId}`, error);
       return [];
     }

@@ -50,7 +50,7 @@ export class CacheHealthService {
                     memoryUsage: '45%'
                 }
             };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('Cache health check failed', error.stack, 'CacheHealthService');
             return {
                 status: 'unhealthy',

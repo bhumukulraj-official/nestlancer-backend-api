@@ -13,7 +13,7 @@ export class WebsocketHealthService {
             const response = await fetch(wsInternalUrl, { signal: AbortSignal.timeout(3000) });
             const isHealthy = response.ok;
             let data: any = {};
-            try { data = await response.json(); } catch (e) { }
+            try { data = await response.json(); } catch (e: any) { }
 
             return {
                 status: isHealthy ? 'healthy' : 'degraded',
@@ -23,7 +23,7 @@ export class WebsocketHealthService {
                     statusText: response.statusText
                 }
             };
-        } catch (error) {
+        } catch (error: any) {
             this.logger.warn(`WebSocket Gateway health check failed: ${error.message}`);
             return {
                 status: 'unhealthy',

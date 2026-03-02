@@ -1,14 +1,11 @@
 import { Controller, Get, Patch, Post, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiStandardResponse } from '@nestlancer/common/decorators/api-standard-response.decorator';
-import { JwtAuthGuard } from '@nestlancer/auth-lib/guards/jwt-auth.guard';
-import { RolesGuard } from '@nestlancer/auth-lib/guards/roles.guard';
-import { Roles } from '@nestlancer/auth-lib/decorators/roles.decorator';
-import { UserRole } from '@nestlancer/common/enums/role.enum';
+import { ApiStandardResponse, UserRole } from '@nestlancer/common';
+import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UsersAdminService } from '../services/users.admin.service';
 
 @Controller('admin/users')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+@Roles(UserRole.ADMIN, 'SUPER_ADMIN' as any)
 export class UsersAdminController {
     constructor(private readonly adminService: UsersAdminService) { }
 

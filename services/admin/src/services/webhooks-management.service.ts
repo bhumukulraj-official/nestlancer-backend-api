@@ -41,11 +41,11 @@ export class WebhooksManagementService {
                 headers: dto.headers || {},
                 secret,
                 enabled: dto.enabled ?? true,
-                retryPolicy: dto.retryPolicy || {
+                retryPolicy: (dto.retryPolicy || {
                     maxRetries: 3,
                     retryDelayMs: 1000,
                     backoffMultiplier: 2,
-                },
+                }) as any,
             },
         });
 
@@ -136,7 +136,7 @@ export class WebhooksManagementService {
                 success: response.ok,
                 statusCode: response.status,
             };
-        } catch (error) {
+        } catch (error: any) {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error',

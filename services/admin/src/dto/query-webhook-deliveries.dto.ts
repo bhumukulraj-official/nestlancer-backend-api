@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional } from 'class-validator';
-import { PaginationQueryDto } from '@nestlancer/common/dto/pagination-query.dto';
+import { PaginationQueryDto } from '@nestlancer/common';
 
 export enum DeliveryStatus {
     PENDING = 'PENDING',

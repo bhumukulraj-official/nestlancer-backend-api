@@ -1,7 +1,7 @@
-import { Injectable, HttpService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
+import { BusinessLogicException } from '@nestlancer/common';
 
 @Injectable()
 export class TurnstileService {
@@ -56,7 +56,7 @@ export class TurnstileService {
             }
 
             return true;
-        } catch (error) {
+        } catch (error: any) {
             if (error instanceof BusinessLogicException) throw error;
 
             this.logger.error('Error verifying turnstile token', error.stack, 'TurnstileService');

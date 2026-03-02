@@ -24,7 +24,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
         await this.presenceService.setOnline(userId);
       }
       this.logger.log(`Messaging client connected: ${client.id}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling connection for client ${client.id}`, error);
     }
   }
@@ -40,7 +40,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
         }
       }
       this.logger.log(`Messaging client disconnected: ${client.id}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling disconnection for client ${client.id}`, error);
     }
   }
@@ -52,7 +52,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
       client.join(`chat:${data.projectId}`);
       this.logger.debug(`User ${client.data?.user?.userId} joined chat room: ${data.projectId}`);
       return { event: 'joined', data };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error joining room`, error);
       throw new WsException('Internal server error');
     }
@@ -70,7 +70,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
       this.logger.debug(`Message sent in room ${data.projectId} by user ${senderId}`);
 
       return { event: 'message:sent', data: message };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling message send`, error);
       throw new WsException('Internal server error');
     }
@@ -82,7 +82,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
       if (!data?.projectId) throw new WsException('Missing projectId');
       const userId = client.data?.user?.userId;
       client.to(`chat:${data.projectId}`).emit('typing:indicator', { userId, isTyping: true });
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling typing start`, error);
     }
   }
@@ -93,7 +93,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
       if (!data?.projectId) throw new WsException('Missing projectId');
       const userId = client.data?.user?.userId;
       client.to(`chat:${data.projectId}`).emit('typing:indicator', { userId, isTyping: false });
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error handling typing stop`, error);
     }
   }

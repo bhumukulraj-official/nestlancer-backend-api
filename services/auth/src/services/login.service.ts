@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { BusinessLogicException } from '@nestlancer/common/exceptions/business-logic.exception';
-import { ForbiddenException } from '@nestlancer/common/exceptions/forbidden.exception';
+import { PrismaReadService, PrismaWriteService } from '@nestlancer/database';
+import { BusinessLogicException, ForbiddenException, UserStatus } from '@nestlancer/common';
 import { AccountLockoutService } from './account-lockout.service';
 import { TokenService } from './token.service';
 import { LoginDto } from '../dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import { UserStatus } from '@nestlancer/common/enums/user-status.enum';
 
 @Injectable()
 export class LoginService {

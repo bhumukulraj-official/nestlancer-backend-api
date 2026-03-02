@@ -22,7 +22,7 @@ export class NotificationDeliveryService {
                 }
 
                 results.push({ channel, success: true });
-            } catch (error) {
+            } catch (error: any) {
                 this.logger.error(`Failed to deliver notification to channel ${channel}`, error);
                 results.push({ channel, success: false, error: error.message });
             }

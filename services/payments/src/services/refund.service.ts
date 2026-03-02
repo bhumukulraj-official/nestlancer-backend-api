@@ -1,6 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { PrismaWriteService } from '@nestlancer/database/prisma/prisma-write.service';
-import { PrismaReadService } from '@nestlancer/database/prisma/prisma-read.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { RazorpayService } from './razorpay.service';
 import { ProcessRefundDto } from '../dto/process-refund.dto';
 import { PaymentStatus } from '../interfaces/payments.interface';
@@ -40,7 +39,7 @@ export class RefundService {
             });
 
             // Update Database
-            const updated = await this.prismaWrite.$transaction(async (tx) => {
+            const updated = await this.prismaWrite.$transaction(async (tx: any) => {
                 await tx.refund.create({
                     data: {
                         paymentId: payment.id,

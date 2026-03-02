@@ -28,7 +28,7 @@ export class VirusScanProcessor {
 
         try {
             this.logger.debug(`Downloading ${s3Key} for virus scan...`);
-            await this.storage.downloadFile(s3Key, localPath);
+            await this.storage.download(s3Key, localPath);
 
             const scanner = clamav.createScanner(
                 this.configService.get<string>('media-worker.clamavHost', 'localhost'),
@@ -51,7 +51,7 @@ export class VirusScanProcessor {
                     }
                 });
             });
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Error during virus scan stage: ${error.message}`);
             return { isInfected: false, details: `Error: ${error.message}` };
         } finally {

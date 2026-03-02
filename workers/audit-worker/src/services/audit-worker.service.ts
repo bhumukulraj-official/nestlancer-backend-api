@@ -1,7 +1,6 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { BatchBufferService } from './batch-buffer.service';
 import { AuditBatchInsertProcessor } from '../processors/audit-batch-insert.processor';
-import { Logger } from '@nestjs/common';
 import { MetricsService } from '@nestlancer/metrics';
 import { AuditEntry } from '../interfaces/audit-job.interface';
 import { ConfigService } from '@nestjs/config';

@@ -1,6 +1,7 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestlancer/config';
+// import removed - ConfigService not exported from '@nestlancer/config';
 import { LoggerService } from '@nestlancer/logger';
 import { AppModule } from './app.module';
 

@@ -26,13 +26,10 @@ import { TurnstileGuard } from './guards/turnstile.guard';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [authConfig],
-        }),
-        LoggerModule.forRoot(),
-        MetricsModule.forRoot(),
-        TracingModule.forRoot(),
+        ConfigModule,
+        LoggerModule,
+        MetricsModule,
+        TracingModule,
         DatabaseModule,
         QueueModule,
         OutboxModule,
