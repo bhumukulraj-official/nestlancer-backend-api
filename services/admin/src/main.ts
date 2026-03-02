@@ -16,7 +16,7 @@ async function bootstrap() {
     app.useLogger(logger);
 
     const configService = app.get(ConfigService);
-    const port = configService.get<number>('PORT') || 3014;
+    const port = configService.get<number>('ADMIN_SERVICE_PORT') || 3005;
 
     // Global prefix
     app.setGlobalPrefix(API_PREFIX);

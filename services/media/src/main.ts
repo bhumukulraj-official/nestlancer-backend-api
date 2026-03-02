@@ -28,7 +28,7 @@ async function bootstrap() {
         credentials: true,
     });
 
-    const port = 3010; // Media service port
+    const port = process.env.MEDIA_SERVICE_PORT || 3012; // Media service port
     await app.listen(port);
 
     logger.log(`Media Service running on port ${port}`, 'Bootstrap');

@@ -32,7 +32,7 @@ async function bootstrap() {
 
     app.enableCors();
 
-    const port = process.env.PORT || 3007; // Payments service port
+    const port = process.env.PAYMENTS_SERVICE_PORT || 3003; // Payments service port
     await app.listen(port);
     console.log(`Payments service listening on port ${port}`);
 }

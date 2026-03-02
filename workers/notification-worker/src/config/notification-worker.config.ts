@@ -6,15 +6,15 @@ export const notificationWorkerConfig = registerAs('notification-worker', () => 
         queue: 'notification.queue',
     },
     redis: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379', 10),
-        password: process.env.REDIS_PASSWORD,
+        host: process.env.NOTIFICATION_WORKER_REDIS_HOST || 'localhost',
+        port: parseInt(process.env.NOTIFICATION_WORKER_REDIS_PORT || '6379', 10),
+        password: process.env.NOTIFICATION_WORKER_REDIS_PASSWORD,
         pubsubPrefix: process.env.REDIS_PUBSUB_PREFIX || 'ws:',
     },
     vapid: {
-        publicKey: process.env.VAPID_PUBLIC_KEY,
-        privateKey: process.env.VAPID_PRIVATE_KEY,
-        subject: process.env.VAPID_SUBJECT || 'mailto:hello@nestlancer.com',
+        publicKey: process.env.NOTIFICATION_WORKER_VAPID_PUBLIC_KEY,
+        privateKey: process.env.NOTIFICATION_WORKER_VAPID_PRIVATE_KEY,
+        subject: process.env.NOTIFICATION_WORKER_VAPID_SUBJECT || 'mailto:hello@nestlancer.com',
     },
     concurrency: parseInt(process.env.NOTIFICATION_CONCURRENCY || '10', 10),
 }));

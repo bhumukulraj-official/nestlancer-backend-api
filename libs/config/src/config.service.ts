@@ -20,7 +20,7 @@ export class NestlancerConfigService {
   get isTest(): boolean { return this.nodeEnv === 'test'; }
   get appName(): string { return this.getOptional('APP_NAME') || 'Nestlancer'; }
   get apiVersion(): string { return this.getOptional('API_VERSION') || 'v1'; }
-  get port(): number { return Number(this.getOptional('PORT') || 3000); }
+  get port(): number { return Number(this.getOptional('GATEWAY_PORT') || 3000); }
   get frontendUrl(): string { return this.getOptional('FRONTEND_URL') || 'http://localhost:3000'; }
   get logLevel(): string { return this.getOptional('LOG_LEVEL') || 'debug'; }
   get logFormat(): string { return this.getOptional('LOG_FORMAT') || 'pretty'; }

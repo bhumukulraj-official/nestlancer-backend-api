@@ -29,7 +29,7 @@ async function bootstrap() {
 
     app.useGlobalFilters(new HttpExceptionFilter());
 
-    const port = configService.get<number>('PORT') || 3012;
+    const port = configService.get<number>('BLOG_SERVICE_PORT') || 3014;
     await app.listen(port);
     console.log(`Blog service is running on: ${await app.getUrl()}`);
 }

@@ -14,7 +14,7 @@ async function bootstrap() {
     app.useLogger(logger);
 
     const configService = app.get(ConfigService);
-    const port = configService.get<number>('PORT', 3000);
+    const port = configService.get<number>('HEALTH_SERVICE_PORT', 3016);
     const allowedOrigins = configService.get<string>('ALLOWED_ORIGINS', '*');
 
     app.enableCors({

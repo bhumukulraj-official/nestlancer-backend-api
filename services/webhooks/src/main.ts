@@ -16,7 +16,7 @@ async function bootstrap() {
     app.useLogger(logger);
 
     const configService = app.get(ConfigService);
-    const port = configService.get<number>('PORT', 3015);
+    const port = configService.get<number>('WEBHOOKS_SERVICE_PORT', 3004);
     const allowedOrigins = configService.get<string>('ALLOWED_ORIGINS', '*');
 
     app.enableCors({

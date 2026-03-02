@@ -16,10 +16,10 @@ coverage/
 *.lcov
 
 # Environment & Secrets
-.env
-.env.*
-infisical.json
-infisical.test.json
+!.env
+!.env.*
+!infisical.json
+!infisical.test.json
 !infisical.json.example
 !infisical.test.json.example
 

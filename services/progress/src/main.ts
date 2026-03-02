@@ -29,7 +29,7 @@ async function bootstrap() {
     );
 
     const configService = app.get(ConfigService);
-    const port = configService.get<number>('PORT', 3006);
+    const port = configService.get<number>('PROGRESS_SERVICE_PORT', 3009);
 
     setupSwagger(app, 'Progress Service API', 'API documentation for the Progress service');
 

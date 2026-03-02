@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const appConfigSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test', 'staging']).default('development'),
-  PORT: z.coerce.number().default(3000),
+  GATEWAY_PORT: z.coerce.number().default(3000),
   APP_NAME: z.string().default('Nestlancer'),
   API_VERSION: z.string().default('v1'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('debug'),

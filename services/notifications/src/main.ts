@@ -28,7 +28,7 @@ async function bootstrap() {
         credentials: true,
     });
 
-    const port = 3009; // Notifications service port
+    const port = process.env.NOTIFICATIONS_SERVICE_PORT || 3011; // Notifications service port
     await app.listen(port);
 
     logger.log(`Notifications Service running on port ${port}`, 'Bootstrap');

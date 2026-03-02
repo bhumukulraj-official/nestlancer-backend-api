@@ -11,7 +11,7 @@ import * as compression from 'compression';
  * Bootstrap the Nestlancer API Gateway
  */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { 
+  const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     bodyParser: true,
   });
@@ -62,9 +62,9 @@ async function bootstrap() {
   // Graceful shutdown
   app.enableShutdownHooks();
 
-  const port = process.env.PORT || DEFAULT_GATEWAY_PORT;
+  const port = process.env.GATEWAY_PORT || DEFAULT_GATEWAY_PORT;
   await app.listen(port);
-  
+
   console.log(`🚀 Nestlancer API Gateway running on http://localhost:${port}`);
   console.log(`📚 Swagger docs: http://localhost:${port}/docs`);
   console.log(`🔒 API Base URL: http://localhost:${port}/${API_PREFIX}/${API_VERSION}`);

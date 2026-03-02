@@ -6,5 +6,5 @@ export default registerAs('outbox', () => ({
     lockTtlSeconds: parseInt(process.env.LOCK_TTL_SECONDS || '10', 10),
     staleThresholdMinutes: parseInt(process.env.STALE_THRESHOLD_MINUTES || '60', 10),
     leaderLockKey: process.env.LEADER_LOCK_KEY || 'outbox:poller:lock',
-    instanceId: process.env.HOSTNAME || 'outbox-poller-' + Math.random().toString(36).substring(7),
+    instanceId: process.env.OUTBOX_HOSTNAME || 'outbox-poller-' + Math.random().toString(36).substring(7),
 }));

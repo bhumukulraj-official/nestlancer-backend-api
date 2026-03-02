@@ -32,7 +32,7 @@ async function bootstrap() {
 
     app.enableCors();
 
-    const port = process.env.PORT || 3008; // Messaging service port
+    const port = process.env.MESSAGING_SERVICE_PORT || 3010; // Messaging service port
     await app.listen(port);
     console.log(`Messaging service listening on port ${port}`);
 }
