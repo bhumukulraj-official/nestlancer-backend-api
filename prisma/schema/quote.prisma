@@ -15,28 +15,44 @@ enum QuoteStatus {
 }
 
 model Quote {
-  id               String      @id @default(uuid(7))
-  requestId        String      @unique
-  projectId        String?     @unique
-  title            String
-  description      String
-  totalAmount      Int
-  currency         String      @default("INR")
-  validUntil       DateTime
-  status           QuoteStatus @default(DRAFT)
-  terms            String?
-  notes            String?
-  paymentBreakdown Json?
-  timeline         Json?
-  scope            Json?
-  technicalDetails Json?
-  acceptedAt       DateTime?
-  declinedAt       DateTime?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  id                 String      @id @default(uuid(7))
+  requestId          String      @unique
+  projectId          String?     @unique
+  userId             String
+  createdById        String?
+  title              String
+  description        String
+  subtotal           Int         @default(0)
+  taxPercentage      Float       @default(0)
+  taxAmount          Int         @default(0)
+  totalAmount        Int
+  currency           String      @default("INR")
+  validUntil         DateTime
+  status             QuoteStatus @default(DRAFT)
+  terms              String? // Public terms shown to client
+  termsAndConditions String? // Detailed legal terms
+  notes              String? // General notes
+  internalNotes      String? // Admin only notes
+  clientNotes        String? // Notes/feedback from client
+  paymentBreakdown   Json?
+  timeline           Json?
+  scope              Json?
+  technicalDetails   Json?
+  attachments        Json?
+  signatureName      String?
+  signatureDate      DateTime?
+  acceptedAt         DateTime?
+  declinedAt         DateTime?
+  declineReason      String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
-  request          ProjectRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
-  project          Project?
+  user      User           @relation("UserQuotes", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy User?          @relation("CreatedQuotes", fields: [createdById], references: [id], onDelete: SetNull)
+  request   ProjectRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  project   Project?
 
+  @@index([userId])
+  @@index([createdById])
   @@index([status])
 }

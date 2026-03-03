@@ -52,6 +52,8 @@ model User {
   adminNotes          AdminNote[]
   verificationTokens  VerificationToken[]
   authSessions        AuthSession[]
+  quotes              Quote[]         @relation("UserQuotes")
+  createdQuotes       Quote[]         @relation("CreatedQuotes")
 
   @@index([email])
   @@index([role])

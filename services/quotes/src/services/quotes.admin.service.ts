@@ -50,6 +50,8 @@ export class QuotesAdminService {
                 requestId: dto.requestId,
                 userId: request.userId,
                 createdById: adminId,
+                title: dto.title,
+                description: dto.description,
                 status: 'DRAFT',
                 subtotal: dto.totalAmount, // Assuming no tax in this DTO for simplicity
                 taxPercentage: 0,
