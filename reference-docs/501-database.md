@@ -181,7 +181,7 @@ enum WebhookIngestionStatus {
 // -----------------------------------------------------------------------------
 
 model User {
-  id               String       @id @default(cuid())
+  id               String       @id @default(uuid(7))
   email            String       @unique
   passwordHash     String
   name             String
@@ -213,7 +213,7 @@ model User {
 }
 
 model UserPreference {
-  id                   String   @id @default(cuid())
+  id                   String   @id @default(uuid(7))
   userId               String   @unique
   notificationSettings Json?
   marketingSettings    Json?
@@ -228,7 +228,7 @@ model UserPreference {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid(7))
   userId       String
   token        String   @unique
   ip           String?
@@ -251,7 +251,7 @@ model Session {
 // -----------------------------------------------------------------------------
 
 model ProjectRequest {
-  id          String        @id @default(cuid())
+  id          String        @id @default(uuid(7))
   userId      String
   title       String
   description String
@@ -273,7 +273,7 @@ model ProjectRequest {
 }
 
 model Quote {
-  id               String      @id @default(cuid())
+  id               String      @id @default(uuid(7))
   requestId        String      @unique
   projectId        String?     @unique
   title            String
@@ -304,7 +304,7 @@ model Quote {
 // -----------------------------------------------------------------------------
 
 model Project {
-  id              String        @id @default(cuid())
+  id              String        @id @default(uuid(7))
   quoteId         String        @unique
   clientId        String
   adminId         String?
@@ -334,7 +334,7 @@ model Project {
 }
 
 model Milestone {
-  id          String          @id @default(cuid())
+  id          String          @id @default(uuid(7))
   projectId   String
   name        String
   description String?
@@ -360,7 +360,7 @@ model Milestone {
 }
 
 model Deliverable {
-  id          String            @id @default(cuid())
+  id          String            @id @default(uuid(7))
   milestoneId String
   name        String
   description String?
@@ -381,7 +381,7 @@ model Deliverable {
 }
 
 model ProgressEntry {
-  id            String       @id @default(cuid())
+  id            String       @id @default(uuid(7))
   projectId     String
   milestoneId   String?
   deliverableId String?
@@ -407,7 +407,7 @@ model ProgressEntry {
 // -----------------------------------------------------------------------------
 
 model Payment {
-  id              String        @id @default(cuid())
+  id              String        @id @default(uuid(7))
   projectId       String
   milestoneId     String?
   clientId        String
@@ -442,7 +442,7 @@ model Payment {
 }
 
 model Refund {
-  id              String        @id @default(cuid())
+  id              String        @id @default(uuid(7))
   paymentId       String
   amount          Int
   currency        String        @default("INR")
@@ -463,7 +463,7 @@ model Refund {
 // -----------------------------------------------------------------------------
 
 model Message {
-  id          String      @id @default(cuid())
+  id          String      @id @default(uuid(7))
   projectId   String
   senderId    String
   content     String?
@@ -486,7 +486,7 @@ model Message {
 }
 
 model Notification {
-  id          String               @id @default(cuid())
+  id          String               @id @default(uuid(7))
   userId      String
   type        String
   title       String
@@ -512,7 +512,7 @@ model Notification {
 // -----------------------------------------------------------------------------
 
 model Media {
-  id               String          @id @default(cuid())
+  id               String          @id @default(uuid(7))
   filename         String
   originalFilename String
   mimeType         String
@@ -539,7 +539,7 @@ model Media {
 // -----------------------------------------------------------------------------
 
 model PortfolioItem {
-  id               String          @id @default(cuid())
+  id               String          @id @default(uuid(7))
   slug             String          @unique
   title            String
   shortDescription String
@@ -573,7 +573,7 @@ model PortfolioItem {
 }
 
 model PortfolioCategory {
-  id        String          @id @default(cuid())
+  id        String          @id @default(uuid(7))
   name      String
   slug      String          @unique
   createdAt DateTime        @default(now())
@@ -583,7 +583,7 @@ model PortfolioCategory {
 }
 
 model BlogPost {
-  id              String        @id @default(cuid())
+  id              String        @id @default(uuid(7))
   slug            String        @unique
   title           String
   excerpt         String
@@ -614,7 +614,7 @@ model BlogPost {
 }
 
 model BlogSeries {
-  id          String     @id @default(cuid())
+  id          String     @id @default(uuid(7))
   slug        String     @unique
   name        String
   description String?
@@ -625,7 +625,7 @@ model BlogSeries {
 }
 
 model BlogCategory {
-  id          String     @id @default(cuid())
+  id          String     @id @default(uuid(7))
   name        String
   slug        String     @unique
   description String?
@@ -636,7 +636,7 @@ model BlogCategory {
 }
 
 model BlogTag {
-  id        String     @id @default(cuid())
+  id        String     @id @default(uuid(7))
   name      String
   slug      String     @unique
   createdAt DateTime   @default(now())
@@ -646,7 +646,7 @@ model BlogTag {
 }
 
 model BlogComment {
-  id                String        @id @default(cuid())
+  id                String        @id @default(uuid(7))
   postId            String
   authorId          String
   content           String
@@ -674,7 +674,7 @@ model BlogComment {
 // -----------------------------------------------------------------------------
 
 model ContactMessage {
-  id        String         @id @default(cuid())
+  id        String         @id @default(uuid(7))
   ticketId  String         @unique
   name      String
   email     String
@@ -692,7 +692,7 @@ model ContactMessage {
 }
 
 model SystemConfig {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid(7))
   key         String   @unique
   value       Json
   description String?
@@ -707,7 +707,7 @@ model SystemConfig {
 }
 
 model EmailTemplate {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid(7))
   name        String   @unique
   subject     String
   body        String
@@ -724,7 +724,7 @@ model EmailTemplate {
 // -----------------------------------------------------------------------------
 
 model OutboxEvent {
-  id            String       @id @default(cuid())
+  id            String       @id @default(uuid(7))
   type          String
   aggregateType String
   aggregateId   String
@@ -740,7 +740,7 @@ model OutboxEvent {
 }
 
 model Webhook {
-  id          String            @id @default(cuid())
+  id          String            @id @default(uuid(7))
   name        String
   url         String
   secret      String
@@ -754,7 +754,7 @@ model Webhook {
 }
 
 model WebhookDelivery {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid(7))
   webhookId       String
   event           String
   payload         Json
@@ -771,7 +771,7 @@ model WebhookDelivery {
 }
 
 model WebhookLog {
-  id          String                 @id @default(cuid())
+  id          String                 @id @default(uuid(7))
   provider    String
   eventId     String?
   eventType   String
@@ -787,7 +787,7 @@ model WebhookLog {
 }
 
 model AuditLog {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid(7))
   userId       String?
   action       String
   category     String
@@ -807,7 +807,7 @@ model AuditLog {
 }
 
 model IdempotencyKey {
-  id           String    @id @default(cuid())
+  id           String    @id @default(uuid(7))
   key          String    @unique
   path         String
   method       String

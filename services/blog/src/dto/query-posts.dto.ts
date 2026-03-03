@@ -3,7 +3,7 @@ import { PaginationQueryDto } from '@nestlancer/common';
 
 export class QueryPostsDto extends PaginationQueryDto {
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     categoryId?: string;
 
     @IsOptional()
@@ -11,7 +11,7 @@ export class QueryPostsDto extends PaginationQueryDto {
     tag?: string;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     authorId?: string;
 
     @IsOptional()

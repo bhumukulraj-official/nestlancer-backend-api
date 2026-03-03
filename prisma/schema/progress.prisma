@@ -20,7 +20,7 @@ enum DeliverableStatus {
 }
 
 model Milestone {
-  id          String          @id @default(cuid())
+  id          String          @id @default(uuid(7))
   projectId   String
   name        String
   description String?
@@ -46,7 +46,7 @@ model Milestone {
 }
 
 model Deliverable {
-  id          String            @id @default(cuid())
+  id          String            @id @default(uuid(7))
   milestoneId String
   name        String
   description String?
@@ -67,7 +67,7 @@ model Deliverable {
 }
 
 model ProgressEntry {
-  id             String       @id @default(cuid())
+  id             String       @id @default(uuid(7))
   projectId      String
   milestoneId    String?
   deliverableId  String?

@@ -12,7 +12,7 @@ export class ClientDto {
     name: string;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     logoId?: string;
 }
 
@@ -54,7 +54,7 @@ export class SeoDto {
     metaDescription?: string;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     ogImageId?: string;
 }
 
@@ -80,7 +80,7 @@ export class CreatePortfolioItemDto {
     contentFormat: ContentFormat;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     categoryId?: string;
 
     @IsOptional()
@@ -89,12 +89,12 @@ export class CreatePortfolioItemDto {
     tags?: string[];
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     thumbnailId?: string;
 
     @IsOptional()
     @IsArray()
-    @IsUUID('4', { each: true })
+    @IsUUID(undefined, { each: true })
     imageIds?: string[];
 
     @IsOptional()

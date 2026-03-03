@@ -1,11 +1,11 @@
-import { randomUUID } from 'crypto';
+import { v7 as uuidv7 } from 'uuid';
 
-/** Generates a UUID v4 */
+/** Generates a UUID v7 (time-ordered, RFC 9562) */
 export function generateUuid(): string {
-  return randomUUID();
+  return uuidv7();
 }
 
-/** Validates a string is a valid UUID v4 */
+/** Validates a string is a valid UUID (any version) */
 export function isValidUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }

@@ -7,7 +7,7 @@ export class CreateCommentDto {
     content: string;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     parentId?: string;
 }
 

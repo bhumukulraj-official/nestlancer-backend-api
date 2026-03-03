@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { BusinessLogicException } from '@nestlancer/common';
 import { CreateQuoteDto } from '../dto/create-quote.dto';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class QuotesAdminService {

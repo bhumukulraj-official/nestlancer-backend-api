@@ -36,11 +36,11 @@ export class CreatePostDto {
     contentFormat: ContentFormat;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     featuredImageId?: string;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     categoryId?: string;
 
     @IsOptional()
@@ -49,7 +49,7 @@ export class CreatePostDto {
     tags?: string[];
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     authorId?: string;
 
     @IsOptional()

@@ -17,7 +17,7 @@ enum CommentStatus {
 }
 
 model BlogPost {
-  id              String        @id @default(cuid())
+  id              String        @id @default(uuid(7))
   slug            String        @unique
   title           String
   excerpt         String
@@ -53,7 +53,7 @@ model BlogPost {
 }
 
 model BlogSeries {
-  id          String     @id @default(cuid())
+  id          String     @id @default(uuid(7))
   slug        String     @unique
   name        String
   description String?
@@ -64,7 +64,7 @@ model BlogSeries {
 }
 
 model BlogCategory {
-  id          String     @id @default(cuid())
+  id          String     @id @default(uuid(7))
   name        String
   slug        String     @unique
   description String?
@@ -75,7 +75,7 @@ model BlogCategory {
 }
 
 model BlogTag {
-  id        String     @id @default(cuid())
+  id        String     @id @default(uuid(7))
   name      String     @unique
   slug      String     @unique
   createdAt DateTime   @default(now())
@@ -85,7 +85,7 @@ model BlogTag {
 }
 
 model BlogComment {
-  id                String        @id @default(cuid())
+  id                String        @id @default(uuid(7))
   postId            String
   authorId          String
   content           String
@@ -109,7 +109,7 @@ model BlogComment {
 }
 
 model PostLike {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid(7))
   postId    String
   userId    String
   createdAt DateTime @default(now())
@@ -121,7 +121,7 @@ model PostLike {
 }
 
 model PostBookmark {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid(7))
   postId    String
   userId    String
   createdAt DateTime @default(now())

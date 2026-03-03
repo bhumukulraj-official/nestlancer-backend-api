@@ -10,7 +10,7 @@ export class ExportAuditDto {
     format: ExportFormat;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     userId?: string;
 
     @IsOptional()

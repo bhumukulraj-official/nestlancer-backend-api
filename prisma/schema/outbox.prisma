@@ -9,7 +9,7 @@ enum OutboxStatus {
 }
 
 model OutboxEvent {
-  id            String       @id @default(cuid())
+  id            String       @id @default(uuid(7))
   type          String
   aggregateType String
   aggregateId   String

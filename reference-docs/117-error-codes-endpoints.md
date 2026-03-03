@@ -120,7 +120,7 @@ function sleep(ms) {
 ```javascript
 // Generate idempotency key (client-side)
 function generateIdempotencyKey() {
-  return `idem_${crypto.randomUUID()}`;
+  return `idem_${generateUuid() from @nestlancer/common (UUID v7)}`;
 }
 
 // Making idempotent request
@@ -152,7 +152,7 @@ async function createPayment(paymentData) {
 #### Idempotency Key Requirements
 | Requirement | Description |
 |-------------|-------------|
-| Format | UUID v4 or similar unique string |
+| Format | UUID v7 or similar unique string |
 | Length | 36-64 characters |
 | Retention | 24 hours on server |
 | Scope | Per user + per endpoint |
@@ -542,7 +542,7 @@ class OfflineQueue {
   
   add(request) {
     this.queue.push({
-      id: crypto.randomUUID(),
+      id: generateUuid() from @nestlancer/common (UUID v7),
       timestamp: Date.now(),
       ...request
     });

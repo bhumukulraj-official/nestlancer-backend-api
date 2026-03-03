@@ -12,7 +12,7 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id              String        @id @default(cuid())
+  id              String        @id @default(uuid(7))
   projectId       String
   milestoneId     String?
   clientId        String
@@ -47,7 +47,7 @@ model Payment {
 }
 
 model Refund {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid(7))
   paymentId       String
   amount          Int
   currency        String   @default("INR")
@@ -64,7 +64,7 @@ model Refund {
 }
 
 model SavedPaymentMethod {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid(7))
   userId          String
   provider        String   @default("razorpay")
   type            String   // card, upi, netbanking, wallet

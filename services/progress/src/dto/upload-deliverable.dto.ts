@@ -8,7 +8,7 @@ export class UploadDeliverableDto {
 
     @ApiProperty({ type: [String] })
     @IsArray()
-    @IsUUID('4', { each: true })
+    @IsUUID(undefined, { each: true })
     mediaIds: string[];
 
     @ApiPropertyOptional({ maxLength: 1000 })

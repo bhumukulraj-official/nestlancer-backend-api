@@ -19,7 +19,7 @@ enum ContactSubject {
 }
 
 model ContactMessage {
-  id        String         @id @default(cuid())
+  id        String         @id @default(uuid(7))
   ticketId  String         @unique
   name      String
   email     String
@@ -39,7 +39,7 @@ model ContactMessage {
 }
 
 model ContactResponseLog {
-  id               String   @id @default(cuid())
+  id               String   @id @default(uuid(7))
   contactMessageId String
   adminId          String
   subject          String

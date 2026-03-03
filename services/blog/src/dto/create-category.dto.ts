@@ -32,9 +32,9 @@ export class UpdateTagDto {
 
 
 export class MergeTagsDto {
-    @IsUUID('4')
+    @IsUUID()
     fromTagId: string;
 
-    @IsUUID('4')
+    @IsUUID()
     toTagId: string;
 }

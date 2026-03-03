@@ -25,13 +25,13 @@ export class CreateProgressEntryDto {
     @ApiPropertyOptional({ type: [String] })
     @IsOptional()
     @IsArray()
-    @IsUUID('4', { each: true })
+    @IsUUID(undefined, { each: true })
     deliverableIds?: string[];
 
     @ApiPropertyOptional({ type: [String] })
     @IsOptional()
     @IsArray()
-    @IsUUID('4', { each: true })
+    @IsUUID(undefined, { each: true })
     attachmentIds?: string[];
 
     @ApiPropertyOptional({ default: true })

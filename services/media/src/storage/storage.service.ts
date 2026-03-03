@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { S3StorageProvider } from '@nestlancer/storage';
 import { MediaConfig } from '../config/media.config';
-import { randomUUID } from 'crypto';
+import { generateUuid } from '@nestlancer/common';
 import * as path from 'path';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class StorageService {
 
     generateStorageKey(userId: string, filename: string): string {
         const ext = path.extname(filename);
-        const id = randomUUID();
+        const id = generateUuid();
         const date = new Date().toISOString().split('T')[0];
         return `users/${userId}/${date}/${id}${ext}`;
     }

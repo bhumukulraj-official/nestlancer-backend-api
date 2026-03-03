@@ -3,7 +3,7 @@ import { PaginationQueryDto } from '@nestlancer/common';
 
 export class QueryAuditDto extends PaginationQueryDto {
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     userId?: string;
 
     @IsOptional()

@@ -1,7 +1,7 @@
 import { IsBoolean, IsUUID } from 'class-validator';
 
 export class RestoreBackupDto {
-    @IsUUID('4')
+    @IsUUID()
     backupId: string;
 
     @IsBoolean()

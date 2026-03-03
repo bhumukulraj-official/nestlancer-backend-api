@@ -435,7 +435,7 @@ GET /api/v1/quotes/{id}?expand=request,project
 - **Example**: `my-awesome-project`
 
 #### UUID
-- **Format**: UUID v4
+- **Format**: UUID v7
 - **Pattern**: `^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
 - **Example**: `550e8400-e29b-41d4-a716-446655440000`
 
@@ -529,7 +529,7 @@ Response: 204 No Content (with CORS headers)
 
 #### Idempotency Key
 - **Header**: `Idempotency-Key`
-- **Format**: UUID v4
+- **Format**: UUID v7
 - **Retention**: 24 hours
 - **Scope**: Per user + endpoint
 

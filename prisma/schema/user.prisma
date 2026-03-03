@@ -14,7 +14,7 @@ enum UserStatus {
 }
 
 model User {
-  id               String       @id @default(cuid())
+  id               String       @id @default(uuid(7))
   email            String       @unique
   passwordHash     String
   name             String
@@ -48,7 +48,7 @@ model User {
 }
 
 model UserPreference {
-  id                   String   @id @default(cuid())
+  id                   String   @id @default(uuid(7))
   userId               String   @unique
   notificationSettings Json?
   marketingSettings    Json?
@@ -63,7 +63,7 @@ model UserPreference {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid(7))
   userId       String
   token        String   @unique
   ip           String?

@@ -9,7 +9,7 @@ enum WebhookIngestionStatus {
 }
 
 model Webhook {
-  id          String            @id @default(cuid())
+  id          String            @id @default(uuid(7))
   name        String
   url         String
   secret      String
@@ -24,7 +24,7 @@ model Webhook {
 }
 
 model WebhookDelivery {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid(7))
   webhookId       String
   event           String
   payload         Json
@@ -44,7 +44,7 @@ model WebhookDelivery {
 }
 
 model WebhookLog {
-  id          String                 @id @default(cuid())
+  id          String                 @id @default(uuid(7))
   provider    String
   eventId     String?
   eventType   String

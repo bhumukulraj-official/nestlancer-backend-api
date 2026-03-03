@@ -15,7 +15,7 @@ enum ProjectStatus {
 }
 
 model Project {
-  id              String        @id @default(cuid())
+  id              String        @id @default(uuid(7))
   quoteId         String        @unique
   clientId        String
   adminId         String?

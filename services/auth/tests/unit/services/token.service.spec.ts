@@ -1,5 +1,6 @@
-jest.mock('uuid', () => ({
-    v4: jest.fn().mockReturnValue('mock-uuid-1234'),
+jest.mock('@nestlancer/common', () => ({
+    ...jest.requireActual('@nestlancer/common'),
+    generateUuid: jest.fn().mockReturnValue('mock-uuid-1234'),
 }));
 
 import { TokenService } from '../../../src/services/token.service';

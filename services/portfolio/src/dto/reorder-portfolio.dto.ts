@@ -2,7 +2,7 @@ import { IsArray, ValidateNested, IsUUID, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ReorderItemDto {
-    @IsUUID('4')
+    @IsUUID()
     id: string;
 
     @IsInt()

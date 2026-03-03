@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { BusinessLogicException } from '@nestlancer/common';
+import { BusinessLogicException, generateUuid } from '@nestlancer/common';
 import { QueuePublisherService } from '@nestlancer/queue';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class PasswordService {
@@ -31,7 +30,7 @@ export class PasswordService {
             }
         });
 
-        const resetToken = `reset_${randomUUID().replace(/-/g, '')}`;
+        const resetToken = `reset_${generateUuid().replace(/-/g, '')}`;
         const expiresIn = this.config.get<number>('authService.tokens.passwordResetExpiresIn') || 3600;
 
         await this.prismaWrite.verificationToken.create({

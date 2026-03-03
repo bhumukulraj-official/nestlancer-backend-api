@@ -1,8 +1,9 @@
 jest.mock('bcrypt', () => ({
     hash: jest.fn().mockResolvedValue('new_hashed_password'),
 }));
-jest.mock('uuid', () => ({
-    v4: jest.fn().mockReturnValue('mock-uuid-no-dashes'),
+jest.mock('@nestlancer/common', () => ({
+    ...jest.requireActual('@nestlancer/common'),
+    generateUuid: jest.fn().mockReturnValue('mock-uuid-no-dashes'),
 }));
 
 import { PasswordService } from '../../../src/services/password.service';

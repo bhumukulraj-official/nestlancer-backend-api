@@ -10,7 +10,7 @@ enum MessageType {
 }
 
 model Message {
-  id          String      @id @default(cuid())
+  id          String      @id @default(uuid(7))
   projectId   String
   senderId    String
   content     String?

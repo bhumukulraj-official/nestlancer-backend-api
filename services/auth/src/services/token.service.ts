@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { BusinessLogicException } from '@nestlancer/common';
+import { BusinessLogicException, generateUuid } from '@nestlancer/common';
 import { JwtPayload } from '@nestlancer/auth-lib';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class TokenService {
@@ -21,8 +20,8 @@ export class TokenService {
             ? 30 * 24 * 60 * 60 // 30 days
             : this.configService.get<number>('authService.jwt.refreshExpiresIn') || 604800; // 7 days
 
-        const accessJti = randomUUID();
-        const refreshJti = randomUUID();
+        const accessJti = generateUuid();
+        const refreshJti = generateUuid();
 
         const accessPayload: JwtPayload = {
             sub: user.id,

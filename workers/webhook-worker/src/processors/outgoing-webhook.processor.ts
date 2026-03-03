@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 // Processor/Process removed - using @Injectable() instead;
 import { HttpService } from '@nestjs/axios';
 import { LoggerService } from '@nestlancer/logger';
+import { generateUuid } from '@nestlancer/common';
 import { SignatureVerifierService } from '../services/signature-verifier.service';
 import { WebhookLoggerService } from '../services/webhook-logger.service';
 import { OutgoingWebhookJob } from '../interfaces/webhook-job.interface';
@@ -33,7 +34,7 @@ export class OutgoingWebhookProcessor {
                     headers: {
                         'X-Webhook-Signature': signature,
                         'X-Webhook-Event': job.event,
-                        'X-Webhook-Delivery-ID': crypto.randomUUID(),
+                        'X-Webhook-Delivery-ID': generateUuid(),
                         'Content-Type': 'application/json',
                     },
                     timeout: 10000,

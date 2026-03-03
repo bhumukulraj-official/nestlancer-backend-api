@@ -86,5 +86,5 @@ export class CreateRequestDto {
 
 ## IDs
 
-- UUID v4 via `crypto.randomUUID()`
-- Validated with `@IsUUID('4')` decorator
+- UUID v4 via `generateUuid() from @nestlancer/common (UUID v7)`
+- Validated with `@IsUUID()` decorator

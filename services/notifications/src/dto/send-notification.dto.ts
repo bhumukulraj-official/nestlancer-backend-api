@@ -3,7 +3,7 @@ import { NotificationType, NotificationChannel } from '../interfaces/notificatio
 
 export class SendNotificationDto {
     @IsArray()
-    @IsUUID('4', { each: true })
+    @IsUUID(undefined, { each: true })
     recipientIds: string[];
 
     @IsString()

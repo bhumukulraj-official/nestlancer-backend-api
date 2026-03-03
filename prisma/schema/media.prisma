@@ -16,7 +16,7 @@ enum MediaVisibility {
 }
 
 model Media {
-  id               String          @id @default(cuid())
+  id               String          @id @default(uuid(7))
   filename         String
   originalFilename String
   mimeType         String

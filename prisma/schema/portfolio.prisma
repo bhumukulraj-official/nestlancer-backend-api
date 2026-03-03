@@ -15,7 +15,7 @@ enum PortfolioVisibility {
 }
 
 model PortfolioItem {
-  id                String               @id @default(cuid())
+  id                String               @id @default(uuid(7))
   slug              String               @unique
   title             String
   shortDescription  String
@@ -51,7 +51,7 @@ model PortfolioItem {
 }
 
 model PortfolioCategory {
-  id        String          @id @default(cuid())
+  id        String          @id @default(uuid(7))
   name      String
   slug      String          @unique
   createdAt DateTime        @default(now())

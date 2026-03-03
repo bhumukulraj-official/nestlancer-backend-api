@@ -4,7 +4,7 @@ import { PaginationQueryDto } from '@nestlancer/common';
 
 export class QueryPortfolioDto extends PaginationQueryDto {
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     categoryId?: string;
 
     @IsOptional()

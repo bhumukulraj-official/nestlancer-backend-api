@@ -3,7 +3,7 @@
 // =============================================================================
 
 model SystemConfig {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid(7))
   key         String   @unique
   value       Json
   description String?
@@ -18,7 +18,7 @@ model SystemConfig {
 }
 
 model FeatureFlag {
-  id                 String   @id @default(cuid())
+  id                 String   @id @default(uuid(7))
   flag               String   @unique
   enabled            Boolean  @default(false)
   description        String?
@@ -31,7 +31,7 @@ model FeatureFlag {
 }
 
 model EmailTemplate {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid(7))
   name        String   @unique
   subject     String
   body        String

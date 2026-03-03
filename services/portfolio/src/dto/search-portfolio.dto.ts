@@ -6,6 +6,6 @@ export class SearchPortfolioDto {
     q: string;
 
     @IsOptional()
-    @IsUUID('4')
+    @IsUUID()
     categoryId?: string;
 }
