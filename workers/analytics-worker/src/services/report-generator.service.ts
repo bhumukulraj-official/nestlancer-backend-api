@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from '@nestlancer/logger';
 import { AnalyticsJobType, Period, ExportFormat } from '../interfaces/analytics-job.interface';
-import * as PDFDocument from 'pdfkit';
+import PDFDocument from 'pdfkit';
 import { createWriteStream, readFileSync } from 'fs';
 import { join } from 'path';
 

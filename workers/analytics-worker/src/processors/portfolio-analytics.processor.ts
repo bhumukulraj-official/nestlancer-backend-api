@@ -17,7 +17,7 @@ export class PortfolioAnalyticsProcessor {
 
         // In a real scenario, we'd query portfolio_views table
         // For this implementation, we aggregate by portfolioItemId
-        const viewsPerItem = await this.aggregationService.aggregate('PortfolioItem', [], { viewCount: 'sum', likeCount: 'sum', id: 'count' });
+        const viewsPerItem = await this.aggregationService.aggregate('portfolioItem', [], { viewCount: 'sum', likeCount: 'sum', id: 'count' });
 
         const data = {
             totalViews: viewsPerItem[0]?._sum?.viewCount || 0,

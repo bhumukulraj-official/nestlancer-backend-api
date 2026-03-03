@@ -15,12 +15,11 @@ export class BlogAnalyticsProcessor {
     async process(period: Period): Promise<void> {
         this.logger.log(`Processing blog analytics for period: ${period}`);
 
-        const postStats = await this.aggregationService.aggregate('Post', [], { viewCount: 'sum', likeCount: 'sum', commentCount: 'sum', id: 'count' });
+        const postStats = await this.aggregationService.aggregate('blogPost', [], { viewCount: 'sum', likeCount: 'sum', id: 'count' });
 
         const data = {
             totalViews: postStats[0]?._sum?.viewCount || 0,
             totalLikes: postStats[0]?._sum?.likeCount || 0,
-            totalComments: postStats[0]?._sum?.commentCount || 0,
             postCount: postStats[0]?._count?.id || 0,
         };
 

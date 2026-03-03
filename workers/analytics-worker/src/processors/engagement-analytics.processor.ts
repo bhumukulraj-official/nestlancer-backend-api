@@ -15,8 +15,8 @@ export class EngagementAnalyticsProcessor {
     async process(period: Period): Promise<void> {
         this.logger.log(`Processing engagement analytics for period: ${period}`);
 
-        const totalMessages = await this.aggregationService.aggregate('Message', [], { id: 'count' });
-        const totalNotifications = await this.aggregationService.aggregate('Notification', [], { id: 'count' });
+        const totalMessages = await this.aggregationService.aggregate('message', [], { id: 'count' });
+        const totalNotifications = await this.aggregationService.aggregate('notification', [], { id: 'count' });
 
         const data = {
             messagesCount: totalMessages[0]?._count?.id || 0,
