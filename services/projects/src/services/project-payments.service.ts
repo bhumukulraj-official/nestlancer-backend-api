@@ -8,7 +8,7 @@ export class ProjectPaymentsService {
 
     async getPayments(userId: string, projectId: string) {
         const project = await this.prismaRead.project.findFirst({
-            where: { id: projectId, userId },
+            where: { id: projectId, clientId: userId },
             include: {
                 quote: { select: { totalAmount: true } }
             }
@@ -18,9 +18,9 @@ export class ProjectPaymentsService {
 
         // Fetch actual payments from a payment/invoice table
         return {
-            total: project.quote?.totalAmount || 0,
+            total: (project as any).quote?.totalAmount || 0,
             paid: 0, // Mock
-            pending: project.quote?.totalAmount || 0, // Mock
+            pending: (project as any).quote?.totalAmount || 0, // Mock
             nextPayment: null,
             history: []
         };

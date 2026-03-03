@@ -13,7 +13,7 @@ export class ProjectsService {
 
     async getMyProjects(userId: string) {
         const projects = await this.prismaRead.project.findMany({
-            where: { userId },
+            where: { clientId: userId },
             select: {
                 id: true,
                 title: true,
@@ -34,7 +34,7 @@ export class ProjectsService {
 
     async getProjectDetails(userId: string, projectId: string) {
         const project = await this.prismaRead.project.findFirst({
-            where: { id: projectId, userId },
+            where: { id: projectId, clientId: userId },
             include: {
                 quote: { select: { id: true, totalAmount: true, currency: true, acceptedAt: true } },
             }
@@ -47,7 +47,7 @@ export class ProjectsService {
             title: project.title,
             description: project.description,
             status: project.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()),
-            quote: project.quote,
+            quote: (project as any).quote,
             // Aggregating milestones, payments etc would be done here or in separate endpoint normally
             createdAt: project.createdAt,
             updatedAt: project.updatedAt,
@@ -56,7 +56,7 @@ export class ProjectsService {
 
     async approveProject(userId: string, projectId: string, dto: ApproveProjectDto) {
         const project = await this.prismaRead.project.findFirst({
-            where: { id: projectId, userId }
+            where: { id: projectId, clientId: userId }
         });
 
         if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
@@ -91,7 +91,7 @@ export class ProjectsService {
 
     async requestRevision(userId: string, projectId: string, dto: RequestProjectRevisionDto) {
         const project = await this.prismaRead.project.findFirst({
-            where: { id: projectId, userId }
+            where: { id: projectId, clientId: userId }
         });
 
         if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');

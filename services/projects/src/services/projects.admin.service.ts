@@ -17,7 +17,7 @@ export class ProjectsAdminService {
                 skip: (page - 1) * limit,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
-                include: { user: { select: { firstName: true, email: true } } }
+                include: { client: { select: { firstName: true, lastName: true, email: true } } }
             }),
             this.prismaRead.project.count()
         ]);
@@ -27,7 +27,7 @@ export class ProjectsAdminService {
                 id: p.id,
                 title: p.title,
                 status: p.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()),
-                client: p.user,
+                client: (p as any).client,
                 createdAt: p.createdAt
             })),
             pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }

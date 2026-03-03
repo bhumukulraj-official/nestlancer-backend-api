@@ -13,7 +13,7 @@ export class ProjectDeliverablesService {
 
     async getDeliverables(userId: string, projectId: string) {
         const project = await this.prismaRead.project.findFirst({
-            where: { id: projectId, userId }
+            where: { id: projectId, clientId: userId }
         });
 
         if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
