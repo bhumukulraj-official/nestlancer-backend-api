@@ -13,7 +13,7 @@ export class UnreadCountService {
         // and filter them in memory, or use raw queries.
 
         const projects = await this.prismaRead.project.findMany({
-            where: { OR: [{ clientId: userId }, { freelancerId: userId }] },
+            where: { OR: [{ clientId: userId }, { adminId: userId }] },
             select: { id: true },
         });
 

@@ -23,7 +23,7 @@ export class MessagesAdminController {
         const [items, total] = await Promise.all([
             this.prismaRead.message.findMany({
                 skip, take: limit, orderBy: { createdAt: 'desc' },
-                include: { sender: { select: { id: true, profile: true } } }
+                include: { sender: { select: { id: true, firstName: true, lastName: true, avatar: true } } }
             }),
             this.prismaRead.message.count(),
         ]);

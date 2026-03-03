@@ -16,7 +16,7 @@ export class ConversationsService {
             where: {
                 OR: [
                     { clientId: userId },
-                    { freelancerId: userId },
+                    { adminId: userId },
                 ],
             },
             skip,
@@ -33,7 +33,7 @@ export class ConversationsService {
             where: {
                 OR: [
                     { clientId: userId },
-                    { freelancerId: userId },
+                    { adminId: userId },
                 ],
             },
         });
@@ -41,7 +41,7 @@ export class ConversationsService {
         const conversations = projects.map(p => ({
             projectId: p.id,
             title: p.title,
-            latestMessage: p.messages[0] || null,
+            latestMessage: (p as any).messages?.[0] || null,
         }));
 
         return {

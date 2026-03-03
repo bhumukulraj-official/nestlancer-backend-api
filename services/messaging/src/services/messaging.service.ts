@@ -58,7 +58,7 @@ export class MessagingService {
                 orderBy: { createdAt: 'desc' },
                 skip,
                 take: limit,
-                include: { sender: { select: { id: true, profile: true } } }
+                include: { sender: { select: { id: true, firstName: true, lastName: true, avatar: true } } }
             }),
             this.prismaRead.message.count({
                 where: { projectId, replyToId: null, deletedAt: null },

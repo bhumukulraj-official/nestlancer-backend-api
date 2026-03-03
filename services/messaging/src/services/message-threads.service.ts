@@ -16,7 +16,7 @@ export class MessageThreadsService {
                 orderBy: { createdAt: 'asc' }, // Replies usually shown chronologically
                 skip,
                 take: limit,
-                include: { sender: { select: { id: true, profile: true } } }
+                include: { sender: { select: { id: true, firstName: true, lastName: true, avatar: true } } }
             }),
             this.prismaRead.message.count({
                 where: { replyToId: messageId, deletedAt: null },
