@@ -4,7 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppValidationPipe, AllExceptionsFilter, TransformResponseInterceptor, LoggingInterceptor, TimeoutInterceptor, API_PREFIX, API_VERSION, DEFAULT_GATEWAY_PORT, MAX_PAYLOAD_SIZE } from '@nestlancer/common';
 import { getCorsConfig, getHelmetConfig } from '@nestlancer/middleware';
 import helmet from 'helmet';
-import * as compression from 'compression';
+import compression from 'compression';
 
 /**
  * Bootstrap the Nestlancer API Gateway
