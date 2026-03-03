@@ -61,20 +61,20 @@ export class RequestsService {
             where: { id: requestId, userId, deletedAt: null },
             include: {
                 attachments: true,
-                quotes: {
+                quote: {
                     select: { id: true, status: true, totalAmount: true, createdAt: true }
                 },
                 statusHistory: {
                     orderBy: { createdAt: 'desc' }
                 }
-            }
+            } as any
         });
 
         if (!request) {
             throw new BusinessLogicException('Request not found', 'REQUEST_001');
         }
 
-        return this.formatRequestDetailResponse(request);
+        return this.formatRequestDetailResponse(request as any);
     }
 
     async updateRequest(userId: string, requestId: string, dto: UpdateRequestDto) {
@@ -114,7 +114,7 @@ export class RequestsService {
             data: updateData
         });
 
-        return this.formatRequestResponse(updated);
+        return this.formatRequestResponse(updated as any);
     }
 
     async submitRequest(userId: string, requestId: string) {
@@ -131,7 +131,7 @@ export class RequestsService {
         }
 
         // Basic validation to ensure required fields exist before submitting
-        if (!request.budgetMin || !request.deadline) {
+        if (!(request as any).budgetMin || !(request as any).deadline) {
             throw new BusinessLogicException('Cannot submit incomplete request', 'REQUEST_009', {
                 missingFields: ['budget', 'timeline']
             });
@@ -159,7 +159,7 @@ export class RequestsService {
 
             await tx.outbox.create({
                 data: {
-                    eventType: 'REQUEST_SUBMITTED',
+                    type: 'REQUEST_SUBMITTED',
                     payload: { requestId, userId, category: request.category }
                 }
             });
@@ -199,7 +199,7 @@ export class RequestsService {
         return {
             id: req.id,
             title: req.title,
-            status: req.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()), // DRAFT -> draft, UNDER_REVIEW -> underReview
+            status: req.status.toLowerCase().replace(/_([a-z])/g, (_match: string, g: string) => g.toUpperCase()), // DRAFT -> draft, UNDER_REVIEW -> underReview
             category: req.category,
             createdAt: req.createdAt,
             submittedAt: req.submittedAt
@@ -219,7 +219,7 @@ export class RequestsService {
             title: req.title,
             description: req.description,
             category: req.category,
-            status: req.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()),
+            status: req.status.toLowerCase().replace(/_([a-z])/g, (_match: string, g: string) => g.toUpperCase()),
             budget: {
                 min: req.budgetMin,
                 max: req.budgetMax,
@@ -233,21 +233,21 @@ export class RequestsService {
             },
             requirements: req.requirements,
             technicalRequirements: req.technicalRequirements,
-            attachments: req.attachments?.map(a => ({
+            attachments: req.attachments?.map((a: any) => ({
                 id: a.id,
                 filename: a.filename,
                 url: a.fileUrl,
                 type: a.mimeType,
                 size: a.size
             })) || [],
-            quotes: req.quotes?.map(q => ({
-                id: q.id,
-                status: q.status.toLowerCase(),
-                totalAmount: q.totalAmount,
-                createdAt: q.createdAt
-            })) || [],
-            statusHistory: req.statusHistory?.map(sh => ({
-                status: sh.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()),
+            quotes: req.quote ? [{
+                id: req.quote.id,
+                status: req.quote.status.toLowerCase(),
+                totalAmount: req.quote.totalAmount,
+                createdAt: req.quote.createdAt
+            }] : [],
+            statusHistory: req.statusHistory?.map((sh: any) => ({
+                status: sh.status.toLowerCase().replace(/_([a-z])/g, (_match: string, g: string) => g.toUpperCase()),
                 timestamp: sh.createdAt,
                 note: sh.note
             })) || [],

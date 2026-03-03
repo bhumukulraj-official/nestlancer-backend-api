@@ -87,7 +87,7 @@ export class RequestsController {
     async addAttachment(
         @ActiveUser('sub') userId: string,
         @Param('id') id: string,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile() file: any,
         @Res({ passthrough: true }) res: Response
     ) {
         const result = await this.attachmentsService.addAttachment(userId, id, file);

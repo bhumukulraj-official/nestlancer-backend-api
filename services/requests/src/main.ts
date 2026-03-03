@@ -32,12 +32,12 @@ async function bootstrap() {
     );
 
     app.useGlobalInterceptors(new TransformResponseInterceptor());
-    app.useGlobalFilters(new AllExceptionsFilter(logger));
+    app.useGlobalFilters(new (AllExceptionsFilter as any)(logger));
     app.use(new CorrelationIdMiddleware().use);
 
     app.enableShutdownHooks();
 
     await app.listen(port);
-    logger.info(`Requests Service is running on port ${port}`, 'Bootstrap');
+    (logger as any).log(`Requests Service is running on port ${port}`, 'Bootstrap');
 }
 bootstrap();

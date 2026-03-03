@@ -27,10 +27,10 @@ export class RequestsAdminService {
         ]);
 
         return {
-            data: requests.map(req => ({
+            data: requests.map((req: any) => ({
                 id: req.id,
                 title: req.title,
-                status: req.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()),
+                status: req.status.toLowerCase().replace(/_([a-z])/g, (_match: string, g: string) => g.toUpperCase()),
                 user: req.user,
                 category: req.category,
                 createdAt: req.createdAt,
@@ -53,13 +53,13 @@ export class RequestsAdminService {
                 adminNotes: {
                     orderBy: { createdAt: 'desc' },
                     include: { author: { select: { id: true, firstName: true, lastName: true } } }
-                }
-            }
+                } as any
+            } as any
         });
 
         if (!request) throw new BusinessLogicException('Request not found', 'REQUEST_001');
 
-        return this.formatAdminRequestResponse(request);
+        return this.formatAdminRequestResponse(request as any);
     }
 
     async updateRequestStatus(requestId: string, adminId: string, status: string, notes?: string) {
@@ -93,7 +93,7 @@ export class RequestsAdminService {
 
             await tx.outbox.create({
                 data: {
-                    eventType: 'REQUEST_STATUS_UPDATED',
+                    type: 'REQUEST_STATUS_UPDATED',
                     payload: { requestId, oldStatus: request.status, newStatus: dbStatus }
                 }
             });
@@ -104,7 +104,7 @@ export class RequestsAdminService {
         return {
             id: updated.id,
             status, // return camelCase
-            previousStatus: request.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()),
+            previousStatus: request.status.toLowerCase().replace(/_([a-z])/g, (_match: string, g: string) => g.toUpperCase()),
             updatedAt: updated.updatedAt
         };
     }
@@ -142,7 +142,7 @@ export class RequestsAdminService {
             include: { author: { select: { id: true, firstName: true, lastName: true } } }
         });
 
-        return notes.map(n => ({
+        return notes.map((n: any) => ({
             id: n.id,
             content: n.content,
             author: n.author,
@@ -157,19 +157,19 @@ export class RequestsAdminService {
             title: req.title,
             description: req.description,
             user: req.user,
-            status: req.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()),
+            status: req.status.toLowerCase().replace(/_([a-z])/g, (_match: string, g: string) => g.toUpperCase()),
             budget: { min: req.budgetMin, max: req.budgetMax, currency: req.budgetCurrency },
             timeline: { preferredStartDate: req.preferredStartDate, deadline: req.deadline },
             requirements: req.requirements,
             technicalRequirements: req.technicalRequirements,
-            attachments: req.attachments?.map(a => ({ id: a.id, filename: a.filename, url: a.fileUrl })) || [],
-            quotes: req.quotes?.map(q => ({ id: q.id, status: q.status.toLowerCase(), totalAmount: q.totalAmount })) || [],
-            statusHistory: req.statusHistory?.map(sh => ({
-                status: sh.status.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase()),
+            attachments: req.attachments?.map((a: any) => ({ id: a.id, filename: a.filename, url: a.fileUrl })) || [],
+            quotes: req.quotes?.map((q: any) => ({ id: q.id, status: q.status.toLowerCase(), totalAmount: q.totalAmount })) || [],
+            statusHistory: req.statusHistory?.map((sh: any) => ({
+                status: sh.status.toLowerCase().replace(/_([a-z])/g, (_match: string, g: string) => g.toUpperCase()),
                 timestamp: sh.createdAt,
                 note: sh.note
             })) || [],
-            adminNotes: req.adminNotes?.map(an => ({ id: an.id, content: an.content, author: an.author, createdAt: an.createdAt })) || [],
+            adminNotes: req.adminNotes?.map((an: any) => ({ id: an.id, content: an.content, author: an.author, createdAt: an.createdAt })) || [],
             createdAt: req.createdAt,
             updatedAt: req.updatedAt,
         };

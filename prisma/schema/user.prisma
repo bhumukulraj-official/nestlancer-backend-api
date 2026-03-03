@@ -49,6 +49,7 @@ model User {
   blogComments        BlogComment[]
   auditLogs           AuditLog[]
   systemConfigs       SystemConfig[]
+  adminNotes          AdminNote[]
   verificationTokens  VerificationToken[]
   authSessions        AuthSession[]
 

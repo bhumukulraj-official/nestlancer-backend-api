@@ -16,12 +16,12 @@ export class RequestAttachmentsService {
     async getAttachments(userId: string, requestId: string) {
         const request = await this.prismaRead.projectRequest.findFirst({
             where: { id: requestId, userId, deletedAt: null },
-            include: { attachments: true }
+            include: { attachments: true } as any
         });
 
         if (!request) throw new BusinessLogicException('Request not found', 'REQUEST_001');
 
-        return request.attachments.map(a => ({
+        return (request as any).attachments.map((a: any) => ({
             id: a.id,
             filename: a.filename,
             url: a.fileUrl,
@@ -31,10 +31,10 @@ export class RequestAttachmentsService {
         }));
     }
 
-    async addAttachment(userId: string, requestId: string, file: Express.Multer.File) {
+    async addAttachment(userId: string, requestId: string, file: any) {
         const request = await this.prismaRead.projectRequest.findFirst({
             where: { id: requestId, userId, deletedAt: null },
-            include: { _count: { select: { attachments: true } } }
+            include: { _count: { select: { attachments: true } } } as any
         });
 
         if (!request) throw new BusinessLogicException('Request not found', 'REQUEST_001');
@@ -44,7 +44,7 @@ export class RequestAttachmentsService {
         }
 
         const maxCount = this.config.get<number>('requestsService.attachments.maxCount') || 10;
-        if (request._count.attachments >= maxCount) {
+        if ((request as any)._count.attachments >= maxCount) {
             throw new BusinessLogicException('Too many attachments', 'REQUEST_011');
         }
 
@@ -61,7 +61,8 @@ export class RequestAttachmentsService {
         const bucket = this.config.get<string>('requestsService.attachments.s3Bucket') || 'nestlancer-requests';
         const key = `requests/${requestId}/${Date.now()}_${file.originalname}`;
 
-        const url = await this.storageService.uploadFile(bucket, key, file.buffer, file.mimetype);
+        const uploadResult = await this.storageService.upload(bucket, key, file.buffer, file.mimetype);
+        const url = uploadResult.url;
 
         const attachment = await this.prismaWrite.requestAttachment.create({
             data: {
