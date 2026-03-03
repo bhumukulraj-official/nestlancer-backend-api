@@ -56,7 +56,7 @@ export class PaymentDisputesService {
                 take: limit,
                 orderBy: { updatedAt: 'desc' },
                 include: {
-                    client: { select: { id: true, name: true, email: true } },
+                    client: { select: { id: true, firstName: true, lastName: true, email: true } },
                     project: { select: { id: true, title: true } },
                 }
             }),
@@ -69,8 +69,8 @@ export class PaymentDisputesService {
                 amount: p.amount,
                 currency: p.currency,
                 status: p.refundStatus,
-                client: p.client,
-                project: p.project,
+                client: (p as any).client,
+                project: (p as any).project,
                 externalId: p.externalId,
                 createdAt: p.createdAt,
                 updatedAt: p.updatedAt,
@@ -277,7 +277,7 @@ export class PaymentStatsService {
                     amount: true,
                     currency: true,
                     paidAt: true,
-                    client: { select: { name: true } },
+                    client: { select: { firstName: true, lastName: true } },
                     project: { select: { title: true } },
                 }
             })
@@ -296,8 +296,8 @@ export class PaymentStatsService {
                 amount: p.amount,
                 currency: p.currency,
                 paidAt: p.paidAt,
-                clientName: p.client.name,
-                projectTitle: p.project.title,
+                clientName: `${(p as any).client.firstName} ${(p as any).client.lastName}`,
+                projectTitle: (p as any).project.title,
             })),
         };
     }

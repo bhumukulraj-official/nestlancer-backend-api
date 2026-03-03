@@ -22,7 +22,7 @@ export class ReceiptPdfService {
         const payment = await this.prismaRead.payment.findUnique({
             where: { id: paymentId },
             include: {
-                client: { select: { id: true, name: true, email: true } },
+                client: { select: { id: true, firstName: true, lastName: true, email: true } },
                 project: { select: { id: true, title: true } },
                 milestone: { select: { id: true, name: true } },
             }
@@ -51,12 +51,12 @@ export class ReceiptPdfService {
                 currency: payment.currency,
                 paymentMethod: payment.method || 'Online',
                 client: {
-                    name: payment.client.name,
-                    email: payment.client.email,
+                    name: `${(payment as any).client.firstName} ${(payment as any).client.lastName}`,
+                    email: (payment as any).client.email,
                 },
                 project: {
-                    title: payment.project.title,
-                    milestone: payment.milestone?.name,
+                    title: (payment as any).project.title,
+                    milestone: (payment as any).milestone?.name,
                 },
                 company: {
                     name: companyName,
@@ -92,7 +92,7 @@ export class InvoicePdfService {
         const payment = await this.prismaRead.payment.findUnique({
             where: { id: paymentId },
             include: {
-                client: { select: { id: true, name: true, email: true } },
+                client: { select: { id: true, firstName: true, lastName: true, email: true } },
                 project: {
                     select: {
                         id: true,
@@ -124,16 +124,16 @@ export class InvoicePdfService {
 
         // Build line items
         const lineItems = [];
-        if (payment.milestone) {
+        if ((payment as any).milestone) {
             lineItems.push({
-                description: `${payment.project.title} - ${payment.milestone.name}`,
+                description: `${(payment as any).project.title} - ${(payment as any).milestone.name}`,
                 quantity: 1,
                 rate: payment.amount,
                 amount: payment.amount,
             });
         } else {
             lineItems.push({
-                description: payment.project.title,
+                description: (payment as any).project.title,
                 quantity: 1,
                 rate: payment.amount,
                 amount: payment.amount,
@@ -153,12 +153,12 @@ export class InvoicePdfService {
                 dueDate: payment.paidAt ? payment.paidAt.toISOString() : new Date().toISOString(),
                 paymentId: payment.id,
                 client: {
-                    name: payment.client.name,
-                    email: payment.client.email,
+                    name: `${(payment as any).client.firstName} ${(payment as any).client.lastName}`,
+                    email: (payment as any).client.email,
                 },
                 project: {
-                    id: payment.project.id,
-                    title: payment.project.title,
+                    id: (payment as any).project.id,
+                    title: (payment as any).project.title,
                 },
                 lineItems,
                 subtotal,
