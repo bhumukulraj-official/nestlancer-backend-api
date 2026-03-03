@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as ffmpeg from 'fluent-ffmpeg';
+import ffmpeg from 'fluent-ffmpeg';
 import { MediaMetadata } from '../interfaces/processing-options.interface';
 import { Readable, Writable } from 'stream';
 
@@ -7,9 +7,9 @@ import { Readable, Writable } from 'stream';
 export class VideoProcessingService {
     async getInfo(inputPath: string): Promise<MediaMetadata> {
         return new Promise((resolve, reject) => {
-            ffmpeg.ffprobe(inputPath, (err, metadata) => {
+            ffmpeg.ffprobe(inputPath, (err: Error | null, metadata: any) => {
                 if (err) return reject(err);
-                const videoStream = metadata.streams.find(s => s.codec_type === 'video');
+                const videoStream = metadata.streams.find((s: any) => s.codec_type === 'video');
                 resolve({
                     width: videoStream?.width,
                     height: videoStream?.height,
@@ -31,7 +31,7 @@ export class VideoProcessingService {
                     size: '300x200',
                 })
                 .on('end', () => resolve())
-                .on('error', (err) => reject(err));
+                .on('error', (err: Error) => reject(err));
         });
     }
 }

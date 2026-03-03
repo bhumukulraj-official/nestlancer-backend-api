@@ -16,9 +16,9 @@ export class ThumbnailGeneratorProcessor {
         const thumbnailKey = `thumb_${s3Key}.webp`;
 
         if (contentType.startsWith('image/')) {
-            const buffer = await this.storage.getFileBuffer(bucket, s3Key);
+            const buffer = await this.storage.download(bucket, s3Key);
             const thumbBuffer = await this.imageService.generateThumbnail(buffer);
-            await this.storage.uploadFile(bucket, thumbnailKey, thumbBuffer);
+            await this.storage.upload(bucket, thumbnailKey, thumbBuffer, 'image/webp');
         } else if (contentType.startsWith('video/')) {
             // Logic for video thumbnail extraction using FFmpeg
             // For now, let's assume it saves to /tmp and we upload it

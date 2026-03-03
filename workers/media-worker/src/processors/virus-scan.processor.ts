@@ -25,18 +25,21 @@ export class VirusScanProcessor {
     async scanFile(s3Key: string): Promise<ScanResult> {
         const fileName = path.basename(s3Key);
         const localPath = path.join(this.tempDir, `${Date.now()}-${fileName}`);
+        // Assuming a default bucket if not provided in job (need to check where bucket comes from)
+        const bucket = this.configService.get<string>('storage.privateBucket', 'nestlancer-private');
 
         try {
             this.logger.debug(`Downloading ${s3Key} for virus scan...`);
-            await this.storage.download(s3Key, localPath);
+            const buffer = await this.storage.download(bucket, s3Key);
+            await fs.promises.writeFile(localPath, buffer);
 
             const scanner = clamav.createScanner(
                 this.configService.get<string>('media-worker.clamavHost', 'localhost'),
                 this.configService.get<number>('media-worker.clamavPort', 3310),
             );
 
-            return new Promise((resolve, reject) => {
-                scanner.scan(localPath, (err, object, result) => {
+            return new Promise((resolve) => {
+                scanner.scan(localPath, (err: Error | null, object: any, result: any) => {
                     if (err) {
                         this.logger.error(`ClamAV scan error: ${err.message}`);
                         return resolve({ isInfected: false, details: 'Scan failed, assuming clean for now (fallback policy needed)' });

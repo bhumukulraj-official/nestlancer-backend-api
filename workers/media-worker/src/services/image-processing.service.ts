@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import { ImageVariant, MediaMetadata } from '../interfaces/processing-options.interface';
 
 @Injectable()

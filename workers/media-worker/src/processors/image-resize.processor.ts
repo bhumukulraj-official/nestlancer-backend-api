@@ -14,13 +14,13 @@ export class ImageResizeProcessor {
 
     async process(s3Key: string, bucket: string): Promise<Record<string, string>> {
         const variants = this.configService.get<ImageVariant[]>('media-worker.imageVariants', []);
-        const originalBuffer = await this.storage.getFileBuffer(bucket, s3Key);
+        const originalBuffer = await this.storage.download(bucket, s3Key);
         const variantKeys: Record<string, string> = {};
 
         for (const variant of variants) {
             const resizedBuffer = await this.imageService.resize(originalBuffer, variant);
             const variantKey = `${variant.name}_${s3Key}`;
-            await this.storage.uploadFile(bucket, variantKey, resizedBuffer);
+            await this.storage.upload(bucket, variantKey, resizedBuffer, 'image/webp');
             variantKeys[variant.name] = variantKey;
         }
 

@@ -16,7 +16,7 @@ export class MetadataExtractorProcessor {
         const bucket = 'nestlancer-private'; // Should be dynamic
 
         if (contentType.startsWith('image/')) {
-            const buffer = await this.storage.getFileBuffer(bucket, s3Key);
+            const buffer = await this.storage.download(bucket, s3Key);
             return this.imageService.extractMetadata(buffer);
         } else if (contentType.startsWith('video/')) {
             // FFmpeg probe

@@ -10,13 +10,9 @@ import { MediaConsumer } from './consumers/media.consumer';
 import { MediaWorkerService } from './services/media-worker.service';
 import { ImageProcessingService } from './services/image-processing.service';
 import { VideoProcessingService } from './services/video-processing.service';
-import { CdnInvalidationEmitterService } from './services/cdn-invalidation-emitter.service';
 import { VirusScanProcessor } from './processors/virus-scan.processor';
 import { ImageResizeProcessor } from './processors/image-resize.processor';
-import { ImageCompressProcessor } from './processors/image-compress.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail-generator.processor';
-import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
-import { DocumentThumbnailProcessor } from './processors/document-thumbnail.processor';
 import { MetadataExtractorProcessor } from './processors/metadata-extractor.processor';
 import { mediaWorkerConfig } from './config/media-worker.config';
 
@@ -28,20 +24,16 @@ import { mediaWorkerConfig } from './config/media-worker.config';
         TracingModule,
         DatabaseModule,
         StorageModule,
-        QueueModule.forConsumer('media'),
+        QueueModule.forRoot(),
     ],
     providers: [
         MediaConsumer,
         MediaWorkerService,
         ImageProcessingService,
         VideoProcessingService,
-        CdnInvalidationEmitterService,
         VirusScanProcessor,
         ImageResizeProcessor,
-        ImageCompressProcessor,
         ThumbnailGeneratorProcessor,
-        VideoTranscodeProcessor,
-        DocumentThumbnailProcessor,
         MetadataExtractorProcessor,
     ],
 })
