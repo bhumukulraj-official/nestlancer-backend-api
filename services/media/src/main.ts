@@ -1,8 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-// import removed - ConfigService not exported from '@nestlancer/config';
-// import removed - Logger not exported from '@nestlancer/logger';
+import { Logger } from '@nestjs/common';
 import { AppValidationPipe, AllExceptionsFilter, TransformResponseInterceptor, TimeoutInterceptor } from '@nestlancer/common';
 
 async function bootstrap() {
@@ -14,8 +13,8 @@ async function bootstrap() {
     app.useLogger(logger);
     app.setGlobalPrefix('api/v1');
 
-    app.useGlobalPipes(new AppValidationPipe({ transform: true }));
-    app.useGlobalFilters(new AllExceptionsFilter(logger));
+    app.useGlobalPipes(new AppValidationPipe());
+    app.useGlobalFilters(new AllExceptionsFilter());
     app.useGlobalInterceptors(
         new TransformResponseInterceptor(),
         new TimeoutInterceptor()

@@ -24,7 +24,7 @@ export class MediaAdminService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
+                orderBy: { [query.sort || 'createdAt']: (query as any).order || 'desc' },
             }),
             this.prismaRead.media.count({ where }),
         ]);
@@ -46,7 +46,7 @@ export class MediaAdminService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
+                orderBy: { [query.sort || 'createdAt']: (query as any).order || 'desc' },
             }),
             this.prismaRead.media.count({ where }),
         ]);
@@ -64,7 +64,7 @@ export class MediaAdminService {
         });
 
         const fileCounts = await this.prismaRead.media.groupBy({
-            by: ['fileType'],
+            by: ['mimeType'],
             _count: true,
         });
 

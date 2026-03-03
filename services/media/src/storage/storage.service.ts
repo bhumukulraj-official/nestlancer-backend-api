@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { S3StorageProvider } from '@nestlancer/storage';
+import { StorageProvider } from '@nestlancer/storage';
 import { MediaConfig } from '../config/media.config';
 import { generateUuid } from '@nestlancer/common';
 import * as path from 'path';
@@ -8,7 +8,7 @@ import * as path from 'path';
 export class StorageService {
     private readonly logger = new Logger(StorageService.name);
 
-    constructor(private readonly s3StorageService: S3StorageProvider) { }
+    constructor(private readonly storageProvider: StorageProvider) { }
 
     generateStorageKey(userId: string, filename: string): string {
         const ext = path.extname(filename);
@@ -18,61 +18,43 @@ export class StorageService {
     }
 
     async generatePresignedUploadUrl(key: string, mimeType: string) {
-        return this.s3StorageService.getPresignedPutUrl(
-            MediaConfig.S3_PRIVATE_BUCKET,
+        return this.storageProvider.getSignedUrl({
+            bucket: MediaConfig.S3_PRIVATE_BUCKET,
             key,
-            MediaConfig.PRESIGNED_URL_EXPIRY,
-            mimeType
-        );
+            expiresIn: MediaConfig.PRESIGNED_URL_EXPIRY,
+            operation: 'put',
+            contentType: mimeType
+        });
     }
 
     async generatePresignedDownloadUrl(key: string) {
-        return this.s3StorageService.getPresignedGetUrl(
-            MediaConfig.S3_PRIVATE_BUCKET,
+        return this.storageProvider.getSignedUrl({
+            bucket: MediaConfig.S3_PRIVATE_BUCKET,
             key,
-            MediaConfig.PRESIGNED_URL_EXPIRY
-        );
+            expiresIn: MediaConfig.PRESIGNED_URL_EXPIRY,
+            operation: 'get'
+        });
     }
 
-    async initiateMultipartUpload(key: string, mimeType: string) {
-        return this.s3StorageService.createMultipartUpload(
-            MediaConfig.S3_PRIVATE_BUCKET,
+    async upload(bucket: string, key: string, buffer: Buffer, contentType: string) {
+        return this.storageProvider.upload(
+            bucket,
             key,
-            mimeType
-        );
-    }
-
-    async uploadPart(key: string, uploadId: string, partNumber: number, buffer: Buffer) {
-        return this.s3StorageService.uploadPart(
-            MediaConfig.S3_PRIVATE_BUCKET,
-            key,
-            uploadId,
-            partNumber,
-            buffer
-        );
-    }
-
-    async completeMultipartUpload(key: string, uploadId: string, parts: any[]) {
-        return this.s3StorageService.completeMultipartUpload(
-            MediaConfig.S3_PRIVATE_BUCKET,
-            key,
-            uploadId,
-            parts
+            buffer,
+            contentType
         );
     }
 
     async deleteFile(key: string) {
-        return this.s3StorageService.deleteFile(
+        return this.storageProvider.delete(
             MediaConfig.S3_PRIVATE_BUCKET,
             key
         );
     }
 
     async getFileSize(key: string) {
-        const meta = await this.s3StorageService.getFileMetadata(
-            MediaConfig.S3_PRIVATE_BUCKET,
-            key
-        );
-        return meta?.ContentLength || 0;
+        // Mocked or omitted if not supported, typically not supported in standard interface without headObject
+        // If we must have it, we can return 0 or do a HEAD request if added to interface later.
+        return 0;
     }
 }

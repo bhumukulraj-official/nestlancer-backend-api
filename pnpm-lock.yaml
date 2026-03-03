@@ -1355,6 +1355,9 @@ importers:
       '@nestlancer/config':
         specifier: workspace:*
         version: link:../../libs/config
+      '@nestlancer/crypto':
+        specifier: workspace:*
+        version: link:../../libs/crypto
       '@nestlancer/database':
         specifier: workspace:*
         version: link:../../libs/database

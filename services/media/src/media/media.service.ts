@@ -23,8 +23,8 @@ export class MediaService {
     async findByUser(userId: string, query: QueryMediaDto) {
         const { skip, take } = buildPrismaSkipTake(query.page, query.limit);
 
-        const where: any = { userId };
-        if (query.fileType) where.fileType = query.fileType;
+        const where: any = { uploaderId: userId };
+        if (query.fileType) where.mimeType = { contains: query.fileType };
         if (query.status) where.status = query.status;
 
         const [items, total] = await Promise.all([
@@ -68,7 +68,7 @@ export class MediaService {
 
     async confirmUpload(userId: string, dto: ConfirmUploadDto) {
         const media = await this.prismaWrite.media.findFirst({
-            where: { id: dto.uploadId, userId, status: MediaStatus.PENDING },
+            where: { id: dto.uploadId, uploaderId: userId, status: MediaStatus.PENDING },
         });
 
         if (!media) {
@@ -98,16 +98,15 @@ export class MediaService {
 
         const media = await this.prismaWrite.media.create({
             data: {
-                userId,
+                uploaderId: userId,
                 filename: file.originalname,
-                originalName: file.originalname,
+                originalFilename: file.originalname,
                 mimeType: file.mimetype,
                 size: file.size,
-                fileType: dto.fileType,
-                storageKey: key,
+                contextType: dto.projectId ? 'PROJECT' : (dto.messageId ? 'MESSAGE' : null),
+                contextId: dto.projectId || dto.messageId || null,
+                metadata: { storageKey: key, fileType: dto.fileType },
                 status: MediaStatus.READY,
-                projectId: dto.projectId,
-                messageId: dto.messageId,
             },
         });
 
@@ -117,7 +116,7 @@ export class MediaService {
     @ReadOnly()
     async getStorageStats(userId: string) {
         const sum = await this.prismaRead.media.aggregate({
-            where: { userId, status: MediaStatus.READY },
+            where: { uploaderId: userId, status: MediaStatus.READY },
             _sum: { size: true },
             _count: true,
         });

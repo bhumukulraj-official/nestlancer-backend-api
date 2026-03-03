@@ -7,7 +7,7 @@ import { DirectUploadDto } from '../dto/direct-upload.dto';
 import { UpdateMediaMetadataDto } from '../dto/update-media-metadata.dto';
 import { QueryMediaDto } from '../dto/query-media.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
-import { ApiStandardResponse, ApiPaginatedResponse } from '@nestlancer/common';
+import { ApiStandardResponse } from '@nestlancer/common';
 
 @Controller('media')
 @UseGuards(JwtAuthGuard)
@@ -15,12 +15,12 @@ export class MediaController {
     constructor(private readonly mediaService: MediaService) { }
 
     @Get()
-    @ApiPaginatedResponse(Object)
+    @ApiStandardResponse(Object)
     async getUserMedia(
         @CurrentUser() user: AuthenticatedUser,
         @Query() query: QueryMediaDto,
     ) {
-        return this.mediaService.findByUser(user.id, query);
+        return this.mediaService.findByUser(user.userId, query);
     }
 
     @Post('upload/request')
@@ -29,7 +29,7 @@ export class MediaController {
         @CurrentUser() user: AuthenticatedUser,
         @Body() dto: RequestUploadDto,
     ) {
-        return this.mediaService.requestUpload(user.id, dto);
+        return this.mediaService.requestUpload(user.userId, dto);
     }
 
     @Post('upload/confirm')
@@ -38,7 +38,7 @@ export class MediaController {
         @CurrentUser() user: AuthenticatedUser,
         @Body() dto: ConfirmUploadDto,
     ) {
-        return this.mediaService.confirmUpload(user.id, dto);
+        return this.mediaService.confirmUpload(user.userId, dto);
     }
 
     @Post('upload/direct')
@@ -47,15 +47,15 @@ export class MediaController {
     async directUpload(
         @CurrentUser() user: AuthenticatedUser,
         @Body() dto: DirectUploadDto,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile() file: any,
     ) {
-        return this.mediaService.directUpload(user.id, dto, file);
+        return this.mediaService.directUpload(user.userId, dto, file);
     }
 
     @Get('storage/stats')
     @ApiStandardResponse(Object)
     async getStorageStats(@CurrentUser() user: AuthenticatedUser) {
-        return this.mediaService.getStorageStats(user.id);
+        return this.mediaService.getStorageStats(user.userId);
     }
 
     @Get(':id')
@@ -64,7 +64,7 @@ export class MediaController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('id') id: string,
     ) {
-        return this.mediaService.findById(id, user.id);
+        return this.mediaService.findById(id, user.userId);
     }
 
     @Patch(':id/metadata')
@@ -74,7 +74,7 @@ export class MediaController {
         @Param('id') id: string,
         @Body() dto: UpdateMediaMetadataDto,
     ) {
-        return this.mediaService.updateMetadata(id, user.id, dto);
+        return this.mediaService.updateMetadata(id, user.userId, dto);
     }
 
     @Delete(':id')
@@ -83,7 +83,7 @@ export class MediaController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('id') id: string,
     ) {
-        return this.mediaService.delete(id, user.id);
+        return this.mediaService.delete(id, user.userId);
     }
 
     @Get(':id/download')
@@ -92,6 +92,6 @@ export class MediaController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('id') id: string,
     ) {
-        return this.mediaService.getDownloadUrl(id, user.id);
+        return this.mediaService.getDownloadUrl(id, user.userId);
     }
 }

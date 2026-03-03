@@ -2,7 +2,7 @@ import { Controller, Get, Post, Delete, Param, Query, Body, UseGuards } from '@n
 import { MediaAdminService } from './media-admin.service';
 import { QueryMediaDto } from '../dto/query-media.dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
-import { UserRole, ApiStandardResponse, ApiPaginatedResponse } from '@nestlancer/common';
+import { UserRole, ApiStandardResponse } from '@nestlancer/common';
 
 @Controller('admin/media')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -11,13 +11,13 @@ export class MediaAdminController {
     constructor(private readonly adminService: MediaAdminService) { }
 
     @Get()
-    @ApiPaginatedResponse(Object)
+    @ApiStandardResponse(Object)
     async getAllMedia(@Query() query: QueryMediaDto) {
         return this.adminService.findAll(query);
     }
 
     @Get('quarantine')
-    @ApiPaginatedResponse(Object)
+    @ApiStandardResponse(Object)
     async getQuarantinedMedia(@Query() query: QueryMediaDto) {
         return this.adminService.findQuarantined(query);
     }

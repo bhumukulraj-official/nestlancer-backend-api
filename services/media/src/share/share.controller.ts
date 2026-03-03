@@ -16,6 +16,6 @@ export class ShareController {
         @Param('id') mediaId: string,
         @Body() dto: ShareMediaDto,
     ) {
-        return this.shareService.createShareLink(user.id, mediaId, dto);
+        return this.shareService.createShareLink(user.userId, mediaId, dto);
     }
 }
