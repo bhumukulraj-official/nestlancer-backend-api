@@ -1,12 +1,11 @@
 import { Controller, Get, Param, Query, Req, Res } from '@nestjs/common';
-import { Public } from '@nestlancer/auth-lib';
+import { Public } from '@nestlancer/common';
 import { Cacheable } from '@nestlancer/cache';
 import { PostsService } from '../../services/posts.service';
 import { PostSearchService } from '../../services/post-search.service';
 import { PostViewsService } from '../../services/post-views.service';
 import { QueryPostsDto } from '../../dto/query-posts.dto';
 import { SearchPostsDto } from '../../dto/search-posts.dto';
-import { Request } from 'express';
 
 @Controller()
 export class PostsPublicController {
@@ -32,7 +31,7 @@ export class PostsPublicController {
     @Public()
     @Get(':slug')
     @Cacheable({ ttl: 300 })
-    async getDetail(@Param('slug') slug: string, @Req() req: Request) {
+    async getDetail(@Param('slug') slug: string, @Req() req: any) {
         const post = await this.postsService.findBySlug(slug);
 
         // Track views

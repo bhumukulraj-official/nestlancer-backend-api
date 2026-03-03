@@ -210,7 +210,8 @@ export class AuthorsService {
             },
             select: {
                 id: true,
-                name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
                 _count: {
                     select: { blogPosts: true }
@@ -225,9 +226,9 @@ export class AuthorsService {
 
         return authors.map(author => ({
             id: author.id,
-            name: author.name,
+            name: `${author.firstName} ${author.lastName}`,
             email: author.email,
-            postCount: author._count.blogPosts,
+            postCount: author._count?.blogPosts || 0,
         }));
     }
 
@@ -236,7 +237,8 @@ export class AuthorsService {
             where: { id },
             select: {
                 id: true,
-                name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
                 _count: {
                     select: { blogPosts: true }
@@ -250,9 +252,9 @@ export class AuthorsService {
 
         return {
             id: author.id,
-            name: author.name,
+            name: `${author.firstName} ${author.lastName}`,
             email: author.email,
-            postCount: author._count.blogPosts,
+            postCount: author._count?.blogPosts || 0,
         };
     }
 }

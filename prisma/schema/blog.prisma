@@ -34,6 +34,7 @@ model BlogPost {
   readingTime     Int?
   viewCount       Int           @default(0)
   likeCount       Int           @default(0)
+  scheduledAt     DateTime?
   publishedAt     DateTime?
   deletedAt       DateTime?
   createdAt       DateTime      @default(now())

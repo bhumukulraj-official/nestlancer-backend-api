@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query, Post, Req, Body } from '@nestjs/common';
-import { Public } from '@nestlancer/auth-lib';
+import { Public } from '@nestlancer/common';
 import { Cacheable } from '@nestlancer/cache';
 import { PortfolioService } from '../../services/portfolio.service';
 import { PortfolioCategoriesService } from '../../services/portfolio-categories.service';
@@ -8,7 +8,6 @@ import { PortfolioAnalyticsService } from '../../services/portfolio-analytics.se
 import { PortfolioLikesService } from '../../services/portfolio-likes.service';
 import { QueryPortfolioDto } from '../../dto/query-portfolio.dto';
 import { SearchPortfolioDto } from '../../dto/search-portfolio.dto';
-import { Request } from 'express';
 
 @Controller()
 export class PortfolioPublicController {
@@ -47,9 +46,9 @@ export class PortfolioPublicController {
     async getTags() {
         const items = await this.portfolioService.findPublished({} as any);
         const tagsSet = new Set<string>();
-        for (const item of items.data) {
+        for (const item of items.items) {
             if (item.tags && Array.isArray(item.tags)) {
-                item.tags.forEach(t => tagsSet.add(t));
+                item.tags.forEach((t: any) => tagsSet.add(t));
             }
         }
         return Array.from(tagsSet);
@@ -64,7 +63,7 @@ export class PortfolioPublicController {
     @Public()
     @Get(':idOrSlug')
     @Cacheable({ ttl: 1800 })
-    async getDetail(@Param('idOrSlug') idOrSlug: string, @Req() req: Request) {
+    async getDetail(@Param('idOrSlug') idOrSlug: string, @Req() req: any) {
         const item = await this.portfolioService.findByIdOrSlug(idOrSlug);
         // Debounce view count
         const ip = req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown';

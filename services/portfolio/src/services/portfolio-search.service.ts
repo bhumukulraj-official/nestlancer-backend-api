@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaReadService, ReadOnly } from '@nestlancer/database';
 import { SearchPortfolioDto } from '../dto/search-portfolio.dto';
+import { PortfolioStatus } from '../entities/portfolio-item.entity';
 
 @Injectable()
 export class PortfolioSearchService {
@@ -8,18 +9,13 @@ export class PortfolioSearchService {
 
     @ReadOnly()
     async search(dto: SearchPortfolioDto) {
-        // In a real app we might use `@nestlancer/search` with tsvector or elasticsearch.
-        // For now we'll do a basic PostgreSQL ILIKE or basic search
-
         const { q, categoryId } = dto;
 
-        // PostgreSQL ILIKE fallback if not using tsvector
         const where: any = {
-            status: 'PUBLISHED',
+            status: PortfolioStatus.PUBLISHED,
             OR: [
                 { title: { contains: q, mode: 'insensitive' } },
                 { shortDescription: { contains: q, mode: 'insensitive' } },
-                { tags: { some: { name: { contains: q, mode: 'insensitive' } } } },
             ]
         };
 
@@ -30,10 +26,9 @@ export class PortfolioSearchService {
         const items = await this.prismaRead.portfolioItem.findMany({
             where,
             orderBy: [{ featured: 'desc' }, { publishedAt: 'desc' }],
-            take: 50, // limit search results
+            take: 50,
             include: {
                 category: true,
-                tags: true,
             }
         });
 

@@ -25,6 +25,9 @@ model PortfolioItem {
   status            PortfolioStatus      @default(DRAFT)
   visibility        PortfolioVisibility  @default(PUBLIC)
   featured          Boolean              @default(false)
+  order             Int                  @default(0)
+  likeCount         Int                  @default(0)
+  viewCount         Int                  @default(0)
   clientName        String?
   clientLogo        String?
   clientIndustry    String?
@@ -44,18 +47,38 @@ model PortfolioItem {
   updatedAt         DateTime             @updatedAt
 
   category          PortfolioCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images            PortfolioImage[]
 
   @@index([status])
   @@index([categoryId])
   @@index([visibility])
+  @@index([order])
+}
+
+model PortfolioImage {
+  id              String         @id @default(uuid(7))
+  portfolioItemId String
+  mediaId         String
+  alt             String?
+  caption         String?
+  order           Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  portfolioItem   PortfolioItem  @relation(fields: [portfolioItemId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioItemId])
+  @@index([order])
 }
 
 model PortfolioCategory {
-  id        String          @id @default(uuid(7))
-  name      String
-  slug      String          @unique
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id          String          @id @default(uuid(7))
+  name        String
+  slug        String          @unique
+  description String?
+  order       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
-  items     PortfolioItem[]
+  items       PortfolioItem[]
 }

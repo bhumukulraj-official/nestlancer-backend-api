@@ -33,12 +33,16 @@ export class ProgressService {
         });
 
         if (entry.visibility === Visibility.CLIENT_VISIBLE && entry.clientNotified) {
-            await this.outbox.createEvent('PROGRESS_ENTRY_CREATED', {
-                id: entry.id,
-                projectId: entry.projectId,
-                type: entry.type,
-                title: entry.title,
-            } as any);
+            await this.outbox.createEvent({
+                aggregateType: 'PROGRESS_ENTRY',
+                aggregateId: entry.id,
+                type: 'PROGRESS_ENTRY_CREATED',
+                payload: {
+                    projectId: entry.projectId,
+                    entryType: entry.type,
+                    title: entry.title,
+                }
+            });
         }
 
         return entry;

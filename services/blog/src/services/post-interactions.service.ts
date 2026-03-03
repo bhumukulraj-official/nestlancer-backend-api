@@ -196,7 +196,7 @@ export class PostInteractionsService {
                             excerpt: true,
                             publishedAt: true,
                             category: { select: { name: true, slug: true } },
-                            author: { select: { name: true } },
+                            author: { select: { id: true, firstName: true, lastName: true } },
                         }
                     }
                 },

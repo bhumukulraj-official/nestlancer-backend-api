@@ -20,7 +20,12 @@ export class PostPublishingService {
                 },
             });
 
-            await this.outboxService.publish('blog.post_published', { postId: post.id }, tx);
+            await this.outboxService.createEvent({
+                aggregateType: 'BLOG_POST',
+                aggregateId: post.id,
+                type: 'BLOG_POST_PUBLISHED',
+                payload: { postId: post.id }
+            }, tx);
             return post;
         });
         // Invalidate cache implicitly or explicitly handled in interceptors typically

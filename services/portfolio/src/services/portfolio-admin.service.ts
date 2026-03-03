@@ -4,6 +4,7 @@ import { PortfolioStatus } from '../entities/portfolio-item.entity';
 import { BulkUpdatePortfolioDto, BulkOperation } from '../dto/bulk-update-portfolio.dto';
 import { UpdatePrivacyDto, Visibility } from '../dto/update-privacy.dto';
 import { UpdatePortfolioItemDto } from '../dto/update-portfolio-item.dto';
+import { PortfolioVisibility } from '@prisma/client';
 
 interface PortfolioQueryParams {
     status?: string;
@@ -146,10 +147,10 @@ export class PortfolioAdminService {
         await this.findById(id);
 
         // Map DTO visibility to Prisma enum
-        const visibilityMap: Record<Visibility, string> = {
-            [Visibility.PUBLIC]: 'PUBLIC',
-            [Visibility.UNLISTED]: 'UNLISTED',
-            [Visibility.PRIVATE]: 'PRIVATE',
+        const visibilityMap = {
+            [Visibility.PUBLIC]: PortfolioVisibility.PUBLIC,
+            [Visibility.UNLISTED]: PortfolioVisibility.UNLISTED,
+            [Visibility.PRIVATE]: PortfolioVisibility.PRIVATE,
         };
 
         return this.prismaWrite.portfolioItem.update({
@@ -168,13 +169,13 @@ export class PortfolioAdminService {
 
         return this.prismaWrite.portfolioItem.create({
             data: {
-                ...data,
+                ...(data as any),
                 slug: newSlug,
                 status: PortfolioStatus.DRAFT,
                 title: `${data.title} (Copy)`,
                 publishedAt: null,
                 deletedAt: null,
-                categoryId: item.categoryId,
+                categoryId: item.categoryId || undefined,
             }
         });
     }

@@ -24,15 +24,16 @@ export class PostsService {
 
         return this.prismaWrite.blogPost.create({
             data: {
-                ...rest,
+                ...(rest as any),
                 slug,
                 categoryId: categoryId as string,
+                authorId: rest.authorId as string,
                 readingTime,
                 status: BlogStatus.DRAFT,
                 tags: tags ? {
                     connectOrCreate: tags.map(tag => ({
                         where: { name: tag.toLowerCase() },
-                        create: { name: tag.toLowerCase() }
+                        create: { name: tag.toLowerCase(), slug: tag.toLowerCase() }
                     }))
                 } : undefined,
             },

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService, ReadOnly } from '@nestlancer/database';
-import { CreatePortfolioItemDto, ContentFormat } from '../dto/create-portfolio-item.dto';
+import { CreatePortfolioItemDto } from '../dto/create-portfolio-item.dto';
 import { UpdatePortfolioItemDto } from '../dto/update-portfolio-item.dto';
 import { QueryPortfolioDto } from '../dto/query-portfolio.dto';
 import { PortfolioStatus } from '../entities/portfolio-item.entity';
@@ -19,37 +19,31 @@ export class PortfolioService {
 
         return this.prismaWrite.portfolioItem.create({
             data: {
-                ...rest,
+                ...(rest as any),
                 slug,
-                categoryId,
+                categoryId: categoryId as string,
                 status: PortfolioStatus.DRAFT,
                 order: 0,
                 likeCount: 0,
                 viewCount: 0,
+                tags: tags ? tags.map(t => t.toLowerCase()) : [],
                 images: imageIds ? {
                     create: imageIds.map((mediaId, index) => ({ mediaId, order: index }))
                 } : undefined,
-                tags: tags ? {
-                    connectOrCreate: tags.map(tag => ({
-                        where: { name: tag.toLowerCase() },
-                        create: { name: tag.toLowerCase() }
-                    }))
-                } : undefined
             },
-            include: { category: true, images: true, tags: true }
+            include: { category: true, images: true }
         });
     }
 
     @ReadOnly()
     async findPublished(query: QueryPortfolioDto) {
-        const { page = 1, limit = 20, categoryId, tag, featured } = query;
+        const { page = 1, limit = 20, categoryId, featured } = query;
         const skip = (page - 1) * limit;
 
         const where: any = { status: PortfolioStatus.PUBLISHED };
 
         if (categoryId) where.categoryId = categoryId;
         if (featured !== undefined) where.featured = featured;
-        if (tag) where.tags = { some: { name: tag.toLowerCase() } };
 
         const [items, totalItems] = await Promise.all([
             this.prismaRead.portfolioItem.findMany({
@@ -57,7 +51,7 @@ export class PortfolioService {
                 skip,
                 take: limit,
                 orderBy: [{ featured: 'desc' }, { order: 'asc' }, { createdAt: 'desc' }],
-                include: { category: true, tags: true },
+                include: { category: true },
             }),
             this.prismaRead.portfolioItem.count({ where }),
         ]);
@@ -81,7 +75,6 @@ export class PortfolioService {
             include: {
                 category: true,
                 images: { orderBy: { order: 'asc' } },
-                tags: true,
             },
         });
 
@@ -98,7 +91,7 @@ export class PortfolioService {
             where: { status: PortfolioStatus.PUBLISHED, featured: true },
             take: limit,
             orderBy: [{ order: 'asc' }, { publishedAt: 'desc' }],
-            include: { category: true, tags: true },
+            include: { category: true },
         });
     }
 }

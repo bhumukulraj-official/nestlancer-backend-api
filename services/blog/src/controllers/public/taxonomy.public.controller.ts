@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { Public } from '@nestlancer/auth-lib';
+import { Public } from '@nestlancer/common';
 import { Cacheable } from '@nestlancer/cache';
 import { CategoriesService, TagsService, AuthorsService } from '../../services/taxonomy.service';
 
