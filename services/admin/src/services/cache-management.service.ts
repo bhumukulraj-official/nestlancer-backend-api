@@ -14,7 +14,7 @@ export class CacheManagementService {
             return { message: `Cleared cache matching pattern: ${dto.keyPattern}` };
         } else {
             // Flush entire Redis DB
-            await this.cacheService.reset();
+            await this.cacheService.getClient().flushdb();
             return { message: 'All caches cleared successfully' };
         }
     }

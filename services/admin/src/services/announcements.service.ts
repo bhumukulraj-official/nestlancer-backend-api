@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaWriteService } from '@nestlancer/database';
-import { QueueProducerService } from '@nestlancer/queue';
+import { QueuePublisherService } from '@nestlancer/queue';
 import { SendAnnouncementDto } from '../dto/send-announcement.dto';
 
 @Injectable()
 export class AnnouncementsService {
     constructor(
         private readonly prismaWrite: PrismaWriteService,
-        private readonly queueService: QueueProducerService,
+        private readonly queueService: QueuePublisherService,
     ) { }
 
     async send(dto: SendAnnouncementDto, adminId: string) {

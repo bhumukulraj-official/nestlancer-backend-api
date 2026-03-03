@@ -34,7 +34,7 @@ export class WebhooksAdminController {
 
     @Post('webhooks')
     @ApiOperation({ summary: 'Create webhook' })
-    @SuccessResponse('Webhook created', 201)
+    @SuccessResponse('Webhook created')
     async create(@Body() dto: CreateWebhookDto) {
         return this.webhooksService.create(dto);
     }

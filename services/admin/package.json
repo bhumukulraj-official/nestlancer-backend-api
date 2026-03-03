@@ -36,6 +36,7 @@
         "@nestlancer/queue": "workspace:*",
         "@nestlancer/outbox": "workspace:*",
         "@nestlancer/cache": "workspace:*",
+        "@nestlancer/storage": "workspace:*",
         "@nestlancer/auth-lib": "workspace:*",
         "axios": "^1.6.8",
         "class-transformer": "^0.5.1",

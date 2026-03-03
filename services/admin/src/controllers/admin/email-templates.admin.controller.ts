@@ -42,14 +42,14 @@ export class EmailTemplatesAdminController {
     async preview(@Param('id') id: string) {
         const template = await this.emailService.findOne(id);
 
-        let html = template.htmlBody;
-        let text = template.textBody;
+        let html = template.body;
+        let text = template.body;
 
         try {
             const Handlebars = require('handlebars');
             const mockData = { name: 'John Doe', action_url: 'https://example.com' };
-            const compiledHtml = Handlebars.compile(template.htmlBody);
-            const compiledText = Handlebars.compile(template.textBody);
+            const compiledHtml = Handlebars.compile(template.body);
+            const compiledText = Handlebars.compile(template.body);
             html = compiledHtml(mockData);
             text = compiledText(mockData);
         } catch (e: any) {

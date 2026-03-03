@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { QueueProducerService } from '@nestlancer/queue';
+import { QueuePublisherService } from '@nestlancer/queue';
 import { ExportAuditDto } from '../dto/export-audit.dto';
 import { AuditExportResult } from '../interfaces/audit.interface';
 
 @Injectable()
 export class AuditExportService {
-    constructor(private readonly queueService: QueueProducerService) { }
+    constructor(private readonly queueService: QueuePublisherService) { }
 
     async triggerExport(dto: ExportAuditDto): Promise<AuditExportResult> {
         const jobId = `export_${Date.now()}`;

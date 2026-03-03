@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { QueueProducerService } from '@nestlancer/queue';
+import { QueuePublisherService } from '@nestlancer/queue';
 import { StorageService } from '@nestlancer/storage';
 import { CreateBackupDto } from '../dto/create-backup.dto';
 import { RestoreBackupDto } from '../dto/restore-backup.dto';
@@ -10,7 +10,7 @@ export class BackupsService {
     constructor(
         private readonly prismaWrite: PrismaWriteService,
         private readonly prismaRead: PrismaReadService,
-        private readonly queueService: QueueProducerService,
+        private readonly queueService: QueuePublisherService,
         private readonly storageService: StorageService,
     ) { }
 

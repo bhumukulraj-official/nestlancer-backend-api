@@ -34,8 +34,8 @@ async function bootstrap() {
 
     // Global filters
     app.useGlobalFilters(
-        new AllExceptionsFilter(logger),
-        new HttpExceptionFilter(logger),
+        new AllExceptionsFilter(),
+        new HttpExceptionFilter(),
     );
 
     // Enable CORS

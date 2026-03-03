@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { QueueProducerService } from '@nestlancer/queue';
+import { QueuePublisherService } from '@nestlancer/queue';
 import { QueryJobsDto, JobStatus } from '../dto/query-jobs.dto';
 
 @Injectable()
 export class BackgroundJobsService {
-    constructor(private readonly queueService: QueueProducerService) { }
+    constructor(private readonly queueService: QueuePublisherService) { }
 
     async findAll(query: QueryJobsDto) {
         // BullMQ logic to fetch jobs across queues

@@ -30,7 +30,7 @@ export class BackupsAdminController {
 
     @Post()
     @ApiOperation({ summary: 'Trigger backup' })
-    @SuccessResponse('Backup initiated', 201)
+    @SuccessResponse('Backup initiated')
     async create(@Body() dto: CreateBackupDto, @Req() req: any) {
         return this.backupsService.createBackup(dto, req.user.sub);
     }

@@ -696,6 +696,9 @@ importers:
       '@nestlancer/queue':
         specifier: workspace:*
         version: link:../../libs/queue
+      '@nestlancer/storage':
+        specifier: workspace:*
+        version: link:../../libs/storage
       '@nestlancer/tracing':
         specifier: workspace:*
         version: link:../../libs/tracing

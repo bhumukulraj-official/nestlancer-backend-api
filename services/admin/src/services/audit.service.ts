@@ -53,7 +53,7 @@ export class AuditService {
                 orderBy: { createdAt: 'desc' },
                 include: {
                     user: {
-                        select: { id: true, name: true, email: true }
+                        select: { id: true, firstName: true, lastName: true, email: true }
                     }
                 }
             }),
@@ -80,7 +80,7 @@ export class AuditService {
             where: { id },
             include: {
                 user: {
-                    select: { id: true, name: true, email: true }
+                    select: { id: true, firstName: true, lastName: true, email: true }
                 }
             }
         });
@@ -94,7 +94,7 @@ export class AuditService {
             orderBy: { createdAt: 'desc' },
             include: {
                 user: {
-                    select: { id: true, name: true, email: true }
+                    select: { id: true, firstName: true, lastName: true, email: true }
                 }
             }
         });
@@ -192,7 +192,7 @@ export class AuditService {
                 description: data.description,
                 resourceType: data.resourceType,
                 resourceId: data.resourceId,
-                metadata: data.metadata,
+                metadata: data.metadata as any,
                 ip: data.ip,
                 userAgent: data.userAgent,
             }
