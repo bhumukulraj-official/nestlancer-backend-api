@@ -3,7 +3,8 @@ import { NotificationsService } from './notifications.service';
 import { QueryNotificationsDto } from '../dto/query-notifications.dto';
 import { MarkReadDto } from '../dto/mark-read.dto';
 import { MarkSelectedReadDto } from '../dto/mark-selected-read.dto';
-import { ApiStandardResponse, ApiPaginated } from '@nestlancer/common';
+import { ApiStandardResponse, ApiPaginated, CurrentUser, AuthenticatedUser } from '@nestlancer/common';
+import { JwtAuthGuard } from '@nestlancer/auth-lib';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)

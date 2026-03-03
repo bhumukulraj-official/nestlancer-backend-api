@@ -31,7 +31,7 @@ export class NotificationsService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
+                orderBy: query.sort ? { [query.sort.split(':')[0]]: query.sort.split(':')[1] || 'desc' } : { createdAt: 'desc' },
             }),
             this.prismaRead.notification.count({ where }),
         ]);
@@ -56,7 +56,7 @@ export class NotificationsService {
                 where,
                 skip,
                 take,
-                orderBy: { [query.sort || 'createdAt']: query.order || 'desc' },
+                orderBy: query.sort ? { [query.sort.split(':')[0]]: query.sort.split(':')[1] || 'desc' } : { createdAt: 'desc' },
             }),
             this.prismaRead.notification.count({ where }),
         ]);

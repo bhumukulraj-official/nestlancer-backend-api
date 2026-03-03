@@ -7,7 +7,7 @@ import { SendNotificationDto } from '../dto/send-notification.dto';
 import { BroadcastNotificationDto } from '../dto/broadcast-notification.dto';
 import { SegmentNotificationDto } from '../dto/segment-notification.dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
-import { UserRole, ApiStandardResponse, ApiPaginatedResponse } from '@nestlancer/common';
+import { UserRole, ApiStandardResponse, ApiPaginated } from '@nestlancer/common';
 
 @Controller('admin/notifications')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -20,7 +20,7 @@ export class NotificationsAdminController {
     ) { }
 
     @Get()
-    @ApiPaginatedResponse(Object)
+    @ApiPaginated()
     async getAllNotifications(@Query() query: QueryNotificationsDto) {
         return this.adminService.findAll(query);
     }
