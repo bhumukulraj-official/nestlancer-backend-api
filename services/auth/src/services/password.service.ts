@@ -86,9 +86,9 @@ export class PasswordService {
             });
 
             // Revoke all existing sessions so they have to login again
-            await tx.userSession.updateMany({
-                where: { userId: storedToken.userId, isRevoked: false },
-                data: { isRevoked: true }
+            await tx.session.updateMany({
+                where: { userId: storedToken.userId },
+                data: { expiresAt: new Date() }
             });
 
             await tx.outbox.create({

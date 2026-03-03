@@ -8,11 +8,11 @@ enum OutboxStatus {
   FAILED
 }
 
-model OutboxEvent {
+model Outbox {
   id            String       @id @default(uuid(7))
   type          String
-  aggregateType String
-  aggregateId   String
+  aggregateType String?
+  aggregateId   String?
   payload       Json
   status        OutboxStatus @default(PENDING)
   error         String?
