@@ -35,9 +35,9 @@ export class DatabaseHealthService {
                 // Metrics might not be enabled, ignore
             }
 
-            const activeConnections = metrics?.counters?.find(c => c.name === 'prisma_pool_connections_busy')?.value || 0;
-            const idleConnections = metrics?.counters?.find(c => c.name === 'prisma_pool_connections_idle')?.value || 0;
-            const totalConnections = metrics?.counters?.find(c => c.name === 'prisma_pool_connections_open')?.value || 0;
+            const activeConnections = metrics?.counters?.find((c: any) => c.name === 'prisma_pool_connections_busy')?.value || 0;
+            const idleConnections = metrics?.counters?.find((c: any) => c.name === 'prisma_pool_connections_idle')?.value || 0;
+            const totalConnections = metrics?.counters?.find((c: any) => c.name === 'prisma_pool_connections_open')?.value || 0;
 
             return {
                 status: 'healthy',

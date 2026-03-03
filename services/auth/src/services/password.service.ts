@@ -44,7 +44,7 @@ export class PasswordService {
 
         await this.prismaWrite.outbox.create({
             data: {
-                eventType: 'PASSWORD_RESET_REQUESTED',
+                type: 'PASSWORD_RESET_REQUESTED',
                 payload: {
                     userId: user.id,
                     email: user.email,
@@ -93,7 +93,7 @@ export class PasswordService {
 
             await tx.outbox.create({
                 data: {
-                    eventType: 'PASSWORD_RESET_COMPLETED',
+                    type: 'PASSWORD_RESET_COMPLETED',
                     payload: {
                         userId: storedToken.userId,
                         email: storedToken.user.email,
