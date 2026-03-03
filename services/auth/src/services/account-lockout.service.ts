@@ -20,7 +20,7 @@ export class AccountLockoutService {
             throw new BusinessLogicException('Account temporarily locked due to multiple failed login attempts', 'AUTH_003', {
                 lockedUntil: authConfig.lockedUntil,
                 reason: 'tooManyFailedAttempts',
-                lockDuration: this.config.get<number>('authService.security.lockoutDurationMs') / 1000,
+                lockDuration: (this.config.get<number>('authService.security.lockoutDurationMs') ?? 1800000) / 1000,
             });
         }
     }

@@ -13,8 +13,8 @@ export class TurnstileService {
         private readonly configService: ConfigService,
         private readonly logger: LoggerService,
     ) {
-        this.secretKey = this.configService.get<string>('authService.turnstile.secretKey');
-        this.bypassToken = this.configService.get<string>('authService.turnstile.bypassToken');
+        this.secretKey = this.configService.get<string>('authService.turnstile.secretKey') ?? '';
+        this.bypassToken = this.configService.get<string>('authService.turnstile.bypassToken') ?? '';
     }
 
     async verifyToken(token: string, ipAddress?: string): Promise<boolean> {
@@ -48,7 +48,7 @@ export class TurnstileService {
                 body: formData as any,
             });
 
-            const data = await response.json();
+            const data = await response.json() as { success: boolean; 'error-codes'?: string[] };
 
             if (!data.success) {
                 this.logger.warn(`Turnstile verification failed: ${JSON.stringify(data['error-codes'])}`, 'TurnstileService');

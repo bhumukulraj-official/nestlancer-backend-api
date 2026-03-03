@@ -40,10 +40,14 @@ export class TwoFactorService {
 
         const { user } = session;
 
+        if (!user.authConfig) {
+            throw new BusinessLogicException('Two-factor authentication not configured', 'AUTH_009');
+        }
+
         if (method === 'totp') {
             const isValid = authenticator.verify({
                 token: code,
-                secret: user.authConfig.twoFactorSecret,
+                secret: user.authConfig.twoFactorSecret!,
             });
 
             if (!isValid) {
@@ -54,7 +58,7 @@ export class TwoFactorService {
                 });
             }
         } else if (method === 'backupCode') {
-            const backupCodes = user.authConfig.backupCodes as string[];
+            const backupCodes = user.authConfig!.backupCodes as string[];
             const codeIndex = backupCodes.indexOf(code);
 
             if (codeIndex === -1) {
@@ -79,6 +83,6 @@ export class TwoFactorService {
         await this.prismaWrite.authSession.delete({ where: { id: authSessionId } });
 
         // Generate real tokens
-        return this.tokenService.generateAuthTokens(user, false, session.ipAddress, session.userAgent);
+        return this.tokenService.generateAuthTokens(user, false, session.ipAddress ?? undefined, session.userAgent ?? undefined);
     }
 }

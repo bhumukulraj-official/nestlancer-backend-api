@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { ReadOnly } from '@nestlancer/database/decorators/read-only.decorator';
-import { WriteOnly } from '@nestlancer/database/decorators/write-only.decorator';
-import { ConflictException, UserRole, UserStatus } from '@nestlancer/common';
+import { ReadOnly } from '@nestlancer/database';
+import { ResourceConflictException, UserRole, UserStatus } from '@nestlancer/common';
 import { QueuePublisherService } from '@nestlancer/queue';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
@@ -19,7 +18,6 @@ export class RegistrationService {
         private readonly logger: LoggerService,
     ) { }
 
-    @WriteOnly()
     async registerUser(dto: RegisterDto): Promise<{ user: any, emailVerificationToken: string }> {
         const existingUser = await this.prismaRead.user.findUnique({
             where: { email: dto.email.toLowerCase() },
@@ -27,7 +25,7 @@ export class RegistrationService {
 
         if (existingUser) {
             this.logger.warn(`Registration attempt with existing email: ${dto.email}`, 'RegistrationService');
-            throw new ConflictException('Email already registered', 'AUTH_006', { field: 'email', value: dto.email });
+            throw new ResourceConflictException('Email already registered');
         }
 
         const saltRounds = this.config.get<number>('authService.security.bcryptSaltRounds') || 12;
@@ -45,7 +43,7 @@ export class RegistrationService {
                     lastName: dto.lastName,
                     phone: dto.phone,
                     role: UserRole.USER,
-                    status: UserStatus.PENDING,
+                    status: UserStatus.ACTIVE,
                     emailVerified: false,
                     marketingConsent: dto.marketingConsent || false,
                     authConfig: {
@@ -90,7 +88,6 @@ export class RegistrationService {
         return { user, emailVerificationToken };
     }
 
-    @ReadOnly()
     async checkEmail(email: string): Promise<boolean> {
         const count = await this.prismaRead.user.count({
             where: { email: email.toLowerCase() },

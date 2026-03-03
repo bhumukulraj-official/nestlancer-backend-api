@@ -32,12 +32,12 @@ async function bootstrap() {
     );
 
     app.useGlobalInterceptors(new TransformResponseInterceptor());
-    app.useGlobalFilters(new AllExceptionsFilter(logger));
+    app.useGlobalFilters(new AllExceptionsFilter());
     app.use(new CorrelationIdMiddleware().use);
 
     app.enableShutdownHooks();
 
     await app.listen(port);
-    logger.info(`Auth Service is running on port ${port}`, 'Bootstrap');
+    logger.log(`Auth Service is running on port ${port}`, 'Bootstrap');
 }
 bootstrap();

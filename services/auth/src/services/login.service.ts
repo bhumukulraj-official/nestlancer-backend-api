@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaReadService, PrismaWriteService } from '@nestlancer/database';
-import { BusinessLogicException, ForbiddenException, UserStatus } from '@nestlancer/common';
+import { BusinessLogicException, UserStatus } from '@nestlancer/common';
 import { AccountLockoutService } from './account-lockout.service';
 import { TokenService } from './token.service';
 import { LoginDto } from '../dto/login.dto';
@@ -26,7 +26,7 @@ export class LoginService {
         }
 
         if (user.status === UserStatus.SUSPENDED) {
-            throw new ForbiddenException('Account is suspended', 'AUTH_014');
+            throw new BusinessLogicException('Account is suspended', 'AUTH_014');
         }
 
         await this.lockoutService.checkLockout(user.id);
@@ -39,7 +39,7 @@ export class LoginService {
         }
 
         if (!user.emailVerified) {
-            throw new ForbiddenException('Email address not verified', 'AUTH_002', {
+            throw new BusinessLogicException('Email address not verified', 'AUTH_002', {
                 email: user.email
             });
         }
