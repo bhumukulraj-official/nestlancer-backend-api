@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { QueuePublisherService, EVENTS_EXCHANGE, EMAIL_CONTACT_RESPONSE } from '@nestlancer/queue';
-import { ContactStatus, ResourceNotFoundException } from '@nestlancer/common';
+import { QueuePublisherService, EXCHANGES, ROUTING_KEYS } from '@nestlancer/queue';
+import { ResourceNotFoundException, ContactStatus } from '@nestlancer/common';
 import { RespondContactDto } from '../dto/respond-contact.dto';
 
 interface ContactResponseResult {
@@ -49,7 +49,7 @@ export class ContactResponseService {
             if (dto.markAsResponded) {
                 await tx.contactMessage.update({
                     where: { id: contactId },
-                    data: { status: ContactStatus.RESPONDED },
+                    data: { status: ContactStatus.RESPONDED as any },
                 });
             }
 
@@ -57,7 +57,7 @@ export class ContactResponseService {
         });
 
         // Publish email event to send the response to the user
-        await this.queuePublisher.publish(EVENTS_EXCHANGE, EMAIL_CONTACT_RESPONSE, {
+        await this.queuePublisher.publish(EXCHANGES.EVENTS.name, ROUTING_KEYS.EMAIL_CONTACT_RESPONSE, {
             contactId,
             email: contactMessage.email,
             name: contactMessage.name,

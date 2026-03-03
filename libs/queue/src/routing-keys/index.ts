@@ -4,6 +4,7 @@ export const ROUTING_KEYS = {
   EMAIL_PASSWORD_RESET: 'email.password-reset',
   EMAIL_QUOTE_SENT: 'email.quote-sent',
   EMAIL_PAYMENT_RECEIPT: 'email.payment-receipt',
+  EMAIL_CONTACT_RESPONSE: 'email.contact-response',
   NOTIFICATION_NEW: 'notification.new',
   NOTIFICATION_BATCH: 'notification.batch',
   AUDIT_LOG: 'audit.log',

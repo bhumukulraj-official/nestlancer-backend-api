@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService, buildPrismaSkipTake } from '@nestlancer/database';
-import { ResourceNotFoundException } from '@nestlancer/common';
-import { ContactStatus } from '@prisma/client';
+import { ResourceNotFoundException, ContactStatus } from '@nestlancer/common';
 import { QueryContactsDto } from '../dto/query-contacts.dto';
 import { ContactWithResponses } from '../interfaces/contact.interface';
 
@@ -16,7 +15,7 @@ export class ContactService {
 
     async findAll(query: QueryContactsDto) {
         const { page = 1, limit = 20, status, sortBy = 'createdAt', order = 'desc' } = query as any;
-        const { skip, take } = buildPrismaSkipTake(page, limit);
+        const { skip, take } = buildPrismaSkipTake({ page, limit });
 
         const where: any = {};
         if (status) {

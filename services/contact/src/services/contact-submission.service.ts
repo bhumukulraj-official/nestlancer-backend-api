@@ -1,12 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RateLimitException, ContactStatus, generateShortId } from '@nestlancer/common';
+import { RateLimitException } from '@nestlancer/common';
 import { PrismaWriteService } from '@nestlancer/database';
 import { CacheService } from '@nestlancer/cache';
-import { QueuePublisherService, EVENTS_EXCHANGE, NOTIFICATION_SYSTEM } from '@nestlancer/queue';
+import { QueuePublisherService, EXCHANGES, ROUTING_KEYS } from '@nestlancer/queue';
 import { TurnstileService } from '@nestlancer/turnstile';
+import { ContactStatus } from '@prisma/client';
 import { SubmitContactDto } from '../dto/submit-contact.dto';
 import { SpamFilterService } from './spam-filter.service';
 import { contactConfig } from '../config/contact.config';
+import { generateUuid } from '@nestlancer/common';
 
 @Injectable()
 export class ContactSubmissionService {
@@ -23,12 +25,12 @@ export class ContactSubmissionService {
     async submit(dto: SubmitContactDto, ip: string): Promise<{ ticketId: string }> {
         // 1. Rate Limit
         const rateLimitKey = `ratelimit:contact:${ip}`;
-        const currentCount = await this.cacheService.increment(rateLimitKey);
+        const currentCount = await this.cacheService.incr(rateLimitKey);
         if (currentCount === 1) {
-            await this.cacheService.set(rateLimitKey, 1, contactConfig.RATE_LIMIT_TTL_HOURS * 3600);
+            await this.cacheService.expire(rateLimitKey, contactConfig.RATE_LIMIT_TTL_HOURS * 3600);
         }
         if (currentCount > contactConfig.RATE_LIMIT_PER_IP) {
-            throw new RateLimitException(`Rate limit exceeded for contact form`, contactConfig.RATE_LIMIT_TTL_HOURS * 3600);
+            throw new RateLimitException(contactConfig.RATE_LIMIT_TTL_HOURS * 3600);
         }
 
         // 2. Turnstile Validation
@@ -47,24 +49,25 @@ export class ContactSubmissionService {
         const spamCheck = this.spamFilterService.checkSpam(dto.email, dto.message);
         const resolvedStatus = spamCheck.isSpam ? ContactStatus.SPAM : ContactStatus.NEW;
 
-        // 4. Create Contact Message
+        // 4. Generate unique ticketId
+        const ticketId = `TKT-${generateUuid().substring(0, 8).toUpperCase()}`;
+
+        // 5. Create Contact Message
         const message = await this.prismaWrite.contactMessage.create({
             data: {
+                ticketId,
                 name: dto.name,
                 email: dto.email,
                 subject: dto.subject as any,
                 message: dto.message,
                 status: resolvedStatus as any,
-                ip: ip,
-                turnstileVerified: true,
+                ipInfo: { ip },
             }
         });
 
-        const ticketId = message.id;
-
         // 6. Notify Admin via queue
         if (!spamCheck.isSpam) {
-            await this.queuePublisher.publish(EVENTS_EXCHANGE, NOTIFICATION_SYSTEM, {
+            await this.queuePublisher.publish(EXCHANGES.EVENTS.name, ROUTING_KEYS.NOTIFICATION_NEW, {
                 category: 'SYSTEM',
                 type: 'INFO',
                 title: 'New Contact Submission',

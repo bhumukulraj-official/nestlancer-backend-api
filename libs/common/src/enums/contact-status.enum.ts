@@ -1,8 +1,8 @@
 export enum ContactStatus {
   NEW = 'NEW',
-  ACKNOWLEDGED = 'ACKNOWLEDGED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  RESOLVED = 'RESOLVED',
+  READ = 'READ',
+  RESPONDED = 'RESPONDED',
+  ARCHIVED = 'ARCHIVED',
   SPAM = 'SPAM',
 }
 
