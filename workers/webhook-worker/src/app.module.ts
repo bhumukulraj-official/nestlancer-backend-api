@@ -28,7 +28,7 @@ import { GithubDeploymentHandler } from './handlers/github/deployment.handler';
         ConfigModule,
         HttpModule,
         DatabaseModule,
-        QueueModule.forConsumer(['webhook', 'payments.webhook']),
+        QueueModule.forRoot(),
         LoggerModule,
         MetricsModule,
         TracingModule,

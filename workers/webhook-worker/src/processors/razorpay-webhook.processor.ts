@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-// Processor/Process removed - using @Injectable() instead;
+import { Processor, Process } from '@nestlancer/queue';
 import { LoggerService } from '@nestlancer/logger';
 import { WebhookWorkerService } from '../services/webhook-worker.service';
 import { IncomingWebhookJob } from '../interfaces/webhook-job.interface';
@@ -21,15 +21,15 @@ export class RazorpayWebhookProcessor {
         try {
             await this.webhookService.dispatch('razorpay', job.eventType, job.payload);
 
-            await this.prisma.incomingWebhook.update({
+            await this.prisma.webhookLog.update({
                 where: { id: job.incomingWebhookId },
                 data: { status: 'PROCESSED', processedAt: new Date() },
             });
         } catch (error: any) {
             this.logger.error(`Error processing Razorpay event ${job.eventType}: ${error.message}`);
-            await this.prisma.incomingWebhook.update({
+            await this.prisma.webhookLog.update({
                 where: { id: job.incomingWebhookId },
-                data: { status: 'FAILED', errorLog: error.message },
+                data: { status: 'FAILED', error: error.message },
             });
             throw error;
         }

@@ -34,7 +34,7 @@ export class RefundProcessedHandler implements WebhookHandler {
             if (payment) {
                 await tx.payment.update({
                     where: { id: payment.id },
-                    data: { refundedAmount: (payment.refundedAmount || 0) + refund.amount },
+                    data: { amountRefunded: (payment.amountRefunded || 0) + refund.amount },
                 });
             }
         });

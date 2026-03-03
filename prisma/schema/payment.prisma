@@ -9,6 +9,7 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   REFUNDED
+  DISPUTED
 }
 
 model Payment {
@@ -32,6 +33,7 @@ model Payment {
   invoiceUrl      String?
   customNotes     String?
   paidAt          DateTime?
+  failureReason   String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -39,6 +41,7 @@ model Payment {
   milestone       Milestone?    @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   client          User          @relation(fields: [clientId], references: [id], onDelete: Restrict)
   refunds         Refund[]
+  disputes        Dispute[]
 
   @@index([projectId])
   @@index([clientId])
@@ -49,12 +52,14 @@ model Payment {
 model Refund {
   id              String   @id @default(uuid(7))
   paymentId       String
+  externalId      String?  @unique
   amount          Int
   currency        String   @default("INR")
   type            String
   reason          String?
   status          String
   providerDetails Json?
+  processedAt     DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -86,4 +91,22 @@ model SavedPaymentMethod {
 
   @@unique([userId, tokenId])
   @@index([userId])
+}
+
+model Dispute {
+  id              String   @id @default(uuid(7))
+  paymentId       String
+  externalId      String   @unique
+  reason          String?
+  status          String
+  amount          Int
+  currency        String   @default("INR")
+  evidenceDueBy   DateTime?
+  providerDetails Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
 }

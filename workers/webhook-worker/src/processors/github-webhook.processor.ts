@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-// Processor/Process removed - using @Injectable() instead;
+import { Processor, Process } from '@nestlancer/queue';
 import { LoggerService } from '@nestlancer/logger';
 import { WebhookWorkerService } from '../services/webhook-worker.service';
 import { IncomingWebhookJob } from '../interfaces/webhook-job.interface';

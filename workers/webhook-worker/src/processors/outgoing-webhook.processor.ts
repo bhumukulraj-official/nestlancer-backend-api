@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-// Processor/Process removed - using @Injectable() instead;
+import { Processor, Process } from '@nestlancer/queue';
 import { HttpService } from '@nestjs/axios';
 import { LoggerService } from '@nestlancer/logger';
 import { generateUuid } from '@nestlancer/common';
@@ -23,7 +23,7 @@ export class OutgoingWebhookProcessor {
     @Process()
     async handleOutgoing(job: OutgoingWebhookJob): Promise<void> {
         const webhook = await this.prisma.webhook.findUnique({ where: { id: job.webhookId } });
-        if (!webhook || !webhook.active) return;
+        if (!webhook || !webhook.enabled) return;
 
         const signature = this.signatureVerifier.sign(job.payload, webhook.secret);
         const startTime = Date.now();
@@ -41,14 +41,14 @@ export class OutgoingWebhookProcessor {
                 }),
             );
 
-            await this.webhookLogger.logDelivery(webhook.id, {
+            await this.webhookLogger.logDelivery(webhook.id, job.event, job.payload, {
                 statusCode: response.status,
                 responseBody: JSON.stringify(response.data),
                 responseTime: Date.now() - startTime,
                 attempt: job.attempt,
             });
         } catch (error: any) {
-            await this.webhookLogger.logDelivery(webhook.id, {
+            await this.webhookLogger.logDelivery(webhook.id, job.event, job.payload, {
                 statusCode: error.response?.status || 500,
                 responseBody: JSON.stringify(error.response?.data || error.message),
                 responseTime: Date.now() - startTime,

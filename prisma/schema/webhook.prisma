@@ -33,7 +33,8 @@ model WebhookDelivery {
   requestHeaders  Json?
   responseHeaders Json?
   responseBody    String?
-  attempts        Int      @default(1)
+  responseTime     Int?
+  attempts         Int      @default(1)
   nextRetryAt     DateTime?
   createdAt       DateTime @default(now())
 

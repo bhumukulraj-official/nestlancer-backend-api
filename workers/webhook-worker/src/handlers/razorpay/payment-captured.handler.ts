@@ -26,10 +26,11 @@ export class PaymentCapturedHandler implements WebhookHandler {
         });
 
         if (!payment) {
-            throw new ResourceNotFoundException('Payment', razorpayPaymentId);
+            this.logger.error(`Payment not found for external ID: ${razorpayPaymentId}`);
+            return;
         }
 
-        if (payment.status === 'CAPTURED') {
+        if (payment.status === 'COMPLETED') {
             this.logger.warn(`Payment ${payment.id} already captured, skipping.`);
             return;
         }
@@ -37,17 +38,14 @@ export class PaymentCapturedHandler implements WebhookHandler {
         await this.prisma.$transaction([
             this.prisma.payment.update({
                 where: { id: payment.id },
-                data: { status: 'CAPTURED', capturedAt: new Date() },
+                data: { status: 'COMPLETED', paidAt: new Date() },
             }),
-            this.prisma.invoice.update({
-                where: { id: payment.invoiceId },
-                data: { status: 'PAID' },
-            }),
+            // Invoice update removed as invoiceId doesn't exist on payment model
         ]);
 
-        await this.queue.publish('notification', {
+        await this.queue.publish('events', 'notification.payment.completed', {
             type: 'payment.completed',
-            userId: payment.userId,
+            userId: payment.clientId,
             payload: { paymentId: payment.id, amount: payment.amount },
         });
     }

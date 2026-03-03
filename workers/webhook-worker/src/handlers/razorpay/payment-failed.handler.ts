@@ -31,9 +31,9 @@ export class PaymentFailedHandler implements WebhookHandler {
             data: { status: 'FAILED', failureReason: reason },
         });
 
-        await this.queue.publish('notification', {
+        await this.queue.publish('events', 'notification.payment.failed', {
             type: 'payment.failed',
-            userId: payment.userId,
+            userId: payment.clientId,
             payload: { paymentId: payment.id, reason },
         });
     }

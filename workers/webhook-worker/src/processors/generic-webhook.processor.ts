@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-// Processor/Process removed - using @Injectable() instead;
+import { Processor, Process } from '@nestlancer/queue';
 import { LoggerService } from '@nestlancer/logger';
 import { IncomingWebhookJob } from '../interfaces/webhook-job.interface';
 import { PrismaWriteService } from '@nestlancer/database';
@@ -16,11 +16,11 @@ export class GenericWebhookProcessor {
     async handleGeneric(job: IncomingWebhookJob): Promise<void> {
         this.logger.warn(`Received generic webhook event from ${job.provider}: ${job.eventType}`);
 
-        await this.prisma.incomingWebhook.update({
+        await this.prisma.webhookLog.update({
             where: { id: job.incomingWebhookId },
             data: {
-                status: 'MANUAL_REVIEW_REQUIRED',
-                errorLog: `Generic processor fallback for ${job.provider}`,
+                status: 'FAILED',
+                error: `Generic processor fallback for ${job.provider}`,
             },
         });
     }

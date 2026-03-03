@@ -36,7 +36,7 @@ export class DisputeCreatedHandler implements WebhookHandler {
                     reason: payload.dispute.entity.reason,
                     amount: payload.dispute.entity.amount / 100,
                     status: 'OPEN',
-                    deadline: new Date(payload.dispute.entity.respond_by * 1000),
+                    evidenceDueBy: new Date(payload.dispute.entity.respond_by * 1000),
                 },
             }),
         ]);
