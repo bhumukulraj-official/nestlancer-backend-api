@@ -11,7 +11,7 @@ export class RazorpayProvider implements WebhookProvider {
     private readonly secret: string;
 
     constructor(private readonly configService: ConfigService) {
-        this.secret = this.configService.get<string>('webhooks.razorpaySecret');
+        this.secret = this.configService.get<string>('webhooks.razorpaySecret') ?? '';
         if (!this.secret) {
             this.logger.warn('RAZORPAY_WEBHOOK_SECRET is not configured');
         }

@@ -1,7 +1,7 @@
 import { Controller, Post, Param, Headers, Req, HttpCode, HttpStatus, Logger, RawBodyRequest } from '@nestjs/common';
 import { Request } from 'express';
 import { WebhookIngestionService } from '../../services/webhook-ingestion.service';
-import { Public } from '@nestlancer/auth-lib';
+import { Public } from '@nestlancer/common';
 
 @Controller()
 export class WebhookReceiverController {

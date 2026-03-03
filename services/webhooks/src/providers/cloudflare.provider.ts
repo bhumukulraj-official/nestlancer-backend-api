@@ -10,7 +10,7 @@ export class CloudflareProvider implements WebhookProvider {
     private readonly secret: string;
 
     constructor(private readonly configService: ConfigService) {
-        this.secret = this.configService.get<string>('webhooks.cloudflareSecret');
+        this.secret = this.configService.get<string>('webhooks.cloudflareSecret') ?? '';
     }
 
     verifySignature(rawBody: Buffer, headers: Record<string, string>): boolean {

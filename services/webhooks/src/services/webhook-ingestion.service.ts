@@ -73,8 +73,8 @@ export class WebhookIngestionService {
                 provider: providerId,
                 eventId: event.eventId,
                 eventType: event.eventType,
-                payload: payloadUrlDecoded,
-                headers: headers,
+                payload: payloadUrlDecoded as unknown as import('@prisma/client').Prisma.InputJsonValue,
+                headers: headers as unknown as import('@prisma/client').Prisma.InputJsonValue,
                 status: WebhookLogStatus.PENDING,
             },
         });
