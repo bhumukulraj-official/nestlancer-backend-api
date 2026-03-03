@@ -75,7 +75,7 @@ export class UsersAdminService {
 
         await this.prismaWrite.outbox.create({
             data: {
-                eventType: 'ADMIN_USER_STATUS_CHANGED',
+                type: 'ADMIN_USER_STATUS_CHANGED',
                 payload: { userId, status }
             }
         });
@@ -102,7 +102,7 @@ export class UsersAdminService {
             // Emit event so an email with the temp password can be sent
             await tx.outbox.create({
                 data: {
-                    eventType: 'ADMIN_USER_PASSWORD_RESET',
+                    type: 'ADMIN_USER_PASSWORD_RESET',
                     payload: { userId, temporaryPassword: pWord }
                 }
             });

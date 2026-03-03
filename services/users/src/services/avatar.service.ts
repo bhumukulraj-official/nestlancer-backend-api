@@ -29,7 +29,8 @@ export class AvatarService {
         const key = `users/${userId}/avatar_${Date.now()}`;
 
         // Upload to storage
-        const url = await this.storageService.uploadFile(bucket, key, file.buffer, file.mimetype);
+        const uploadResult = await this.storageService.upload(bucket, key, file.buffer, file.mimetype);
+        const url = uploadResult.url;
 
         // Get old avatar to delete
         const user = await this.prismaRead.user.findUnique({ where: { id: userId } });

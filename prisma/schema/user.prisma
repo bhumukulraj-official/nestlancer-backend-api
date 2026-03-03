@@ -11,6 +11,7 @@ enum UserStatus {
   ACTIVE
   SUSPENDED
   DELETED
+  PENDING_DELETION
 }
 
 model User {
@@ -19,6 +20,7 @@ model User {
   passwordHash     String
   firstName        String
   lastName         String
+  avatar           String?
   phone            String?
   role             UserRole     @default(USER)
   status           UserStatus   @default(ACTIVE)

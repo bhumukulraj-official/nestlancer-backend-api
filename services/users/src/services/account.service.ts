@@ -16,6 +16,10 @@ export class AccountService {
     async requestAccountDeletion(userId: string, dto: DeleteAccountDto) {
         const user = await this.prismaRead.user.findUnique({ where: { id: userId } });
 
+        if (!user) {
+            throw new BusinessLogicException('User not found', 'USER_001');
+        }
+
         // Assuming we verify password if standard login
         if (dto.password && user.passwordHash) {
             const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
@@ -45,7 +49,7 @@ export class AccountService {
 
             await tx.outbox.create({
                 data: {
-                    eventType: 'USER_DELETION_REQUESTED',
+                    type: 'USER_DELETION_REQUESTED',
                     payload: { userId, deletionDate, reason: dto.reason, feedback: dto.feedback }
                 }
             });
@@ -62,6 +66,10 @@ export class AccountService {
     async cancelDeletionRequest(userId: string) {
         const user = await this.prismaRead.user.findUnique({ where: { id: userId } });
 
+        if (!user) {
+            throw new BusinessLogicException('User not found', 'USER_001');
+        }
+
         if (user.status !== 'PENDING_DELETION') {
             return true; // Already active
         }
@@ -77,7 +85,7 @@ export class AccountService {
 
             await tx.outbox.create({
                 data: {
-                    eventType: 'USER_DELETION_CANCELLED',
+                    type: 'USER_DELETION_CANCELLED',
                     payload: { userId }
                 }
             });

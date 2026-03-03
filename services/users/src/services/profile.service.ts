@@ -13,7 +13,8 @@ interface UserStats {
 interface UserProfile {
     id: string;
     email: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     role: string;
     twoFactorEnabled: boolean;
     timezone?: string;
@@ -55,7 +56,9 @@ export class ProfileService {
         const user = await this.prismaWrite.user.update({
             where: { id: userId },
             data: {
-                name: dto.name,
+                firstName: dto.firstName,
+                lastName: dto.lastName,
+                phone: dto.phone,
                 preferences: dto.timezone || dto.language ? {
                     upsert: {
                         create: {
@@ -74,7 +77,7 @@ export class ProfileService {
             }
         });
 
-        await this.prismaWrite.outboxEvent.create({
+        await this.prismaWrite.outbox.create({
             data: {
                 type: 'USER_PROFILE_UPDATED',
                 aggregateType: 'User',
@@ -124,7 +127,8 @@ export class ProfileService {
         return {
             id: user.id,
             email: user.email,
-            name: user.name,
+            firstName: user.firstName,
+            lastName: user.lastName,
             role: user.role,
             twoFactorEnabled: user.twoFactorEnabled || false,
             timezone: user.preferences?.timezone,

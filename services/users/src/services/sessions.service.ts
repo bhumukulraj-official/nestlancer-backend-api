@@ -20,7 +20,7 @@ export class SessionsService {
             orderBy: { lastActivityAt: 'desc' }
         });
 
-        return sessions.map(s => {
+        return sessions.map((s: any) => {
             const parser = new UAParser(s.userAgent);
             return {
                 id: s.id,
