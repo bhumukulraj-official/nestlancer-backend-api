@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { BusinessLogicException } from '@nestlancer/common';
-import { ConfigService } from '@nestjs/config';
+import { NestlancerConfigService as ConfigService } from '@nestlancer/config';
 
 @Injectable()
 export class AccountLockoutService {

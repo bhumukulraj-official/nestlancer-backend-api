@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
+import { NestlancerConfigService as ConfigService } from '@nestlancer/config';
 import { LoggerService } from '@nestlancer/logger';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
@@ -13,8 +13,8 @@ async function bootstrap() {
     app.useLogger(logger);
 
     const configService = app.get(ConfigService);
-    const port = configService.get<number>('AUTH_SERVICE_PORT', 3001);
-    const allowedOrigins = configService.get<string>('ALLOWED_ORIGINS', '*');
+    const port = configService.getOptional<number>('AUTH_SERVICE_PORT', 3001) ?? 3001;
+    const allowedOrigins = configService.getOptional<string>('ALLOWED_ORIGINS', '*') ?? '*';
 
     app.enableCors({
         origin: allowedOrigins.split(','),

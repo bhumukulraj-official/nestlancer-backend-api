@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { NestlancerConfigService as ConfigService } from '@nestlancer/config';
 import { LoggerService } from '@nestlancer/logger';
 import { BusinessLogicException } from '@nestlancer/common';
 
@@ -13,8 +13,8 @@ export class TurnstileService {
         private readonly configService: ConfigService,
         private readonly logger: LoggerService,
     ) {
-        this.secretKey = this.configService.get<string>('authService.turnstile.secretKey') ?? '';
-        this.bypassToken = this.configService.get<string>('authService.turnstile.bypassToken') ?? '';
+        this.secretKey = this.configService.getOptional<string>('authService.turnstile.secretKey') ?? '';
+        this.bypassToken = this.configService.getOptional<string>('authService.turnstile.bypassToken') ?? '';
     }
 
     async verifyToken(token: string, ipAddress?: string): Promise<boolean> {

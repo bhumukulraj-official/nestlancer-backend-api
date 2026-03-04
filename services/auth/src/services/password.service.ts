@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { BusinessLogicException, generateUuid } from '@nestlancer/common';
 import { QueuePublisherService } from '@nestlancer/queue';
-import { ConfigService } from '@nestjs/config';
+import { NestlancerConfigService as ConfigService } from '@nestlancer/config';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

@@ -1,4 +1,5 @@
 import { Module, Global } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -17,7 +18,7 @@ import { PermissionsGuard } from './guards/permissions.guard';
       }),
     }),
   ],
-  providers: [JwtStrategy, JwtAuthGuard, RolesGuard, PermissionsGuard],
+  providers: [JwtStrategy, JwtAuthGuard, RolesGuard, PermissionsGuard, Reflector],
   exports: [JwtModule, PassportModule, JwtAuthGuard, RolesGuard, PermissionsGuard],
 })
-export class AuthLibModule {}
+export class AuthLibModule { }

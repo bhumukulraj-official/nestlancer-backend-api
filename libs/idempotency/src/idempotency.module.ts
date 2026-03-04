@@ -1,4 +1,5 @@
 import { Module, Global, DynamicModule } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { RedisIdempotencyStore } from './stores/redis.store';
 import { DatabaseIdempotencyStore } from './stores/database.store';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
@@ -15,6 +16,7 @@ export class IdempotencyModule {
         DatabaseIdempotencyStore,
         IdempotencyInterceptor,
         IdempotencyGuard,
+        Reflector,
       ],
       exports: [
         RedisIdempotencyStore,

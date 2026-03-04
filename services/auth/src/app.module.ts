@@ -23,19 +23,21 @@ import { EmailVerificationService } from './services/email-verification.service'
 import { AccountLockoutService } from './services/account-lockout.service';
 import { TurnstileService } from './services/turnstile.service';
 import { TurnstileGuard } from './guards/turnstile.guard';
+import { ConfigModule as NestConfigModule } from '@nestjs/config';
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        ConfigModule.forRoot(),
+        NestConfigModule.forFeature(authConfig),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
-        DatabaseModule,
-        QueueModule,
-        OutboxModule,
-        CacheModule,
+        TracingModule.forRoot(),
+        DatabaseModule.forRoot(),
+        QueueModule.forRoot(),
+        OutboxModule.forRoot(),
+        CacheModule.forRoot(),
         AuthLibModule,
-        IdempotencyModule,
+        IdempotencyModule.forRoot(),
         JwtModule.register({}),
     ],
     controllers: [AuthPublicController],

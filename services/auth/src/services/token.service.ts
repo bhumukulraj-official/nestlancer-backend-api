@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { NestlancerConfigService as ConfigService } from '@nestlancer/config';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { BusinessLogicException, generateUuid } from '@nestlancer/common';
 import { JwtPayload } from '@nestlancer/auth-lib';

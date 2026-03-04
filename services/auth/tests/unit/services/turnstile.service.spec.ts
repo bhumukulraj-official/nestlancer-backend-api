@@ -12,7 +12,7 @@ describe('TurnstileService', () => {
         originalEnv = process.env.NODE_ENV;
 
         mockConfigService = {
-            get: jest.fn().mockImplementation((key: string) => {
+            getOptional: jest.fn().mockImplementation((key: string) => {
                 const config: Record<string, any> = {
                     'authService.turnstile.secretKey': 'test-secret-key',
                     'authService.turnstile.bypassToken': 'bypass-token',
@@ -57,7 +57,7 @@ describe('TurnstileService', () => {
         });
 
         it('should return true when secret key is missing', async () => {
-            mockConfigService.get.mockImplementation((key: string) => {
+            mockConfigService.getOptional.mockImplementation((key: string) => {
                 if (key === 'authService.turnstile.secretKey') return undefined;
                 if (key === 'authService.turnstile.bypassToken') return undefined;
                 return undefined;

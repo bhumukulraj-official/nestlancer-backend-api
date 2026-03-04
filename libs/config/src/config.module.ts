@@ -19,7 +19,7 @@ export class ConfigModule {
         }),
       ],
       providers: [NestlancerConfigService],
-      exports: [NestlancerConfigService],
+      exports: [NestConfigModule, NestlancerConfigService],
     };
   }
 }

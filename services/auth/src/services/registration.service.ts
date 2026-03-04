@@ -3,7 +3,7 @@ import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ReadOnly } from '@nestlancer/database';
 import { ResourceConflictException, UserRole, UserStatus } from '@nestlancer/common';
 import { QueuePublisherService } from '@nestlancer/queue';
-import { ConfigService } from '@nestjs/config';
+import { NestlancerConfigService as ConfigService } from '@nestlancer/config';
 import { LoggerService } from '@nestlancer/logger';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from '../dto/register.dto';
