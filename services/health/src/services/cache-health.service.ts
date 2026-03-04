@@ -7,7 +7,7 @@ import { HealthCheckResult } from '../interfaces/health-check-result.interface';
 @Injectable()
 export class CacheHealthService {
     constructor(
-        @Inject('CACHE_SERVICE') private readonly cacheService: CacheService,
+        private readonly cacheService: CacheService,
         private readonly configService: ConfigService,
         private readonly logger: LoggerService,
     ) { }

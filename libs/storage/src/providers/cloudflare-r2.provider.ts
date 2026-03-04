@@ -24,23 +24,30 @@ export class CloudflareR2Provider implements StorageProvider {
   private readonly client: S3Client;
 
   constructor(@Inject('S3_CONFIG') private readonly config: S3StorageConfig) {
-    if (!config.endpoint) {
-      throw new Error('CloudflareR2Provider requires an endpoint (e.g., https://<account-id>.r2.cloudflarestorage.com)');
+    if (config.endpoint) {
+      this.client = new S3Client({
+        region: 'auto', // R2 uses 'auto' for region
+        endpoint: config.endpoint,
+        credentials: {
+          accessKeyId: config.accessKeyId,
+          secretAccessKey: config.secretAccessKey,
+        },
+        forcePathStyle: true, // Required for R2
+      });
+      this.logger.log(`CloudflareR2Provider initialized (endpoint: ${config.endpoint})`);
+    } else {
+      this.logger.warn('CloudflareR2Provider: No endpoint provided, client will not be initialized');
     }
+  }
 
-    this.client = new S3Client({
-      region: 'auto', // R2 uses 'auto' for region
-      endpoint: config.endpoint,
-      credentials: {
-        accessKeyId: config.accessKeyId,
-        secretAccessKey: config.secretAccessKey,
-      },
-      forcePathStyle: true, // Required for R2
-    });
-    this.logger.log(`CloudflareR2Provider initialized (endpoint: ${config.endpoint})`);
+  private checkClient() {
+    if (!this.client) {
+      throw new Error('CloudflareR2Provider requires an endpoint and must be properly initialized before use');
+    }
   }
 
   async upload(bucket: string, key: string, body: Buffer, contentType: string): Promise<UploadResult> {
+    this.checkClient();
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
@@ -61,6 +68,7 @@ export class CloudflareR2Provider implements StorageProvider {
   }
 
   async download(bucket: string, key: string): Promise<Buffer> {
+    this.checkClient();
     const command = new GetObjectCommand({ Bucket: bucket, Key: key });
     const result = await this.client.send(command);
 
@@ -79,12 +87,14 @@ export class CloudflareR2Provider implements StorageProvider {
   }
 
   async delete(bucket: string, key: string): Promise<void> {
+    this.checkClient();
     const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
     await this.client.send(command);
     this.logger.debug(`Deleted ${key} from R2 bucket ${bucket}`);
   }
 
   async getSignedUrl(options: SignedUrlOptions): Promise<string> {
+    this.checkClient();
     const expiresIn = options.expiresIn || 3600;
 
     const command = options.operation === 'put'
@@ -104,6 +114,7 @@ export class CloudflareR2Provider implements StorageProvider {
   }
 
   async exists(bucket: string, key: string): Promise<boolean> {
+    this.checkClient();
     try {
       await this.client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
       return true;

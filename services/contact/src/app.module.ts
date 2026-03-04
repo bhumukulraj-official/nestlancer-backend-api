@@ -19,14 +19,14 @@ import { ContactAdminService } from './services/contact-admin.service';
 @Module({
     imports: [
         ConfigModule,
-        LoggerModule,
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
-        DatabaseModule,
-        CacheModule,
-        QueueModule,
+        TracingModule.forRoot(),
+        DatabaseModule.forRoot(),
+        CacheModule.forRoot(),
+        QueueModule.forRoot(),
         AuthLibModule,
-        TurnstileModule,
+        TurnstileModule.forRoot(),
     ],
     controllers: [
         ContactPublicController,

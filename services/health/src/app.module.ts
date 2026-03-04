@@ -1,13 +1,16 @@
 import { Module } from '@nestjs/common';
+import { DiscoveryModule, Reflector } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from '@nestlancer/logger';
+import { AuthLibModule } from '@nestlancer/auth-lib';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
 import { HealthLibModule } from '@nestlancer/health-lib';
 import { CacheModule } from '@nestlancer/cache';
 import { HealthPublicController } from './controllers/public/health.public.controller';
 import { HealthDebugAdminController } from './controllers/admin/health-debug.admin.controller';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { HealthService } from './services/health.service';
 import { DatabaseHealthService } from './services/database-health.service';
 import { CacheHealthService } from './services/cache-health.service';
@@ -19,17 +22,22 @@ import { WebsocketHealthService } from './services/websocket-health.service';
 import { SystemMetricsService } from './services/system-metrics.service';
 import { FeatureFlagsHealthService } from './services/feature-flags-health.service';
 import { ServiceRegistryHealthService } from './services/service-registry-health.service';
+import { DatabaseModule } from '@nestlancer/database';
+import { StorageModule } from '@nestlancer/storage';
 import healthConfig from './config/health.config';
 
 @Module({
     imports: [
         ConfigModule,
-        LoggerModule,
+        LoggerModule.forRoot(),
+        DatabaseModule.forRoot(),
         MetricsModule,
-        TracingModule,
+        TracingModule.forRoot(),
         TerminusModule,
         HealthLibModule,
-        CacheModule,
+        CacheModule.forRoot(),
+        StorageModule.forRoot(),
+        AuthLibModule,
     ],
     controllers: [HealthPublicController, HealthDebugAdminController],
     providers: [

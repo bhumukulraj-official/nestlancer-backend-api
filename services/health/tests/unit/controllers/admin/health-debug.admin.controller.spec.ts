@@ -1,6 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthDebugAdminController } from '../../../../src/controllers/admin/health-debug.admin.controller';
 import { HealthService } from '../../../../src/services/health.service';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
+
+jest.mock('@nestlancer/auth-lib', () => ({
+    JwtAuthGuard: jest.fn().mockImplementation(() => ({ canActivate: () => true })),
+    RolesGuard: jest.fn().mockImplementation(() => ({ canActivate: () => true })),
+}));
 
 describe('HealthDebugAdminController', () => {
     let controller: HealthDebugAdminController;
@@ -17,7 +23,12 @@ describe('HealthDebugAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<HealthDebugAdminController>(HealthDebugAdminController);
         healthService = module.get(HealthService);

@@ -1,13 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { AppModule } from '../../src/app.module';
 
 describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
+        process.env.JWT_ACCESS_SECRET = 'test-secret';
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
+            providers: [Reflector],
         }).compile();
 
         app = moduleRef.createNestApplication();
