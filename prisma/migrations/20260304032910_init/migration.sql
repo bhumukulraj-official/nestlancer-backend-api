@@ -26,10 +26,13 @@ CREATE TYPE "NotificationPriority" AS ENUM ('LOW', 'NORMAL', 'HIGH', 'CRITICAL')
 CREATE TYPE "OutboxStatus" AS ENUM ('PENDING', 'PUBLISHED', 'FAILED');
 
 -- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM ('CREATED', 'PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'REFUNDED');
+CREATE TYPE "PaymentStatus" AS ENUM ('CREATED', 'PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'REFUNDED', 'DISPUTED');
 
 -- CreateEnum
 CREATE TYPE "PortfolioStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+
+-- CreateEnum
+CREATE TYPE "PortfolioVisibility" AS ENUM ('PUBLIC', 'UNLISTED', 'PRIVATE');
 
 -- CreateEnum
 CREATE TYPE "MilestoneStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'REVIEW', 'COMPLETED', 'CANCELLED');
@@ -50,7 +53,7 @@ CREATE TYPE "RequestStatus" AS ENUM ('DRAFT', 'SUBMITTED', 'UNDER_REVIEW', 'QUOT
 CREATE TYPE "UserRole" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'SUSPENDED', 'DELETED');
+CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'SUSPENDED', 'DELETED', 'PENDING_DELETION');
 
 -- CreateEnum
 CREATE TYPE "WebhookIngestionStatus" AS ENUM ('PENDING', 'PROCESSED', 'FAILED');
@@ -130,6 +133,10 @@ CREATE TABLE "BlogPost" (
     "seo" JSONB,
     "seriesId" TEXT,
     "seriesPosition" INTEGER,
+    "readingTime" INTEGER,
+    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "likeCount" INTEGER NOT NULL DEFAULT 0,
+    "scheduledAt" TIMESTAMP(3),
     "publishedAt" TIMESTAMP(3),
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -191,6 +198,26 @@ CREATE TABLE "BlogComment" (
 );
 
 -- CreateTable
+CREATE TABLE "PostLike" (
+    "id" TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PostLike_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PostBookmark" (
+    "id" TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PostBookmark_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "ContactMessage" (
     "id" TEXT NOT NULL,
     "ticketId" TEXT NOT NULL,
@@ -204,6 +231,19 @@ CREATE TABLE "ContactMessage" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "ContactMessage_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ContactResponseLog" (
+    "id" TEXT NOT NULL,
+    "contactMessageId" TEXT NOT NULL,
+    "adminId" TEXT NOT NULL,
+    "subject" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "sentAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ContactResponseLog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -282,11 +322,40 @@ CREATE TABLE "Notification" (
 );
 
 -- CreateTable
-CREATE TABLE "OutboxEvent" (
+CREATE TABLE "NotificationTemplate" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "eventType" TEXT NOT NULL,
+    "titleTemplate" TEXT NOT NULL,
+    "messageTemplate" TEXT NOT NULL,
+    "channels" JSONB NOT NULL,
+    "priority" "NotificationPriority" NOT NULL DEFAULT 'NORMAL',
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "variables" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "NotificationTemplate_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserPushSubscription" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "subscription" JSONB NOT NULL,
+    "deviceInfo" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserPushSubscription_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Outbox" (
     "id" TEXT NOT NULL,
     "type" TEXT NOT NULL,
-    "aggregateType" TEXT NOT NULL,
-    "aggregateId" TEXT NOT NULL,
+    "aggregateType" TEXT,
+    "aggregateId" TEXT,
     "payload" JSONB NOT NULL,
     "status" "OutboxStatus" NOT NULL DEFAULT 'PENDING',
     "error" TEXT,
@@ -294,7 +363,7 @@ CREATE TABLE "OutboxEvent" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "publishedAt" TIMESTAMP(3),
 
-    CONSTRAINT "OutboxEvent_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Outbox_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -319,6 +388,7 @@ CREATE TABLE "Payment" (
     "invoiceUrl" TEXT,
     "customNotes" TEXT,
     "paidAt" TIMESTAMP(3),
+    "failureReason" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -329,16 +399,58 @@ CREATE TABLE "Payment" (
 CREATE TABLE "Refund" (
     "id" TEXT NOT NULL,
     "paymentId" TEXT NOT NULL,
+    "externalId" TEXT,
     "amount" INTEGER NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'INR',
     "type" TEXT NOT NULL,
     "reason" TEXT,
     "status" TEXT NOT NULL,
     "providerDetails" JSONB,
+    "processedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Refund_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SavedPaymentMethod" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "provider" TEXT NOT NULL DEFAULT 'razorpay',
+    "type" TEXT NOT NULL,
+    "tokenId" TEXT,
+    "last4" TEXT,
+    "cardBrand" TEXT,
+    "cardExpMonth" INTEGER,
+    "cardExpYear" INTEGER,
+    "upiVpa" TEXT,
+    "bankName" TEXT,
+    "walletProvider" TEXT,
+    "nickname" TEXT,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "metadata" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SavedPaymentMethod_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Dispute" (
+    "id" TEXT NOT NULL,
+    "paymentId" TEXT NOT NULL,
+    "externalId" TEXT NOT NULL,
+    "reason" TEXT,
+    "status" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'INR',
+    "evidenceDueBy" TIMESTAMP(3),
+    "providerDetails" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Dispute_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -351,7 +463,11 @@ CREATE TABLE "PortfolioItem" (
     "contentFormat" TEXT NOT NULL DEFAULT 'markdown',
     "categoryId" TEXT NOT NULL,
     "status" "PortfolioStatus" NOT NULL DEFAULT 'DRAFT',
+    "visibility" "PortfolioVisibility" NOT NULL DEFAULT 'PUBLIC',
     "featured" BOOLEAN NOT NULL DEFAULT false,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "likeCount" INTEGER NOT NULL DEFAULT 0,
+    "viewCount" INTEGER NOT NULL DEFAULT 0,
     "clientName" TEXT,
     "clientLogo" TEXT,
     "clientIndustry" TEXT,
@@ -374,10 +490,26 @@ CREATE TABLE "PortfolioItem" (
 );
 
 -- CreateTable
+CREATE TABLE "PortfolioImage" (
+    "id" TEXT NOT NULL,
+    "portfolioItemId" TEXT NOT NULL,
+    "mediaId" TEXT NOT NULL,
+    "alt" TEXT,
+    "caption" TEXT,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PortfolioImage_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "PortfolioCategory" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
+    "description" TEXT,
+    "order" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -468,20 +600,32 @@ CREATE TABLE "Quote" (
     "id" TEXT NOT NULL,
     "requestId" TEXT NOT NULL,
     "projectId" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdById" TEXT,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "subtotal" INTEGER NOT NULL DEFAULT 0,
+    "taxPercentage" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "taxAmount" INTEGER NOT NULL DEFAULT 0,
     "totalAmount" INTEGER NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'INR',
     "validUntil" TIMESTAMP(3) NOT NULL,
     "status" "QuoteStatus" NOT NULL DEFAULT 'DRAFT',
     "terms" TEXT,
+    "termsAndConditions" TEXT,
     "notes" TEXT,
+    "internalNotes" TEXT,
+    "clientNotes" TEXT,
     "paymentBreakdown" JSONB,
     "timeline" JSONB,
     "scope" JSONB,
     "technicalDetails" JSONB,
+    "attachments" JSONB,
+    "signatureName" TEXT,
+    "signatureDate" TIMESTAMP(3),
     "acceptedAt" TIMESTAMP(3),
     "declinedAt" TIMESTAMP(3),
+    "declineReason" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -497,9 +641,17 @@ CREATE TABLE "ProjectRequest" (
     "category" TEXT NOT NULL,
     "budgetMin" INTEGER,
     "budgetMax" INTEGER,
-    "currency" TEXT NOT NULL DEFAULT 'INR',
+    "budgetCurrency" TEXT NOT NULL DEFAULT 'INR',
+    "budgetFlexible" BOOLEAN NOT NULL DEFAULT false,
+    "preferredStartDate" TIMESTAMP(3),
+    "deadline" TIMESTAMP(3),
+    "timelineFlexible" BOOLEAN NOT NULL DEFAULT false,
+    "requirements" TEXT[],
+    "technicalRequirements" JSONB,
+    "additionalInfo" TEXT,
     "timeframe" TEXT,
     "status" "RequestStatus" NOT NULL DEFAULT 'DRAFT',
+    "submittedAt" TIMESTAMP(3),
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -508,13 +660,53 @@ CREATE TABLE "ProjectRequest" (
 );
 
 -- CreateTable
+CREATE TABLE "RequestAttachment" (
+    "id" TEXT NOT NULL,
+    "requestId" TEXT NOT NULL,
+    "filename" TEXT NOT NULL,
+    "fileUrl" TEXT NOT NULL,
+    "mimeType" TEXT NOT NULL,
+    "size" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "RequestAttachment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RequestStatusHistory" (
+    "id" TEXT NOT NULL,
+    "requestId" TEXT NOT NULL,
+    "status" "RequestStatus" NOT NULL,
+    "note" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "RequestStatusHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AdminNote" (
+    "id" TEXT NOT NULL,
+    "requestId" TEXT NOT NULL,
+    "authorId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AdminNote_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "avatar" TEXT,
+    "phone" TEXT,
     "role" "UserRole" NOT NULL DEFAULT 'USER',
     "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
+    "emailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "marketingConsent" BOOLEAN NOT NULL DEFAULT false,
     "twoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
     "twoFactorSecret" TEXT,
     "lastLoginAt" TIMESTAMP(3),
@@ -526,6 +718,21 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "AuthConfig" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "twoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "twoFactorSecret" TEXT,
+    "backupCodes" JSONB DEFAULT '[]',
+    "failedLoginAttempts" INTEGER NOT NULL DEFAULT 0,
+    "lockoutUntil" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "AuthConfig_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "UserPreference" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -533,8 +740,9 @@ CREATE TABLE "UserPreference" (
     "marketingSettings" JSONB,
     "privacySettings" JSONB,
     "theme" TEXT NOT NULL DEFAULT 'system',
-    "timezone" TEXT NOT NULL DEFAULT 'UTC',
+    "timezone" TEXT NOT NULL DEFAULT 'Asia/Kolkata',
     "language" TEXT NOT NULL DEFAULT 'en',
+    "currency" TEXT NOT NULL DEFAULT 'INR',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -559,6 +767,31 @@ CREATE TABLE "Session" (
 );
 
 -- CreateTable
+CREATE TABLE "VerificationToken" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "VerificationToken_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AuthSession" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "ipAddress" TEXT,
+    "userAgent" TEXT,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AuthSession_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Webhook" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -566,6 +799,7 @@ CREATE TABLE "Webhook" (
     "secret" TEXT NOT NULL,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
     "events" JSONB NOT NULL,
+    "headers" JSONB,
     "retryPolicy" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -584,6 +818,9 @@ CREATE TABLE "WebhookDelivery" (
     "requestHeaders" JSONB,
     "responseHeaders" JSONB,
     "responseBody" TEXT,
+    "responseTime" INTEGER,
+    "attempts" INTEGER NOT NULL DEFAULT 1,
+    "nextRetryAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "WebhookDelivery_pkey" PRIMARY KEY ("id")
@@ -596,6 +833,7 @@ CREATE TABLE "WebhookLog" (
     "eventId" TEXT,
     "eventType" TEXT NOT NULL,
     "payload" JSONB NOT NULL,
+    "headers" JSONB,
     "status" "WebhookIngestionStatus" NOT NULL DEFAULT 'PENDING',
     "error" TEXT,
     "processedAt" TIMESTAMP(3),
@@ -677,6 +915,18 @@ CREATE INDEX "BlogComment_authorId_idx" ON "BlogComment"("authorId");
 CREATE INDEX "BlogComment_parentId_idx" ON "BlogComment"("parentId");
 
 -- CreateIndex
+CREATE INDEX "PostLike_userId_idx" ON "PostLike"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PostLike_postId_userId_key" ON "PostLike"("postId", "userId");
+
+-- CreateIndex
+CREATE INDEX "PostBookmark_userId_idx" ON "PostBookmark"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PostBookmark_postId_userId_key" ON "PostBookmark"("postId", "userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ContactMessage_ticketId_key" ON "ContactMessage"("ticketId");
 
 -- CreateIndex
@@ -690,6 +940,12 @@ CREATE INDEX "ContactMessage_ticketId_idx" ON "ContactMessage"("ticketId");
 
 -- CreateIndex
 CREATE INDEX "ContactMessage_email_idx" ON "ContactMessage"("email");
+
+-- CreateIndex
+CREATE INDEX "ContactResponseLog_contactMessageId_idx" ON "ContactResponseLog"("contactMessageId");
+
+-- CreateIndex
+CREATE INDEX "ContactResponseLog_adminId_idx" ON "ContactResponseLog"("adminId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "IdempotencyKey_key_key" ON "IdempotencyKey"("key");
@@ -716,10 +972,22 @@ CREATE INDEX "Notification_userId_idx" ON "Notification"("userId");
 CREATE INDEX "Notification_read_idx" ON "Notification"("read");
 
 -- CreateIndex
-CREATE INDEX "OutboxEvent_status_idx" ON "OutboxEvent"("status");
+CREATE UNIQUE INDEX "NotificationTemplate_name_key" ON "NotificationTemplate"("name");
 
 -- CreateIndex
-CREATE INDEX "OutboxEvent_aggregateType_aggregateId_idx" ON "OutboxEvent"("aggregateType", "aggregateId");
+CREATE INDEX "NotificationTemplate_eventType_idx" ON "NotificationTemplate"("eventType");
+
+-- CreateIndex
+CREATE INDEX "NotificationTemplate_name_idx" ON "NotificationTemplate"("name");
+
+-- CreateIndex
+CREATE INDEX "UserPushSubscription_userId_idx" ON "UserPushSubscription"("userId");
+
+-- CreateIndex
+CREATE INDEX "Outbox_status_idx" ON "Outbox"("status");
+
+-- CreateIndex
+CREATE INDEX "Outbox_aggregateType_aggregateId_idx" ON "Outbox"("aggregateType", "aggregateId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Payment_intentId_key" ON "Payment"("intentId");
@@ -737,7 +1005,22 @@ CREATE INDEX "Payment_externalId_idx" ON "Payment"("externalId");
 CREATE INDEX "Payment_status_idx" ON "Payment"("status");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Refund_externalId_key" ON "Refund"("externalId");
+
+-- CreateIndex
 CREATE INDEX "Refund_paymentId_idx" ON "Refund"("paymentId");
+
+-- CreateIndex
+CREATE INDEX "SavedPaymentMethod_userId_idx" ON "SavedPaymentMethod"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SavedPaymentMethod_userId_tokenId_key" ON "SavedPaymentMethod"("userId", "tokenId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Dispute_externalId_key" ON "Dispute"("externalId");
+
+-- CreateIndex
+CREATE INDEX "Dispute_paymentId_idx" ON "Dispute"("paymentId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PortfolioItem_slug_key" ON "PortfolioItem"("slug");
@@ -747,6 +1030,18 @@ CREATE INDEX "PortfolioItem_status_idx" ON "PortfolioItem"("status");
 
 -- CreateIndex
 CREATE INDEX "PortfolioItem_categoryId_idx" ON "PortfolioItem"("categoryId");
+
+-- CreateIndex
+CREATE INDEX "PortfolioItem_visibility_idx" ON "PortfolioItem"("visibility");
+
+-- CreateIndex
+CREATE INDEX "PortfolioItem_order_idx" ON "PortfolioItem"("order");
+
+-- CreateIndex
+CREATE INDEX "PortfolioImage_portfolioItemId_idx" ON "PortfolioImage"("portfolioItemId");
+
+-- CreateIndex
+CREATE INDEX "PortfolioImage_order_idx" ON "PortfolioImage"("order");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PortfolioCategory_slug_key" ON "PortfolioCategory"("slug");
@@ -785,6 +1080,12 @@ CREATE UNIQUE INDEX "Quote_requestId_key" ON "Quote"("requestId");
 CREATE UNIQUE INDEX "Quote_projectId_key" ON "Quote"("projectId");
 
 -- CreateIndex
+CREATE INDEX "Quote_userId_idx" ON "Quote"("userId");
+
+-- CreateIndex
+CREATE INDEX "Quote_createdById_idx" ON "Quote"("createdById");
+
+-- CreateIndex
 CREATE INDEX "Quote_status_idx" ON "Quote"("status");
 
 -- CreateIndex
@@ -794,6 +1095,18 @@ CREATE INDEX "ProjectRequest_userId_idx" ON "ProjectRequest"("userId");
 CREATE INDEX "ProjectRequest_status_idx" ON "ProjectRequest"("status");
 
 -- CreateIndex
+CREATE INDEX "RequestAttachment_requestId_idx" ON "RequestAttachment"("requestId");
+
+-- CreateIndex
+CREATE INDEX "RequestStatusHistory_requestId_idx" ON "RequestStatusHistory"("requestId");
+
+-- CreateIndex
+CREATE INDEX "AdminNote_requestId_idx" ON "AdminNote"("requestId");
+
+-- CreateIndex
+CREATE INDEX "AdminNote_authorId_idx" ON "AdminNote"("authorId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
@@ -801,6 +1114,9 @@ CREATE INDEX "User_email_idx" ON "User"("email");
 
 -- CreateIndex
 CREATE INDEX "User_role_idx" ON "User"("role");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AuthConfig_userId_key" ON "AuthConfig"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserPreference_userId_key" ON "UserPreference"("userId");
@@ -815,7 +1131,22 @@ CREATE INDEX "Session_userId_idx" ON "Session"("userId");
 CREATE INDEX "Session_token_idx" ON "Session"("token");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
+
+-- CreateIndex
+CREATE INDEX "VerificationToken_userId_idx" ON "VerificationToken"("userId");
+
+-- CreateIndex
+CREATE INDEX "VerificationToken_token_idx" ON "VerificationToken"("token");
+
+-- CreateIndex
+CREATE INDEX "AuthSession_userId_idx" ON "AuthSession"("userId");
+
+-- CreateIndex
 CREATE INDEX "WebhookDelivery_webhookId_idx" ON "WebhookDelivery"("webhookId");
+
+-- CreateIndex
+CREATE INDEX "WebhookDelivery_status_idx" ON "WebhookDelivery"("status");
 
 -- CreateIndex
 CREATE INDEX "WebhookLog_status_idx" ON "WebhookLog"("status");
@@ -851,6 +1182,15 @@ ALTER TABLE "BlogComment" ADD CONSTRAINT "BlogComment_authorId_fkey" FOREIGN KEY
 ALTER TABLE "BlogComment" ADD CONSTRAINT "BlogComment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "BlogComment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "PostLike" ADD CONSTRAINT "PostLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "BlogPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PostBookmark" ADD CONSTRAINT "PostBookmark_postId_fkey" FOREIGN KEY ("postId") REFERENCES "BlogPost"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ContactResponseLog" ADD CONSTRAINT "ContactResponseLog_contactMessageId_fkey" FOREIGN KEY ("contactMessageId") REFERENCES "ContactMessage"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Media" ADD CONSTRAINT "Media_uploaderId_fkey" FOREIGN KEY ("uploaderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -866,6 +1206,9 @@ ALTER TABLE "Message" ADD CONSTRAINT "Message_replyToId_fkey" FOREIGN KEY ("repl
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "UserPushSubscription" ADD CONSTRAINT "UserPushSubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -878,7 +1221,16 @@ ALTER TABLE "Payment" ADD CONSTRAINT "Payment_clientId_fkey" FOREIGN KEY ("clien
 ALTER TABLE "Refund" ADD CONSTRAINT "Refund_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "Payment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "SavedPaymentMethod" ADD CONSTRAINT "SavedPaymentMethod_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Dispute" ADD CONSTRAINT "Dispute_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "Payment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "PortfolioItem" ADD CONSTRAINT "PortfolioItem_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "PortfolioCategory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortfolioImage" ADD CONSTRAINT "PortfolioImage_portfolioItemId_fkey" FOREIGN KEY ("portfolioItemId") REFERENCES "PortfolioItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Milestone" ADD CONSTRAINT "Milestone_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -905,16 +1257,43 @@ ALTER TABLE "Project" ADD CONSTRAINT "Project_clientId_fkey" FOREIGN KEY ("clien
 ALTER TABLE "Project" ADD CONSTRAINT "Project_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Quote" ADD CONSTRAINT "Quote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Quote" ADD CONSTRAINT "Quote_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Quote" ADD CONSTRAINT "Quote_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "ProjectRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProjectRequest" ADD CONSTRAINT "ProjectRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "RequestAttachment" ADD CONSTRAINT "RequestAttachment_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "ProjectRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RequestStatusHistory" ADD CONSTRAINT "RequestStatusHistory_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "ProjectRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AdminNote" ADD CONSTRAINT "AdminNote_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "ProjectRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AdminNote" ADD CONSTRAINT "AdminNote_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuthConfig" ADD CONSTRAINT "AuthConfig_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "UserPreference" ADD CONSTRAINT "UserPreference_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "VerificationToken" ADD CONSTRAINT "VerificationToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuthSession" ADD CONSTRAINT "AuthSession_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "WebhookDelivery" ADD CONSTRAINT "WebhookDelivery_webhookId_fkey" FOREIGN KEY ("webhookId") REFERENCES "Webhook"("id") ON DELETE CASCADE ON UPDATE CASCADE;
