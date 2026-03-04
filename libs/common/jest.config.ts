@@ -1,8 +1,9 @@
 import type { Config } from 'jest';
-import baseConfig from '../../jest.config';
+import baseConfig from '../../jest.config.base';
 
 const config: Config = {
     ...baseConfig,
+    displayName: 'common',
     rootDir: '.',
     testMatch: ['<rootDir>/tests/**/*.spec.ts'],
     collectCoverageFrom: ['<rootDir>/src/**/*.ts'],

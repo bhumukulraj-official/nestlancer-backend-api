@@ -1,15 +1,17 @@
 {
-  "name": "@nestlancer/tracing",
-  "version": "1.0.0",
-  "private": true,
-  "main": "src/index.ts",
-  "dependencies": {
-    "@nestjs/common": "^10.0.0",
-    "rxjs": "^7.8.1",
-    "@nestjs/core": "^10.0.0",
-    "uuid": "^13.0.0"
-  },
-  "scripts": {
-    "test:integration": "jest --config jest.integration.json"
-  }
+    "name": "@nestlancer/tracing",
+    "version": "1.0.0",
+    "private": true,
+    "main": "src/index.ts",
+    "dependencies": {
+        "@nestjs/common": "^10.0.0",
+        "rxjs": "^7.8.1",
+        "@nestjs/core": "^10.0.0",
+        "uuid": "^13.0.0"
+    },
+    "scripts": {
+        "test:integration": "jest --testPathPattern=tests/integration",
+        "test": "jest",
+        "test:unit": "jest --testPathPattern=tests/unit"
+    }
 }

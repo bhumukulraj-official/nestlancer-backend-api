@@ -22,5 +22,8 @@ describe('RedisIoAdapter', () => {
             cors: { origin: '*', credentials: true }
         });
         expect(server).toBeDefined();
+
+        // Close server to prevent open handles
+        server.close();
     });
 });

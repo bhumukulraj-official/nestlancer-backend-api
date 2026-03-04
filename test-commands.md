@@ -1,44 +1,91 @@
-# Testing Commands for Nestlancer Backend API
+# Professional Testing Commands for Nestlancer Backend API
 
-You can run tests for all components in the monorepo using the following commands:
+This project uses a standardized Jest configuration with the **Projects** feature and **Turbo** integration. Always ensure you are in the root directory unless explicitly mentioned.
 
-## 1. Global Test Commands (Root Directory)
+## 1. Using Turbo (Recommended for speed and CI)
+
+Turbo handles dependency graphs and caching automatically.
 
 ### Run All Unit Tests
-This is the most reliable way to run all unit tests across `libs`, `services`, and `workers`:
 ```bash
-npx jest libs services workers --testPathPattern="tests/unit" --detectOpenHandles --forceExit
+pnpm turbo test:unit
 ```
 
 ### Run All Integration Tests
 ```bash
-npx jest libs services workers --testPathPattern="tests/integration" --detectOpenHandles --forceExit
+pnpm turbo test:integration
 ```
 
-## 2. Testing Specific Components
-
-### Using Turbo (Root Directory)
-If you want to use Turbo for specific components (requires `test:unit` or `test:integration` in `package.json`):
+### Test a Specific Package
 ```bash
-pnpm turbo test:unit --filter="./libs/*"
-pnpm turbo test:integration --filter="./services/*"
-```
-
-### Using Jest (Root Directory)
-Directly test a specific package or directory:
-```bash
-npx jest libs/common/tests/unit
-npx jest services/auth/tests/unit
-npx jest workers/analytics-worker/tests/unit
-```
-
-## 3. Component-Level Commands
-
-Navigate to a specific package directory and run its local scripts:
-```bash
-cd services/auth
-pnpm test:unit
+pnpm turbo test:unit --filter=@nestlancer/common
+pnpm turbo test:unit --filter=@nestlancer/auth-service
 ```
 
 ---
-**Note:** Many components only have `test:unit` or `test:integration` scripts. If a script is missing, use the global `npx jest` command from the root as shown in section 1.
+
+## 2. Using Jest Directly (Recommended for Development/Debugging)
+
+Direct Jest commands are faster for running specific files or using focus patterns.
+
+### Run All Tests across all Workspaces
+```bash
+npx jest
+```
+
+### Run All Unit Tests
+```bash
+npx jest --testPathPattern=tests/unit
+```
+
+### Run Tests for a Specific Directory (Workspace Aware)
+You can point Jest to any directory, and it will automatically use the correct local configuration.
+```bash
+npx jest libs/common
+npx jest services/auth
+npx jest ws-gateway
+```
+
+### Run a Specific Test File
+```bash
+npx jest libs/common/tests/unit/utils/hash.util.spec.ts
+```
+
+---
+
+## 3. Coverage Reports
+
+Coverage is standardized across all packages.
+
+### Generate All Coverage
+```bash
+pnpm test:cov
+```
+
+### Generate Coverage for Specific Package
+```bash
+npx jest libs/common --coverage
+```
+
+---
+
+## 4. Key Benefits of this Setup
+- **Consistency**: All packages share a `jest.config.base.ts`.
+- **Discovery**: The root `jest.config.ts` uses `projects`, so one command runs everything.
+- **Path Mapping**: Imports like `@nestlancer/common` are automatically mapped from `tsconfig.base.json`.
+- **Performance**: `isolatedModules` is enabled for faster, memory-efficient testing.
+- **Flexibility**: You can run tests from the root or within each package directory.
+
+---
+
+## 5. Troubleshooting
+
+### Validation Warnings
+If you see "Unknown option" warnings, ensure that global settings (like `verbose`, `detectOpenHandles`) are only defined in the root `jest.config.ts`, not in individual package configs.
+
+### Out of Memory (OOM) Errors
+If you hit memory limits when running many tests:
+1. **Use Turbo**: `pnpm turbo test:unit` runs tests in separate processes, which is more memory-efficient.
+2. **Limit Workers**: `npx jest libs/ --maxWorkers=2`
+3. **Increase Node Memory**: `NODE_OPTIONS="--max-old-space-size=4096" npx jest libs/`
+4. **Isolated Modules**: We have enabled `isolatedModules: true` in the base config to speed up tests and reduce memory by skipping type checking during test runs.

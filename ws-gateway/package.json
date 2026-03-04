@@ -5,7 +5,10 @@
     "scripts": {
         "build": "nest build",
         "dev": "nest start --watch",
-        "start": "node dist/main"
+        "start": "node dist/main",
+        "test": "jest",
+        "test:unit": "jest --testPathPattern=tests/unit",
+        "test:integration": "jest --testPathPattern=tests/integration"
     },
     "dependencies": {
         "@nestjs/common": "^10.0.0",
