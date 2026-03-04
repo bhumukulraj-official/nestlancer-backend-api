@@ -8,6 +8,7 @@ import { PortfolioAnalyticsProcessor } from '../../src/processors/portfolio-anal
 import { BlogAnalyticsProcessor } from '../../src/processors/blog-analytics.processor';
 import { EngagementAnalyticsProcessor } from '../../src/processors/engagement-analytics.processor';
 import { AnalyticsJobType, Period } from '../../src/interfaces/analytics-job.interface';
+import { QueueConsumerService } from '@nestlancer/queue';
 
 describe('AnalyticsConsumer', () => {
     let consumer: AnalyticsConsumer;
@@ -40,6 +41,10 @@ describe('AnalyticsConsumer', () => {
                 {
                     provide: BlogAnalyticsProcessor,
                     useValue: { process: jest.fn() },
+                },
+                {
+                    provide: QueueConsumerService,
+                    useValue: { consume: jest.fn() },
                 },
                 {
                     provide: EngagementAnalyticsProcessor,

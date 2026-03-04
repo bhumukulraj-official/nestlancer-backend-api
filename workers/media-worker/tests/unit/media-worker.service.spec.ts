@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { MediaWorkerService } from '../../src/services/media-worker.service';
 import { VirusScanProcessor } from '../../src/processors/virus-scan.processor';
 import { ImageResizeProcessor } from '../../src/processors/image-resize.processor';
@@ -45,6 +46,10 @@ describe('MediaWorkerService', () => {
                 {
                     provide: LoggerService,
                     useValue: { log: jest.fn(), error: jest.fn() },
+                },
+                {
+                    provide: ConfigService,
+                    useValue: { get: jest.fn().mockReturnValue('nestlancer-private') },
                 },
             ],
         }).compile();

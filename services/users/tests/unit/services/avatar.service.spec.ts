@@ -19,7 +19,7 @@ describe('AvatarService', () => {
             },
         };
         mockStorageService = {
-            uploadFile: jest.fn().mockResolvedValue('https://cdn.example.com/avatars/user-1/avatar_123'),
+            upload: jest.fn().mockResolvedValue({ url: 'https://cdn.example.com/avatars/user-1/avatar_123' }),
             deleteFile: jest.fn().mockResolvedValue(undefined),
         };
         mockConfig = {
@@ -46,7 +46,7 @@ describe('AvatarService', () => {
         it('should upload avatar successfully', async () => {
             const result = await service.uploadAvatar('user-1', mockFile);
             expect(result.avatarUrl).toBeDefined();
-            expect(mockStorageService.uploadFile).toHaveBeenCalled();
+            expect(mockStorageService.upload).toHaveBeenCalled();
             expect(mockPrismaWrite.user.update).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: { id: 'user-1' },

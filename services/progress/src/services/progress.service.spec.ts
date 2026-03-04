@@ -27,7 +27,7 @@ describe('ProgressService', () => {
     };
 
     const mockOutboxService = {
-        create: jest.fn(),
+        createEvent: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -59,7 +59,7 @@ describe('ProgressService', () => {
 
             expect(result).toBeDefined();
             expect(mockPrismaWriteService.progressEntry.create).toHaveBeenCalled();
-            expect(mockOutboxService.create).toHaveBeenCalled();
+            expect(mockOutboxService.createEvent).toHaveBeenCalled();
         });
     });
 

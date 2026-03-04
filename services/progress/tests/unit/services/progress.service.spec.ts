@@ -33,7 +33,7 @@ describe('ProgressService', () => {
                 delete: jest.fn().mockResolvedValue({}),
             },
         };
-        mockOutbox = { create: jest.fn().mockResolvedValue({}) };
+        mockOutbox = { createEvent: jest.fn().mockResolvedValue({}) };
         service = new ProgressService(mockPrismaWrite, mockPrismaRead, mockOutbox);
     });
 
@@ -48,8 +48,8 @@ describe('ProgressService', () => {
         it('should emit outbox event for client-visible entries', async () => {
             const dto = { type: 'UPDATE', title: 'New Update', description: 'Details' };
             await service.createEntry('user-1', 'proj-1', dto as any);
-            expect(mockOutbox.create).toHaveBeenCalledWith(
-                expect.objectContaining({ eventType: 'PROGRESS_ENTRY_CREATED' })
+            expect(mockOutbox.createEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'PROGRESS_ENTRY_CREATED' })
             );
         });
     });

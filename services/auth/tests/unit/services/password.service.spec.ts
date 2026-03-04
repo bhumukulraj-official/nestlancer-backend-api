@@ -48,7 +48,7 @@ describe('PasswordService', () => {
                 const tx = {
                     user: { update: jest.fn().mockResolvedValue({}) },
                     verificationToken: { delete: jest.fn().mockResolvedValue({}) },
-                    userSession: { updateMany: jest.fn().mockResolvedValue({ count: 2 }) },
+                    session: { updateMany: jest.fn().mockResolvedValue({ count: 2 }) },
                     outbox: { create: jest.fn().mockResolvedValue({}) },
                 };
                 return fn(tx);
@@ -73,7 +73,7 @@ describe('PasswordService', () => {
             expect(mockPrismaWrite.outbox.create).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: expect.objectContaining({
-                        eventType: 'PASSWORD_RESET_REQUESTED',
+                        type: 'PASSWORD_RESET_REQUESTED',
                     }),
                 })
             );

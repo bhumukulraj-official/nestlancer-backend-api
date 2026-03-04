@@ -17,7 +17,7 @@ describe('ContactSubmissionService', () => {
             providers: [
                 ContactSubmissionService,
                 { provide: PrismaWriteService, useValue: { contactMessage: { create: jest.fn().mockResolvedValue({ id: '1' }), update: jest.fn() }, $transaction: jest.fn() } },
-                { provide: CacheService, useValue: { increment: jest.fn().mockResolvedValue(1), set: jest.fn() } },
+                { provide: CacheService, useValue: { incr: jest.fn().mockResolvedValue(1), expire: jest.fn() } },
                 { provide: QueuePublisherService, useValue: { publish: jest.fn() } },
                 { provide: TurnstileService, useValue: { verify: jest.fn().mockResolvedValue(true) } },
                 { provide: SpamFilterService, useValue: { checkSpam: jest.fn().mockReturnValue({ isSpam: false, score: 0, reasons: [] }) } },
@@ -49,7 +49,7 @@ describe('ContactSubmissionService', () => {
     });
 
     it('should throw RateLimitException if count > limit', async () => {
-        cacheService.increment.mockResolvedValue(4);
+        cacheService.incr.mockResolvedValue(4);
         await expect(service.submit({
             name: 'Test', email: 'a@a.com', subject: ContactSubject.SUPPORT, message: 'test', turnstileToken: 't'
         }, '127.0.0.1')).rejects.toThrow();

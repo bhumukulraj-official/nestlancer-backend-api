@@ -19,6 +19,7 @@ describe('NotificationsService', () => {
                 findFirst: jest.fn().mockResolvedValue(mockNotification),
                 update: jest.fn().mockResolvedValue({ ...mockNotification, readAt: new Date() }),
                 updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+                deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
             },
         };
         service = new NotificationsService(mockPrismaWrite, mockPrismaRead);
@@ -60,10 +61,10 @@ describe('NotificationsService', () => {
     });
 
     describe('softDelete', () => {
-        it('should set dismissedAt on notification', async () => {
+        it('should delete notification', async () => {
             await service.softDelete('notif-1', 'user-1');
-            expect(mockPrismaWrite.notification.updateMany).toHaveBeenCalledWith(
-                expect.objectContaining({ data: expect.objectContaining({ dismissedAt: expect.any(Date) }) })
+            expect(mockPrismaWrite.notification.deleteMany).toHaveBeenCalledWith(
+                expect.objectContaining({ where: { id: 'notif-1', userId: 'user-1' } })
             );
         });
     });

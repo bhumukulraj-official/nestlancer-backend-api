@@ -43,6 +43,7 @@ const config: Config = {
     // Path aliases matching tsconfig.base.json
     moduleNameMapper: {
         // Deep-path overrides (must come before generic catch-all patterns)
+        '^uuid$': '<rootDir>/libs/testing/src/uuid.mock.ts',
         '^@nestlancer/database/prisma/prisma-read\\.service$': '<rootDir>/libs/database/src/prisma-read.service',
         '^@nestlancer/database/prisma/prisma-write\\.service$': '<rootDir>/libs/database/src/prisma-write.service',
         '^@nestlancer/database/decorators/read-only\\.decorator$': '<rootDir>/libs/database/src/decorators/read-only.decorator',
@@ -95,9 +96,9 @@ const config: Config = {
         '/dist/',
         '/coverage/',
     ],
-    // Transform TypeScript files
+    // Transform TypeScript and some JavaScript ESM files
     transform: {
-        '^.+\\.ts$': [
+        '^.+\\.[tj]s$': [
             'ts-jest',
             {
                 tsconfig: 'tsconfig.test.json',

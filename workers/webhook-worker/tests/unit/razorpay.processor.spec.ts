@@ -23,7 +23,7 @@ describe('RazorpayWebhookProcessor', () => {
                 },
                 {
                     provide: PrismaWriteService,
-                    useValue: { incomingWebhook: { update: jest.fn() } },
+                    useValue: { webhookLog: { update: jest.fn() } },
                 },
             ],
         }).compile();
@@ -49,7 +49,7 @@ describe('RazorpayWebhookProcessor', () => {
         await processor.handleRazorpay(job);
 
         expect(webhookService.dispatch).toHaveBeenCalledWith('razorpay', 'payment.captured', job.payload);
-        expect(prisma.incomingWebhook.update).toHaveBeenCalledWith({
+        expect(prisma.webhookLog.update).toHaveBeenCalledWith({
             where: { id: 'webhook_123' },
             data: { status: 'PROCESSED', processedAt: expect.any(Date) },
         });

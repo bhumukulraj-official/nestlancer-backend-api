@@ -19,7 +19,7 @@ describe('MessagingService', () => {
     };
 
     const mockOutboxService = {
-        create: jest.fn(),
+        createEvent: jest.fn(),
     };
 
     beforeEach(async () => {

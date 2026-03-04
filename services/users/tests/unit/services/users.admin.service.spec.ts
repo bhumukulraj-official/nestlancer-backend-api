@@ -113,7 +113,7 @@ describe('UsersAdminService', () => {
             expect(mockPrismaWrite.outbox.create).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: expect.objectContaining({
-                        eventType: 'ADMIN_USER_STATUS_CHANGED',
+                        type: 'ADMIN_USER_STATUS_CHANGED',
                     }),
                 })
             );

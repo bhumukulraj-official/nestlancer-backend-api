@@ -29,7 +29,7 @@ describe('RequestAttachmentsService', () => {
             },
         };
         mockStorageService = {
-            uploadFile: jest.fn().mockResolvedValue('https://cdn.example.com/new.pdf'),
+            upload: jest.fn().mockResolvedValue({ url: 'https://cdn.example.com/new.pdf' }),
         };
         mockConfig = {
             get: jest.fn().mockImplementation((key: string) => {
@@ -66,7 +66,7 @@ describe('RequestAttachmentsService', () => {
         it('should add attachment successfully', async () => {
             const result = await service.addAttachment('user-1', 'req-1', mockFile);
             expect(result.id).toBe('att-2');
-            expect(mockStorageService.uploadFile).toHaveBeenCalled();
+            expect(mockStorageService.upload).toHaveBeenCalled();
         });
 
         it('should reject when request is not in DRAFT status', async () => {
