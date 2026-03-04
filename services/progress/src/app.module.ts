@@ -27,16 +27,16 @@ import { DeliverableReviewService } from './services/deliverable-review.service'
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        ConfigModule.forRoot(),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
-        DatabaseModule,
+        TracingModule.forRoot(),
+        DatabaseModule.forRoot(),
         AuthLibModule,
-        StorageModule,
-        OutboxModule,
-        QueueModule,
-        CacheModule,
+        StorageModule.forRoot(),
+        OutboxModule.forRoot(),
+        QueueModule.forRoot(),
+        CacheModule.forRoot(),
     ],
     controllers: [
         ProgressAdminController,

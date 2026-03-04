@@ -20,5 +20,6 @@ export class BaseAppException extends HttpException {
       },
       statusCode,
     );
+    this.message = message;
   }
 }

@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
 import { DeliverablesAdminController } from '../../../../src/controllers/admin/deliverables.admin.controller';
 import { DeliverablesService } from '../../../../src/services/deliverables.service';
 import { UploadDeliverableDto } from '../../../../src/dto/upload-deliverable.dto';
 import { UpdateDeliverableDto } from '../../../../src/dto/update-deliverable.dto';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('DeliverablesAdminController', () => {
     let controller: DeliverablesAdminController;
@@ -22,7 +24,12 @@ describe('DeliverablesAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<DeliverablesAdminController>(DeliverablesAdminController);
         deliverablesService = module.get(DeliverablesService);
@@ -35,7 +42,7 @@ describe('DeliverablesAdminController', () => {
     describe('uploadDeliverable', () => {
         it('should create a deliverable', async () => {
             deliverablesService.create.mockResolvedValue({ id: 'd1' } as any);
-            const dto: UploadDeliverableDto = { title: 'Test', milestoneId: 'm1', fileUrl: 'url' };
+            const dto: UploadDeliverableDto = { milestoneId: 'm1', mediaIds: ['media1'], description: 'Test' };
 
             const result = await controller.uploadDeliverable('p1', dto);
 
@@ -57,13 +64,13 @@ describe('DeliverablesAdminController', () => {
 
     describe('updateDeliverable', () => {
         it('should update a deliverable', async () => {
-            deliverablesService.update.mockResolvedValue({ id: 'd1', title: 'New' } as any);
-            const dto: UpdateDeliverableDto = { title: 'New' };
+            deliverablesService.update.mockResolvedValue({ id: 'd1', description: 'New' } as any);
+            const dto: UpdateDeliverableDto = { description: 'New' };
 
             const result = await controller.updateDeliverable('d1', dto);
 
             expect(deliverablesService.update).toHaveBeenCalledWith('d1', dto);
-            expect(result).toEqual({ status: 'success', data: { id: 'd1', title: 'New' } });
+            expect(result).toEqual({ status: 'success', data: { id: 'd1', description: 'New' } });
         });
     });
 

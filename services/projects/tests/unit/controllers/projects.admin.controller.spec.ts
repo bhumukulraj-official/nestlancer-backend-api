@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsAdminController } from '../../../src/controllers/projects.admin.controller';
 import { ProjectsAdminService } from '../../../src/services/projects.admin.service';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('ProjectsAdminController', () => {
     let controller: ProjectsAdminController;
@@ -19,7 +20,12 @@ describe('ProjectsAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<ProjectsAdminController>(ProjectsAdminController);
         adminService = module.get(ProjectsAdminService);

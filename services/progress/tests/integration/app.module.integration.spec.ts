@@ -1,3 +1,7 @@
+process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/nestlancer';
+process.env.JWT_ACCESS_SECRET = 'test-access-secret-at-least-16-chars';
+process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-at-least-16-chars';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';

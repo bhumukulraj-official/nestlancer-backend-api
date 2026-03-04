@@ -1,8 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
 import { ProgressAdminController } from '../../../../src/controllers/admin/progress.admin.controller';
 import { ProgressService } from '../../../../src/services/progress.service';
 import { CreateProgressEntryDto } from '../../../../src/dto/create-progress-entry.dto';
 import { UpdateProgressEntryDto } from '../../../../src/dto/update-progress-entry.dto';
+import { ProgressEntryType } from '../../../../src/interfaces/progress.interface';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('ProgressAdminController', () => {
     let controller: ProgressAdminController;
@@ -22,7 +25,12 @@ describe('ProgressAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<ProgressAdminController>(ProgressAdminController);
         progressService = module.get(ProgressService);
@@ -35,7 +43,11 @@ describe('ProgressAdminController', () => {
     describe('createProgressEntry', () => {
         it('should create progress entry', async () => {
             progressService.createEntry.mockResolvedValue({ id: 'e1' } as any);
-            const dto = new CreateProgressEntryDto();
+            const dto: CreateProgressEntryDto = {
+                type: ProgressEntryType.UPDATE,
+                title: 'Test',
+                description: 'Test Desc',
+            };
 
             const result = await controller.createProgressEntry('p1', 'admin1', dto);
 
@@ -69,7 +81,7 @@ describe('ProgressAdminController', () => {
 
     describe('deleteProgressEntry', () => {
         it('should delete progress entry', async () => {
-            progressService.deleteEntry.mockResolvedValue(undefined);
+            progressService.deleteEntry.mockResolvedValue({ success: true });
 
             const result = await controller.deleteProgressEntry('e1');
 

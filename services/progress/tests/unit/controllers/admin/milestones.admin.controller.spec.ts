@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
 import { MilestonesAdminController } from '../../../../src/controllers/admin/milestones.admin.controller';
 import { MilestonesService } from '../../../../src/services/milestones.service';
 import { CreateMilestoneDto } from '../../../../src/dto/create-milestone.dto';
 import { UpdateMilestoneDto } from '../../../../src/dto/update-milestone.dto';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('MilestonesAdminController', () => {
     let controller: MilestonesAdminController;
@@ -21,7 +23,12 @@ describe('MilestonesAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<MilestonesAdminController>(MilestonesAdminController);
         milestonesService = module.get(MilestonesService);
@@ -34,7 +41,12 @@ describe('MilestonesAdminController', () => {
     describe('createMilestone', () => {
         it('should create a milestone', async () => {
             milestonesService.create.mockResolvedValue({ id: 'm1' } as any);
-            const dto: CreateMilestoneDto = { name: 'M1', description: 'Desc', amount: 100, dueDate: '2023' as any };
+            const dto: CreateMilestoneDto = {
+                name: 'M1',
+                description: 'Desc',
+                startDate: '2023-01-01',
+                endDate: '2023-02-01'
+            };
 
             const result = await controller.createMilestone('p1', dto);
 
