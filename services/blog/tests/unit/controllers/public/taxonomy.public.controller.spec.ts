@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BlogCategoriesPublicController, BlogTagsPublicController, AuthorsPublicController } from '../../src/controllers/public/taxonomy.public.controller';
-import { CategoriesService, TagsService, AuthorsService } from '../../src/services/taxonomy.service';
+import { BlogCategoriesPublicController, BlogTagsPublicController, AuthorsPublicController } from '../../../../src/controllers/public/taxonomy.public.controller';
+import { CategoriesService, TagsService, AuthorsService } from '../../../../src/services/taxonomy.service';
 
 describe('BlogCategoriesPublicController', () => {
     let controller: BlogCategoriesPublicController;

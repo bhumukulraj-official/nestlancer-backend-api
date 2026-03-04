@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostsPublicController } from '../../src/controllers/public/posts.public.controller';
-import { PostsService } from '../../src/services/posts.service';
-import { PostSearchService } from '../../src/services/post-search.service';
-import { PostViewsService } from '../../src/services/post-views.service';
-import { QueryPostsDto } from '../../src/dto/query-posts.dto';
-import { SearchPostsDto } from '../../src/dto/search-posts.dto';
+import { PostsPublicController } from '../../../../src/controllers/public/posts.public.controller';
+import { PostsService } from '../../../../src/services/posts.service';
+import { PostSearchService } from '../../../../src/services/post-search.service';
+import { PostViewsService } from '../../../../src/services/post-views.service';
+import { QueryPostsDto } from '../../../../src/dto/query-posts.dto';
+import { SearchPostsDto } from '../../../../src/dto/search-posts.dto';
 
 describe('PostsPublicController', () => {
     let controller: PostsPublicController;

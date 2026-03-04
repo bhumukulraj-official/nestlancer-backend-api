@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RefundService } from '../../src/services/refund.service';
+import { RefundService } from '../../../src/services/refund.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { RazorpayService } from '../../src/services/razorpay.service';
+import { RazorpayService } from '../../../src/services/razorpay.service';
 import { NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
-import { PaymentStatus } from '../../src/interfaces/payments.interface';
+import { PaymentStatus } from '../../../src/interfaces/payments.interface';
 
 describe('RefundService', () => {
     let service: RefundService;

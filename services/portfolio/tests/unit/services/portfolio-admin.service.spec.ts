@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioAdminService } from '../../src/services/portfolio-admin.service';
+import { PortfolioAdminService } from '../../../src/services/portfolio-admin.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NotFoundException } from '@nestjs/common';
-import { PortfolioStatus } from '../../src/entities/portfolio-item.entity';
+import { PortfolioStatus } from '../../../src/entities/portfolio-item.entity';
 import { PortfolioVisibility } from '@prisma/client';
-import { BulkOperation } from '../../src/dto/bulk-update-portfolio.dto';
-import { Visibility } from '../../src/dto/update-privacy.dto';
+import { BulkOperation } from '../../../src/dto/bulk-update-portfolio.dto';
+import { Visibility } from '../../../src/dto/update-privacy.dto';
 
 describe('PortfolioAdminService', () => {
     let service: PortfolioAdminService;

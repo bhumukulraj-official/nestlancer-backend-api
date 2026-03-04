@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaymentMilestonesService } from '../../src/services/payment-milestones.service';
+import { PaymentMilestonesService } from '../../../src/services/payment-milestones.service';
 import { PrismaReadService } from '@nestlancer/database';
 
 describe('PaymentMilestonesService', () => {

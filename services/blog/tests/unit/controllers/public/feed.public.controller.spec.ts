@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FeedPublicController } from '../../src/controllers/public/feed.public.controller';
-import { FeedService } from '../../src/services/feed.service';
+import { FeedPublicController } from '../../../../src/controllers/public/feed.public.controller';
+import { FeedService } from '../../../../src/services/feed.service';
 
 describe('FeedPublicController', () => {
     let controller: FeedPublicController;

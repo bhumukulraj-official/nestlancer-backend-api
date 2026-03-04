@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MilestonesAdminController } from '../../src/controllers/admin/milestones.admin.controller';
-import { MilestonesService } from '../../src/services/milestones.service';
-import { CreateMilestoneDto } from '../../src/dto/create-milestone.dto';
-import { UpdateMilestoneDto } from '../../src/dto/update-milestone.dto';
+import { MilestonesAdminController } from '../../../../src/controllers/admin/milestones.admin.controller';
+import { MilestonesService } from '../../../../src/services/milestones.service';
+import { CreateMilestoneDto } from '../../../../src/dto/create-milestone.dto';
+import { UpdateMilestoneDto } from '../../../../src/dto/update-milestone.dto';
 
 describe('MilestonesAdminController', () => {
     let controller: MilestonesAdminController;

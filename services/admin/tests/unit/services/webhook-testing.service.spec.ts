@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WebhookTestingService } from '../../src/services/webhook-testing.service';
-import { WebhooksManagementService } from '../../src/services/webhooks-management.service';
+import { WebhookTestingService } from '../../../src/services/webhook-testing.service';
+import { WebhooksManagementService } from '../../../src/services/webhooks-management.service';
 import { QueuePublisherService } from '@nestlancer/queue';
-import { TestWebhookDto } from '../../src/dto/test-webhook.dto';
+import { TestWebhookDto } from '../../../src/dto/test-webhook.dto';
 import { BadRequestException } from '@nestjs/common';
 
 describe('WebhookTestingService', () => {

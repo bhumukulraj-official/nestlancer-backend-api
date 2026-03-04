@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProjectsPublicController } from '../../src/controllers/projects.public.controller';
+import { ProjectsPublicController } from '../../../src/controllers/projects.public.controller';
 import { PrismaReadService } from '@nestlancer/database';
 import { BusinessLogicException } from '@nestlancer/common';
 

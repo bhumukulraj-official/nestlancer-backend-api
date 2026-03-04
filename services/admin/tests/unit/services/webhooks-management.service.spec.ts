@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WebhooksManagementService } from '../../src/services/webhooks-management.service';
+import { WebhooksManagementService } from '../../../src/services/webhooks-management.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NotFoundException } from '@nestjs/common';
-import { CreateWebhookDto } from '../../src/dto/create-webhook.dto';
-import { UpdateWebhookDto } from '../../src/dto/update-webhook.dto';
+import { CreateWebhookDto } from '../../../src/dto/create-webhook.dto';
+import { UpdateWebhookDto } from '../../../src/dto/update-webhook.dto';
 import * as crypto from 'crypto';
 
 describe('WebhooksManagementService', () => {

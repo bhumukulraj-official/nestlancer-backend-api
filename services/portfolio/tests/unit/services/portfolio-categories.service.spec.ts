@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioCategoriesService } from '../../src/services/portfolio-categories.service';
+import { PortfolioCategoriesService } from '../../../src/services/portfolio-categories.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 

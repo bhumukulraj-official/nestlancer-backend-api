@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QuotesAdminController } from '../../src/controllers/quotes.admin.controller';
-import { QuotesAdminService } from '../../src/services/quotes.admin.service';
-import { QuoteStatsService } from '../../src/services/quote-stats.service';
+import { QuotesAdminController } from '../../../src/controllers/quotes.admin.controller';
+import { QuotesAdminService } from '../../../src/services/quotes.admin.service';
+import { QuoteStatsService } from '../../../src/services/quote-stats.service';
 import { HttpStatus } from '@nestjs/common';
 
 describe('QuotesAdminController', () => {

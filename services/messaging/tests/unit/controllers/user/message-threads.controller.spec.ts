@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MessageThreadsController } from '../../src/controllers/user/message-threads.controller';
-import { MessageThreadsService } from '../../src/services';
+import { MessageThreadsController } from '../../../../src/controllers/user/message-threads.controller';
+import { MessageThreadsService } from '../../../../src/services';
 
 describe('MessageThreadsController', () => {
     let controller: MessageThreadsController;

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostInteractionsService } from '../../src/services/post-interactions.service';
+import { PostInteractionsService } from '../../../src/services/post-interactions.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NotFoundException } from '@nestjs/common';
 

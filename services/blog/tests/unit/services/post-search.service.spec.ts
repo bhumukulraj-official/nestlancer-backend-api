@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostSearchService } from '../../src/services/post-search.service';
+import { PostSearchService } from '../../../src/services/post-search.service';
 import { PrismaReadService } from '@nestlancer/database';
-import { SearchPostsDto } from '../../src/dto/search-posts.dto';
+import { SearchPostsDto } from '../../../src/dto/search-posts.dto';
 
 describe('PostSearchService', () => {
     let service: PostSearchService;

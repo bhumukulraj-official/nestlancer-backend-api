@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DeliverableReviewsController } from '../../src/controllers/user/deliverable-reviews.controller';
-import { DeliverableReviewService } from '../../src/services/deliverable-review.service';
-import { ApproveDeliverableDto } from '../../src/dto/approve-deliverable.dto';
-import { RejectDeliverableDto } from '../../src/dto/reject-deliverable.dto';
+import { DeliverableReviewsController } from '../../../../src/controllers/user/deliverable-reviews.controller';
+import { DeliverableReviewService } from '../../../../src/services/deliverable-review.service';
+import { ApproveDeliverableDto } from '../../../../src/dto/approve-deliverable.dto';
+import { RejectDeliverableDto } from '../../../../src/dto/reject-deliverable.dto';
 
 describe('DeliverableReviewsController', () => {
     let controller: DeliverableReviewsController;

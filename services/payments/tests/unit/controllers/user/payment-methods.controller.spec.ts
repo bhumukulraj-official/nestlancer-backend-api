@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaymentMethodsController } from '../../src/controllers/user/payment-methods.controller';
-import { PaymentMethodsService } from '../../src/services/payment-methods.service';
-import { AddPaymentMethodDto } from '../../src/dto/add-payment-method.dto';
+import { PaymentMethodsController } from '../../../../src/controllers/user/payment-methods.controller';
+import { PaymentMethodsService } from '../../../../src/services/payment-methods.service';
+import { AddPaymentMethodDto } from '../../../../src/dto/add-payment-method.dto';
 
 describe('PaymentMethodsController', () => {
     let controller: PaymentMethodsController;

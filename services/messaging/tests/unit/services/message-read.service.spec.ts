@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MessageReadService } from '../../src/services/message-read.service';
+import { MessageReadService } from '../../../src/services/message-read.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NotFoundException } from '@nestjs/common';
 

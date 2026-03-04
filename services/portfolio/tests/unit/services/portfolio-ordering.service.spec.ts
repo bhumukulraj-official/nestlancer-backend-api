@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioOrderingService } from '../../src/services/portfolio-ordering.service';
+import { PortfolioOrderingService } from '../../../src/services/portfolio-ordering.service';
 import { PrismaWriteService } from '@nestlancer/database';
-import { ReorderPortfolioDto } from '../../src/dto/reorder-portfolio.dto';
+import { ReorderPortfolioDto } from '../../../src/dto/reorder-portfolio.dto';
 
 describe('PortfolioOrderingService', () => {
     let service: PortfolioOrderingService;

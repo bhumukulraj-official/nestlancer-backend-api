@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostsAdminController } from '../../src/controllers/admin/posts.admin.controller';
-import { BlogAdminService } from '../../src/services/blog-admin.service';
-import { PostsService } from '../../src/services/posts.service';
-import { PostPublishingService } from '../../src/services/post-publishing.service';
-import { PostSchedulingService } from '../../src/services/post-scheduling.service';
-import { CreatePostDto } from '../../src/dto/create-post.dto';
-import { UpdatePostDto } from '../../src/dto/update-post.dto';
-import { SchedulePostDto } from '../../src/dto/schedule-post.dto';
+import { PostsAdminController } from '../../../../src/controllers/admin/posts.admin.controller';
+import { BlogAdminService } from '../../../../src/services/blog-admin.service';
+import { PostsService } from '../../../../src/services/posts.service';
+import { PostPublishingService } from '../../../../src/services/post-publishing.service';
+import { PostSchedulingService } from '../../../../src/services/post-scheduling.service';
+import { CreatePostDto } from '../../../../src/dto/create-post.dto';
+import { UpdatePostDto } from '../../../../src/dto/update-post.dto';
+import { SchedulePostDto } from '../../../../src/dto/schedule-post.dto';
 
 describe('PostsAdminController', () => {
     let controller: PostsAdminController;

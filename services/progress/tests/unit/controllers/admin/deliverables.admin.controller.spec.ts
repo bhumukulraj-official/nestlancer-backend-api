@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DeliverablesAdminController } from '../../src/controllers/admin/deliverables.admin.controller';
-import { DeliverablesService } from '../../src/services/deliverables.service';
-import { UploadDeliverableDto } from '../../src/dto/upload-deliverable.dto';
-import { UpdateDeliverableDto } from '../../src/dto/update-deliverable.dto';
+import { DeliverablesAdminController } from '../../../../src/controllers/admin/deliverables.admin.controller';
+import { DeliverablesService } from '../../../../src/services/deliverables.service';
+import { UploadDeliverableDto } from '../../../../src/dto/upload-deliverable.dto';
+import { UpdateDeliverableDto } from '../../../../src/dto/update-deliverable.dto';
 
 describe('DeliverablesAdminController', () => {
     let controller: DeliverablesAdminController;

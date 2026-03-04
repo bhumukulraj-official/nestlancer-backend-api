@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BackupSchedulerService } from '../../src/services/backup-scheduler.service';
+import { BackupSchedulerService } from '../../../src/services/backup-scheduler.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { UpdateBackupScheduleDto } from '../../src/dto/update-backup-schedule.dto';
+import { UpdateBackupScheduleDto } from '../../../src/dto/update-backup-schedule.dto';
 
 describe('BackupSchedulerService', () => {
     let service: BackupSchedulerService;

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostPublishingService } from '../../src/services/post-publishing.service';
+import { PostPublishingService } from '../../../src/services/post-publishing.service';
 import { PrismaWriteService } from '@nestlancer/database';
 import { OutboxService } from '@nestlancer/outbox';
 

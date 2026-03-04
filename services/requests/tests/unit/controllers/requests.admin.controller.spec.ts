@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RequestsAdminController } from '../../src/controllers/requests.admin.controller';
-import { RequestsAdminService } from '../../src/services/requests.admin.service';
-import { QuotesAdminService } from '../../src/services/quotes.admin.service';
-import { RequestStatsService } from '../../src/services/request-stats.service';
+import { RequestsAdminController } from '../../../src/controllers/requests.admin.controller';
+import { RequestsAdminService } from '../../../src/services/requests.admin.service';
+import { QuotesAdminService } from '../../../src/services/quotes.admin.service';
+import { RequestStatsService } from '../../../src/services/request-stats.service';
 import { HttpStatus } from '@nestjs/common';
 
 describe('RequestsAdminController', () => {

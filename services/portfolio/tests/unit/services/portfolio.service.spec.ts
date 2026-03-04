@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioService } from '../../src/services/portfolio.service';
+import { PortfolioService } from '../../../src/services/portfolio.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NotFoundException } from '@nestjs/common';
-import { PortfolioStatus } from '../../src/entities/portfolio-item.entity';
+import { PortfolioStatus } from '../../../src/entities/portfolio-item.entity';
 
 describe('PortfolioService', () => {
     let service: PortfolioService;

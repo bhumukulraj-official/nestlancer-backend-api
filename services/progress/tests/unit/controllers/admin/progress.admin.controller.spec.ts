@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProgressAdminController } from '../../src/controllers/admin/progress.admin.controller';
-import { ProgressService } from '../../src/services/progress.service';
-import { CreateProgressEntryDto } from '../../src/dto/create-progress-entry.dto';
-import { UpdateProgressEntryDto } from '../../src/dto/update-progress-entry.dto';
+import { ProgressAdminController } from '../../../../src/controllers/admin/progress.admin.controller';
+import { ProgressService } from '../../../../src/services/progress.service';
+import { CreateProgressEntryDto } from '../../../../src/dto/create-progress-entry.dto';
+import { UpdateProgressEntryDto } from '../../../../src/dto/update-progress-entry.dto';
 
 describe('ProgressAdminController', () => {
     let controller: ProgressAdminController;

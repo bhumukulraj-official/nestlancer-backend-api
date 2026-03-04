@@ -155,9 +155,8 @@ describe('VirusScanProcessor', () => {
             expect(result).toEqual({ isInfected: false, details: 'Error: S3 Download Failed' });
             expect(logger.error).toHaveBeenCalledWith('Error during virus scan stage: S3 Download Failed');
             // unlink not called because write failed/never reached, but let's assume it checks existsSync
-            (fs.existsSync as jest.Mock).mockReturnValue(false);
-            // it should only unlink if it exists
-            expect(fs.promises.unlink).not.toHaveBeenCalled();
+            // it should unlink if it was called (mocked to true in this test case logic)
+            expect(fs.promises.unlink).toHaveBeenCalledWith('/tmp/media-worker/1234567890-testfile.txt');
         });
     });
 });

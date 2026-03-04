@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CacheManagementService } from '../../src/services/cache-management.service';
+import { CacheManagementService } from '../../../src/services/cache-management.service';
 import { CacheService } from '@nestlancer/cache';
-import { ClearCacheDto } from '../../src/dto/clear-cache.dto';
+import { ClearCacheDto } from '../../../src/dto/clear-cache.dto';
 
 describe('CacheManagementService', () => {
     let service: CacheManagementService;

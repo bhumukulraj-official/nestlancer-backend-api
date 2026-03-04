@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommentModerationService } from '../../src/services/comment-moderation.service';
+import { CommentModerationService } from '../../../src/services/comment-moderation.service';
 import { ConfigService } from '@nestjs/config';
 
 describe('CommentModerationService', () => {

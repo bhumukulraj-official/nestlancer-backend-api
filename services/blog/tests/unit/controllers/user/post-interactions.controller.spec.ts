@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostInteractionsController } from '../../src/controllers/user/post-interactions.controller';
-import { PostInteractionsService } from '../../src/services/post-interactions.service';
+import { PostInteractionsController } from '../../../../src/controllers/user/post-interactions.controller';
+import { PostInteractionsService } from '../../../../src/services/post-interactions.service';
 
 describe('PostInteractionsController', () => {
     let controller: PostInteractionsController;

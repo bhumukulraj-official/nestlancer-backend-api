@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MessagesAdminController } from '../../src/controllers/admin/messages.admin.controller';
+import { MessagesAdminController } from '../../../../src/controllers/admin/messages.admin.controller';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 describe('MessagesAdminController', () => {

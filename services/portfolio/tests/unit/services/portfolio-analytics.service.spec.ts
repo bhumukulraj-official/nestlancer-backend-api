@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioAnalyticsService } from '../../src/services/portfolio-analytics.service';
+import { PortfolioAnalyticsService } from '../../../src/services/portfolio-analytics.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { CacheService } from '@nestlancer/cache';
 import { ConfigService } from '@nestjs/config';

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContactResponseService } from '../../src/services/contact-response.service';
+import { ContactResponseService } from '../../../src/services/contact-response.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { QueuePublisherService, EXCHANGES, ROUTING_KEYS } from '@nestlancer/queue';
 import { ResourceNotFoundException, ContactStatus } from '@nestlancer/common';
-import { RespondContactDto } from '../../src/dto/respond-contact.dto';
+import { RespondContactDto } from '../../../src/dto/respond-contact.dto';
 
 describe('ContactResponseService', () => {
     let service: ContactResponseService;

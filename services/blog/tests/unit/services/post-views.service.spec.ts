@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostViewsService } from '../../src/services/post-views.service';
+import { PostViewsService } from '../../../src/services/post-views.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { CacheService } from '@nestlancer/cache';
 import { ConfigService } from '@nestjs/config';

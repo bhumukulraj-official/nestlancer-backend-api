@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SystemLogsService } from '../../src/services/system-logs.service';
+import { SystemLogsService } from '../../../src/services/system-logs.service';
 import { PrismaReadService } from '@nestlancer/database';
-import { QueryLogsDto } from '../../src/dto/query-logs.dto';
+import { QueryLogsDto } from '../../../src/dto/query-logs.dto';
 
 describe('SystemLogsService', () => {
     let service: SystemLogsService;

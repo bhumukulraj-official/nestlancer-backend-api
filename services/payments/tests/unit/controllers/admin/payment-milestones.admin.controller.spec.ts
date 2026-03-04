@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaymentMilestonesAdminController } from '../../src/controllers/admin/payment-milestones.admin.controller';
-import { PaymentMilestonesService } from '../../src/services/payment-milestones.service';
+import { PaymentMilestonesAdminController } from '../../../../src/controllers/admin/payment-milestones.admin.controller';
+import { PaymentMilestonesService } from '../../../../src/services/payment-milestones.service';
 
 describe('PaymentMilestonesAdminController', () => {
     let controller: PaymentMilestonesAdminController;

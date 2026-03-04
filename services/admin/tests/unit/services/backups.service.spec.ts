@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BackupsService } from '../../src/services/backups.service';
+import { BackupsService } from '../../../src/services/backups.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { QueuePublisherService } from '@nestlancer/queue';
 import { StorageService } from '@nestlancer/storage';
 import { NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { CreateBackupDto } from '../../src/dto/create-backup.dto';
-import { RestoreBackupDto } from '../../src/dto/restore-backup.dto';
+import { CreateBackupDto } from '../../../src/dto/create-backup.dto';
+import { RestoreBackupDto } from '../../../src/dto/restore-backup.dto';
 
 describe('BackupsService', () => {
     let service: BackupsService;

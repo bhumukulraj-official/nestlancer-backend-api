@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaymentDisputesService, PaymentReconciliationService, PaymentStatsService } from '../../src/services/admin-tasks.service';
+import { PaymentDisputesService, PaymentReconciliationService, PaymentStatsService } from '../../../src/services/admin-tasks.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { RazorpayService } from '../../src/services/razorpay.service';
+import { RazorpayService } from '../../../src/services/razorpay.service';
 import { NotFoundException } from '@nestjs/common';
-import { PaymentStatus } from '../../src/interfaces/payments.interface';
+import { PaymentStatus } from '../../../src/interfaces/payments.interface';
 
 describe('AdminTasksService', () => {
     let prismaWrite: jest.Mocked<PrismaWriteService>;

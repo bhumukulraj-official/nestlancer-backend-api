@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MaintenanceModeService } from '../../src/services/maintenance-mode.service';
-import { SystemConfigService } from '../../src/services/system-config.service';
+import { MaintenanceModeService } from '../../../src/services/maintenance-mode.service';
+import { SystemConfigService } from '../../../src/services/system-config.service';
 import { CacheService } from '@nestlancer/cache';
-import { ToggleMaintenanceDto } from '../../src/dto/toggle-maintenance.dto';
+import { ToggleMaintenanceDto } from '../../../src/dto/toggle-maintenance.dto';
 import { BadRequestException } from '@nestjs/common';
 
 describe('MaintenanceModeService', () => {

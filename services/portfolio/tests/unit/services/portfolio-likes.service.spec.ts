@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioLikesService } from '../../src/services/portfolio-likes.service';
+import { PortfolioLikesService } from '../../../src/services/portfolio-likes.service';
 import { PrismaWriteService } from '@nestlancer/database';
 
 describe('PortfolioLikesService', () => {

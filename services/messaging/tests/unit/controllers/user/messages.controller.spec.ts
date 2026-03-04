@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MessagesController } from '../../src/controllers/user/messages.controller';
-import { MessagingService, MessageReactionsService, MessageSearchService, MessageReadService } from '../../src/services';
-import { CreateMessageDto } from '../../src/dto/create-message.dto';
-import { UpdateMessageDto } from '../../src/dto/update-message.dto';
-import { MessageReactionDto } from '../../src/dto/message-reaction.dto';
+import { MessagesController } from '../../../../src/controllers/user/messages.controller';
+import { MessagingService, MessageReactionsService, MessageSearchService, MessageReadService } from '../../../../src/services';
+import { CreateMessageDto } from '../../../../src/dto/create-message.dto';
+import { UpdateMessageDto } from '../../../../src/dto/update-message.dto';
+import { MessageReactionDto } from '../../../../src/dto/message-reaction.dto';
 
 describe('MessagesController', () => {
     let controller: MessagesController;

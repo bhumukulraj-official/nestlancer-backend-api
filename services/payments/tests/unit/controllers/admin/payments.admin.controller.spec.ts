@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaymentsAdminController } from '../../src/controllers/admin/payments.admin.controller';
-import { PaymentsService } from '../../src/services/payments.service';
-import { RefundService } from '../../src/services/refund.service';
-import { PaymentStatsService } from '../../src/services/admin-tasks.service';
-import { ProcessRefundDto } from '../../src/dto/process-refund.dto';
+import { PaymentsAdminController } from '../../../../src/controllers/admin/payments.admin.controller';
+import { PaymentsService } from '../../../../src/services/payments.service';
+import { RefundService } from '../../../../src/services/refund.service';
+import { PaymentStatsService } from '../../../../src/services/admin-tasks.service';
+import { ProcessRefundDto } from '../../../../src/dto/process-refund.dto';
 
 describe('PaymentsAdminController', () => {
     let controller: PaymentsAdminController;

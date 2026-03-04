@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostSchedulingService } from '../../src/services/post-scheduling.service';
+import { PostSchedulingService } from '../../../src/services/post-scheduling.service';
 import { PrismaWriteService } from '@nestlancer/database';
 
 describe('PostSchedulingService', () => {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WebhookDeliveriesService } from '../../src/services/webhook-deliveries.service';
+import { WebhookDeliveriesService } from '../../../src/services/webhook-deliveries.service';
 import { PrismaReadService } from '@nestlancer/database';
-import { QueryWebhookDeliveriesDto } from '../../src/dto/query-webhook-deliveries.dto';
+import { QueryWebhookDeliveriesDto } from '../../../src/dto/query-webhook-deliveries.dto';
 
 describe('WebhookDeliveriesService', () => {
     let service: WebhookDeliveriesService;

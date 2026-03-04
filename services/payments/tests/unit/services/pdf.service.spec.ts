@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ReceiptPdfService, InvoicePdfService } from '../../src/services/pdf.service';
+import { ReceiptPdfService, InvoicePdfService } from '../../../src/services/pdf.service';
 import { PrismaReadService } from '@nestlancer/database';
 import { PdfService } from '@nestlancer/pdf';
 import { StorageService } from '@nestlancer/storage';

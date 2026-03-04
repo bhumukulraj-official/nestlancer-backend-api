@@ -68,7 +68,7 @@ describe('ReportGeneratorService', () => {
 
             storageService.uploadBuffer.mockResolvedValue({ url: 'http://test.url' } as any);
 
-            const result = await service.generateComprehensiveReport('monthly');
+            const result = await service.generateReport(AnalyticsJobType.PROJECT_STATS, 'monthly', ExportFormat.PDF, {});
 
             expect(analyticsWorkerService.getLatest).toHaveBeenCalledWith(AnalyticsJobType.PROJECT_STATS);
             expect(analyticsWorkerService.getLatest).toHaveBeenCalledWith(AnalyticsJobType.USER_STATS);

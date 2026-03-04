@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QuotesAdminService } from '../../src/services/quotes.admin.service';
+import { QuotesAdminService } from '../../../src/services/quotes.admin.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { BusinessLogicException } from '@nestlancer/common';
-import { CreateQuoteDto } from '../../src/dto/create-quote.dto';
+import { CreateQuoteDto } from '../../../src/dto/create-quote.dto';
 
 describe('QuotesAdminService', () => {
     let service: QuotesAdminService;

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RazorpayWebhookController } from '../../src/controllers/webhooks/razorpay-webhook.controller';
-import { RazorpayWebhookService } from '../../src/services/razorpay-webhook.service';
+import { RazorpayWebhookController } from '../../../../src/controllers/webhooks/razorpay-webhook.controller';
+import { RazorpayWebhookService } from '../../../../src/services/razorpay-webhook.service';
 
 describe('RazorpayWebhookController', () => {
     let controller: RazorpayWebhookController;

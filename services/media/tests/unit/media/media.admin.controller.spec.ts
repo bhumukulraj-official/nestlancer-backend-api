@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MediaAdminController } from '../../src/media/media.admin.controller';
-import { MediaAdminService } from '../../src/media/media-admin.service';
-import { QueryMediaDto } from '../../src/dto/query-media.dto';
+import { MediaAdminController } from '../../../src/media/media.admin.controller';
+import { MediaAdminService } from '../../../src/media/media-admin.service';
+import { QueryMediaDto } from '../../../src/dto/query-media.dto';
 
 describe('MediaAdminController', () => {
     let controller: MediaAdminController;

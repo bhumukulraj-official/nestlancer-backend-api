@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MessageReactionsService } from '../../src/services/message-reactions.service';
+import { MessageReactionsService } from '../../../src/services/message-reactions.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NotFoundException } from '@nestjs/common';
-import { MessageReactionDto } from '../../src/dto/message-reaction.dto';
+import { MessageReactionDto } from '../../../src/dto/message-reaction.dto';
 
 describe('MessageReactionsService', () => {
     let service: MessageReactionsService;

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContactAdminService } from '../../src/services/contact-admin.service';
+import { ContactAdminService } from '../../../src/services/contact-admin.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ContactStatus, ResourceNotFoundException } from '@nestlancer/common';
 

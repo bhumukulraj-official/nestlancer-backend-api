@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TurnstileGuard } from '../../src/guards/turnstile.guard';
-import { TurnstileService } from '../../src/services/turnstile.service';
+import { TurnstileGuard } from '../../../src/guards/turnstile.guard';
+import { TurnstileService } from '../../../src/services/turnstile.service';
 import { ExecutionContext } from '@nestjs/common';
 import { BusinessLogicException } from '@nestlancer/common';
 

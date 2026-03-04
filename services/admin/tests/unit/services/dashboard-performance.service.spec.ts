@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DashboardPerformanceService } from '../../src/services/dashboard-performance.service';
+import { DashboardPerformanceService } from '../../../src/services/dashboard-performance.service';
 import { HttpService } from '@nestjs/axios';
 
 describe('DashboardPerformanceService', () => {

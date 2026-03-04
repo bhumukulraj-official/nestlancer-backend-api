@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BlogAnalyticsAdminController } from '../../src/controllers/admin/blog-analytics.admin.controller';
+import { BlogAnalyticsAdminController } from '../../../../src/controllers/admin/blog-analytics.admin.controller';
 
 describe('BlogAnalyticsAdminController', () => {
     let controller: BlogAnalyticsAdminController;

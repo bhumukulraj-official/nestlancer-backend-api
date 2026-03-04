@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BlogCategoriesAdminController, BlogTagsAdminController } from '../../src/controllers/admin/taxonomy.admin.controller';
-import { CategoriesService, TagsService } from '../../src/services/taxonomy.service';
-import { CreateCategoryDto, UpdateCategoryDto, CreateTagDto, UpdateTagDto, MergeTagsDto } from '../../src/dto/create-category.dto';
+import { BlogCategoriesAdminController, BlogTagsAdminController } from '../../../../src/controllers/admin/taxonomy.admin.controller';
+import { CategoriesService, TagsService } from '../../../../src/services/taxonomy.service';
+import { CreateCategoryDto, UpdateCategoryDto, CreateTagDto, UpdateTagDto, MergeTagsDto } from '../../../../src/dto/create-category.dto';
 
 describe('BlogCategoriesAdminController', () => {
     let controller: BlogCategoriesAdminController;

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotificationTemplatesAdminController } from '../../src/notifications/notification-templates.admin.controller';
-import { NotificationTemplatesService } from '../../src/notifications/notification-templates.service';
-import { CreateNotificationTemplateDto } from '../../src/dto/create-notification-template.dto';
-import { UpdateNotificationTemplateDto } from '../../src/dto/update-notification-template.dto';
+import { NotificationTemplatesAdminController } from '../../../src/notifications/notification-templates.admin.controller';
+import { NotificationTemplatesService } from '../../../src/notifications/notification-templates.service';
+import { CreateNotificationTemplateDto } from '../../../src/dto/create-notification-template.dto';
+import { UpdateNotificationTemplateDto } from '../../../src/dto/update-notification-template.dto';
 
 describe('NotificationTemplatesAdminController', () => {
     let controller: NotificationTemplatesAdminController;

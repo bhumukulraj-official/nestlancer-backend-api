@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EmailTemplatesService } from '../../src/services/email-templates.service';
+import { EmailTemplatesService } from '../../../src/services/email-templates.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { QueuePublisherService } from '@nestlancer/queue';
 import { NotFoundException } from '@nestjs/common';
-import { UpdateEmailTemplateDto } from '../../src/dto/update-email-template.dto';
+import { UpdateEmailTemplateDto } from '../../../src/dto/update-email-template.dto';
 
 describe('EmailTemplatesService', () => {
     let service: EmailTemplatesService;

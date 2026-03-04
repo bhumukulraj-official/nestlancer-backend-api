@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MessageSearchService } from '../../src/services/message-search.service';
+import { MessageSearchService } from '../../../src/services/message-search.service';
 import { PrismaReadService } from '@nestlancer/database';
 
 describe('MessageSearchService', () => {

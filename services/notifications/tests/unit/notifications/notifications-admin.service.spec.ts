@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotificationsAdminService } from '../../src/notifications/notifications-admin.service';
+import { NotificationsAdminService } from '../../../src/notifications/notifications-admin.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { QueryNotificationsDto } from '../../src/dto/query-notifications.dto';
-import { SendNotificationDto } from '../../src/dto/send-notification.dto';
+import { QueryNotificationsDto } from '../../../src/dto/query-notifications.dto';
+import { SendNotificationDto } from '../../../src/dto/send-notification.dto';
 
 describe('NotificationsAdminService', () => {
     let service: NotificationsAdminService;

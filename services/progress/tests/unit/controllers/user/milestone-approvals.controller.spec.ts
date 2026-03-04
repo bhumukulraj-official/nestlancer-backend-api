@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MilestoneApprovalsController } from '../../src/controllers/user/milestone-approvals.controller';
-import { MilestoneApprovalService } from '../../src/services/milestone-approval.service';
-import { ApproveMilestoneDto } from '../../src/dto/approve-milestone.dto';
-import { RequestMilestoneRevisionDto } from '../../src/dto/request-milestone-revision.dto';
+import { MilestoneApprovalsController } from '../../../../src/controllers/user/milestone-approvals.controller';
+import { MilestoneApprovalService } from '../../../../src/services/milestone-approval.service';
+import { ApproveMilestoneDto } from '../../../../src/dto/approve-milestone.dto';
+import { RequestMilestoneRevisionDto } from '../../../../src/dto/request-milestone-revision.dto';
 
 describe('MilestoneApprovalsController', () => {
     let controller: MilestoneApprovalsController;

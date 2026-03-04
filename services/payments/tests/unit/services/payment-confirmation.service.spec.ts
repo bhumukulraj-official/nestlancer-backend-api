@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaymentConfirmationService } from '../../src/services/payment-confirmation.service';
+import { PaymentConfirmationService } from '../../../src/services/payment-confirmation.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { RazorpayService } from '../../src/services/razorpay.service';
+import { RazorpayService } from '../../../src/services/razorpay.service';
 import { OutboxService } from '@nestlancer/outbox';
 import { BadRequestException } from '@nestjs/common';
-import { PaymentStatus } from '../../src/interfaces/payments.interface';
+import { PaymentStatus } from '../../../src/interfaces/payments.interface';
 
 describe('PaymentConfirmationService', () => {
     let service: PaymentConfirmationService;

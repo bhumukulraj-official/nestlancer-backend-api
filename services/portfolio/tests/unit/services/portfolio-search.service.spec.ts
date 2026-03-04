@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioSearchService } from '../../src/services/portfolio-search.service';
+import { PortfolioSearchService } from '../../../src/services/portfolio-search.service';
 import { PrismaReadService } from '@nestlancer/database';
-import { PortfolioStatus } from '../../src/entities/portfolio-item.entity';
-import { SearchPortfolioDto } from '../../src/dto/search-portfolio.dto';
+import { PortfolioStatus } from '../../../src/entities/portfolio-item.entity';
+import { SearchPortfolioDto } from '../../../src/dto/search-portfolio.dto';
 
 describe('PortfolioSearchService', () => {
     let service: PortfolioSearchService;

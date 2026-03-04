@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ImpersonationService } from '../../src/services/impersonation.service';
+import { ImpersonationService } from '../../../src/services/impersonation.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserRole } from '@nestlancer/common';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { ImpersonateUserDto } from '../../src/dto/impersonate-user.dto';
+import { ImpersonateUserDto } from '../../../src/dto/impersonate-user.dto';
 
 describe('ImpersonationService', () => {
     let service: ImpersonationService;

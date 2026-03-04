@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioCategoriesAdminController } from '../../src/controllers/admin/portfolio-categories.admin.controller';
-import { PortfolioCategoriesService } from '../../src/services/portfolio-categories.service';
-import { CreateCategoryDto } from '../../src/dto/create-category.dto';
-import { UpdateCategoryDto } from '../../src/dto/update-category.dto';
+import { PortfolioCategoriesAdminController } from '../../../../src/controllers/admin/portfolio-categories.admin.controller';
+import { PortfolioCategoriesService } from '../../../../src/services/portfolio-categories.service';
+import { CreateCategoryDto } from '../../../../src/dto/create-category.dto';
+import { UpdateCategoryDto } from '../../../../src/dto/update-category.dto';
 
 describe('PortfolioCategoriesAdminController', () => {
     let controller: PortfolioCategoriesAdminController;

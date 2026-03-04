@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PortfolioPublicController } from '../../src/controllers/public/portfolio.public.controller';
-import { PortfolioService } from '../../src/services/portfolio.service';
-import { PortfolioCategoriesService } from '../../src/services/portfolio-categories.service';
-import { PortfolioSearchService } from '../../src/services/portfolio-search.service';
-import { PortfolioAnalyticsService } from '../../src/services/portfolio-analytics.service';
-import { PortfolioLikesService } from '../../src/services/portfolio-likes.service';
+import { PortfolioPublicController } from '../../../../src/controllers/public/portfolio.public.controller';
+import { PortfolioService } from '../../../../src/services/portfolio.service';
+import { PortfolioCategoriesService } from '../../../../src/services/portfolio-categories.service';
+import { PortfolioSearchService } from '../../../../src/services/portfolio-search.service';
+import { PortfolioAnalyticsService } from '../../../../src/services/portfolio-analytics.service';
+import { PortfolioLikesService } from '../../../../src/services/portfolio-likes.service';
 
 describe('PortfolioPublicController', () => {
     let controller: PortfolioPublicController;

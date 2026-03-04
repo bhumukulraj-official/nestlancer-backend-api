@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotificationsAdminController } from '../../src/notifications/notifications.admin.controller';
-import { NotificationsAdminService } from '../../src/notifications/notifications-admin.service';
-import { NotificationBroadcastService } from '../../src/notifications/notification-broadcast.service';
-import { NotificationSegmentService } from '../../src/notifications/notification-segment.service';
-import { QueryNotificationsDto } from '../../src/dto/query-notifications.dto';
-import { SendNotificationDto } from '../../src/dto/send-notification.dto';
-import { BroadcastNotificationDto } from '../../src/dto/broadcast-notification.dto';
-import { SegmentNotificationDto } from '../../src/dto/segment-notification.dto';
+import { NotificationsAdminController } from '../../../src/notifications/notifications.admin.controller';
+import { NotificationsAdminService } from '../../../src/notifications/notifications-admin.service';
+import { NotificationBroadcastService } from '../../../src/notifications/notification-broadcast.service';
+import { NotificationSegmentService } from '../../../src/notifications/notification-segment.service';
+import { QueryNotificationsDto } from '../../../src/dto/query-notifications.dto';
+import { SendNotificationDto } from '../../../src/dto/send-notification.dto';
+import { BroadcastNotificationDto } from '../../../src/dto/broadcast-notification.dto';
+import { SegmentNotificationDto } from '../../../src/dto/segment-notification.dto';
 
 describe('NotificationsAdminController', () => {
     let controller: NotificationsAdminController;

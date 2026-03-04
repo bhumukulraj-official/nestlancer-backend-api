@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DashboardRevenueService } from '../../src/services/dashboard-revenue.service';
+import { DashboardRevenueService } from '../../../src/services/dashboard-revenue.service';
 import { HttpService } from '@nestjs/axios';
 import { PrismaReadService } from '@nestlancer/database';
 
