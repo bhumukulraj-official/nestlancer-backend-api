@@ -6,6 +6,7 @@ describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
+        process.env.JWT_ACCESS_SECRET = 'test-secret';
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         }).compile();

@@ -27,7 +27,7 @@ describe('UsersAdminService', () => {
             user: {
                 update: jest.fn().mockResolvedValue(mockUsers[0]),
             },
-            userSession: {
+            session: {
                 updateMany: jest.fn().mockResolvedValue({ count: 1 }),
             },
             outbox: {
@@ -36,7 +36,7 @@ describe('UsersAdminService', () => {
             $transaction: jest.fn().mockImplementation(async (fn) => {
                 const tx = {
                     user: { update: jest.fn().mockResolvedValue({}) },
-                    userSession: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+                    session: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
                     outbox: { create: jest.fn().mockResolvedValue({}) },
                 };
                 return fn(tx);
@@ -102,9 +102,9 @@ describe('UsersAdminService', () => {
 
         it('should revoke all sessions when suspending', async () => {
             await service.changeUserStatus('user-1', 'SUSPENDED');
-            expect(mockPrismaWrite.userSession.updateMany).toHaveBeenCalledWith({
+            expect(mockPrismaWrite.session.updateMany).toHaveBeenCalledWith({
                 where: { userId: 'user-1' },
-                data: { isRevoked: true },
+                data: { expiresAt: expect.any(Date) },
             });
         });
 

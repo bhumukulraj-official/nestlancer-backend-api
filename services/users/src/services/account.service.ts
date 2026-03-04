@@ -42,9 +42,9 @@ export class AccountService {
             });
 
             // Revoke all sessions
-            await tx.userSession.updateMany({
+            await tx.session.updateMany({
                 where: { userId },
-                data: { isRevoked: true }
+                data: { expiresAt: new Date() }
             });
 
             await tx.outbox.create({

@@ -28,7 +28,7 @@ describe('AccountService', () => {
             $transaction: jest.fn().mockImplementation(async (fn) => {
                 const tx = {
                     user: { update: jest.fn().mockResolvedValue({}) },
-                    userSession: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+                    session: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
                     outbox: { create: jest.fn().mockResolvedValue({}) },
                 };
                 return fn(tx);

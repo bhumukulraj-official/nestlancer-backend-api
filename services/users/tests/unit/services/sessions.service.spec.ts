@@ -9,34 +9,34 @@ describe('SessionsService', () => {
         {
             id: 'session-1',
             userId: 'user-1',
-            refreshTokenJti: 'current-jti',
+            token: 'current-jti',
             userAgent: 'Mozilla/5.0 Chrome/120',
-            ipAddress: '127.0.0.1',
+            ip: '127.0.0.1',
             createdAt: new Date(),
-            lastActivityAt: new Date(),
+            lastActiveAt: new Date(),
             expiresAt: new Date(Date.now() + 86400000),
         },
         {
             id: 'session-2',
             userId: 'user-1',
-            refreshTokenJti: 'other-jti',
+            token: 'other-jti',
             userAgent: 'Mozilla/5.0 Firefox/120',
-            ipAddress: '192.168.1.1',
+            ip: '192.168.1.1',
             createdAt: new Date(),
-            lastActivityAt: new Date(),
+            lastActiveAt: new Date(),
             expiresAt: new Date(Date.now() + 86400000),
         },
     ];
 
     beforeEach(() => {
         mockPrismaRead = {
-            userSession: {
+            session: {
                 findMany: jest.fn().mockResolvedValue(mockSessions),
                 findUnique: jest.fn().mockResolvedValue(mockSessions[1]),
             },
         };
         mockPrismaWrite = {
-            userSession: {
+            session: {
                 update: jest.fn().mockResolvedValue({}),
                 updateMany: jest.fn().mockResolvedValue({ count: 1 }),
             },
@@ -70,28 +70,28 @@ describe('SessionsService', () => {
             const result = await service.terminateSession('user-1', 'session-2', 'current-jti');
             expect(result.sessionId).toBe('session-2');
             expect(result.terminatedAt).toBeDefined();
-            expect(mockPrismaWrite.userSession.update).toHaveBeenCalledWith({
+            expect(mockPrismaWrite.session.update).toHaveBeenCalledWith({
                 where: { id: 'session-2' },
-                data: { isRevoked: true },
+                data: { expiresAt: expect.any(Date) },
             });
         });
 
         it('should throw when trying to terminate current session', async () => {
-            mockPrismaRead.userSession.findUnique.mockResolvedValue(mockSessions[0]);
+            mockPrismaRead.session.findUnique.mockResolvedValue(mockSessions[0]);
 
             await expect(service.terminateSession('user-1', 'session-1', 'current-jti'))
                 .rejects.toThrow();
         });
 
         it('should throw for non-existent session', async () => {
-            mockPrismaRead.userSession.findUnique.mockResolvedValue(null);
+            mockPrismaRead.session.findUnique.mockResolvedValue(null);
 
             await expect(service.terminateSession('user-1', 'invalid', 'current-jti'))
                 .rejects.toThrow();
         });
 
         it('should throw for session belonging to another user', async () => {
-            mockPrismaRead.userSession.findUnique.mockResolvedValue({ ...mockSessions[1], userId: 'other-user' });
+            mockPrismaRead.session.findUnique.mockResolvedValue({ ...mockSessions[1], userId: 'other-user' });
 
             await expect(service.terminateSession('user-1', 'session-2', 'current-jti'))
                 .rejects.toThrow();
@@ -102,13 +102,13 @@ describe('SessionsService', () => {
         it('should revoke all sessions except current', async () => {
             const result = await service.terminateOtherSessions('user-1', 'current-jti');
             expect(result).toBe(true);
-            expect(mockPrismaWrite.userSession.updateMany).toHaveBeenCalledWith({
+            expect(mockPrismaWrite.session.updateMany).toHaveBeenCalledWith({
                 where: {
                     userId: 'user-1',
-                    refreshTokenJti: { not: 'current-jti' },
-                    isRevoked: false,
+                    token: { not: 'current-jti' },
+                    expiresAt: { gt: expect.any(Date) },
                 },
-                data: { isRevoked: true },
+                data: { expiresAt: expect.any(Date) },
             });
         });
     });

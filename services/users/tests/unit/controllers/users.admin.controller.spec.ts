@@ -1,4 +1,3 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { UsersAdminController } from '../../../src/controllers/users.admin.controller';
 import { UsersAdminService } from '../../../src/services/users.admin.service';
 
@@ -6,24 +5,14 @@ describe('UsersAdminController', () => {
     let controller: UsersAdminController;
     let adminService: jest.Mocked<UsersAdminService>;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [UsersAdminController],
-            providers: [
-                {
-                    provide: UsersAdminService,
-                    useValue: {
-                        listUsers: jest.fn(),
-                        getUserDetails: jest.fn(),
-                        changeUserStatus: jest.fn(),
-                        adminResetPassword: jest.fn(),
-                    },
-                },
-            ],
-        }).compile();
-
-        controller = module.get<UsersAdminController>(UsersAdminController);
-        adminService = module.get(UsersAdminService);
+    beforeEach(() => {
+        adminService = {
+            listUsers: jest.fn(),
+            getUserDetails: jest.fn(),
+            changeUserStatus: jest.fn(),
+            adminResetPassword: jest.fn(),
+        } as any;
+        controller = new UsersAdminController(adminService);
     });
 
     it('should be defined', () => {

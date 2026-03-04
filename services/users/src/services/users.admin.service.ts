@@ -35,7 +35,7 @@ export class UsersAdminService {
                 role: u.role,
                 status: u.status,
                 emailVerified: u.emailVerified,
-                twoFactorEnabled: u.authConfig?.twoFactorEnabled || false,
+                twoFactorEnabled: u.twoFactorEnabled || u.authConfig?.twoFactorEnabled || false,
                 createdAt: u.createdAt,
             })),
             pagination: {
@@ -67,9 +67,9 @@ export class UsersAdminService {
         });
 
         if (status === 'SUSPENDED') {
-            await this.prismaWrite.userSession.updateMany({
+            await this.prismaWrite.session.updateMany({
                 where: { userId },
-                data: { isRevoked: true }
+                data: { expiresAt: new Date() } // Assuming we expire rather than isRevoked which doesn't exist
             });
         }
 
@@ -94,9 +94,9 @@ export class UsersAdminService {
                 data: { passwordHash }
             });
 
-            await tx.userSession.updateMany({
+            await tx.session.updateMany({
                 where: { userId },
-                data: { isRevoked: true }
+                data: { expiresAt: new Date() }
             });
 
             // Emit event so an email with the temp password can be sent

@@ -11,13 +11,12 @@ export class SessionsService {
     ) { }
 
     async getSessions(userId: string, currentJti: string) {
-        const sessions = await this.prismaRead.userSession.findMany({
+        const sessions = await this.prismaRead.session.findMany({
             where: {
                 userId,
-                isRevoked: false,
                 expiresAt: { gt: new Date() }
             },
-            orderBy: { lastActivityAt: 'desc' }
+            orderBy: { lastActiveAt: 'desc' }
         });
 
         return sessions.map((s: any) => {
@@ -30,19 +29,19 @@ export class SessionsService {
                     os: `${parser.getOS().name} ${parser.getOS().version}`
                 },
                 location: {
-                    ip: s.ipAddress,
+                    ip: s.ip,
                     // Geographic mapping would go here
                 },
-                current: s.refreshTokenJti === currentJti,
+                current: s.token === currentJti,
                 createdAt: s.createdAt,
-                lastActivityAt: s.lastActivityAt,
+                lastActivityAt: s.lastActiveAt,
                 expiresAt: s.expiresAt
             };
         });
     }
 
     async terminateSession(userId: string, sessionId: string, currentJti: string) {
-        const session = await this.prismaRead.userSession.findUnique({
+        const session = await this.prismaRead.session.findUnique({
             where: { id: sessionId }
         });
 
@@ -50,26 +49,26 @@ export class SessionsService {
             throw new BusinessLogicException('Session not found', 'USER_003');
         }
 
-        if (session.refreshTokenJti === currentJti) {
+        if (session.token === currentJti) {
             throw new BusinessLogicException('Cannot terminate current session. Use logout instead.', 'USER_004');
         }
 
-        await this.prismaWrite.userSession.update({
+        await this.prismaWrite.session.update({
             where: { id: sessionId },
-            data: { isRevoked: true }
+            data: { expiresAt: new Date() }
         });
 
         return { sessionId, terminatedAt: new Date() };
     }
 
     async terminateOtherSessions(userId: string, currentJti: string) {
-        await this.prismaWrite.userSession.updateMany({
+        await this.prismaWrite.session.updateMany({
             where: {
                 userId,
-                refreshTokenJti: { not: currentJti },
-                isRevoked: false
+                token: { not: currentJti },
+                expiresAt: { gt: new Date() }
             },
-            data: { isRevoked: true }
+            data: { expiresAt: new Date() }
         });
 
         return true;
