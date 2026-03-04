@@ -4,6 +4,7 @@ import { RequestsAdminService } from '../../../src/services/requests.admin.servi
 import { QuotesAdminService } from '../../../src/services/quotes.admin.service';
 import { RequestStatsService } from '../../../src/services/request-stats.service';
 import { HttpStatus } from '@nestjs/common';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('RequestsAdminController', () => {
     let controller: RequestsAdminController;
@@ -38,7 +39,12 @@ describe('RequestsAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<RequestsAdminController>(RequestsAdminController);
         adminService = module.get(RequestsAdminService);

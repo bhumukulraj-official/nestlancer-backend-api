@@ -4,6 +4,7 @@ import { RequestsService } from '../../../src/services/requests.service';
 import { RequestAttachmentsService } from '../../../src/services/request-attachments.service';
 import { RequestStatsService } from '../../../src/services/request-stats.service';
 import { Response } from 'express';
+import { JwtAuthGuard } from '@nestlancer/auth-lib';
 
 describe('RequestsController', () => {
     let controller: RequestsController;
@@ -34,7 +35,10 @@ describe('RequestsController', () => {
                 { provide: RequestAttachmentsService, useValue: {} },
                 { provide: RequestStatsService, useValue: {} },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<RequestsController>(RequestsController);
         requestsService = module.get<RequestsService>(RequestsService);

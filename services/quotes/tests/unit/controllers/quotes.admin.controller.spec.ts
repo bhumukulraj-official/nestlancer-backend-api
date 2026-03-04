@@ -3,6 +3,7 @@ import { QuotesAdminController } from '../../../src/controllers/quotes.admin.con
 import { QuotesAdminService } from '../../../src/services/quotes.admin.service';
 import { QuoteStatsService } from '../../../src/services/quote-stats.service';
 import { HttpStatus } from '@nestjs/common';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('QuotesAdminController', () => {
     let controller: QuotesAdminController;
@@ -28,7 +29,12 @@ describe('QuotesAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<QuotesAdminController>(QuotesAdminController);
         adminService = module.get(QuotesAdminService);

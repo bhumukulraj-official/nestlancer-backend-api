@@ -5,6 +5,7 @@ import { QuoteStatusService } from '../../../src/services/quote-status.service';
 import { QuotePdfService } from '../../../src/services/quote-pdf.service';
 import { QuoteStatsService } from '../../../src/services/quote-stats.service';
 import { Response } from 'express';
+import { JwtAuthGuard } from '@nestlancer/auth-lib';
 
 describe('QuotesController', () => {
     let controller: QuotesController;
@@ -30,7 +31,10 @@ describe('QuotesController', () => {
                 { provide: QuotePdfService, useValue: { generatePdf: jest.fn() } },
                 { provide: QuoteStatsService, useValue: { getUserStats: jest.fn() } },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<QuotesController>(QuotesController);
         statusService = module.get<QuoteStatusService>(QuoteStatusService);
