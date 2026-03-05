@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { MediaModule } from './app.module';
+import { AppModule } from './app.module';
 import { LoggerService } from '@nestlancer/logger';
 
 async function bootstrap() {
-    const app = await NestFactory.createApplicationContext(MediaModule);
+    const app = await NestFactory.createApplicationContext(AppModule);
     const logger = app.get(LoggerService);
 
     app.enableShutdownHooks();

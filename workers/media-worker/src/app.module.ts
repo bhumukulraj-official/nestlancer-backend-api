@@ -18,12 +18,15 @@ import { mediaWorkerConfig } from './config/media-worker.config';
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        ConfigModule.forRoot({
+            load: [mediaWorkerConfig],
+            isGlobal: true,
+        }),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
-        DatabaseModule,
-        StorageModule,
+        TracingModule.forRoot(),
+        DatabaseModule.forRoot(),
+        StorageModule.forRoot(),
         QueueModule.forRoot(),
     ],
     providers: [
@@ -37,4 +40,4 @@ import { mediaWorkerConfig } from './config/media-worker.config';
         MetadataExtractorProcessor,
     ],
 })
-export class MediaModule { }
+export class AppModule { }
