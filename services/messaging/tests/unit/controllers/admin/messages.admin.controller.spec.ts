@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { MessagesAdminController } from '../../../../src/controllers/admin/messages.admin.controller';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
@@ -11,6 +13,14 @@ describe('MessagesAdminController', () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [MessagesAdminController],
             providers: [
+                {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
                 {
                     provide: PrismaWriteService,
                     useValue: {
@@ -29,7 +39,10 @@ describe('MessagesAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<MessagesAdminController>(MessagesAdminController);
         prismaWrite = module.get(PrismaWriteService);
@@ -43,8 +56,8 @@ describe('MessagesAdminController', () => {
     describe('getAllMessages', () => {
         it('should return paginated messages', async () => {
             const mockMessages = [{ id: '1', content: 'test' }];
-            prismaRead.message.findMany.mockResolvedValue(mockMessages as any);
-            prismaRead.message.count.mockResolvedValue(1);
+            (prismaRead.message.findMany as jest.Mock).mockResolvedValue(mockMessages);
+            (prismaRead.message.count as jest.Mock).mockResolvedValue(1);
 
             const result = await controller.getAllMessages({ page: '1', limit: '10' });
 
@@ -62,8 +75,8 @@ describe('MessagesAdminController', () => {
         });
 
         it('should use default pagination values', async () => {
-            prismaRead.message.findMany.mockResolvedValue([]);
-            prismaRead.message.count.mockResolvedValue(0);
+            (prismaRead.message.findMany as jest.Mock).mockResolvedValue([]);
+            (prismaRead.message.count as jest.Mock).mockResolvedValue(0);
 
             const result = await controller.getAllMessages({});
 
@@ -77,7 +90,7 @@ describe('MessagesAdminController', () => {
 
     describe('deleteMessage', () => {
         it('should delete message by id', async () => {
-            prismaWrite.message.delete.mockResolvedValue({ id: '1' } as any);
+            (prismaWrite.message.delete as jest.Mock).mockResolvedValue({ id: '1' });
 
             const result = await controller.deleteMessage('1');
 

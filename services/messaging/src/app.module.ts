@@ -27,11 +27,11 @@ import {
     imports: [
         ConfigModule,
         LoggerModule,
-        DatabaseModule,
+        DatabaseModule.forRoot(),
         AuthLibModule,
-        StorageModule,
-        OutboxModule,
-        CacheModule,
+        StorageModule.forRoot(),
+        OutboxModule.forRoot(),
+        CacheModule.forRoot(),
     ],
     controllers: [
         MessagesAdminController,

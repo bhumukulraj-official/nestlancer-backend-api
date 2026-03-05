@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MessageThreadsService } from '../../../src/services/message-threads.service';
+import { PrismaReadService } from '@nestlancer/database';
 
 describe('MessageThreadsService', () => {
   let provider: MessageThreadsService;
@@ -8,7 +9,12 @@ describe('MessageThreadsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MessageThreadsService,
-        // Add mocked dependencies here
+        {
+          provide: PrismaReadService,
+          useValue: {
+            message: { findMany: jest.fn().mockResolvedValue([]), count: jest.fn().mockResolvedValue(0) },
+          },
+        },
       ],
     }).compile();
 
