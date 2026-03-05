@@ -6,6 +6,11 @@ describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
+        process.env.JWT_ACCESS_SECRET = 'test-secret';
+        process.env.JWT_REFRESH_SECRET = 'test-secret';
+        process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/testdb';
+        process.env.REDIS_URL = 'redis://localhost:6379';
+
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         }).compile();

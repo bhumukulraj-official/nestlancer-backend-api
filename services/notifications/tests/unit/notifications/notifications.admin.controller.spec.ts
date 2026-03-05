@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsAdminController } from '../../../src/notifications/notifications.admin.controller';
+import { Reflector } from '@nestjs/core';
 import { NotificationsAdminService } from '../../../src/notifications/notifications-admin.service';
 import { NotificationBroadcastService } from '../../../src/notifications/notification-broadcast.service';
 import { NotificationSegmentService } from '../../../src/notifications/notification-segment.service';
@@ -7,6 +8,7 @@ import { QueryNotificationsDto } from '../../../src/dto/query-notifications.dto'
 import { SendNotificationDto } from '../../../src/dto/send-notification.dto';
 import { BroadcastNotificationDto } from '../../../src/dto/broadcast-notification.dto';
 import { SegmentNotificationDto } from '../../../src/dto/segment-notification.dto';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('NotificationsAdminController', () => {
     let controller: NotificationsAdminController;
@@ -18,6 +20,7 @@ describe('NotificationsAdminController', () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [NotificationsAdminController],
             providers: [
+                { provide: Reflector, useValue: { get: jest.fn(), getAllAndOverride: jest.fn() } },
                 {
                     provide: NotificationsAdminService,
                     useValue: {
@@ -41,7 +44,10 @@ describe('NotificationsAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<NotificationsAdminController>(NotificationsAdminController);
         adminService = module.get(NotificationsAdminService);

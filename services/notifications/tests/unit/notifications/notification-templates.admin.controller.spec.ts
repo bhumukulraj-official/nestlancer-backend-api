@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationTemplatesAdminController } from '../../../src/notifications/notification-templates.admin.controller';
+import { Reflector } from '@nestjs/core';
 import { NotificationTemplatesService } from '../../../src/notifications/notification-templates.service';
 import { CreateNotificationTemplateDto } from '../../../src/dto/create-notification-template.dto';
 import { UpdateNotificationTemplateDto } from '../../../src/dto/update-notification-template.dto';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('NotificationTemplatesAdminController', () => {
     let controller: NotificationTemplatesAdminController;
@@ -12,6 +14,7 @@ describe('NotificationTemplatesAdminController', () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [NotificationTemplatesAdminController],
             providers: [
+                { provide: Reflector, useValue: { get: jest.fn(), getAllAndOverride: jest.fn() } },
                 {
                     provide: NotificationTemplatesService,
                     useValue: {
@@ -22,7 +25,10 @@ describe('NotificationTemplatesAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<NotificationTemplatesAdminController>(NotificationTemplatesAdminController);
         templatesService = module.get(NotificationTemplatesService);

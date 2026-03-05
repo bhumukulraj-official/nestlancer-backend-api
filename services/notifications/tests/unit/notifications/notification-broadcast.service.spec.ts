@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationBroadcastService } from '../../../src/notifications/notification-broadcast.service';
+import { QueuePublisherService } from '@nestlancer/queue';
+import { PrismaWriteService } from '@nestlancer/database';
 
 describe('NotificationBroadcastService', () => {
   let provider: NotificationBroadcastService;
@@ -8,6 +10,8 @@ describe('NotificationBroadcastService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationBroadcastService,
+        { provide: QueuePublisherService, useValue: {} },
+        { provide: PrismaWriteService, useValue: {} },
         // Add mocked dependencies here
       ],
     }).compile();

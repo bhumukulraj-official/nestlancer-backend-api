@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InternalController } from '../../../src/internal/internal.controller';
+import { NotificationsAdminService } from '../../../src/notifications/notifications-admin.service';
 
 describe('InternalController', () => {
   let controller: InternalController;
@@ -8,6 +9,7 @@ describe('InternalController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [InternalController],
       providers: [
+        { provide: NotificationsAdminService, useValue: {} },
         // Add mocked dependencies here
       ],
     }).compile();

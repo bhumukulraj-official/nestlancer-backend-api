@@ -14,7 +14,7 @@ import { NotificationStatsService } from './notification-stats.service';
 import { NotificationsAdminService } from './notifications-admin.service';
 
 @Module({
-    imports: [DatabaseModule, CacheModule, QueueModule],
+    imports: [DatabaseModule.forRoot(), CacheModule.forRoot(), QueueModule.forRoot()],
     controllers: [
         NotificationsController,
         NotificationsAdminController,
