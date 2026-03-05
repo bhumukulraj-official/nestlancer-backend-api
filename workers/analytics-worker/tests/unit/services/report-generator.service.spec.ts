@@ -3,8 +3,9 @@ import { ReportGeneratorService } from '../../../src/services/report-generator.s
 import { AnalyticsWorkerService } from '../../../src/services/analytics-worker.service';
 import { StorageService } from '@nestlancer/storage';
 import { LoggerService } from '@nestlancer/logger';
-import { AnalyticsJobType } from '../../../src/interfaces/analytics-job.interface';
+import { AnalyticsJobType, ExportFormat, Period } from '../../../src/interfaces/analytics-job.interface';
 import * as PDFDocument from 'pdfkit';
+import { Buffer } from 'buffer';
 
 jest.mock('pdfkit', () => {
     return jest.fn().mockImplementation(() => {
@@ -41,7 +42,7 @@ describe('ReportGeneratorService', () => {
                 },
                 {
                     provide: StorageService,
-                    useValue: { uploadBuffer: jest.fn() },
+                    useValue: { upload: jest.fn() },
                 },
                 {
                     provide: LoggerService,
@@ -66,25 +67,25 @@ describe('ReportGeneratorService', () => {
             analyticsWorkerService.getLatest.mockResolvedValueOnce({ data: { total: 50, roles: {} } } as any); // user
             analyticsWorkerService.getLatest.mockResolvedValueOnce({ data: { statuses: { COMPLETED: { count: 10, amount: 100 } } } } as any); // revenue
 
-            storageService.uploadBuffer.mockResolvedValue({ url: 'http://test.url' } as any);
+            storageService.upload.mockResolvedValue({ url: 'http://test.url' } as any);
 
-            const result = await service.generateReport(AnalyticsJobType.PROJECT_STATS, 'monthly', ExportFormat.PDF, {});
+            const result = await service.generateComprehensiveReport(Period.MONTHLY);
 
             expect(analyticsWorkerService.getLatest).toHaveBeenCalledWith(AnalyticsJobType.PROJECT_STATS);
             expect(analyticsWorkerService.getLatest).toHaveBeenCalledWith(AnalyticsJobType.USER_STATS);
             expect(analyticsWorkerService.getLatest).toHaveBeenCalledWith(AnalyticsJobType.REVENUE_REPORT);
 
-            expect(storageService.uploadBuffer).toHaveBeenCalled();
+            expect(storageService.upload).toHaveBeenCalled();
             expect(result).toBe('http://test.url');
         });
 
         it('should generate report successfully even with missing data', async () => {
             analyticsWorkerService.getLatest.mockResolvedValue(null);
-            storageService.uploadBuffer.mockResolvedValue({ url: 'http://test.url.missing' } as any);
+            storageService.upload.mockResolvedValue({ url: 'http://test.url.missing' } as any);
 
-            const result = await service.generateComprehensiveReport('yearly');
+            const result = await service.generateComprehensiveReport(Period.YEARLY);
 
-            expect(storageService.uploadBuffer).toHaveBeenCalled();
+            expect(storageService.upload).toHaveBeenCalled();
             expect(result).toBe('http://test.url.missing');
         });
     });

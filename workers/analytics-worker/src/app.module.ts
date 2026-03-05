@@ -7,6 +7,7 @@ import { QueueModule } from '@nestlancer/queue';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
+import { StorageModule } from '@nestlancer/storage';
 import analyticsConfig from './config/analytics-worker.config';
 import { AnalyticsWorkerService } from './services/analytics-worker.service';
 import { AggregationService } from './services/aggregation.service';
@@ -24,14 +25,18 @@ import { WeeklyReportCron } from './cron/weekly-report.cron';
 
 @Module({
     imports: [
-        ConfigModule,
-        ScheduleModule,
-        DatabaseModule,
-        CacheModule,
-        QueueModule,
-        LoggerModule,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            load: [analyticsConfig],
+        }),
+        ScheduleModule.forRoot(),
+        DatabaseModule.forRoot(),
+        CacheModule.forRoot(),
+        QueueModule.forRoot(),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
+        TracingModule.forRoot(),
+        StorageModule.forRoot(),
     ],
     providers: [
         AnalyticsWorkerService,

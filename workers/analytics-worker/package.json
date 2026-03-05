@@ -33,6 +33,7 @@
         "@nestlancer/logger": "workspace:*",
         "@nestlancer/metrics": "workspace:*",
         "@nestlancer/tracing": "workspace:*",
+        "@nestlancer/storage": "workspace:*",
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.1",
         "pdfkit": "^0.13.0",

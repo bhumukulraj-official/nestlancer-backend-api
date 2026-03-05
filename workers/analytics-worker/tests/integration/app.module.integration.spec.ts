@@ -1,3 +1,7 @@
+process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+process.env.REDIS_URL = 'redis://localhost:6379';
+process.env.RABBITMQ_URL = 'amqp://localhost:5672';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplicationContext } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
@@ -10,7 +14,7 @@ describe('AppModule (Integration)', () => {
             imports: [AppModule],
         }).compile();
 
-        app = moduleRef.createNestApplicationContext();
+        app = moduleRef;
         await app.init();
     });
 
