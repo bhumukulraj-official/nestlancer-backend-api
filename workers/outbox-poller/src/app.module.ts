@@ -15,11 +15,11 @@ import { StaleEventMonitorService } from './services/stale-event-monitor.service
 @Module({
     imports: [
         ConfigModule,
-        ScheduleModule,
-        DatabaseModule,
-        LoggerModule,
+        ScheduleModule.forRoot(),
+        DatabaseModule.forRoot(),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
+        TracingModule.forRoot(),
         QueueModule.forRootAsync({
             useFactory: (configService: ConfigService) => ({
                 url: configService.get<string>('RABBITMQ_URL'),

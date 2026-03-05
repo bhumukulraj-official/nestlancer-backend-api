@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplicationContext } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('AppModule (Integration)', () => {
     let app: INestApplicationContext;
@@ -8,9 +10,16 @@ describe('AppModule (Integration)', () => {
     beforeAll(async () => {
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
-        }).compile();
+        })
+            .overrideProvider('QUEUE_OPTIONS')
+            .useValue({})
+            .overrideProvider(PrismaWriteService)
+            .useValue({})
+            .overrideProvider(PrismaReadService)
+            .useValue({})
+            .compile();
 
-        app = moduleRef.createNestApplicationContext();
+        app = moduleRef.createNestApplication();
         await app.init();
     });
 

@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StaleEventMonitorService } from '../../../src/services/stale-event-monitor.service';
 
+import { PrismaWriteService } from '@nestlancer/database';
+import { ConfigService } from '@nestjs/config';
+
 describe('StaleEventMonitorService', () => {
   let provider: StaleEventMonitorService;
 
@@ -8,7 +11,20 @@ describe('StaleEventMonitorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StaleEventMonitorService,
-        // Add mocked dependencies here
+        {
+          provide: PrismaWriteService,
+          useValue: {
+            outboxEvent: {
+              count: jest.fn(),
+            },
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue(60),
+          },
+        },
       ],
     }).compile();
 
