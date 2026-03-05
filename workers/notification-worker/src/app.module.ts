@@ -22,6 +22,7 @@ import { NotificationConsumer } from './consumers/notification.consumer';
         DatabaseModule,
         CacheModule,
         QueueModule.forRootAsync({
+            imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
                 url: config.get('notification-worker.rabbitmq.url'),

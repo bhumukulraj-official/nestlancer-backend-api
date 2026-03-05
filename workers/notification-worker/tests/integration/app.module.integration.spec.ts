@@ -1,16 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplicationContext } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
+import { QueueModule, QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 describe('AppModule (Integration)', () => {
-    let app: INestApplicationContext;
+    let app: any;
 
     beforeAll(async () => {
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
-        }).compile();
+        })
+            .overrideProvider('QUEUE_OPTIONS')
+            .useValue({ url: 'amqp://localhost' })
+            .overrideProvider(QueuePublisherService)
+            .useValue({})
+            .overrideProvider(QueueConsumerService)
+            .useValue({ consume: jest.fn() })
+            .overrideProvider(DlqService)
+            .useValue({})
+            .overrideProvider(PrismaWriteService)
+            .useValue({
+                notification: { create: jest.fn() },
+                userPushSubscription: { findMany: jest.fn(), delete: jest.fn() }
+            })
+            .overrideProvider(PrismaReadService)
+            .useValue({})
+            .compile();
 
-        app = moduleRef.createNestApplicationContext();
+        app = moduleRef.createNestApplication();
         await app.init();
     });
 

@@ -4,6 +4,7 @@ import { QueueConsumerService } from './queue-consumer.service';
 import { DlqService } from './dlq.service';
 
 export interface QueueModuleAsyncOptions {
+  imports?: any[];
   inject?: any[];
   useFactory: (...args: any[]) => Promise<{ url?: string }> | { url?: string };
 }
@@ -25,7 +26,7 @@ export class QueueModule {
   static forRootAsync(options: QueueModuleAsyncOptions): DynamicModule {
     return {
       module: QueueModule,
-      imports: [],
+      imports: options.imports || [],
       providers: [
         {
           provide: 'QUEUE_OPTIONS',
