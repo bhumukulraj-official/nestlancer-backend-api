@@ -5,6 +5,7 @@ const config: Config = {
         '<rootDir>/libs/*/jest.config.ts',
         '<rootDir>/services/*/jest.config.ts',
         '<rootDir>/workers/*/jest.config.ts',
+        '<rootDir>/gateway/jest.config.ts',
         '<rootDir>/ws-gateway/jest.config.ts',
     ],
     collectCoverage: true,

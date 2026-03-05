@@ -60,7 +60,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
     CircuitBreakerModule,
 
     // Domain modules
-    AuthLibModule,
+    AuthModule,
     UsersModule,
     RequestsModule,
     QuotesModule,

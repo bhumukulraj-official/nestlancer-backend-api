@@ -203,40 +203,43 @@ export class HttpProxyService {
 
   /**
    * Extract the service-specific path from the request
-   * Removes the gateway prefix to get the downstream path
+   * Ensures the downstream service receives the path it expects
    */
   private extractServicePath(serviceName: string, originalPath: string): string {
-    // The gateway prefix is /api/v1
-    // For auth service: /api/v1/auth/login → /api/v1/auth/login
-    // For users service: /api/v1/users/profile → /profile (users service runs at /api/v1)
-
     const gatewayPrefix = '/api/v1';
 
     if (!originalPath.startsWith(gatewayPrefix)) {
       return originalPath;
     }
 
-    const pathWithoutGateway = originalPath.slice(gatewayPrefix.length);
+    // Most services follow the pattern: http://service:port/api/v1/[service-name]/...
+    // In these cases, we forward the full original path.
 
-    // Special handling for services with different base paths
-    switch (serviceName) {
-      case 'auth':
-        // Auth service runs at /api/v1/auth
-        return pathWithoutGateway;
-      case 'users':
-        // Users service runs at /api/v1, so remove /users prefix
-        return pathWithoutGateway.replace(/^\/users/, '') || '/';
-      case 'payments':
-        // Payments service runs at /api/v1/payments
-        return pathWithoutGateway;
-      case 'webhooks':
-        return pathWithoutGateway;
-      case 'admin':
-        return pathWithoutGateway;
-      default:
-        // Default: forward the path as-is
-        return pathWithoutGateway;
+    // Some services are mounted directly at /api/v1 and don't include their name in the prefix
+    // For these, we strip the service name segment from the gateway path.
+    const servicesToStrip = [
+      'users',
+      'blog',
+      'portfolio',
+      'projects',
+      'requests',
+      'quotes',
+      'progress',
+      'notifications',
+      'media',
+      'contact',
+    ];
+
+    if (servicesToStrip.includes(serviceName)) {
+      // e.g., /api/v1/users/profile -> /api/v1/profile
+      const serviceSegment = `/${serviceName}`;
+      return originalPath.replace(serviceSegment, '');
     }
+
+    // Default: forward the path exactly as it came to the gateway
+    // This works for services like 'auth', 'webhooks', 'admin', 'messages'
+    // which expect /api/v1/[service-name]/...
+    return originalPath;
   }
 
   /**
