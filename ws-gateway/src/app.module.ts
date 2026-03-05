@@ -13,12 +13,12 @@ import { WsPresenceService } from './services/presence.service';
 
 @Module({
   imports: [
-    ConfigModule,
-    DatabaseModule,
-    CacheModule,
+    ConfigModule.forRoot(),
+    DatabaseModule.forRoot(),
+    CacheModule.forRoot(),
     AuthLibModule,
-    LoggerModule,
-    TracingModule,
+    LoggerModule.forRoot(),
+    TracingModule.forRoot(),
   ],
   providers: [
     ProjectGateway,
@@ -28,4 +28,4 @@ import { WsPresenceService } from './services/presence.service';
     WsPresenceService,
   ],
 })
-export class WsAppModule {}
+export class WsAppModule { }
