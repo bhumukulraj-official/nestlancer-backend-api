@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestlancer/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
@@ -13,29 +14,13 @@ import { EmailConsumer } from './consumers/email.consumer';
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        ConfigModule.forRoot(),
+        NestConfigModule.forFeature(emailWorkerConfig),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
-        QueueModule.forRootAsync({
-            inject: [ConfigService],
-            useFactory: (config: ConfigService) => ({
-                url: config.get('email-worker.rabbitmq.url'),
-            }),
-        }),
-        MailModule.forRootAsync({
-            inject: [ConfigService],
-            useFactory: (config: ConfigService) => ({
-                host: config.get('email-worker.smtp.host'),
-                port: config.get('email-worker.smtp.port'),
-                auth: {
-                    user: config.get('email-worker.smtp.user'),
-                    pass: config.get('email-worker.smtp.pass'),
-                },
-                secure: config.get('email-worker.smtp.secure'),
-                from: `"${config.get('email-worker.from.name')}" <${config.get('email-worker.from.email')}>`,
-            }),
-        }),
+        TracingModule.forRoot(),
+        QueueModule.forRoot(),
+        MailModule.forRoot(),
     ],
     providers: [
         EmailWorkerService,

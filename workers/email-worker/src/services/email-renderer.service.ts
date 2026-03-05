@@ -18,28 +18,39 @@ export class EmailRendererService {
     }
 
     private async loadTemplates() {
-        try {
-            const templatesPath = this.configService.get<string>('email-worker.templatesPath');
-            if (!templatesPath) {
-                this.logger.warn('Templates path not configured');
-                return;
-            }
+        const templatesPath = this.configService.get<string>('email-worker.templatesPath');
+        if (!templatesPath) {
+            this.logger.warn('Templates path not configured');
+            return;
+        }
 
+        // Load layout separately
+        try {
             const layoutPath = path.join(templatesPath, 'layouts', 'base.hbs');
             const layoutContent = await fs.readFile(layoutPath, 'utf8');
             this.baseLayout = handlebars.compile(layoutContent);
+            this.logger.log('Loaded base email layout');
+        } catch (error: any) {
+            this.logger.error(`Failed to load base layout from ${templatesPath}/layouts/base.hbs: ${error.message}`);
+        }
 
+        // Load templates
+        try {
             const files = await fs.readdir(templatesPath);
             for (const file of files) {
                 if (file.endsWith('.hbs')) {
                     const templateName = path.basename(file, '.hbs');
-                    const content = await fs.readFile(path.join(templatesPath, file), 'utf8');
-                    this.templates.set(templateName, handlebars.compile(content));
+                    try {
+                        const content = await fs.readFile(path.join(templatesPath, file), 'utf8');
+                        this.templates.set(templateName, handlebars.compile(content));
+                    } catch (err: any) {
+                        this.logger.error(`Failed to load template ${file}: ${err.message}`);
+                    }
                 }
             }
             this.logger.log(`Loaded ${this.templates.size} email templates`);
         } catch (error: any) {
-            this.logger.error('Failed to load email templates:', error);
+            this.logger.error(`Failed to read templates directory ${templatesPath}: ${error.message}`);
         }
     }
 

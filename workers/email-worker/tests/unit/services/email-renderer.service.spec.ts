@@ -99,13 +99,26 @@ describe('EmailRendererService', () => {
         it('should return just body if no base layout', async () => {
             (fs.readFile as jest.Mock).mockImplementation((filepath) => {
                 if (filepath.includes('base.hbs')) return Promise.reject(new Error('no layout'));
-                return Promise.resolve('template');
+                return Promise.resolve('template content');
             });
             (fs.readdir as jest.Mock).mockResolvedValue(['welcome.hbs']);
             await service.onModuleInit();
 
             const result = await service.render('welcome', { name: 'Test' });
             expect(result).toEqual('compiled_with_{"name":"Test"}');
+        });
+
+        it('should skip templates that fail to load but load others', async () => {
+            (fs.readFile as jest.Mock).mockImplementation((filepath) => {
+                if (filepath.includes('welcome.hbs')) return Promise.resolve('welcome content');
+                if (filepath.includes('broken.hbs')) return Promise.reject(new Error('broken file'));
+                return Promise.resolve('layout content');
+            });
+            (fs.readdir as jest.Mock).mockResolvedValue(['welcome.hbs', 'broken.hbs']);
+            await service.onModuleInit();
+
+            expect(await service.render('welcome', { name: 'Test' })).toBeDefined();
+            await expect(service.render('broken', {})).rejects.toThrow(ResourceNotFoundException);
         });
     });
 });
