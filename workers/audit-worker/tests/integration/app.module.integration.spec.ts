@@ -1,16 +1,18 @@
+process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplicationContext } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 
 describe('AppModule (Integration)', () => {
-    let app: INestApplicationContext;
+    let app: INestApplication;
 
     beforeAll(async () => {
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         }).compile();
 
-        app = moduleRef.createNestApplicationContext();
+        app = moduleRef.createNestApplication();
         await app.init();
     });
 

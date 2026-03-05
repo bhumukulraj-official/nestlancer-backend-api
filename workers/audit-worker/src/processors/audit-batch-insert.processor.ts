@@ -6,11 +6,11 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuditBatchInsertProcessor {
+    private readonly logger = new Logger(AuditBatchInsertProcessor.name);
     private readonly fallbackFilePath: string;
 
     constructor(
         private readonly prisma: PrismaWriteService,
-        private readonly logger: Logger,
         private readonly configService: ConfigService,
     ) {
         this.fallbackFilePath = this.configService.get<string>('audit.fallbackFilePath', '/tmp/audit-fallback.jsonl');

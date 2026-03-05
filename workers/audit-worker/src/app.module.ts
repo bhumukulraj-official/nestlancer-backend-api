@@ -13,12 +13,12 @@ import { auditConfig } from './config/audit-worker.config';
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        ConfigModule.forRoot(),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
-        DatabaseModule,
-        QueueModule,
+        TracingModule.forRoot(),
+        DatabaseModule.forRoot(),
+        QueueModule.forRoot(),
     ],
     providers: [
         AuditConsumer,
@@ -27,4 +27,4 @@ import { auditConfig } from './config/audit-worker.config';
         AuditBatchInsertProcessor,
     ],
 })
-export class AuditModule { }
+export class AppModule { }

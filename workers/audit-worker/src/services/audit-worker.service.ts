@@ -7,13 +7,13 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuditWorkerService implements OnModuleInit, OnModuleDestroy {
+    private readonly logger = new Logger(AuditWorkerService.name);
     private flushTimer: NodeJS.Timeout | null = null;
     private readonly flushIntervalMs: number;
 
     constructor(
         private readonly bufferService: BatchBufferService,
         private readonly processor: AuditBatchInsertProcessor,
-        private readonly logger: Logger,
         private readonly metrics: MetricsService,
         private readonly configService: ConfigService,
     ) {

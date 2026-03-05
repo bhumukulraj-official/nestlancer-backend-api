@@ -16,17 +16,14 @@ import { BatchInvalidationProcessor } from './processors/batch-invalidation.proc
 
 @Module({
     imports: [
-        ConfigModule,
-        HttpModule,
-        LoggerModule,
-        MetricsModule,
-        TracingModule,
-        QueueModule.forRootAsync({
-            useFactory: (configService: ConfigService) => ({
-                url: configService.get<string>('RABBITMQ_URL'),
-            }),
-            inject: [ConfigService],
+        ConfigModule.forRoot({
+            load: [cdnConfig],
         }),
+        HttpModule,
+        LoggerModule.forRoot(),
+        MetricsModule,
+        TracingModule.forRoot(),
+        QueueModule.forRoot(),
     ],
     providers: [
         CdnWorkerService,
