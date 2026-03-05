@@ -25,13 +25,13 @@ import { GithubDeploymentHandler } from './handlers/github/deployment.handler';
 
 @Module({
     imports: [
-        ConfigModule,
+        ConfigModule.forFeature(webhookConfig),
         HttpModule,
-        DatabaseModule,
+        DatabaseModule.forRoot(),
         QueueModule.forRoot(),
-        LoggerModule,
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
+        TracingModule.forRoot(),
     ],
     providers: [
         WebhookWorkerService,
