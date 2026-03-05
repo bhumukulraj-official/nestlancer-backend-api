@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { PostInteractionsController } from '../../../../src/controllers/user/post-interactions.controller';
 import { PostInteractionsService } from '../../../../src/services/post-interactions.service';
 
@@ -11,6 +13,14 @@ describe('PostInteractionsController', () => {
             controllers: [PostInteractionsController],
             providers: [
                 {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
+                {
                     provide: PostInteractionsService,
                     useValue: {
                         toggleLike: jest.fn(),
@@ -19,7 +29,10 @@ describe('PostInteractionsController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<PostInteractionsController>(PostInteractionsController);
         interactionsService = module.get(PostInteractionsService);

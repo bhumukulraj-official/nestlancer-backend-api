@@ -42,7 +42,7 @@ describe('CommentModerationService', () => {
         });
 
         it('should default threshold to 0.7 if config missing', async () => {
-            configService.get.mockReturnValue(undefined); // falls back to 0.7 internally
+            configService.get.mockImplementation((key, defaultValue) => defaultValue);
             const result = await service.checkContent('Only one link http://good.com');
             // score = 0.2 < 0.7, so true
             expect(result).toBe(true);

@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { BlogAnalyticsAdminController } from '../../../../src/controllers/admin/blog-analytics.admin.controller';
 
 describe('BlogAnalyticsAdminController', () => {
@@ -7,7 +9,20 @@ describe('BlogAnalyticsAdminController', () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [BlogAnalyticsAdminController],
-        }).compile();
+            providers: [
+                {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
+            ],
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<BlogAnalyticsAdminController>(BlogAnalyticsAdminController);
     });

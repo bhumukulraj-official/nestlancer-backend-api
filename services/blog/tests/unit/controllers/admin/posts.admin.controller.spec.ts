@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { PostsAdminController } from '../../../../src/controllers/admin/posts.admin.controller';
 import { BlogAdminService } from '../../../../src/services/blog-admin.service';
 import { PostsService } from '../../../../src/services/posts.service';
 import { PostPublishingService } from '../../../../src/services/post-publishing.service';
 import { PostSchedulingService } from '../../../../src/services/post-scheduling.service';
-import { CreatePostDto } from '../../../../src/dto/create-post.dto';
+import { CreatePostDto, ContentFormat } from '../../../../src/dto/create-post.dto';
 import { UpdatePostDto } from '../../../../src/dto/update-post.dto';
 import { SchedulePostDto } from '../../../../src/dto/schedule-post.dto';
 
@@ -19,6 +21,14 @@ describe('PostsAdminController', () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [PostsAdminController],
             providers: [
+                {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
                 {
                     provide: BlogAdminService,
                     useValue: {
@@ -48,7 +58,10 @@ describe('PostsAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<PostsAdminController>(PostsAdminController);
         adminService = module.get(BlogAdminService);
@@ -63,7 +76,7 @@ describe('PostsAdminController', () => {
 
     describe('findAll', () => {
         it('should call adminService.findAll', async () => {
-            adminService.findAll.mockResolvedValue([]);
+            adminService.findAll.mockResolvedValue({ items: [], totalItems: 0, page: 1, limit: 10, totalPages: 0 } as any);
             await controller.findAll({ query: 'test' });
             expect(adminService.findAll).toHaveBeenCalledWith({ query: 'test' });
         });
@@ -71,7 +84,7 @@ describe('PostsAdminController', () => {
 
     describe('create', () => {
         it('should set authorId if not provided and call postsService.create', async () => {
-            const dto: CreatePostDto = { title: 'Test', content: 'Test' };
+            const dto: CreatePostDto = { title: 'Test', content: 'Test', excerpt: 'Test', contentFormat: ContentFormat.MARKDOWN };
             const req = { user: { id: 'admin1' } };
             postsService.create.mockResolvedValue({ id: '1' } as any);
 

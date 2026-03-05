@@ -6,6 +6,13 @@ describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
+        process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb';
+        process.env.JWT_ACCESS_SECRET = 'test-secret';
+        process.env.JWT_REFRESH_SECRET = 'test-secret';
+        process.env.CACHE_HOST = 'localhost';
+        process.env.CACHE_PORT = '6379';
+        process.env.SEARCH_URL = 'http://localhost:9200';
+
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         }).compile();

@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { CommentsAdminController } from '../../../../src/controllers/admin/comments.admin.controller';
 
 describe('CommentsAdminController', () => {
@@ -7,7 +9,20 @@ describe('CommentsAdminController', () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [CommentsAdminController],
-        }).compile();
+            providers: [
+                {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
+            ],
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<CommentsAdminController>(CommentsAdminController);
     });

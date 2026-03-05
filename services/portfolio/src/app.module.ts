@@ -21,13 +21,16 @@ import { PortfolioAdminService } from './services/portfolio-admin.service';
 
 @Module({
     imports: [
-        ConfigModule,
-        DatabaseModule,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            load: [portfolioConfig],
+        }),
+        DatabaseModule.forRoot(),
         AuthLibModule,
-        LoggerModule,
+        LoggerModule.forRoot(),
         MetricsModule,
-        CacheModule,
-        SearchModule,
+        CacheModule.forRoot(),
+        SearchModule.forRoot(),
     ],
     controllers: [
         PortfolioPublicController,

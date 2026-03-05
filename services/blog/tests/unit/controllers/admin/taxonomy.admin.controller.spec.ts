@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { BlogCategoriesAdminController, BlogTagsAdminController } from '../../../../src/controllers/admin/taxonomy.admin.controller';
 import { CategoriesService, TagsService } from '../../../../src/services/taxonomy.service';
 import { CreateCategoryDto, UpdateCategoryDto, CreateTagDto, UpdateTagDto, MergeTagsDto } from '../../../../src/dto/create-category.dto';
@@ -12,13 +14,24 @@ describe('BlogCategoriesAdminController', () => {
             controllers: [BlogCategoriesAdminController],
             providers: [
                 {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
+                {
                     provide: CategoriesService,
                     useValue: {
                         findAll: jest.fn(),
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<BlogCategoriesAdminController>(BlogCategoriesAdminController);
         categoriesService = module.get(CategoriesService);
@@ -69,13 +82,24 @@ describe('BlogTagsAdminController', () => {
             controllers: [BlogTagsAdminController],
             providers: [
                 {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
+                {
                     provide: TagsService,
                     useValue: {
                         findAll: jest.fn(),
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<BlogTagsAdminController>(BlogTagsAdminController);
         tagsService = module.get(TagsService);

@@ -32,14 +32,17 @@ import { BlogAdminService } from './services/blog-admin.service';
 
 @Module({
     imports: [
-        ConfigModule,
-        DatabaseModule,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            load: [blogConfig],
+        }),
+        DatabaseModule.forRoot(),
         AuthLibModule,
-        LoggerModule,
+        LoggerModule.forRoot(),
         MetricsModule,
-        CacheModule,
-        SearchModule,
-        OutboxModule,
+        CacheModule.forRoot(),
+        SearchModule.forRoot(),
+        OutboxModule.forRoot(),
     ],
     controllers: [
         PostsPublicController,

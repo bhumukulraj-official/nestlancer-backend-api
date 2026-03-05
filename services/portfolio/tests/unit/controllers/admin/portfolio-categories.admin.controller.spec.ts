@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { PortfolioCategoriesAdminController } from '../../../../src/controllers/admin/portfolio-categories.admin.controller';
 import { PortfolioCategoriesService } from '../../../../src/services/portfolio-categories.service';
 import { CreateCategoryDto } from '../../../../src/dto/create-category.dto';
@@ -13,6 +15,14 @@ describe('PortfolioCategoriesAdminController', () => {
             controllers: [PortfolioCategoriesAdminController],
             providers: [
                 {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
+                {
                     provide: PortfolioCategoriesService,
                     useValue: {
                         findAll: jest.fn(),
@@ -22,7 +32,10 @@ describe('PortfolioCategoriesAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<PortfolioCategoriesAdminController>(PortfolioCategoriesAdminController);
         categoriesService = module.get(PortfolioCategoriesService);

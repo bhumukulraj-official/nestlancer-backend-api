@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { CommentsController } from '../../../../src/controllers/user/comments.controller';
 import { CommentsService } from '../../../../src/services/comments.service';
 import { CreateCommentDto, UpdateCommentDto } from '../../../../src/dto/create-comment.dto';
@@ -12,6 +14,14 @@ describe('CommentsController', () => {
             controllers: [CommentsController],
             providers: [
                 {
+                    provide: Reflector,
+                    useValue: {
+                        get: jest.fn(),
+                        getAllAndOverride: jest.fn(),
+                        getAllAndMerge: jest.fn(),
+                    },
+                },
+                {
                     provide: CommentsService,
                     useValue: {
                         create: jest.fn(),
@@ -20,7 +30,10 @@ describe('CommentsController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
+            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+            .compile();
 
         controller = module.get<CommentsController>(CommentsController);
         commentsService = module.get(CommentsService);
