@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentsAdminController } from '../../../../src/controllers/admin/payments.admin.controller';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { PaymentsService } from '../../../../src/services/payments.service';
 import { RefundService } from '../../../../src/services/refund.service';
 import { PaymentStatsService } from '../../../../src/services/admin-tasks.service';
@@ -28,7 +29,12 @@ describe('PaymentsAdminController', () => {
                     useValue: { getStats: jest.fn() },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<PaymentsAdminController>(PaymentsAdminController);
         paymentsService = module.get(PaymentsService);

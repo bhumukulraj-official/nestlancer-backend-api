@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentsController } from '../../../../src/controllers/user/payments.controller';
 import { PaymentsService } from '../../../../src/services/payments.service';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { PaymentIntentService } from '../../../../src/services/payment-intent.service';
 import { PaymentConfirmationService } from '../../../../src/services/payment-confirmation.service';
 import { ReceiptPdfService, InvoicePdfService } from '../../../../src/services/pdf.service';
@@ -24,7 +25,12 @@ describe('PaymentsController', () => {
                 { provide: ReceiptPdfService, useValue: mockReceiptService },
                 { provide: InvoicePdfService, useValue: mockInvoiceService },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<PaymentsController>(PaymentsController);
     });

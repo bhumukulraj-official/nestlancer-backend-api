@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentDisputesAdminController } from '../../../../src/controllers/admin/payment-disputes.admin.controller';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { PaymentDisputesService, PaymentReconciliationService } from '../../../../src/services/admin-tasks.service';
 
 describe('PaymentDisputesAdminController', () => {
@@ -25,7 +26,12 @@ describe('PaymentDisputesAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<PaymentDisputesAdminController>(PaymentDisputesAdminController);
         disputesService = module.get(PaymentDisputesService);

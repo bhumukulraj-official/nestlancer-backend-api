@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RazorpayWebhookService } from '../../../src/services/razorpay-webhook.service';
+import { RazorpayService } from '../../../src/services/razorpay.service';
+import { PaymentConfirmationService } from '../../../src/services/payment-confirmation.service';
 
 describe('RazorpayWebhookService', () => {
   let provider: RazorpayWebhookService;
@@ -8,7 +10,8 @@ describe('RazorpayWebhookService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RazorpayWebhookService,
-        // Add mocked dependencies here
+        { provide: RazorpayService, useValue: {} },
+        { provide: PaymentConfirmationService, useValue: {} },
       ],
     }).compile();
 

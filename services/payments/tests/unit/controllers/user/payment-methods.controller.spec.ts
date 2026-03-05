@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentMethodsController } from '../../../../src/controllers/user/payment-methods.controller';
 import { PaymentMethodsService } from '../../../../src/services/payment-methods.service';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { AddPaymentMethodDto } from '../../../../src/dto/add-payment-method.dto';
 
 describe('PaymentMethodsController', () => {
@@ -22,7 +23,12 @@ describe('PaymentMethodsController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<PaymentMethodsController>(PaymentMethodsController);
         methodsService = module.get(PaymentMethodsService);
