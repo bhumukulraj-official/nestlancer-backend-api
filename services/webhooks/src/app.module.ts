@@ -3,13 +3,14 @@ import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
-import { DatabaseModule } from '@nestlancer/database';
-import { QueueModule } from '@nestlancer/queue';
+import { DatabaseModule, PrismaReadService, PrismaWriteService } from '@nestlancer/database';
+import { CacheModule } from '@nestlancer/cache';
+import { QueueModule, QueuePublisherService } from '@nestlancer/queue';
+import { AuthLibModule } from '@nestlancer/auth-lib';
+
 import { WebhookReceiverController } from './controllers/webhook/webhook-receiver.controller';
 import { WebhookIngestionService } from './services/webhook-ingestion.service';
 import { WebhookDispatcherService } from './services/webhook-dispatcher.service';
-import { WebhookRetryService } from './services/webhook-retry.service';
-import { WebhookReplayService } from './services/webhook-replay.service';
 import { RazorpayProvider } from './providers/razorpay.provider';
 import { CloudflareProvider } from './providers/cloudflare.provider';
 import { webhooksConfig } from './config/webhooks.config';
@@ -20,17 +21,20 @@ import { webhooksConfig } from './config/webhooks.config';
         LoggerModule,
         MetricsModule,
         TracingModule,
-        DatabaseModule,
-        QueueModule,
+        DatabaseModule.forRoot(),
+        CacheModule,
+        QueueModule.forRoot({ url: process.env.REDIS_URL || 'redis://localhost:6379' }),
+        AuthLibModule,
     ],
     controllers: [WebhookReceiverController],
     providers: [
         WebhookIngestionService,
         WebhookDispatcherService,
-        WebhookRetryService,
-        WebhookReplayService,
         RazorpayProvider,
         CloudflareProvider,
+        PrismaReadService,
+        PrismaWriteService,
+        QueuePublisherService,
     ],
 })
 export class AppModule { }

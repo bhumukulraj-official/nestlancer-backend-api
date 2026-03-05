@@ -1,21 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnnouncementsService } from '../../../src/services/announcements.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { QueuePublisherService } from '@nestlancer/queue';
 
 describe('AnnouncementsService', () => {
-  let provider: AnnouncementsService;
+  let service: AnnouncementsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AnnouncementsService,
-        // Add mocked dependencies here
+        { provide: PrismaWriteService, useValue: { announcement: { create: jest.fn() } } },
+        { provide: PrismaReadService, useValue: { announcement: { findMany: jest.fn() } } },
+        { provide: QueuePublisherService, useValue: { publish: jest.fn() } },
       ],
     }).compile();
 
-    provider = module.get<AnnouncementsService>(AnnouncementsService);
+    service = module.get<AnnouncementsService>(AnnouncementsService);
   });
 
   it('should be defined', () => {
-    expect(provider).toBeDefined();
+    expect(service).toBeDefined();
   });
 });

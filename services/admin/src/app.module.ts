@@ -1,25 +1,96 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestlancer/config';
-import { DatabaseModule } from '@nestlancer/database';
+import { DatabaseModule, PrismaReadService, PrismaWriteService } from '@nestlancer/database';
 import { CacheModule } from '@nestlancer/cache';
-import { QueueModule } from '@nestlancer/queue';
+import { QueueModule, QueuePublisherService } from '@nestlancer/queue';
+import { StorageModule } from '@nestlancer/storage';
+import { HttpModule } from '@nestjs/axios';
+import { JwtModule } from '@nestjs/jwt';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
 import { AuthLibModule } from '@nestlancer/auth-lib';
 
+// Controllers
+import { AuditAdminController } from './controllers/admin/audit.admin.controller';
+import { BackupsAdminController } from './controllers/admin/backups.admin.controller';
+import { DashboardAdminController } from './controllers/admin/dashboard.admin.controller';
+import { EmailTemplatesAdminController } from './controllers/admin/email-templates.admin.controller';
+import { ImpersonationAdminController } from './controllers/admin/impersonation.admin.controller';
+import { SystemAdminController } from './controllers/admin/system.admin.controller';
+import { WebhooksAdminController } from './controllers/admin/webhooks.admin.controller';
+
+// Services
+import { AnnouncementsService } from './services/announcements.service';
+import { AuditExportService } from './services/audit-export.service';
+import { AuditService } from './services/audit.service';
+import { BackgroundJobsService } from './services/background-jobs.service';
+import { BackupSchedulerService } from './services/backup-scheduler.service';
+import { BackupsService } from './services/backups.service';
+import { CacheManagementService } from './services/cache-management.service';
+import { DashboardPerformanceService } from './services/dashboard-performance.service';
+import { DashboardProjectsService } from './services/dashboard-projects.service';
+import { DashboardRevenueService } from './services/dashboard-revenue.service';
+import { DashboardUsersService } from './services/dashboard-users.service';
+import { DashboardService } from './services/dashboard.service';
+import { EmailTemplatesService } from './services/email-templates.service';
+import { FeatureFlagsService } from './services/feature-flags.service';
+import { ImpersonationService } from './services/impersonation.service';
+import { MaintenanceModeService } from './services/maintenance-mode.service';
+import { SystemConfigService } from './services/system-config.service';
+import { SystemLogsService } from './services/system-logs.service';
+import { WebhookDeliveriesService } from './services/webhook-deliveries.service';
+import { WebhookTestingService } from './services/webhook-testing.service';
+import { WebhooksManagementService } from './services/webhooks-management.service';
+
 @Module({
     imports: [
-        ConfigModule,
+        process.env.NODE_ENV === 'test' ? ConfigModule : ConfigModule.forRoot(),
         LoggerModule,
         MetricsModule,
         TracingModule,
-        DatabaseModule,
-        CacheModule,
+        DatabaseModule.forRoot(),
+        CacheModule.forRoot(),
         QueueModule,
+        StorageModule.forRoot(),
+        HttpModule,
+        JwtModule.register({}),
         AuthLibModule, // Provides JwtAuthGuard and RolesGuard
     ],
-    controllers: [],
-    providers: [],
+    controllers: [
+        AuditAdminController,
+        BackupsAdminController,
+        DashboardAdminController,
+        EmailTemplatesAdminController,
+        ImpersonationAdminController,
+        SystemAdminController,
+        WebhooksAdminController,
+    ],
+    providers: [
+        AnnouncementsService,
+        AuditExportService,
+        AuditService,
+        BackgroundJobsService,
+        BackupSchedulerService,
+        BackupsService,
+        CacheManagementService,
+        DashboardPerformanceService,
+        DashboardProjectsService,
+        DashboardRevenueService,
+        DashboardUsersService,
+        DashboardService,
+        EmailTemplatesService,
+        FeatureFlagsService,
+        ImpersonationService,
+        MaintenanceModeService,
+        SystemConfigService,
+        SystemLogsService,
+        WebhookDeliveriesService,
+        WebhookTestingService,
+        WebhooksManagementService,
+        PrismaReadService,
+        PrismaWriteService,
+        QueuePublisherService,
+    ],
 })
 export class AppModule { }

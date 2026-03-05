@@ -1,21 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BackgroundJobsService } from '../../../src/services/background-jobs.service';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { QueuePublisherService } from '@nestlancer/queue';
 
 describe('BackgroundJobsService', () => {
-  let provider: BackgroundJobsService;
+  let service: BackgroundJobsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BackgroundJobsService,
-        // Add mocked dependencies here
+        { provide: QueuePublisherService, useValue: { publish: jest.fn() } },
+        { provide: PrismaWriteService, useValue: { job: { update: jest.fn() } } },
+        { provide: PrismaReadService, useValue: { job: { findMany: jest.fn() } } },
       ],
     }).compile();
 
-    provider = module.get<BackgroundJobsService>(BackgroundJobsService);
+    service = module.get<BackgroundJobsService>(BackgroundJobsService);
   });
 
   it('should be defined', () => {
-    expect(provider).toBeDefined();
+    expect(service).toBeDefined();
   });
 });

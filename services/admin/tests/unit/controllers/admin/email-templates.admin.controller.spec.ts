@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmailTemplatesAdminController } from '../../../../src/controllers/admin/email-templates.admin.controller';
+import { EmailTemplatesService } from '../../../../src/services/email-templates.service';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
+import { SuperAdminGuard } from '../../../../src/guards/super-admin.guard';
 
 describe('EmailTemplatesAdminController', () => {
   let controller: EmailTemplatesAdminController;
@@ -8,9 +11,13 @@ describe('EmailTemplatesAdminController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EmailTemplatesAdminController],
       providers: [
-        // Add mocked dependencies here
+        { provide: EmailTemplatesService, useValue: { findAll: jest.fn(), findOne: jest.fn(), update: jest.fn(), preview: jest.fn(), test: jest.fn() } },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
+      .overrideGuard(SuperAdminGuard).useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<EmailTemplatesAdminController>(EmailTemplatesAdminController);
   });
