@@ -1,4 +1,7 @@
+import { Test, TestingModule } from '@nestjs/testing';
 import { MediaService } from '../../../src/media/media.service';
+import { MediaStorageService } from '../../../src/storage/storage.service';
+import { ReadOnly, ReadOnlyInterceptor } from '@nestlancer/common';
 
 describe('MediaService', () => {
     let service: MediaService;
@@ -6,7 +9,7 @@ describe('MediaService', () => {
     let mockPrismaRead: any;
     let mockStorageService: any;
 
-    const mockMedia = { id: 'm-1', userId: 'user-1', filename: 'test.png', mimeType: 'image/png', size: 1024, status: 'READY', storageKey: 'users/user-1/2025-01-01/uuid.png', customMetadata: {}, createdAt: new Date() };
+    const mockMedia = { id: 'm-1', userId: 'user-1', filename: 'test.png', mimeType: 'image/png', size: 1024, status: 'READY', metadata: { storageKey: 'users/user-1/2025-01-01/uuid.png' }, createdAt: new Date() };
 
     beforeEach(() => {
         mockPrismaRead = {
@@ -85,13 +88,14 @@ describe('MediaService', () => {
     describe('delete', () => {
         it('should delete media and storage file', async () => {
             await service.delete('m-1', 'user-1');
-            expect(mockStorageService.deleteFile).toHaveBeenCalled();
-            expect(mockPrismaWrite.media.delete).toHaveBeenCalled();
+            expect(mockStorageService.deleteFile).toHaveBeenCalledWith('users/user-1/2025-01-01/uuid.png');
+            expect(mockPrismaWrite.media.delete).toHaveBeenCalledWith({ where: { id: 'm-1' } });
         });
     });
 
     describe('getDownloadUrl', () => {
         it('should return presigned download URL', async () => {
+            mockPrismaRead.media.findFirst.mockResolvedValue(mockMedia);
             const result = await service.getDownloadUrl('m-1', 'user-1');
             expect(result.downloadUrl).toBeDefined();
             expect(result.expiresIn).toBe(3600);

@@ -14,14 +14,14 @@ import { ShareModule } from './share/share.module';
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        ConfigModule.forRoot(),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
-        DatabaseModule,
-        CacheModule,
-        QueueModule,
-        OutboxModule,
+        TracingModule.forRoot(),
+        DatabaseModule.forRoot(),
+        CacheModule.forRoot(),
+        QueueModule.forRoot(),
+        OutboxModule.forRoot(),
         AuthLibModule,
         StorageModule,
         MediaModule,

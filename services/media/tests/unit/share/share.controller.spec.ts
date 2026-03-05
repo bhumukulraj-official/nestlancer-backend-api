@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ShareController } from '../../../src/share/share.controller';
 import { ShareService } from '../../../src/share/share.service';
+import { JwtAuthGuard } from '@nestlancer/auth-lib';
 
 describe('ShareController', () => {
     let controller: ShareController;
@@ -14,7 +15,10 @@ describe('ShareController', () => {
                     useValue: {},
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<ShareController>(ShareController);
     });

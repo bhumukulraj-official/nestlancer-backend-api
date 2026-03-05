@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MediaAdminController } from '../../../src/media/media.admin.controller';
 import { MediaAdminService } from '../../../src/media/media-admin.service';
 import { QueryMediaDto } from '../../../src/dto/query-media.dto';
+import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('MediaAdminController', () => {
     let controller: MediaAdminController;
@@ -24,7 +25,12 @@ describe('MediaAdminController', () => {
                     },
                 },
             ],
-        }).compile();
+        })
+            .overrideGuard(JwtAuthGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(RolesGuard)
+            .useValue({ canActivate: () => true })
+            .compile();
 
         controller = module.get<MediaAdminController>(MediaAdminController);
         adminService = module.get(MediaAdminService);

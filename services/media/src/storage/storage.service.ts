@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { StorageProvider } from '@nestlancer/storage';
+import { StorageService as LibStorageService } from '@nestlancer/storage';
 import { MediaConfig } from '../config/media.config';
 import { generateUuid } from '@nestlancer/common';
 import * as path from 'path';
 
 @Injectable()
-export class StorageService {
-    private readonly logger = new Logger(StorageService.name);
+export class MediaStorageService {
+    private readonly logger = new Logger(MediaStorageService.name);
 
-    constructor(private readonly storageProvider: StorageProvider) { }
+    constructor(private readonly storageProvider: LibStorageService) { }
 
     generateStorageKey(userId: string, filename: string): string {
         const ext = path.extname(filename);
@@ -53,8 +53,6 @@ export class StorageService {
     }
 
     async getFileSize(key: string) {
-        // Mocked or omitted if not supported, typically not supported in standard interface without headObject
-        // If we must have it, we can return 0 or do a HEAD request if added to interface later.
         return 0;
     }
 }

@@ -3,7 +3,7 @@ import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { HashingService } from '@nestlancer/crypto';
 import { ShareMediaDto } from '../dto/share-media.dto';
 import { ResourceNotFoundException } from '@nestlancer/common';
-import { ConfigService } from '@nestjs/config';
+import { NestlancerConfigService } from '@nestlancer/config';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class ShareService {
         private readonly prismaWrite: PrismaWriteService,
         private readonly prismaRead: PrismaReadService,
         private readonly hashingService: HashingService,
-        private readonly configService: ConfigService,
+        private readonly configService: NestlancerConfigService,
     ) { }
 
     async createShareLink(userId: string, mediaId: string, dto: ShareMediaDto) {
@@ -45,7 +45,7 @@ export class ShareService {
             },
         });
 
-        const baseUrl = this.configService.get<string>('APP_URL', 'https://nestlancer.com');
+        const baseUrl = this.configService.getOptional<string>('APP_URL', 'https://nestlancer.com');
 
         return {
             shareUrl: `${baseUrl}/share/${token}`,
@@ -94,7 +94,7 @@ export class ShareService {
             throw new ResourceNotFoundException('ShareLink', token);
         }
 
-        if (shareLink.media.uploaderId !== userId) {
+        if ((shareLink.media as any).uploaderId !== userId) {
             throw new ForbiddenException('You do not own this share link');
         }
 

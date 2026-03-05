@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService, ReadOnly } from '@nestlancer/database';
-import { StorageService } from '../storage/storage.service';
+import { MediaStorageService } from '../storage/storage.service';
 import { RequestUploadDto } from '../dto/request-upload.dto';
 import { ConfirmUploadDto } from '../dto/confirm-upload.dto';
 import { DirectUploadDto } from '../dto/direct-upload.dto';
@@ -8,15 +8,16 @@ import { UpdateMediaMetadataDto } from '../dto/update-media-metadata.dto';
 import { QueryMediaDto } from '../dto/query-media.dto';
 import { MediaStatus } from '../interfaces/media.interface';
 import { buildPrismaSkipTake, createPaginationMeta, ResourceNotFoundException } from '@nestlancer/common';
-import * as crypto from 'crypto';
-import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class MediaService {
+    private readonly logger = new Logger(MediaService.name);
+
     constructor(
         private readonly prismaWrite: PrismaWriteService,
         private readonly prismaRead: PrismaReadService,
-        private readonly storageService: StorageService,
+        private readonly storageService: MediaStorageService,
     ) { }
 
     @ReadOnly()
@@ -43,6 +44,19 @@ export class MediaService {
         };
     }
 
+    @ReadOnly()
+    async findById(mediaId: string, userId: string) {
+        const media = await this.prismaRead.media.findFirst({
+            where: { id: mediaId, uploaderId: userId },
+        });
+
+        if (!media) {
+            throw new ResourceNotFoundException('Media');
+        }
+
+        return media;
+    }
+
     async requestUpload(userId: string, dto: RequestUploadDto) {
         const key = this.storageService.generateStorageKey(userId, dto.filename);
 
@@ -54,6 +68,9 @@ export class MediaService {
                 mimeType: dto.mimeType,
                 size: dto.size,
                 status: MediaStatus.PENDING,
+                metadata: {
+                    storageKey: key,
+                }
             },
         });
 
@@ -62,39 +79,31 @@ export class MediaService {
         return {
             mediaId: media.id,
             uploadUrl,
+            key,
             expiresIn: 3600,
         };
     }
 
-    async confirmUpload(userId: string, dto: ConfirmUploadDto) {
+    async confirmUpload(userId: string, dto: { uploadId: string; providerMetadata?: any }) {
         const media = await this.prismaWrite.media.findFirst({
-            where: { id: dto.uploadId, uploaderId: userId, status: MediaStatus.PENDING },
+            where: { id: dto.uploadId, uploaderId: userId },
         });
 
         if (!media) {
-            throw new ResourceNotFoundException('Media request', dto.uploadId);
+            throw new ResourceNotFoundException('Media');
         }
 
-        // Usually we would check S3 if it really exists or rely on Webhooks. Assuming direct confirm for now.
-        const updated = await this.prismaWrite.media.update({
-            where: { id: media.id },
-            data: { status: MediaStatus.READY },
+        return this.prismaWrite.media.update({
+            where: { id: dto.uploadId },
+            data: {
+                status: MediaStatus.READY,
+                providerMetadata: dto.providerMetadata,
+            },
         });
-
-        return updated;
     }
 
-    async directUpload(userId: string, dto: DirectUploadDto, file: any) {
+    async directUpload(userId: string, file: any, dto: DirectUploadDto) {
         const key = this.storageService.generateStorageKey(userId, file.originalname);
-
-        const bucket = dto.projectId ? 'nestlancer-private' : 'nestlancer-public';
-
-        await this.storageService.upload(
-            bucket,
-            key,
-            file.buffer,
-            file.mimetype
-        );
 
         const media = await this.prismaWrite.media.create({
             data: {
@@ -103,90 +112,96 @@ export class MediaService {
                 originalFilename: file.originalname,
                 mimeType: file.mimetype,
                 size: file.size,
-                contextType: dto.projectId ? 'PROJECT' : (dto.messageId ? 'MESSAGE' : null),
-                contextId: dto.projectId || dto.messageId || null,
-                metadata: { storageKey: key, fileType: dto.fileType },
                 status: MediaStatus.READY,
+                metadata: {
+                    storageKey: key,
+                }
             },
         });
 
+        await this.storageService.upload(
+            'nestlancer-private',
+            key,
+            file.buffer,
+            file.mimetype,
+        );
+
         return media;
+    }
+
+    async delete(mediaId: string, userId: string) {
+        const media = await this.prismaRead.media.findFirst({
+            where: { id: mediaId, uploaderId: userId },
+        });
+
+        if (!media) {
+            throw new ResourceNotFoundException('Media');
+        }
+
+        const metadata = media.metadata as any;
+        const storageKey = metadata?.storageKey;
+
+        if (storageKey) {
+            await this.storageService.deleteFile(storageKey);
+        }
+
+        return this.prismaWrite.media.delete({
+            where: { id: mediaId },
+        });
+    }
+
+    async getDownloadUrl(mediaId: string, userId: string) {
+        const media = await this.prismaRead.media.findFirst({
+            where: { id: mediaId, uploaderId: userId },
+        });
+
+        if (!media) {
+            throw new ResourceNotFoundException('Media');
+        }
+
+        const metadata = media.metadata as any;
+        const storageKey = metadata?.storageKey;
+
+        if (!storageKey) {
+            throw new ResourceNotFoundException('Storage file');
+        }
+
+        const downloadUrl = await this.storageService.generatePresignedDownloadUrl(storageKey);
+
+        return {
+            downloadUrl,
+            expiresIn: 3600,
+        };
+    }
+
+    async updateMetadata(mediaId: string, userId: string, dto: UpdateMediaMetadataDto) {
+        const media = await this.prismaRead.media.findFirst({
+            where: { id: mediaId, uploaderId: userId },
+        });
+
+        if (!media) {
+            throw new ResourceNotFoundException('Media');
+        }
+
+        return this.prismaWrite.media.update({
+            where: { id: mediaId },
+            data: {
+                filename: dto.filename,
+                metadata: dto.metadata as any,
+            },
+        });
     }
 
     @ReadOnly()
     async getStorageStats(userId: string) {
-        const sum = await this.prismaRead.media.aggregate({
-            where: { uploaderId: userId, status: MediaStatus.READY },
+        const result = await this.prismaRead.media.aggregate({
+            where: { uploaderId: userId },
             _sum: { size: true },
-            _count: true,
         });
 
         return {
-            totalUsedBytes: sum._sum.size || 0,
-            fileCount: sum._count,
-            quotaBytes: 5 * 1024 * 1024 * 1024, // 5GB default
+            totalUsedBytes: result._sum.size || 0,
+            quotaBytes: 5 * 1024 * 1024 * 1024, // 5GB default quota
         };
-    }
-
-    @ReadOnly()
-    async findById(id: string, userId: string) {
-        const media = await this.prismaRead.media.findFirst({
-            where: { id, uploaderId: userId },
-        });
-
-        if (!media) {
-            throw new ResourceNotFoundException('Media', id);
-        }
-
-        return media;
-    }
-
-    async updateMetadata(id: string, userId: string, dto: UpdateMediaMetadataDto) {
-        const media = await this.prismaWrite.media.findFirst({
-            where: { id, uploaderId: userId },
-        });
-
-        if (!media) {
-            throw new ResourceNotFoundException('Media', id);
-        }
-
-        return this.prismaWrite.media.update({
-            where: { id },
-            data: {
-                ...(dto.filename && { filename: dto.filename }),
-                ...(dto.description && { metadata: { description: dto.description } }),
-            },
-        });
-    }
-
-    async delete(id: string, userId: string) {
-        const media = await this.prismaWrite.media.findFirst({
-            where: { id, uploaderId: userId },
-        });
-
-        if (!media) {
-            throw new ResourceNotFoundException('Media', id);
-        }
-
-        // Should also delete from S3 (Key usually computable / stored in metadata, assuming standard format here)
-        await this.storageService.deleteFile(`users/${userId}/${media.createdAt.toISOString().split('T')[0]}/${media.id}`);
-
-        return this.prismaWrite.media.delete({
-            where: { id },
-        });
-    }
-
-    async getDownloadUrl(id: string, userId: string) {
-        const media = await this.prismaRead.media.findFirst({
-            where: { id, uploaderId: userId },
-        });
-
-        if (!media) {
-            throw new ResourceNotFoundException('Media', id);
-        }
-
-        const downloadUrl = await this.storageService.generatePresignedDownloadUrl(`users/${userId}/${media.createdAt.toISOString().split('T')[0]}/${media.id}`);
-
-        return { downloadUrl, expiresIn: 3600 };
     }
 }

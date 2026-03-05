@@ -1,16 +1,31 @@
-import { StorageService } from '../../../src/storage/storage.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { MediaStorageService } from '../../../src/storage/storage.service';
+import { StorageService as LibStorageService } from '@nestlancer/storage';
 
-describe('StorageService', () => {
-    let service: StorageService;
-    let mockS3: any;
+describe('MediaStorageService', () => {
+    let service: MediaStorageService;
+    let mockStorageProvider: any;
 
-    beforeEach(() => {
-        mockS3 = {
-            getSignedUrl: jest.fn().mockResolvedValue('https://s3.example.com/url'),
+    beforeEach(async () => {
+        mockStorageProvider = {
+            getSignedUrl: jest.fn().mockResolvedValue('https://example.com/url'),
             upload: jest.fn().mockResolvedValue({}),
-            delete: jest.fn().mockResolvedValue(undefined),
+            delete: jest.fn().mockResolvedValue({}),
+            download: jest.fn(),
+            exists: jest.fn(),
         };
-        service = new StorageService(mockS3);
+
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                MediaStorageService,
+                {
+                    provide: LibStorageService,
+                    useValue: mockStorageProvider,
+                },
+            ],
+        }).compile();
+
+        service = module.get<MediaStorageService>(MediaStorageService);
     });
 
     describe('generateStorageKey', () => {
@@ -24,8 +39,8 @@ describe('StorageService', () => {
     describe('generatePresignedUploadUrl', () => {
         it('should call S3 with correct params', async () => {
             const result = await service.generatePresignedUploadUrl('key', 'image/png');
-            expect(result).toBe('https://s3.example.com/url');
-            expect(mockS3.getSignedUrl).toHaveBeenCalledWith(expect.objectContaining({
+            expect(result).toBe('https://example.com/url');
+            expect(mockStorageProvider.getSignedUrl).toHaveBeenCalledWith(expect.objectContaining({
                 operation: 'put',
                 contentType: 'image/png'
             }));
@@ -35,8 +50,8 @@ describe('StorageService', () => {
     describe('generatePresignedDownloadUrl', () => {
         it('should return download URL', async () => {
             const result = await service.generatePresignedDownloadUrl('key');
-            expect(result).toBe('https://s3.example.com/url');
-            expect(mockS3.getSignedUrl).toHaveBeenCalledWith(expect.objectContaining({
+            expect(result).toBe('https://example.com/url');
+            expect(mockStorageProvider.getSignedUrl).toHaveBeenCalledWith(expect.objectContaining({
                 operation: 'get'
             }));
         });
@@ -45,7 +60,7 @@ describe('StorageService', () => {
     describe('deleteFile', () => {
         it('should call S3 delete', async () => {
             await service.deleteFile('key');
-            expect(mockS3.delete).toHaveBeenCalled();
+            expect(mockStorageProvider.delete).toHaveBeenCalled();
         });
     });
 

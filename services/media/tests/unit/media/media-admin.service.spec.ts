@@ -4,15 +4,16 @@ describe('MediaAdminService', () => {
     let service: MediaAdminService;
     let mockPrismaWrite: any;
     let mockPrismaRead: any;
+    let mockStorageService: any;
 
     beforeEach(() => {
         mockPrismaRead = {
             media: {
                 findMany: jest.fn().mockResolvedValue([{ id: 'm-1', status: 'READY' }]),
                 count: jest.fn().mockResolvedValue(1),
-                findUnique: jest.fn().mockResolvedValue({ id: 'm-1', status: 'READY' }),
+                findUnique: jest.fn().mockResolvedValue({ id: 'm-1', status: 'READY', metadata: { storageKey: 'key' } }),
                 aggregate: jest.fn().mockResolvedValue({ _sum: { size: 5000 } }),
-                groupBy: jest.fn().mockResolvedValue([{ fileType: 'IMAGE', _count: 3 }]),
+                groupBy: jest.fn().mockResolvedValue([{ status: 'READY', _count: 3 }, { mimeType: 'image/png', _count: 3 }]),
             },
         };
         mockPrismaWrite = {
@@ -21,7 +22,10 @@ describe('MediaAdminService', () => {
                 delete: jest.fn().mockResolvedValue({}),
             },
         };
-        service = new MediaAdminService(mockPrismaWrite, mockPrismaRead);
+        mockStorageService = {
+            deleteFile: jest.fn().mockResolvedValue(undefined),
+        };
+        service = new MediaAdminService(mockPrismaWrite, mockPrismaRead, mockStorageService);
     });
 
     describe('findAll', () => {
@@ -34,8 +38,8 @@ describe('MediaAdminService', () => {
     describe('getAnalytics', () => {
         it('should return storage analytics', async () => {
             const result = await service.getAnalytics();
-            expect(result.totalBytes).toBe(5000);
-            expect(result.breakdown).toHaveLength(1);
+            expect(result.totalSize).toBe(5000);
+            expect(result.byStatus).toHaveLength(2);
         });
     });
 

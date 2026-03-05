@@ -24,7 +24,10 @@ describe('ShareService', () => {
             hash: jest.fn().mockResolvedValue('hashed_pw'),
             compare: jest.fn().mockResolvedValue(true),
         };
-        mockConfigService = { get: jest.fn().mockReturnValue('https://nestlancer.com') };
+        mockConfigService = {
+            get: jest.fn().mockReturnValue('https://nestlancer.com'),
+            getOptional: jest.fn().mockReturnValue('https://nestlancer.com')
+        };
         service = new ShareService(mockPrismaWrite, mockPrismaRead, mockHashingService, mockConfigService);
     });
 
