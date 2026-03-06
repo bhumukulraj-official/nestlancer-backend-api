@@ -50,6 +50,7 @@
         "@typescript-eslint/eslint-plugin": "^8.20.0",
         "@typescript-eslint/parser": "^8.20.0",
         "amqplib": "^0.10.9",
+        "axios": "^1.13.6",
         "eslint": "^8.57.1",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-import": "^2.31.0",
