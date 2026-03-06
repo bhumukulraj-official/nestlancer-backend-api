@@ -26,6 +26,7 @@ import { UsersModule } from './modules/users/users.module';
 import { RequestsModule } from './modules/requests/requests.module';
 import { QuotesModule } from './modules/quotes/quotes.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { ProgressModule } from './modules/progress/progress.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -65,6 +66,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
     RequestsModule,
     QuotesModule,
     ProjectsModule,
+    ProgressModule,
     PaymentsModule,
     MessagesModule,
     NotificationsModule,

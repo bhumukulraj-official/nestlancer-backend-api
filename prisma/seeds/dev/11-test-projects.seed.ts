@@ -18,7 +18,6 @@ export async function seedTestProjects(prisma: PrismaClient): Promise<void> {
             category: 'web-development',
             budgetMin: 5000000,
             budgetMax: 10000000,
-            currency: 'INR',
             timeframe: '3 months',
             status: 'CONVERTED_TO_PROJECT',
         },
@@ -31,6 +30,7 @@ export async function seedTestProjects(prisma: PrismaClient): Promise<void> {
         create: {
             id: 'test-quote-001',
             requestId: request.id,
+            userId: 'test-user-001',
             title: 'E-Commerce Platform - Proposal',
             description: 'Full-stack e-commerce with Next.js, NestJS, and PostgreSQL.',
             totalAmount: 7500000,
@@ -211,7 +211,6 @@ export async function seedTestProjects(prisma: PrismaClient): Promise<void> {
             category: 'ui-ux-design',
             budgetMin: 2000000,
             budgetMax: 4000000,
-            currency: 'INR',
             timeframe: '6 weeks',
             status: 'SUBMITTED',
         },

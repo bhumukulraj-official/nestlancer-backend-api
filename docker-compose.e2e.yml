@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: nestlancer_e2e
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     tmpfs: /var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]

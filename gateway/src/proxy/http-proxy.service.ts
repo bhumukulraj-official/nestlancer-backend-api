@@ -94,6 +94,10 @@ export class HttpProxyService {
       // Return data directly
       return response.data;
     } catch (error: any) {
+      // If already an HttpException (from catchError above), re-throw directly
+      if (error instanceof HttpException) {
+        throw error;
+      }
       return this.handleProxyError(error as AxiosError, serviceName);
     }
   }

@@ -10,7 +10,7 @@ import { HealthService } from './health.service';
 @Controller('health')
 @ApiTags('health')
 export class HealthController {
-  constructor(private readonly healthService: HealthService) {}
+  constructor(private readonly healthService: HealthService) { }
 
   @Get()
   @Public()
@@ -19,12 +19,20 @@ export class HealthController {
     return this.healthService.getGatewayHealth();
   }
 
+  @Get('detailed')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Detailed health check', description: 'Returns detailed health status for all infrastructure' })
+  async detailed() {
+    return this.healthService.checkAllServices();
+  }
+
   @Get('ready')
   @Public()
   @ApiOperation({ summary: 'Readiness probe', description: 'Checks if critical services are ready' })
   async ready() {
     const { ready, criticalServices } = await this.healthService.isReady();
-    
+
     return {
       status: ready ? 'ready' : 'not_ready',
       timestamp: new Date().toISOString(),
