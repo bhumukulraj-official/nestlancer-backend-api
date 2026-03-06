@@ -97,7 +97,10 @@ export class MediaService {
             where: { id: dto.uploadId },
             data: {
                 status: MediaStatus.READY,
-                providerMetadata: dto.providerMetadata,
+                metadata: {
+                    ...(media.metadata as any),
+                    providerMetadata: dto.providerMetadata,
+                },
             },
         });
     }
@@ -187,7 +190,11 @@ export class MediaService {
             where: { id: mediaId },
             data: {
                 filename: dto.filename,
-                metadata: dto.metadata as any,
+                metadata: {
+                    ...(media.metadata as any),
+                    customMetadata: dto.customMetadata,
+                    description: dto.description,
+                } as any,
             },
         });
     }

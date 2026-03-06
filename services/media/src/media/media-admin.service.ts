@@ -38,9 +38,37 @@ export class MediaAdminService {
     }
 
     @ReadOnly()
-    async findOne(id: string) {
+    async findById(id: string) {
         return this.prismaRead.media.findUnique({
             where: { id },
+        });
+    }
+
+    @ReadOnly()
+    async findQuarantined(query: QueryMediaDto) {
+        const { skip, take } = buildPrismaSkipTake(query.page, query.limit);
+        const where = { status: MediaStatus.QUARANTINED };
+
+        const [items, total] = await Promise.all([
+            this.prismaRead.media.findMany({
+                where,
+                skip,
+                take,
+                orderBy: { [query.sort || 'createdAt']: (query as any).order || 'desc' },
+            }),
+            this.prismaRead.media.count({ where }),
+        ]);
+
+        return {
+            data: items,
+            pagination: createPaginationMeta(query.page, query.limit, total),
+        };
+    }
+
+    async releaseQuarantined(id: string) {
+        return this.prismaWrite.media.update({
+            where: { id },
+            data: { status: MediaStatus.READY },
         });
     }
 

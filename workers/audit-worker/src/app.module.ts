@@ -27,4 +27,4 @@ import { auditConfig } from './config/audit-worker.config';
         AuditBatchInsertProcessor,
     ],
 })
-export class AppModule { }
+export class AuditModule { }
