@@ -180,3 +180,67 @@ services:
     command: pnpm turbo dev --filter=@nestlancer/health-service
     env_file: .env.development
     networks: [nestlancer-network]
+
+  analytics-worker:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-analytics-worker
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/analytics-worker
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  audit-worker:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-audit-worker
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/audit-worker
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  cdn-worker:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-cdn-worker
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/cdn-worker
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  email-worker:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-email-worker
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/email-worker
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  media-worker:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-media-worker
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/media-worker
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  notification-worker:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-notification-worker
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/notification-worker
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  outbox-poller:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-outbox-poller
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/outbox-poller
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  webhook-worker:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-webhook-worker
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/webhook-worker
+    env_file: .env.development
+    networks: [nestlancer-network]

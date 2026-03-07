@@ -23,7 +23,7 @@ export class StaleEventMonitorService {
         const staleDate = new Date();
         staleDate.setMinutes(staleDate.getMinutes() - this.staleThresholdMinutes);
 
-        const staleCount = await this.prisma.outboxEvent.count({
+        const staleCount = await this.prisma.outbox.count({
             where: {
                 status: OutboxEventStatus.PENDING,
                 createdAt: { lt: staleDate },

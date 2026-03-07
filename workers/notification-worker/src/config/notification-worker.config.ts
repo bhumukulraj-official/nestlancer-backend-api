@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 
-export const notificationWorkerConfig = registerAs('notification-worker', () => ({
+export const notificationWorkerConfig = registerAs('notificationWorker', () => ({
     rabbitmq: {
         url: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
         queue: 'notification.queue',

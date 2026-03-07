@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AuditModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { LoggerService } from '@nestlancer/logger';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
     const app = await NestFactory.createApplicationContext(AuditModule);
-    const logger = app.get(Logger);
+    const logger = app.get(LoggerService);
     const configService = app.get(ConfigService);
 
     const workerName = 'Audit Worker';

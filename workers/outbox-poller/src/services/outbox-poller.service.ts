@@ -21,7 +21,7 @@ export class OutboxPollerService {
         this.batchSize = this.configService.get<number>('outbox.batchSize') || 100;
     }
 
-    @Cron('*/2 * * * * *') // Every 2 seconds
+    @Cron('*/5 * * * * *') // Every 5 seconds
     async poll() {
         if (this.isProcessing) return;
 
@@ -41,7 +41,7 @@ export class OutboxPollerService {
 
     private async processBatch() {
         // 1. Fetch pending events
-        const events = await this.prisma.outboxEvent.findMany({
+        const events = await (this.prisma as any).outbox.findMany({
             where: { status: OutboxEventStatus.PENDING },
             orderBy: { createdAt: 'asc' },
             take: this.batchSize,
@@ -49,7 +49,7 @@ export class OutboxPollerService {
 
         if (events.length === 0) return;
 
-        this.logger.log(`Processing ${events.length} outbox events`);
+        this.logger.debug(`Processing ${events.length} outbox events`);
 
         for (const event of events) {
             try {
@@ -57,7 +57,7 @@ export class OutboxPollerService {
                 await this.publisher.publish(event as any);
 
                 // 3. Mark as published
-                await this.prisma.outboxEvent.update({
+                await (this.prisma as any).outbox.update({
                     where: { id: event.id },
                     data: {
                         status: OutboxEventStatus.PUBLISHED,
@@ -69,12 +69,12 @@ export class OutboxPollerService {
                 this.logger.error(`Failed to process outbox event ${event.id}: ${error.message}`);
 
                 // 4. Update retry count or mark as failed
-                await this.prisma.outboxEvent.update({
+                await (this.prisma as any).outbox.update({
                     where: { id: event.id },
                     data: {
                         retries: { increment: 1 },
                         error: error.message,
-                        status: event.retries >= 5 ? OutboxEventStatus.FAILED : OutboxEventStatus.PENDING,
+                        status: (event as any).retries >= 5 ? OutboxEventStatus.FAILED : OutboxEventStatus.PENDING,
                     },
                 });
             }

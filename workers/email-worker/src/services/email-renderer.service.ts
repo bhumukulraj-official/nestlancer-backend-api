@@ -18,7 +18,7 @@ export class EmailRendererService {
     }
 
     private async loadTemplates() {
-        const templatesPath = this.configService.get<string>('email-worker.templatesPath');
+        const templatesPath = process.env.TEMPLATES_PATH || this.configService.get<string>('emailWorker.templatesPath') || './src/templates';
         if (!templatesPath) {
             this.logger.warn('Templates path not configured');
             return;

@@ -10,11 +10,16 @@ export class RedisPublisherService implements OnModuleDestroy {
 
     constructor(private readonly configService: ConfigService) {
         this.publisher = new Redis({
-            host: this.configService.get('notification-worker.redis.host'),
-            port: this.configService.get('notification-worker.redis.port'),
-            password: this.configService.get('notification-worker.redis.password'),
+            host: process.env.NOTIFICATION_WORKER_REDIS_HOST || this.configService.get('notificationWorker.redis.host') || '100.103.64.83',
+            port: Number(process.env.NOTIFICATION_WORKER_REDIS_PORT || this.configService.get('notificationWorker.redis.port') || 6380),
+            password: process.env.NOTIFICATION_WORKER_REDIS_PASSWORD || this.configService.get('notificationWorker.redis.password'),
+            family: 4,
+            retryStrategy: (times) => Math.min(times * 50, 2000),
         });
-        this.prefix = this.configService.get('notification-worker.redis.pubsubPrefix') || 'ws:';
+        this.publisher.on('error', (err) => {
+            this.logger.error(`Redis connection error: ${err.message}`);
+        });
+        this.prefix = this.configService.get('notificationWorker.redis.pubsubPrefix') || 'ws:';
     }
 
     async publish(channel: string, event: string, data: any): Promise<void> {

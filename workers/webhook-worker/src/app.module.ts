@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import { ConfigModule } from '@nestlancer/config';
 import { HttpModule } from '@nestjs/axios';
 import { DatabaseModule } from '@nestlancer/database';
 import { QueueModule } from '@nestlancer/queue';
@@ -25,7 +26,8 @@ import { GithubDeploymentHandler } from './handlers/github/deployment.handler';
 
 @Module({
     imports: [
-        ConfigModule.forFeature(webhookConfig),
+        ConfigModule.forRoot(),
+        NestConfigModule.forFeature(webhookConfig),
         HttpModule,
         DatabaseModule.forRoot(),
         QueueModule.forRoot(),

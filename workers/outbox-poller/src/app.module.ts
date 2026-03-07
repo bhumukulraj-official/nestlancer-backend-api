@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestlancer/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from '@nestlancer/database';
 import { QueueModule } from '@nestlancer/queue';
@@ -14,7 +15,8 @@ import { StaleEventMonitorService } from './services/stale-event-monitor.service
 
 @Module({
     imports: [
-        ConfigModule,
+        ConfigModule.forRoot(),
+        NestConfigModule.forFeature(outboxConfig),
         ScheduleModule.forRoot(),
         DatabaseModule.forRoot(),
         LoggerModule.forRoot(),

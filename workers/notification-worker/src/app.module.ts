@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestlancer/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
@@ -15,17 +16,18 @@ import { NotificationConsumer } from './consumers/notification.consumer';
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        ConfigModule.forRoot(),
+        NestConfigModule.forFeature(notificationWorkerConfig),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
-        DatabaseModule,
-        CacheModule,
+        TracingModule.forRoot(),
+        DatabaseModule.forRoot(),
+        CacheModule.forRoot(),
         QueueModule.forRootAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
-                url: config.get('notification-worker.rabbitmq.url'),
+                url: config.get('notificationWorker.rabbitmq.url'),
             }),
         }),
     ],

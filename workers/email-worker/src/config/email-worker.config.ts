@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 
-export const emailWorkerConfig = registerAs('email-worker', () => ({
+export const emailWorkerConfig = registerAs('emailWorker', () => ({
     rabbitmq: {
         url: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
         queue: 'email.queue',
@@ -18,7 +18,7 @@ export const emailWorkerConfig = registerAs('email-worker', () => ({
     },
     replyTo: process.env.REPLY_TO,
     concurrency: parseInt(process.env.EMAIL_CONCURRENCY || '5', 10),
-    templatesPath: process.env.TEMPLATES_PATH || './templates',
+    templatesPath: process.env.TEMPLATES_PATH || './src/templates',
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
     dkim: {
         domain: process.env.DKIM_DOMAIN,

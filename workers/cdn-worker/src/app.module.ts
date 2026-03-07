@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestlancer/config';
 import { HttpModule } from '@nestjs/axios';
 import { QueueModule } from '@nestlancer/queue';
 import { LoggerModule } from '@nestlancer/logger';
@@ -16,9 +17,8 @@ import { BatchInvalidationProcessor } from './processors/batch-invalidation.proc
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            load: [cdnConfig],
-        }),
+        ConfigModule.forRoot(),
+        NestConfigModule.forFeature(cdnConfig),
         HttpModule,
         LoggerModule.forRoot(),
         MetricsModule,
