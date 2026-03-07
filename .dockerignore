@@ -1,0 +1,16 @@
+node_modules
+dist
+.turbo
+coverage
+.git
+.env*
+! .env.development
+*.log
+docker-compose*.yml
+README.md
+LICENSE
+docs
+scripts
+tests
+prisma/migrations
+prisma/generated

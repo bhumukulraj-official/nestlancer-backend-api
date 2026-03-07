@@ -13,7 +13,23 @@
         "JWT_ACCESS_SECRET",
         "JWT_REFRESH_SECRET",
         "RAZORPAY_KEY_ID",
-        "RAZORPAY_KEY_SECRET"
+        "RAZORPAY_KEY_SECRET",
+        "AUTH_SERVICE_URL",
+        "USERS_SERVICE_URL",
+        "PAYMENTS_SERVICE_URL",
+        "WEBHOOKS_SERVICE_URL",
+        "ADMIN_SERVICE_URL",
+        "REQUESTS_SERVICE_URL",
+        "QUOTES_SERVICE_URL",
+        "PROJECTS_SERVICE_URL",
+        "PROGRESS_SERVICE_URL",
+        "MESSAGING_SERVICE_URL",
+        "NOTIFICATIONS_SERVICE_URL",
+        "MEDIA_SERVICE_URL",
+        "PORTFOLIO_SERVICE_URL",
+        "BLOG_SERVICE_URL",
+        "CONTACT_SERVICE_URL",
+        "HEALTH_SERVICE_URL"
     ],
     "tasks": {
         "build": {

@@ -6,10 +6,14 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CacheService.name);
   private client!: Redis;
 
-  constructor(@Inject('CACHE_OPTIONS') private readonly options: { redisUrl?: string }) {}
+  constructor(@Inject('CACHE_OPTIONS') private readonly options: { redisUrl?: string }) { }
 
   async onModuleInit(): Promise<void> {
-    this.client = new Redis(this.options.redisUrl || process.env.REDIS_URL || 'redis://localhost:6379');
+    const redisUrl = this.options.redisUrl ||
+      process.env.REDIS_CACHE_URL ||
+      process.env.REDIS_URL ||
+      'redis://localhost:6379';
+    this.client = new Redis(redisUrl);
     this.client.on('error', (err) => this.logger.error('Redis error:', err));
     this.logger.log('Cache service connected');
   }

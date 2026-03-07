@@ -1,0 +1,182 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    container_name: nestlancer-gateway
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: pnpm turbo dev --filter=@nestlancer/gateway
+    env_file: .env.development
+    networks:
+      - nestlancer-network
+    depends_on:
+      - mailhog
+      - minio
+      - jaeger
+
+  ws-gateway:
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    container_name: nestlancer-ws-gateway
+    ports:
+      - "3100:3100"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: pnpm turbo dev --filter=@nestlancer/ws-gateway
+    env_file: .env.development
+    networks:
+      - nestlancer-network
+    depends_on:
+      - mailhog
+      - minio
+      - jaeger
+
+  auth-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-auth
+    ports: ["3001:3001"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/auth-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  users-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-users
+    ports: ["3002:3002"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/users-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  payments-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-payments
+    ports: ["3003:3003"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/payments-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  webhooks-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-webhooks
+    ports: ["3004:3004"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/webhooks-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  admin-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-admin
+    ports: ["3005:3005"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/admin-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  requests-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-requests
+    ports: ["3006:3006"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/requests-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  quotes-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-quotes
+    ports: ["3007:3007"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/quotes-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  projects-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-projects
+    ports: ["3008:3008"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/projects-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  progress-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-progress
+    ports: ["3009:3009"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/progress-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  messaging-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-messaging
+    ports: ["3010:3010"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/messaging-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  notifications-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-notifications
+    ports: ["3011:3011"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/notifications-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  media-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-media
+    ports: ["3012:3012"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/media-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  portfolio-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-portfolio
+    ports: ["3013:3013"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/portfolio-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  blog-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-blog
+    ports: ["3014:3014"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/blog-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  contact-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-contact
+    ports: ["3015:3015"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/contact-service
+    env_file: .env.development
+    networks: [nestlancer-network]
+
+  health-service:
+    build: { context: ., dockerfile: docker/dev.Dockerfile }
+    container_name: nestlancer-health
+    ports: ["3016:3016"]
+    volumes: [".:/app", "/app/node_modules"]
+    command: pnpm turbo dev --filter=@nestlancer/health-service
+    env_file: .env.development
+    networks: [nestlancer-network]
