@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { LoggerService } from '@nestlancer/logger';
 import { AppModule } from './app.module';
 // import removed - ConfigService not exported from '@nestlancer/config';
 // import removed - Logger not exported from '@nestlancer/logger';
@@ -10,7 +11,7 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
     // Setup logger
-    const logger = app.get(Logger);
+    const logger = app.get(LoggerService);
     app.useLogger(logger);
 
     const configService = app.get(ConfigService);

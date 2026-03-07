@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestlancer/config';
 import { DatabaseModule, PrismaReadService, PrismaWriteService } from '@nestlancer/database';
 import { CacheModule } from '@nestlancer/cache';
@@ -46,12 +46,12 @@ import { WebhooksManagementService } from './services/webhooks-management.servic
 @Module({
     imports: [
         process.env.NODE_ENV === 'test' ? ConfigModule : ConfigModule.forRoot(),
-        LoggerModule,
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
+        TracingModule.forRoot(),
         DatabaseModule.forRoot(),
         CacheModule.forRoot(),
-        QueueModule,
+        QueueModule.forRoot(),
         StorageModule.forRoot(),
         HttpModule,
         JwtModule.register({}),
@@ -88,9 +88,6 @@ import { WebhooksManagementService } from './services/webhooks-management.servic
         WebhookDeliveriesService,
         WebhookTestingService,
         WebhooksManagementService,
-        PrismaReadService,
-        PrismaWriteService,
-        QueuePublisherService,
     ],
 })
 export class AppModule { }

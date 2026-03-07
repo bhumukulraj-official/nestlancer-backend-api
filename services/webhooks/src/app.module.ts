@@ -18,12 +18,12 @@ import { webhooksConfig } from './config/webhooks.config';
 @Module({
     imports: [
         ConfigModule,
-        LoggerModule,
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
+        TracingModule.forRoot(),
         DatabaseModule.forRoot(),
-        CacheModule,
-        QueueModule.forRoot({ url: process.env.REDIS_URL || 'redis://localhost:6379' }),
+        CacheModule.forRoot(),
+        QueueModule.forRoot({ url: process.env.RABBITMQ_URL || 'amqp://localhost:5672' }),
         AuthLibModule,
     ],
     controllers: [WebhookReceiverController],
@@ -32,9 +32,6 @@ import { webhooksConfig } from './config/webhooks.config';
         WebhookDispatcherService,
         RazorpayProvider,
         CloudflareProvider,
-        PrismaReadService,
-        PrismaWriteService,
-        QueuePublisherService,
     ],
 })
 export class AppModule { }

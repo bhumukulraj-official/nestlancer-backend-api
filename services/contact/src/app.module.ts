@@ -18,7 +18,7 @@ import { ContactAdminService } from './services/contact-admin.service';
 
 @Module({
     imports: [
-        ConfigModule,
+        ConfigModule.forRoot(),
         LoggerModule.forRoot(),
         MetricsModule,
         TracingModule.forRoot(),

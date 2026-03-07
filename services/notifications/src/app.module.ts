@@ -15,10 +15,10 @@ import { InternalModule } from './internal/internal.module';
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        ConfigModule.forRoot(),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
+        TracingModule.forRoot(),
         DatabaseModule.forRoot(),
         CacheModule.forRoot(),
         QueueModule.forRoot(),

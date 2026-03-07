@@ -2,13 +2,14 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
+import { LoggerService } from '@nestlancer/logger';
 import { AppValidationPipe, AllExceptionsFilter, TransformResponseInterceptor, TimeoutInterceptor } from '@nestlancer/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
     const configService = app.get(ConfigService);
-    const logger = app.get(Logger);
+    const logger = app.get(LoggerService);
 
     app.useLogger(logger);
     app.setGlobalPrefix('api/v1');

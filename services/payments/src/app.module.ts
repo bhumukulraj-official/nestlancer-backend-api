@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestlancer/config';
+import { ConfigModule as NestlancerConfigModule } from '@nestlancer/config';
+import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { DatabaseModule } from '@nestlancer/database';
 import { AuthLibModule } from '@nestlancer/auth-lib';
@@ -9,6 +10,7 @@ import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
 import { QueueModule } from '@nestlancer/queue';
 import { CacheModule } from '@nestlancer/cache';
+import { PdfModule, PdfService } from '@nestlancer/pdf';
 import paymentsConfig from './config/payments.config';
 
 import { PaymentsController } from './controllers/user/payments.controller';
@@ -36,16 +38,18 @@ import {
 
 @Module({
     imports: [
-        ConfigModule,
-        LoggerModule,
+        NestlancerConfigModule.forRoot(),
+        LoggerModule.forRoot(),
         MetricsModule,
-        TracingModule,
+        TracingModule.forRoot(),
         DatabaseModule.forRoot(),
         AuthLibModule,
         StorageModule.forRoot(),
         OutboxModule.forRoot(),
         QueueModule.forRoot(),
         CacheModule.forRoot(),
+        PdfModule,
+        NestConfigModule.forFeature(paymentsConfig),
     ],
     controllers: [
         PaymentsController,
@@ -69,6 +73,7 @@ import {
         PaymentDisputesService,
         PaymentReconciliationService,
         PaymentStatsService,
+        PdfService,
     ],
 })
 export class AppModule { }
