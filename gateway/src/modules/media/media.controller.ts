@@ -25,6 +25,24 @@ export class MediaController {
     return this.proxy.forward('media', req);
   }
 
+  @Get('health')
+  @ApiOperation({ summary: 'Media service health check' })
+  async health(@Req() req: Request) {
+    return this.proxy.forward('media', req);
+  }
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Storage stats' })
+  async stats(@Req() req: Request) {
+    return this.proxy.forward('media', req);
+  }
+
+  @Get(':id/status')
+  @ApiOperation({ summary: 'Media processing status' })
+  async processingStatus(@Req() req: Request) {
+    return this.proxy.forward('media', req);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get media by ID' })
   async findOne(@Req() req: Request) {
@@ -52,12 +70,6 @@ export class MediaController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete media' })
   async remove(@Req() req: Request) {
-    return this.proxy.forward('media', req);
-  }
-
-  @Get('health')
-  @ApiOperation({ summary: 'Media service health check' })
-  async health(@Req() req: Request) {
     return this.proxy.forward('media', req);
   }
 }

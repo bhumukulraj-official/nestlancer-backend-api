@@ -12,7 +12,7 @@ import { HttpProxyService } from '../../proxy';
 @ApiTags('admin')
 @ApiBearerAuth()
 export class AdminController {
-  constructor(private readonly proxy: HttpProxyService) {}
+  constructor(private readonly proxy: HttpProxyService) { }
 
   // --- Dashboard ---
 
@@ -150,6 +150,20 @@ export class AdminController {
     return this.proxy.forward('admin', req);
   }
 
+  @Get('users/logs')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Auth audit logs (documented path)' })
+  async getUsersLogs(@Req() req: Request) {
+    return this.proxy.forward('users', req);
+  }
+
+  @Get('users/security-stats')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Security metrics (documented path)' })
+  async getUsersSecurityStats(@Req() req: Request) {
+    return this.proxy.forward('users', req);
+  }
+
   // --- Audit Logs ---
 
   @Get('logs')
@@ -178,29 +192,35 @@ export class AdminController {
     return this.proxy.forward('admin', req);
   }
 
-  // --- Feature Flags ---
+  // --- Feature Flags (documented: GET /system/features + PATCH /system/features/:flag) ---
 
-  @Get('system/feature-flags')
-  @ApiOperation({ summary: 'List feature flags' })
-  async getFeatureFlags(@Req() req: Request) {
+  @Get('system/features')
+  @ApiOperation({ summary: 'List feature flags (doc path: features)' })
+  async getSystemFeatures(@Req() req: Request) {
     return this.proxy.forward('admin', req);
   }
 
-  @Post('system/feature-flags')
-  @ApiOperation({ summary: 'Create feature flag' })
-  async createFeatureFlag(@Req() req: Request) {
+  @Patch('system/features/:flag')
+  @ApiOperation({ summary: 'Toggle feature flag (doc param: flag)' })
+  async patchSystemFeature(@Req() req: Request) {
     return this.proxy.forward('admin', req);
   }
 
-  @Patch('system/feature-flags/:id')
-  @ApiOperation({ summary: 'Update feature flag' })
-  async updateFeatureFlag(@Req() req: Request) {
+  @Get('system/jobs')
+  @ApiOperation({ summary: 'List background jobs' })
+  async getSystemJobs(@Req() req: Request) {
     return this.proxy.forward('admin', req);
   }
 
-  @Delete('system/feature-flags/:id')
-  @ApiOperation({ summary: 'Delete feature flag' })
-  async deleteFeatureFlag(@Req() req: Request) {
+  @Post('system/jobs/:id/retry')
+  @ApiOperation({ summary: 'Retry failed job' })
+  async retrySystemJob(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Delete('system/jobs/:id')
+  @ApiOperation({ summary: 'Cancel job' })
+  async cancelSystemJob(@Req() req: Request) {
     return this.proxy.forward('admin', req);
   }
 
@@ -260,6 +280,336 @@ export class AdminController {
   @ApiOperation({ summary: 'Delete backup' })
   async deleteBackup(@Req() req: Request) {
     return this.proxy.forward('admin', req);
+  }
+
+  // --- Backup Aliases (documented paths: /admin/backups/*) ---
+
+  @Get('backups')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List backups (documented path)' })
+  async listBackupsAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Post('backups')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create backup (documented path)' })
+  async createBackupAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Get('backups/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get backup details (documented path)' })
+  async getBackupAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Get('backups/:id/download')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Download backup (documented path)' })
+  async downloadBackupAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Post('backups/:id/restore')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Restore backup (documented path)' })
+  async restoreBackupAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Delete('backups/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete backup (documented path)' })
+  async deleteBackupAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Get('backups/schedule')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get backup schedule (documented path)' })
+  async getBackupScheduleAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Patch('backups/schedule')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update backup schedule (documented path)' })
+  async updateBackupScheduleAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  // --- Additional Proxy Endpoints ---
+
+  @Post('users/:userId/export')
+  @ApiOperation({ summary: 'Export user data' })
+  async exportUserData(@Req() req: Request) {
+    return this.proxy.forward('users', req);
+  }
+
+  @Post('users/impersonate/end/:sessionId')
+  @ApiOperation({ summary: 'End impersonation' })
+  async endImpersonation(@Req() req: Request) {
+    return this.proxy.forward('users', req);
+  }
+
+  @Post('impersonate/end')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'End impersonation session (documented path)' })
+  async endImpersonationAlias(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Get('impersonate/sessions')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List active impersonation sessions (documented path)' })
+  async getImpersonationSessions(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Get('payments/milestones')
+  @ApiOperation({ summary: 'List payment milestones' })
+  async listPaymentMilestones(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Get('payments/milestones/:id')
+  @ApiOperation({ summary: 'Get payment milestone details' })
+  async getPaymentMilestone(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Post('payments/milestones/:id/mark-complete')
+  @ApiOperation({ summary: 'Mark milestone complete' })
+  async markMilestoneComplete(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Post('payments/milestones/:id/request-payment')
+  @ApiOperation({ summary: 'Request payment for milestone' })
+  async requestMilestonePayment(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Post('payments/projects/:projectId/milestones')
+  @ApiOperation({ summary: 'Create milestones for a project' })
+  async createProjectMilestones(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Patch('payments/milestones/:id')
+  @ApiOperation({ summary: 'Update a milestone' })
+  async updateMilestone(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Get('payments/disputes/:id')
+  @ApiOperation({ summary: 'Get dispute details' })
+  async getDisputeDetails(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Post('payments/:id/verify')
+  @ApiOperation({ summary: 'Verify a payment' })
+  async verifyPayment(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Post('payments/disputes/:id/respond')
+  @ApiOperation({ summary: 'Respond to dispute' })
+  async respondDispute(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Get('payments/reconciliation')
+  @ApiOperation({ summary: 'Payment reconciliation' })
+  async getReconciliation(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Post('messages/projects/:projectId/system')
+  @ApiOperation({ summary: 'Broadcast system message' })
+  async broadcastSystemMessage(@Req() req: Request) {
+    return this.proxy.forward('messaging', req);
+  }
+
+  @Get('messages/flagged')
+  @ApiOperation({ summary: 'Get flagged messages' })
+  async getFlaggedMessages(@Req() req: Request) {
+    return this.proxy.forward('messaging', req);
+  }
+
+  @Get('templates')
+  @ApiOperation({ summary: 'Get notification templates' })
+  async getNotificationTemplates(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Post('templates')
+  @ApiOperation({ summary: 'Create notification template' })
+  async createNotificationTemplate(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Post('posts/:id/archive')
+  @ApiOperation({ summary: 'Archive post' })
+  async archivePost(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Get('posts/:id/revisions')
+  @ApiOperation({ summary: 'Get post revisions' })
+  async getPostRevisions(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Post('posts/:id/revisions/:revisionId/restore')
+  @ApiOperation({ summary: 'Restore post revision' })
+  async restorePostRevision(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Get('comments/reported')
+  @ApiOperation({ summary: 'Get reported comments' })
+  async getReportedComments(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Post('comments/:id/reject')
+  @ApiOperation({ summary: 'Reject comment' })
+  async rejectComment(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Post('comments/:id/spam')
+  @ApiOperation({ summary: 'Mark comment as spam' })
+  async markCommentSpam(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Post('comments/:id/pin')
+  @ApiOperation({ summary: 'Pin comment' })
+  async pinComment(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Post('comments/:id/unpin')
+  @ApiOperation({ summary: 'Unpin comment' })
+  async unpinComment(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Post('blog/tags')
+  @ApiOperation({ summary: 'Create tag' })
+  async createTag(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Post('blog/tags/merge')
+  @ApiOperation({ summary: 'Merge tags' })
+  async mergeTags(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Get('blog/authors')
+  @ApiOperation({ summary: 'Get authors' })
+  async getAuthors(@Req() req: Request) {
+    return this.proxy.forward('blog', req);
+  }
+
+  @Get('projects/stats')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get project stats' })
+  async getProjectStats(@Req() req: Request) {
+    return this.proxy.forward('projects', req);
+  }
+
+  @Post('projects/:id/duplicate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Duplicate project as template' })
+  async duplicateProject(@Req() req: Request) {
+    return this.proxy.forward('projects', req);
+  }
+
+  @Post('projects/:id/unarchive')
+  @ApiOperation({ summary: 'Unarchive project' })
+  async unarchiveProject(@Req() req: Request) {
+    return this.proxy.forward('projects', req);
+  }
+
+  @Post('projects/:id/export')
+  @ApiOperation({ summary: 'Export project' })
+  async exportProject(@Req() req: Request) {
+    return this.proxy.forward('projects', req);
+  }
+
+  @Get('quotes/templates')
+  @ApiOperation({ summary: 'Get quote templates' })
+  async getAdminQuoteTemplates(@Req() req: Request) {
+    return this.proxy.forward('quotes', req);
+  }
+
+  @Post('quotes/templates')
+  @ApiOperation({ summary: 'Create quote template' })
+  async createAdminQuoteTemplate(@Req() req: Request) {
+    return this.proxy.forward('quotes', req);
+  }
+
+  @Post('quotes/:id/resend')
+  @ApiOperation({ summary: 'Resend quote notification' })
+  async resendQuote(@Req() req: Request) {
+    return this.proxy.forward('quotes', req);
+  }
+
+  @Get('webhooks/health')
+  @ApiOperation({ summary: 'Webhooks admin health' })
+  async webhooksHealth(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  @Get('webhooks/events')
+  @ApiOperation({ summary: 'List available webhook events' })
+  async webhooksEvents(@Req() req: Request) {
+    return this.proxy.forward('admin', req);
+  }
+
+  // --- Admin Contact ---
+
+  @Get('contact')
+  @ApiOperation({ summary: 'List contact messages (admin)' })
+  async listContactMessages(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
+
+  @Get('contact/:id')
+  @ApiOperation({ summary: 'Get contact message details (admin)' })
+  async getContactMessage(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
+
+  @Patch('contact/:id/status')
+  @ApiOperation({ summary: 'Update contact message status (admin)' })
+  async updateContactStatus(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
+
+  @Post('contact/:id/respond')
+  @ApiOperation({ summary: 'Respond to contact message (admin)' })
+  async respondToContact(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
+
+  @Post('contact/:id/spam')
+  @ApiOperation({ summary: 'Mark contact message as spam (admin)' })
+  async markContactSpam(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
+
+  @Delete('contact/:id')
+  @ApiOperation({ summary: 'Delete contact message (admin)' })
+  async deleteContactMessage(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
   }
 
   @Get('health')

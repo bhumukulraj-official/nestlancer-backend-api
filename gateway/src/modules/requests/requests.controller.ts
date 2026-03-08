@@ -25,6 +25,12 @@ export class RequestsController {
     return this.proxy.forward('requests', req);
   }
 
+  @Get(':id/status')
+  @ApiOperation({ summary: 'Get request status timeline' })
+  async getStatus(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get request by ID' })
   async findOne(@Req() req: Request) {

@@ -13,6 +13,13 @@ import { HttpProxyService } from '../../proxy';
 export class ContactController {
   constructor(private readonly proxy: HttpProxyService) {}
 
+  @Post()
+  @Public()
+  @ApiOperation({ summary: 'Submit contact form (documented path)' })
+  async submitContactForm(@Req() req: Request) {
+    return this.proxy.forward('contact', req);
+  }
+
   @Post('inquiries')
   @Public()
   @ApiOperation({ summary: 'Submit contact inquiry' })

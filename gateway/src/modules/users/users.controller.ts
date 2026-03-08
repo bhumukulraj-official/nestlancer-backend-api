@@ -99,6 +99,13 @@ export class UsersController {
     return this.proxy.forward('users', req);
   }
 
+  @Get('sessions/:sessionId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get session details' })
+  async getSessionDetails(@Req() req: Request) {
+    return this.proxy.forward('users', req);
+  }
+
   @Delete('sessions/:sessionId')
   @ApiOperation({ summary: 'Terminate specific session' })
   async terminateSession(@Req() req: Request) {
@@ -109,6 +116,13 @@ export class UsersController {
   @ApiOperation({ summary: 'Logout all other sessions' })
   async terminateOtherSessions(@Req() req: Request) {
     return this.proxy.forward('users', req);
+  }
+
+  /** @doc POST /users/logout (API spec) – proxies to auth service */
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout current session' })
+  async logout(@Req() req: Request) {
+    return this.proxy.forward('auth', req, undefined, '/api/v1/auth/logout');
   }
 
   // --- Account Management ---

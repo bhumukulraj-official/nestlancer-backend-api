@@ -25,6 +25,13 @@ export class ProjectsController {
     return this.proxy.forward('projects', req);
   }
 
+  @Get('stats')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get user project stats' })
+  async getStats(@Req() req: Request) {
+    return this.proxy.forward('projects', req);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get project by ID' })
   async findOne(@Req() req: Request) {
@@ -82,6 +89,13 @@ export class ProjectsController {
   @Post(':id/team')
   @ApiOperation({ summary: 'Add team member' })
   async addTeamMember(@Req() req: Request) {
+    return this.proxy.forward('projects', req);
+  }
+
+  @Post(':id/messages')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Send project message' })
+  async sendProjectMessage(@Req() req: Request) {
     return this.proxy.forward('projects', req);
   }
 

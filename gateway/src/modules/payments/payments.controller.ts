@@ -15,9 +15,15 @@ export class PaymentsController {
 
   // --- Payment Intents ---
 
-  @Post('intents')
+  @Post('create-intent')
   @ApiOperation({ summary: 'Create a payment intent' })
   async createIntent(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Post('initiate')
+  @ApiOperation({ summary: 'Initiate payment' })
+  async initiate(@Req() req: Request) {
     return this.proxy.forward('payments', req);
   }
 
@@ -29,21 +35,51 @@ export class PaymentsController {
 
   // --- User Payments ---
 
+  @Get('health')
+  @ApiOperation({ summary: 'Payments service health check' })
+  async health(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
   @Get()
   @ApiOperation({ summary: 'List user payments' })
   async getMyPayments(@Req() req: Request) {
     return this.proxy.forward('payments', req);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get payment details' })
-  async getPaymentDetails(@Req() req: Request) {
+  @Get('stats')
+  @ApiOperation({ summary: 'User payment statistics' })
+  async getPaymentStats(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Get('projects/:projectId')
+  @ApiOperation({ summary: 'Get project payments' })
+  async getProjectPayments(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Get('projects/:projectId/milestones')
+  @ApiOperation({ summary: 'Get payment milestones' })
+  async getProjectMilestones(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Get('methods')
+  @ApiOperation({ summary: 'List saved payment methods' })
+  async getPaymentMethods(@Req() req: Request) {
     return this.proxy.forward('payments', req);
   }
 
   @Get(':id/status')
   @ApiOperation({ summary: 'Check payment status' })
   async getPaymentStatus(@Req() req: Request) {
+    return this.proxy.forward('payments', req);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get payment details' })
+  async getPaymentDetails(@Req() req: Request) {
     return this.proxy.forward('payments', req);
   }
 
@@ -65,28 +101,6 @@ export class PaymentsController {
     return this.proxy.forward('payments', req);
   }
 
-  // --- Project Payments ---
-
-  @Get('projects/:projectId')
-  @ApiOperation({ summary: 'Get project payments' })
-  async getProjectPayments(@Req() req: Request) {
-    return this.proxy.forward('payments', req);
-  }
-
-  @Get('projects/:projectId/milestones')
-  @ApiOperation({ summary: 'Get payment milestones' })
-  async getProjectMilestones(@Req() req: Request) {
-    return this.proxy.forward('payments', req);
-  }
-
-  // --- Payment Methods ---
-
-  @Get('methods')
-  @ApiOperation({ summary: 'List saved payment methods' })
-  async getPaymentMethods(@Req() req: Request) {
-    return this.proxy.forward('payments', req);
-  }
-
   @Post('methods')
   @ApiOperation({ summary: 'Save payment method' })
   async savePaymentMethod(@Req() req: Request) {
@@ -96,20 +110,6 @@ export class PaymentsController {
   @Delete('methods/:id')
   @ApiOperation({ summary: 'Remove payment method' })
   async removePaymentMethod(@Req() req: Request) {
-    return this.proxy.forward('payments', req);
-  }
-
-  // --- Statistics ---
-
-  @Get('stats')
-  @ApiOperation({ summary: 'User payment statistics' })
-  async getPaymentStats(@Req() req: Request) {
-    return this.proxy.forward('payments', req);
-  }
-
-  @Get('health')
-  @ApiOperation({ summary: 'Payments service health check' })
-  async health(@Req() req: Request) {
     return this.proxy.forward('payments', req);
   }
 }
