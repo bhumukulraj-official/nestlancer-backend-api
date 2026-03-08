@@ -5,6 +5,11 @@ import { MetricsService } from '@nestlancer/metrics';
 import { AuditEntry } from '../interfaces/audit-job.interface';
 import { ConfigService } from '@nestjs/config';
 
+/**
+ * Core service for the Audit Worker.
+ * Manages buffering and batch processing of audit logs to optimize database write performance.
+ * Implements graceful shutdown by flushing remaining logs on module destruction.
+ */
 @Injectable()
 export class AuditWorkerService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(AuditWorkerService.name);
@@ -20,52 +25,89 @@ export class AuditWorkerService implements OnModuleInit, OnModuleDestroy {
         this.flushIntervalMs = this.configService.get<number>('audit.flushIntervalMs', 5000);
     }
 
-    onModuleInit() {
+    /**
+     * Initializes the service by starting the periodic flush timer.
+     */
+    onModuleInit(): void {
         this.startFlushTimer();
     }
 
-    onModuleDestroy() {
+    /**
+     * Ensures all buffered audit logs are flushed to the database before the application shuts down.
+     */
+    async onModuleDestroy(): Promise<void> {
+        this.logger.log('[AuditWorker] Shutting down, performing final audit flush...');
         this.stopFlushTimer();
-        // Final flush on shutdown
-        this.flush().catch(err => {
-            this.logger.error(`Error during final audit flush: ${err.message}`);
-        });
+        
+        try {
+            await this.flush();
+        } catch (err: any) {
+            this.logger.error(`[AuditWorker] Error during final audit flush: ${err.message}`);
+        }
     }
 
+    /**
+     * Handles an incoming audit log entry.
+     * Records metrics and adds the entry to the buffer for batch processing.
+     * 
+     * @param entry - The audit log entry to process
+     * @returns A promise that resolves when the entry is buffered (and potentially flushed)
+     */
     async handleAuditEntry(entry: AuditEntry): Promise<void> {
         this.metrics.incrementCounter('audit.entries_received');
         const shouldFlush = this.bufferService.add(entry);
         this.metrics.setGauge('audit.buffer_size', this.bufferService.size());
 
         if (shouldFlush) {
+            this.logger.debug(`[AuditWorker] Batch size reached (${this.bufferService.size()}), triggering flush.`);
             await this.flush();
         }
     }
 
+    /**
+     * Drains the buffer and writes the audit logs to the primary database in a single batch.
+     * Records processing latency and success metrics.
+     * 
+     * @returns A promise that resolves when the batch insertion is complete
+     */
     async flush(): Promise<void> {
         if (this.bufferService.size() === 0) return;
 
-        this.logger.debug(`Flushing audit buffer (${this.bufferService.size()} entries)...`);
+        const count = this.bufferService.size();
+        this.logger.debug(`[AuditWorker] Flushing audit buffer (${count} entries)...`);
+        
         const entries = this.bufferService.drain();
-
         const startTime = Date.now();
-        await this.processor.insertBatch(entries);
-        const duration = Date.now() - startTime;
+        
+        try {
+            await this.processor.insertBatch(entries);
+            const duration = Date.now() - startTime;
 
-        this.metrics.incrementCounter('audit.batch_inserted', undefined, entries.length);
-        this.metrics.observeHistogram('audit.flush_duration', duration);
-        this.metrics.setGauge('audit.buffer_size', this.bufferService.size());
+            this.metrics.incrementCounter('audit.batch_inserted', undefined, entries.length);
+            this.metrics.observeHistogram('audit.flush_duration', duration);
+            this.metrics.setGauge('audit.buffer_size', 0);
+        } catch (error: any) {
+            this.logger.error(`[AuditWorker] Failed to flush audit batch: ${error.message}`, error.stack);
+            // In a production scenario, we might want to dead-letter these or re-buffer
+            throw error;
+        }
     }
 
-    private startFlushTimer() {
+    /**
+     * Starts the periodic flush timer based on configuration.
+     */
+    private startFlushTimer(): void {
         this.flushTimer = setInterval(() => {
             this.flush().catch(err => {
-                this.logger.error(`Error during scheduled audit flush: ${err.message}`);
+                this.logger.error(`[AuditWorker] Error during scheduled audit flush: ${err.message}`);
             });
         }, this.flushIntervalMs);
     }
 
-    private stopFlushTimer() {
+    /**
+     * Stops and clears the periodic flush timer.
+     */
+    private stopFlushTimer(): void {
         if (this.flushTimer) {
             clearInterval(this.flushTimer);
             this.flushTimer = null;
