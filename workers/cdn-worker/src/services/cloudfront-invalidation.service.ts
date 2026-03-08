@@ -3,6 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { CdnProvider, InvalidationResult } from '../interfaces/cdn-provider.interface';
 import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront';
 
+/**
+ * Service responsible for managing CloudFront CDN invalidations.
+ * Implements the CdnProvider interface to allow for generic CDN management.
+ */
 @Injectable()
 export class CloudFrontInvalidationService implements CdnProvider {
     private readonly logger = new Logger(CloudFrontInvalidationService.name);
@@ -15,8 +19,15 @@ export class CloudFrontInvalidationService implements CdnProvider {
         this.client = new CloudFrontClient({ region });
     }
 
+    /**
+     * Creates an invalidation batch for the specified paths in CloudFront.
+     * 
+     * @param paths - Array of URI paths to invalidate (e.g., ['/images/*', '/index.html'])
+     * @returns A promise resolving to the invalidation request details
+     * @throws Error if the CloudFront SDK request fails
+     */
     async invalidate(paths: string[]): Promise<InvalidationResult> {
-        this.logger.log(`Invoked CloudFront invalidation for ${paths.length} paths`);
+        this.logger.log(`[CDN] Requesting CloudFront invalidation for ${paths.length} paths`);
 
         try {
             const command = new CreateInvalidationCommand({
@@ -39,13 +50,19 @@ export class CloudFrontInvalidationService implements CdnProvider {
             };
         } catch (e: any) {
             const error = e as Error;
-            this.logger.error(`CloudFront invalidation failed: ${error.message}`, error.stack);
+            this.logger.error(`[CDN] CloudFront invalidation failed: ${error.message}`, error.stack);
             throw error;
         }
     }
 
+    /**
+     * Purges all content from the CDN distribution.
+     * Uses the '/*' wildcard to invalidate every cached resource.
+     * 
+     * @returns A promise that resolves when the invalidation is submitted
+     */
     async purgeAll(): Promise<void> {
-        this.logger.log('Invoked CloudFront purge all (/*)');
+        this.logger.log('[CDN] Triggering full purge (/*)');
         await this.invalidate(['/*']);
     }
 }
