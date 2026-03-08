@@ -40,6 +40,32 @@ export class SessionsService {
         });
     }
 
+    async getSessionById(userId: string, sessionId: string) {
+        const session = await this.prismaRead.session.findUnique({
+            where: { id: sessionId }
+        });
+
+        if (!session || session.userId !== userId) {
+            throw new BusinessLogicException('Session not found', 'USER_003');
+        }
+
+        const parser = new UAParser(session.userAgent);
+        return {
+            id: session.id,
+            device: {
+                type: parser.getDevice().type || 'desktop',
+                browser: `${parser.getBrowser().name} ${parser.getBrowser().version}`,
+                os: `${parser.getOS().name} ${parser.getOS().version}`
+            },
+            location: {
+                ip: (session as any).ip,
+            },
+            createdAt: session.createdAt,
+            lastActivityAt: (session as any).lastActiveAt,
+            expiresAt: session.expiresAt
+        };
+    }
+
     async terminateSession(userId: string, sessionId: string, currentJti: string) {
         const session = await this.prismaRead.session.findUnique({
             where: { id: sessionId }

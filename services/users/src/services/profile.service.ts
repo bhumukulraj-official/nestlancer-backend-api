@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { BusinessLogicException, ProjectStatus, PaymentStatus } from '@nestlancer/common';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+import { ChangePasswordDto } from '../dto/change-password.dto';
+import * as bcrypt from 'bcrypt';
 
 interface UserStats {
     projectsCompleted: number;
@@ -142,5 +144,25 @@ export class ProfileService {
             updatedAt: user.updatedAt,
             lastLoginAt: user.lastLoginAt,
         };
+    }
+
+    async changePassword(userId: string, dto: ChangePasswordDto) {
+        if (dto.newPassword !== dto.confirmPassword) {
+            throw new BusinessLogicException('Passwords do not match', 'USER_010');
+        }
+
+        const user = await this.prismaRead.user.findUnique({ where: { id: userId } });
+        if (!user) throw new BusinessLogicException('User not found', 'USER_001');
+
+        const isValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+        if (!isValid) throw new BusinessLogicException('Current password is incorrect', 'USER_011');
+
+        const passwordHash = await bcrypt.hash(dto.newPassword, 12);
+        await this.prismaWrite.user.update({
+            where: { id: userId },
+            data: { passwordHash },
+        });
+
+        return { passwordChanged: true };
     }
 }

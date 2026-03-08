@@ -47,6 +47,39 @@ export class UsersAdminService {
         };
     }
 
+    async searchUsers(query: string, page: number, limit: number) {
+        const where = {
+            OR: [
+                { email: { contains: query, mode: 'insensitive' as any } },
+                { firstName: { contains: query, mode: 'insensitive' as any } },
+                { lastName: { contains: query, mode: 'insensitive' as any } },
+            ],
+        };
+
+        const [users, total] = await Promise.all([
+            this.prismaRead.user.findMany({
+                where,
+                skip: (page - 1) * limit,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prismaRead.user.count({ where }),
+        ]);
+
+        return {
+            data: users.map(u => ({
+                id: u.id,
+                email: u.email,
+                firstName: u.firstName,
+                lastName: u.lastName,
+                role: u.role,
+                status: u.status,
+                createdAt: u.createdAt,
+            })),
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        };
+    }
+
     async getUserDetails(userId: string) {
         const user = await this.prismaRead.user.findUnique({
             where: { id: userId },
@@ -60,6 +93,30 @@ export class UsersAdminService {
         return user;
     }
 
+    async updateUser(userId: string, dto: any) {
+        const user = await this.prismaWrite.user.update({
+            where: { id: userId },
+            data: dto,
+        });
+        return user;
+    }
+
+    async changeRole(userId: string, role: string) {
+        const user = await this.prismaWrite.user.update({
+            where: { id: userId },
+            data: { role: role as any },
+        });
+
+        await this.prismaWrite.outbox.create({
+            data: {
+                type: 'ADMIN_USER_ROLE_CHANGED',
+                payload: { userId, role },
+            },
+        });
+
+        return user;
+    }
+
     async changeUserStatus(userId: string, status: string) {
         const user = await this.prismaWrite.user.update({
             where: { id: userId },
@@ -69,7 +126,7 @@ export class UsersAdminService {
         if (status === 'SUSPENDED') {
             await this.prismaWrite.session.updateMany({
                 where: { userId },
-                data: { expiresAt: new Date() } // Assuming we expire rather than isRevoked which doesn't exist
+                data: { expiresAt: new Date() }
             });
         }
 
@@ -81,6 +138,18 @@ export class UsersAdminService {
         });
 
         return user;
+    }
+
+    async forcePasswordReset(userId: string) {
+        // TODO: Set flag requiring password change on next login
+        await this.prismaWrite.outbox.create({
+            data: {
+                type: 'ADMIN_FORCE_PASSWORD_RESET',
+                payload: { userId },
+            },
+        });
+
+        return { userId, passwordResetRequired: true };
     }
 
     async adminResetPassword(userId: string, newPassword?: string) {
@@ -99,7 +168,6 @@ export class UsersAdminService {
                 data: { expiresAt: new Date() }
             });
 
-            // Emit event so an email with the temp password can be sent
             await tx.outbox.create({
                 data: {
                     type: 'ADMIN_USER_PASSWORD_RESET',
@@ -110,8 +178,131 @@ export class UsersAdminService {
 
         return {
             passwordReset: true,
-            hasTemporaryPassword: true, // Only return the actual password to admin if requested, but better UX is email it.
+            hasTemporaryPassword: true,
             temporaryPasswordReturnOnlyIfRequested: pWord
+        };
+    }
+
+    async getUserSessions(userId: string) {
+        const sessions = await this.prismaRead.session.findMany({
+            where: { userId, expiresAt: { gt: new Date() } },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return { data: sessions };
+    }
+
+    async terminateUserSession(sessionId: string) {
+        await this.prismaWrite.session.update({
+            where: { id: sessionId },
+            data: { expiresAt: new Date() },
+        });
+
+        return { terminated: true };
+    }
+
+    async terminateAllUserSessions(userId: string) {
+        const result = await this.prismaWrite.session.updateMany({
+            where: { userId },
+            data: { expiresAt: new Date() },
+        });
+
+        return { terminated: result.count };
+    }
+
+    async getUserActivity(userId: string, page: number, limit: number) {
+        // TODO: Query audit logs for user activity
+        return {
+            data: [],
+            pagination: { page, limit, total: 0, totalPages: 0 },
+        };
+    }
+
+    async deleteUser(userId: string) {
+        await this.prismaWrite.user.update({
+            where: { id: userId },
+            data: { status: 'DELETED' as any },
+        });
+
+        await this.prismaWrite.session.updateMany({
+            where: { userId },
+            data: { expiresAt: new Date() },
+        });
+
+        await this.prismaWrite.outbox.create({
+            data: {
+                type: 'ADMIN_USER_DELETED',
+                payload: { userId },
+            },
+        });
+
+        return { deleted: true };
+    }
+
+    async restoreUser(userId: string) {
+        await this.prismaWrite.user.update({
+            where: { id: userId },
+            data: { status: 'ACTIVE' as any },
+        });
+
+        await this.prismaWrite.outbox.create({
+            data: {
+                type: 'ADMIN_USER_RESTORED',
+                payload: { userId },
+            },
+        });
+
+        return { restored: true };
+    }
+
+    async bulkOperation(dto: any) {
+        const results = { success: 0, failed: 0, errors: [] as any[] };
+
+        for (const userId of dto.userIds) {
+            try {
+                switch (dto.action) {
+                    case 'suspend':
+                        await this.changeUserStatus(userId, 'SUSPENDED');
+                        break;
+                    case 'activate':
+                        await this.changeUserStatus(userId, 'ACTIVE');
+                        break;
+                    case 'delete':
+                        await this.deleteUser(userId);
+                        break;
+                    case 'resetPassword':
+                        await this.adminResetPassword(userId);
+                        break;
+                    default:
+                        throw new Error(`Unknown action: ${dto.action}`);
+                }
+                results.success++;
+            } catch (err: any) {
+                results.failed++;
+                results.errors.push({ userId, error: err.message });
+            }
+        }
+
+        return results;
+    }
+
+    async getLogs(page: number, limit: number) {
+        // TODO: Query admin audit logs
+        return {
+            data: [],
+            pagination: { page, limit, total: 0, totalPages: 0 },
+        };
+    }
+
+    async getSecurityStats() {
+        // TODO: Aggregate security-related statistics
+        return {
+            totalUsers: 0,
+            activeUsers: 0,
+            suspendedUsers: 0,
+            twoFactorEnabled: 0,
+            failedLogins24h: 0,
+            activeSessions: 0,
         };
     }
 }
