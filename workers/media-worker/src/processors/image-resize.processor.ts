@@ -4,6 +4,10 @@ import { StorageService } from '@nestlancer/storage';
 import { ConfigService } from '@nestjs/config';
 import { ImageVariant } from '../interfaces/processing-options.interface';
 
+/**
+ * Processor responsible for generating multiple scaled variants of an image.
+ * Uses sharp via ImageProcessingService to resize and optimize images for different use cases.
+ */
 @Injectable()
 export class ImageResizeProcessor {
     constructor(
@@ -12,6 +16,14 @@ export class ImageResizeProcessor {
         private readonly configService: ConfigService,
     ) { }
 
+    /**
+     * Resizes an image based on predefined variants in the config.
+     * Uploads each variant back to the storage bucket.
+     * 
+     * @param s3Key - The original file key
+     * @param bucket - The storage bucket containing the file
+     * @returns A promise resolving to a map of variant names to their new S3 keys
+     */
     async process(s3Key: string, bucket: string): Promise<Record<string, string>> {
         const variants = this.configService.get<ImageVariant[]>('media-worker.imageVariants', []);
         const originalBuffer = await this.storage.download(bucket, s3Key);
@@ -20,6 +32,8 @@ export class ImageResizeProcessor {
         for (const variant of variants) {
             const resizedBuffer = await this.imageService.resize(originalBuffer, variant);
             const variantKey = `${variant.name}_${s3Key}`;
+
+            // Upload as WebP for optimal size/quality
             await this.storage.upload(bucket, variantKey, resizedBuffer, 'image/webp');
             variantKeys[variant.name] = variantKey;
         }

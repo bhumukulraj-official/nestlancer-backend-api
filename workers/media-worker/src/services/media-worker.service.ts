@@ -10,6 +10,11 @@ import { MediaStatus } from '@prisma/client';
 
 import { ConfigService } from '@nestjs/config';
 
+/**
+ * Orchestrator service for the Media Worker.
+ * Coordinates virus scanning, metadata extraction, thumbnail generation, and image processing.
+ * Manages media lifecycle by updating database status throughout the processing pipeline.
+ */
 @Injectable()
 export class MediaWorkerService {
     constructor(
@@ -22,8 +27,15 @@ export class MediaWorkerService {
         private readonly configService: ConfigService,
     ) { }
 
+    /**
+     * Processes a single media job from the queue.
+     * Transitions media status from PENDING to PROCESSING, then to READY, FAILED, or QUARANTINED.
+     * 
+     * @param job - The media job payload containing file location and metadata
+     * @returns A promise that resolves when all processing steps are complete
+     */
     async processJob(job: MediaJob): Promise<void> {
-        this.logger.log(`Starting media processing for ID: ${job.mediaId}`);
+        this.logger.log(`[MediaWorker] Starting processing pipeline for Media ID: ${job.mediaId}`);
 
         try {
             // 1. Update status to PROCESSING
@@ -35,6 +47,7 @@ export class MediaWorkerService {
             // 2. Virus Scan
             const scanResult = await this.virusScan.scanFile(job.s3Key);
             if (scanResult.isInfected) {
+                this.logger.warn(`[MediaWorker] Security alert: Virus detected in ${job.s3Key}. Quarantining.`);
                 await this.prisma.media.update({
                     where: { id: job.mediaId },
                     data: { status: MediaStatus.QUARANTINED, metadata: { virus: scanResult.virusName } },
@@ -48,7 +61,7 @@ export class MediaWorkerService {
             // 4. Generate Thumbnail
             const thumbnailKey = await this.thumbnailGenerator.generate(job.s3Key, job.contentType);
 
-            // 5. Context-specific processing
+            // 5. Context-specific processing (e.g. image variants)
             let variants: Record<string, string> = {};
             if (job.contentType.startsWith('image/')) {
                 const privateBucket = this.configService.get<string>('storage.privateBucket') || 'nestlancer-private';
@@ -65,9 +78,9 @@ export class MediaWorkerService {
                 },
             });
 
-            this.logger.log(`Media processing complete for ID: ${job.mediaId}`);
+            this.logger.log(`[MediaWorker] Processing complete for ID: ${job.mediaId}. Status: READY`);
         } catch (error: any) {
-            this.logger.error(`Error processing media ${job.mediaId}: ${error.message}`, error.stack);
+            this.logger.error(`[MediaWorker] Pipeline failed for media ${job.mediaId}: ${error.message}`, error.stack);
             await this.prisma.media.update({
                 where: { id: job.mediaId },
                 data: { status: MediaStatus.FAILED },
