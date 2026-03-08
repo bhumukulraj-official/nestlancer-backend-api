@@ -4,7 +4,7 @@ import { RegisterPushSubscriptionDto } from '../dto/register-push-subscription.d
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
 import { ApiStandardResponse } from '@nestlancer/common';
 
-@Controller('notifications/push-subscription')
+@Controller('push-subscription')
 @UseGuards(JwtAuthGuard)
 export class SubscriptionsController {
     constructor(private readonly subscriptionsService: SubscriptionsService) { }

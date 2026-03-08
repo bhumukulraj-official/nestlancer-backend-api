@@ -5,7 +5,7 @@ import { UpdateNotificationTemplateDto } from '../dto/update-notification-templa
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, ApiStandardResponse } from '@nestlancer/common';
 
-@Controller('admin/notification-templates')
+@Controller(['admin/templates', 'admin/notification-templates', 'admin/notifications/templates'])
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class NotificationTemplatesAdminController {
@@ -13,19 +13,19 @@ export class NotificationTemplatesAdminController {
 
     @Get()
     @ApiStandardResponse(Object)
-    async getTemplates() {
+    async getTemplates(): Promise<any> {
         return this.templatesService.findAll();
     }
 
     @Post()
     @ApiStandardResponse(Object)
-    async createTemplate(@Body() dto: CreateNotificationTemplateDto) {
+    async createTemplate(@Body() dto: CreateNotificationTemplateDto): Promise<any> {
         return this.templatesService.create(dto);
     }
 
     @Patch(':id')
     @ApiStandardResponse(Object)
-    async updateTemplate(@Param('id') id: string, @Body() dto: UpdateNotificationTemplateDto) {
+    async updateTemplate(@Param('id') id: string, @Body() dto: UpdateNotificationTemplateDto): Promise<any> {
         return this.templatesService.update(id, dto);
     }
 

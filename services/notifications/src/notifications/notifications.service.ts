@@ -138,4 +138,16 @@ export class NotificationsService {
             where: { id, userId },
         });
     }
+
+    async sendTestNotification(userId: string) {
+        await this.prismaWrite.notification.create({
+            data: {
+                userId,
+                type: 'test',
+                title: 'Test notification',
+                message: 'This is a test notification.',
+            },
+        });
+        return { sent: true };
+    }
 }

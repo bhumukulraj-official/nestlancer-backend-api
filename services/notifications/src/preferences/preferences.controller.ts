@@ -1,21 +1,21 @@
-import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Param } from '@nestjs/common';
 import { PreferencesService } from './preferences.service';
 import { UpdatePreferencesDto } from '../dto/update-preferences.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
 import { ApiStandardResponse } from '@nestlancer/common';
 
-@Controller('notifications/preferences')
+@Controller('notifications')
 @UseGuards(JwtAuthGuard)
 export class PreferencesController {
     constructor(private readonly preferencesService: PreferencesService) { }
 
-    @Get()
+    @Get('preferences')
     @ApiStandardResponse(Object)
     async getPreferences(@CurrentUser() user: AuthenticatedUser) {
         return this.preferencesService.getPreferences(user.userId);
     }
 
-    @Patch()
+    @Patch('preferences')
     @ApiStandardResponse(Object)
     async updatePreferences(
         @CurrentUser() user: AuthenticatedUser,
@@ -26,7 +26,24 @@ export class PreferencesController {
 
     @Get('channels')
     @ApiStandardResponse(Object)
+    async getNotificationChannels() {
+        return this.preferencesService.getChannels();
+    }
+
+    @Get('preferences/channels')
+    @ApiStandardResponse(Object)
     async getChannels() {
         return this.preferencesService.getChannels();
+    }
+
+    @Patch('preferences/channel/:channel')
+    @ApiStandardResponse(Object)
+    async updateChannel(
+        @CurrentUser() user: AuthenticatedUser,
+        @Param('channel') channel: string,
+        @Body() body: { enabled: boolean },
+    ) {
+        // TODO: Update specific channel preference
+        return { userId: user.userId, channel, enabled: body.enabled, updated: true };
     }
 }

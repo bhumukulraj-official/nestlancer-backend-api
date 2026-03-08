@@ -21,7 +21,7 @@ export class NotificationsAdminController {
 
     @Get()
     @ApiPaginated()
-    async getAllNotifications(@Query() query: QueryNotificationsDto) {
+    async getAllNotifications(@Query() query: QueryNotificationsDto): Promise<any> {
         return this.adminService.findAll(query);
     }
 
@@ -57,7 +57,14 @@ export class NotificationsAdminController {
 
     @Delete('user/:userId')
     @ApiStandardResponse(Object)
-    async clearUserNotifications(@Param('userId') userId: string) {
+    async clearUserNotifications(@Param('userId') userId: string): Promise<any> {
         return this.adminService.clearUserNotifications(userId);
+    }
+
+    @Post(':id/resend')
+    @ApiStandardResponse(Object)
+    async resendNotification(@Param('id') id: string) {
+        // TODO: Resend a notification
+        return { id, status: 'resent' };
     }
 }

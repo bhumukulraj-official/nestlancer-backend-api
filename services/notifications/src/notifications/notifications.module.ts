@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationsController } from './notifications.controller';
+import { NotificationsRootController } from './notifications-root.controller';
 import { NotificationsAdminController } from './notifications.admin.controller';
 import { NotificationsService } from './notifications.service';
 import { NotificationDeliveryService } from './notification-delivery.service';
@@ -16,6 +17,7 @@ import { NotificationsAdminService } from './notifications-admin.service';
 @Module({
     imports: [DatabaseModule.forRoot(), CacheModule.forRoot(), QueueModule.forRoot()],
     controllers: [
+        NotificationsRootController,
         NotificationsController,
         NotificationsAdminController,
         NotificationTemplatesAdminController,
