@@ -2,6 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
+/**
+ * Redis-based leader election service.
+ * Ensures that only one worker instance performs background tasks (like polling).
+ * Uses atomic Redis SET NX with TTL to manage the distributed lock.
+ */
 @Injectable()
 export class LeaderElectionService {
     private readonly logger = new Logger(LeaderElectionService.name);
@@ -18,6 +23,12 @@ export class LeaderElectionService {
         this.instanceId = this.configService.get<string>('outbox.instanceId') || 'unknown';
     }
 
+    /**
+     * Attempts to acquire the leadership lock for this instance.
+     * If the lock is already held by this instance, it renews the TTL.
+     * 
+     * @returns A promise resolving to true if this instance is now the leader
+     */
     async acquireLock(): Promise<boolean> {
         try {
             const result = await this.redis.set(
@@ -29,11 +40,11 @@ export class LeaderElectionService {
             );
 
             if (result === 'OK') {
-                this.logger.debug(`Instance ${this.instanceId} acquired leader lock`);
+                this.logger.debug(`[LeaderElection] Instance ${this.instanceId} successfully acquired leadership lock.`);
                 return true;
             }
 
-            // If already held by this instance, renew it
+            // Renew TTL if lock is already held by this instance (avoiding race conditions)
             const currentValue = await this.redis.get(this.lockKey);
             if (currentValue === this.instanceId) {
                 await this.redis.expire(this.lockKey, this.lockTtl);
@@ -43,25 +54,36 @@ export class LeaderElectionService {
             return false;
         } catch (e: any) {
             const error = e as Error;
-            this.logger.error(`Failed to acquire leader lock: ${error.message}`, error.stack);
+            this.logger.error(`[LeaderElection] Failed to acquire lock in Redis: ${error.message}`, error.stack);
             return false;
         }
     }
 
+    /**
+     * Releases the leadership lock if it's currently held by this instance.
+     * 
+     * @returns A promise that resolves when the release operation is finished
+     */
     async releaseLock(): Promise<void> {
         try {
             const currentValue = await this.redis.get(this.lockKey);
             if (currentValue === this.instanceId) {
                 await this.redis.del(this.lockKey);
-                this.logger.debug(`Instance ${this.instanceId} released leader lock`);
+                this.logger.debug(`[LeaderElection] Instance ${this.instanceId} released the leadership lock.`);
             }
         } catch (e: any) {
             const error = e as Error;
-            this.logger.error(`Failed to release leader lock: ${error.message}`, error.stack);
+            this.logger.error(`[LeaderElection] Failed to release lock: ${error.message}`, error.stack);
         }
     }
 
-    isLeader(): Promise<boolean> {
-        return this.redis.get(this.lockKey).then((val) => val === this.instanceId);
+    /**
+     * Checks if this instance is currently the leader based on the lock in Redis.
+     * 
+     * @returns A promise resolving to true if this instance holds the lock
+     */
+    async isLeader(): Promise<boolean> {
+        const val = await this.redis.get(this.lockKey);
+        return val === this.instanceId;
     }
 }

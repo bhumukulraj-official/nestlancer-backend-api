@@ -6,6 +6,11 @@ import { OutboxPublisherService } from './outbox-publisher.service';
 import { ConfigService } from '@nestjs/config';
 import { OutboxEventStatus } from '../interfaces/outbox-event.interface';
 
+/**
+ * Background polling service for Transactional Outbox events.
+ * Implements leader election to ensure only a single instance polls the database.
+ * Periodically fetches pending events and publishes them to RabbitMQ.
+ */
 @Injectable()
 export class OutboxPollerService {
     private readonly logger = new Logger(OutboxPollerService.name);
@@ -21,26 +26,37 @@ export class OutboxPollerService {
         this.batchSize = this.configService.get<number>('outbox.batchSize') || 100;
     }
 
-    @Cron('*/5 * * * * *') // Every 5 seconds
-    async poll() {
+    /**
+     * Periodic scheduled task to poll the outbox table.
+     * Checks for leadership status before proceeding to avoid race conditions.
+     */
+    @Cron('*/5 * * * * *') // Runs every 5 seconds
+    async poll(): Promise<void> {
         if (this.isProcessing) return;
 
         const isLeader = await this.leaderElection.acquireLock();
-        if (!isLeader) return;
+        if (!isLeader) {
+            // This instance is not the leader; skipping poll cycle.
+            return;
+        }
 
         this.isProcessing = true;
         try {
             await this.processBatch();
         } catch (e: any) {
             const error = e as Error;
-            this.logger.error(`Error in outbox polling loop: ${error.message}`, error.stack);
+            this.logger.error(`[OutboxPoller] Critical error in polling cycle: ${error.message}`, error.stack);
         } finally {
             this.isProcessing = false;
         }
     }
 
-    private async processBatch() {
-        // 1. Fetch pending events
+    /**
+     * Fetches and processes a batch of pending outbox events.
+     * Updates event status and retry counts based on publication success.
+     */
+    private async processBatch(): Promise<void> {
+        // Fetch pending events ordered by creation time for fairness
         const events = await (this.prisma as any).outbox.findMany({
             where: { status: OutboxEventStatus.PENDING },
             orderBy: { createdAt: 'asc' },
@@ -49,14 +65,14 @@ export class OutboxPollerService {
 
         if (events.length === 0) return;
 
-        this.logger.debug(`Processing ${events.length} outbox events`);
+        this.logger.debug(`[OutboxPoller] Found ${events.length} pending events. Starting publication batch.`);
 
         for (const event of events) {
             try {
-                // 2. Publish to RabbitMQ
+                // 1. Publish to the appropriate RabbitMQ exchange
                 await this.publisher.publish(event as any);
 
-                // 3. Mark as published
+                // 2. Mark event as successfully published
                 await (this.prisma as any).outbox.update({
                     where: { id: event.id },
                     data: {
@@ -66,9 +82,9 @@ export class OutboxPollerService {
                 });
             } catch (e: any) {
                 const error = e as Error;
-                this.logger.error(`Failed to process outbox event ${event.id}: ${error.message}`);
+                this.logger.error(`[OutboxPoller] Publication failed for EventID ${event.id}: ${error.message}`);
 
-                // 4. Update retry count or mark as failed
+                // 3. Increment retry count and mark as FAILED if limit reached
                 await (this.prisma as any).outbox.update({
                     where: { id: event.id },
                     data: {
