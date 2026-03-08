@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MediaController } from './media.controller';
+import { MediaRootController } from './media-root.controller';
 import { MediaAdminController } from './media.admin.controller';
 import { MediaService } from './media.service';
 import { MediaAdminService } from './media-admin.service';
@@ -10,7 +11,7 @@ import { CacheModule } from '@nestlancer/cache';
 
 @Module({
     imports: [StorageModule, DatabaseModule, QueueModule, CacheModule],
-    controllers: [MediaController, MediaAdminController],
+    controllers: [MediaRootController, MediaController, MediaAdminController],
     providers: [MediaService, MediaAdminService],
     exports: [MediaService]
 })

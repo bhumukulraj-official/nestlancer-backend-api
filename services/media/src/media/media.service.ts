@@ -211,4 +211,14 @@ export class MediaService {
             quotaBytes: 5 * 1024 * 1024 * 1024, // 5GB default quota
         };
     }
+
+    @ReadOnly()
+    async getProcessingStatus(mediaId: string, userId: string) {
+        const media = await this.prismaRead.media.findFirst({
+            where: { id: mediaId, uploaderId: userId },
+            select: { id: true, status: true },
+        });
+        if (!media) throw new ResourceNotFoundException('Media');
+        return { id: media.id, status: media.status };
+    }
 }
