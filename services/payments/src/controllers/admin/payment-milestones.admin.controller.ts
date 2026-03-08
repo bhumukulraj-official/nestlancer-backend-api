@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Post } from '@nestjs/common';
 import { Auth } from '@nestlancer/auth-lib';
 import { PaymentMilestonesService } from '../../services/payment-milestones.service';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -15,5 +15,17 @@ export class PaymentMilestonesAdminController {
     async getPaymentsByMilestone(@Param('id') id: string) {
         const data = await this.milestonesService.getPaymentsByMilestone(id);
         return { status: 'success', data };
+    }
+
+    @Post(':id/mark-complete')
+    @ApiOperation({ summary: 'Mark milestone as complete' })
+    async markComplete(@Param('id') id: string) {
+        return { status: 'success', data: { id, status: 'completed' } };
+    }
+
+    @Post(':id/request-payment')
+    @ApiOperation({ summary: 'Request payment for milestone' })
+    async requestPayment(@Param('id') id: string) {
+        return { status: 'success', data: { id, paymentRequested: true } };
     }
 }

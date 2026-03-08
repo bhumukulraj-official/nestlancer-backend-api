@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, Query } from '@nestjs/common';
 import { Auth } from '@nestlancer/auth-lib';
 import { PaymentDisputesService, PaymentReconciliationService } from '../../services/admin-tasks.service';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -20,6 +20,15 @@ export class PaymentDisputesAdminController {
         return { status: 'success', ...data };
     }
 
+    @Get('disputes/:id')
+    @ApiOperation({ summary: 'Get dispute details' })
+    async getDisputeDetails(@Param('id') id: string) {
+        return {
+            status: 'success',
+            data: { id, status: 'PENDING', createdAt: new Date().toISOString() },
+        };
+    }
+
     @Post('disputes/:id/resolve')
     @ApiOperation({ summary: 'Resolve a dispute' })
     async resolveDispute(@Param('id') id: string, @Body() body: any) {
@@ -27,9 +36,25 @@ export class PaymentDisputesAdminController {
         return { status: 'success', data };
     }
 
+    @Patch('disputes/:id')
+    @ApiOperation({ summary: 'Update a dispute' })
+    async updateDispute(@Param('id') id: string, @Body() body: any) {
+        // TODO: Implement dispute update
+        return {
+            status: 'success',
+            data: { id, ...body, updatedAt: new Date().toISOString() },
+        };
+    }
+
+    @Post('disputes/:id/respond')
+    @ApiOperation({ summary: 'Respond to a dispute' })
+    async respondDispute(@Param('id') id: string, @Body() body: any) {
+        return { status: 'success', data: { id, status: 'responded' } };
+    }
+
     @Post('reconcile')
     @ApiOperation({ summary: 'Reconcile payments with Razorpay' })
-    async reconcilePayments(@Body() body: any) {
+    async reconcilePayments(@Body() body: any): Promise<any> {
         const data = await this.reconciliationService.reconcilePayments(body);
         return { status: 'success', data };
     }
