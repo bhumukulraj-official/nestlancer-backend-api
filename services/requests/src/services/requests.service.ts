@@ -77,6 +77,30 @@ export class RequestsService {
         return this.formatRequestDetailResponse(request as any);
     }
 
+    /** Get status timeline for a request (doc: GET /requests/:id/status) */
+    async getStatusTimeline(userId: string, requestId: string) {
+        const request = await this.prismaRead.projectRequest.findFirst({
+            where: { id: requestId, userId, deletedAt: null },
+            include: {
+                statusHistory: { orderBy: { createdAt: 'asc' } }
+            } as any
+        });
+
+        if (!request) {
+            throw new BusinessLogicException('Request not found', 'REQUEST_001');
+        }
+
+        return {
+            id: request.id,
+            status: (request as any).status.toLowerCase().replace(/_([a-z])/g, (_m: string, g: string) => g.toUpperCase()),
+            statusHistory: ((request as any).statusHistory || []).map((sh: any) => ({
+                status: sh.status.toLowerCase().replace(/_([a-z])/g, (_m: string, g: string) => g.toUpperCase()),
+                timestamp: sh.createdAt,
+                note: sh.note
+            }))
+        };
+    }
+
     async updateRequest(userId: string, requestId: string, dto: UpdateRequestDto) {
         const request = await this.prismaRead.projectRequest.findFirst({
             where: { id: requestId, userId, deletedAt: null }

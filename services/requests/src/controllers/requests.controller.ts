@@ -45,8 +45,14 @@ export class RequestsController {
 
     @Get('stats')
     @ApiStandardResponse()
-    getStats(@ActiveUser('sub') userId: string) {
+    getStats(@ActiveUser('sub') userId: string): Promise<any> | any {
         return this.statsService.getUserStats(userId);
+    }
+
+    @Get(':id/status')
+    @ApiStandardResponse()
+    getStatusTimeline(@ActiveUser('sub') userId: string, @Param('id') id: string) {
+        return this.requestsService.getStatusTimeline(userId, id);
     }
 
     @Get(':id')
@@ -103,5 +109,12 @@ export class RequestsController {
         @Param('attachmentId') attachmentId: string
     ) {
         return this.attachmentsService.removeAttachment(userId, id, attachmentId);
+    }
+
+    @Get(':id/quotes')
+    @ApiStandardResponse()
+    getRequestQuotes(@ActiveUser('sub') userId: string, @Param('id') id: string) {
+        // TODO: Get quotes for a request
+        return { requestId: id, quotes: [] };
     }
 }

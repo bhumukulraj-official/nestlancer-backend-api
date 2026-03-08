@@ -61,6 +61,12 @@ export class PortfolioPublicController {
     }
 
     @Public()
+    @Get('health')
+    health() {
+        return { status: 'ok', service: 'portfolio' };
+    }
+
+    @Public()
     @Get(':idOrSlug')
     @Cacheable({ ttl: 1800 })
     async getDetail(@Param('idOrSlug') idOrSlug: string, @Req() req: any) {

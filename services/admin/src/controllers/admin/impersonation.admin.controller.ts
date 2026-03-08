@@ -22,7 +22,7 @@ export class ImpersonationAdminController {
         return this.impersonationService.startImpersonation(req.user.sub, userId, dto);
     }
 
-    @Post('/impersonate/end/:sessionId')
+    @Post('impersonate/end/:sessionId')
     @ApiOperation({ summary: 'End impersonation session' })
     @SuccessResponse('Impersonation ended')
     async end(@Param('sessionId') sessionId: string) {

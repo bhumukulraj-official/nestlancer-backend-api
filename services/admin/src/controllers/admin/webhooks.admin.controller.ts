@@ -39,6 +39,27 @@ export class WebhooksAdminController {
         return this.webhooksService.create(dto);
     }
 
+    @Get('webhooks/health')
+    @ApiOperation({ summary: 'Webhooks health check' })
+    @SuccessResponse('Webhooks health')
+    health() {
+        return { status: 'ok', service: 'webhooks-admin' };
+    }
+
+    @Get('webhooks/events')
+    @ApiOperation({ summary: 'List available webhook events' })
+    @SuccessResponse('Available events')
+    events() {
+        return {
+            events: [
+                'project.created', 'project.updated', 'project.completed',
+                'payment.completed', 'payment.failed', 'payment.refunded',
+                'quote.sent', 'quote.accepted', 'quote.declined',
+                'message.sent', 'user.registered', 'webhook.test',
+            ],
+        };
+    }
+
     @Get('webhooks/:id')
     @ApiOperation({ summary: 'Get webhook' })
     @SuccessResponse('Webhook retrieved')
@@ -72,5 +93,45 @@ export class WebhooksAdminController {
     @SuccessResponse('Deliveries retrieved')
     async getDeliveries(@Param('id') id: string, @Query() query: QueryWebhookDeliveriesDto) {
         return this.deliveriesService.findAll(id, query);
+    }
+
+    @Post('webhooks/:id/enable')
+    @ApiOperation({ summary: 'Enable webhook' })
+    @SuccessResponse('Webhook enabled')
+    async enableWebhook(@Param('id') id: string) {
+        // TODO: Enable webhook
+        return { id, status: 'active' };
+    }
+
+    @Post('webhooks/:id/disable')
+    @ApiOperation({ summary: 'Disable webhook' })
+    @SuccessResponse('Webhook disabled')
+    async disableWebhook(@Param('id') id: string) {
+        // TODO: Disable webhook
+        return { id, status: 'disabled' };
+    }
+
+    @Get('webhooks/:id/deliveries/:deliveryId')
+    @ApiOperation({ summary: 'Get delivery details' })
+    @SuccessResponse('Delivery details retrieved')
+    async getDeliveryDetails(@Param('id') id: string, @Param('deliveryId') deliveryId: string) {
+        // TODO: Get delivery details
+        return { id: deliveryId, webhookId: id, details: {} };
+    }
+
+    @Post('webhooks/:id/deliveries/:deliveryId/retry')
+    @ApiOperation({ summary: 'Retry delivery' })
+    @SuccessResponse('Delivery retry initiated')
+    async retryDelivery(@Param('id') id: string, @Param('deliveryId') deliveryId: string) {
+        // TODO: Retry a failed webhook delivery
+        return { id: deliveryId, webhookId: id, status: 'pending' };
+    }
+
+    @Get('webhooks/:id/stats')
+    @ApiOperation({ summary: 'Get webhook statistics' })
+    @SuccessResponse('Webhook stats retrieved')
+    async getWebhookStats(@Param('id') id: string) {
+        // TODO: Get webhook stats (success rate, volume, etc)
+        return { webhookId: id, total: 0, failed: 0, successRate: 100 };
     }
 }

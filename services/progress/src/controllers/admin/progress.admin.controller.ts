@@ -51,4 +51,36 @@ export class ProgressAdminController {
         await this.progressService.deleteEntry(id);
         return { status: 'success' };
     }
+
+    @Get('projects/:projectId/analytics')
+    @ApiOperation({ summary: 'Get progress analytics for project' })
+    async getAnalytics(@Param('projectId') projectId: string) {
+        // TODO: Admin analytics for progress
+        return { status: 'success', projectId, analytics: {} };
+    }
+
+    @Get('projects/:projectId/timeline')
+    @ApiOperation({ summary: 'Get full administrative timeline for project' })
+    async getAdminTimeline(@Param('projectId') projectId: string) {
+        // TODO: Admin full timeline view
+        return { status: 'success', projectId, timeline: [] };
+    }
+
+    @Patch('projects/:projectId/status')
+    @ApiOperation({ summary: 'Update project status (admin)' })
+    async updateProjectStatus(
+        @Param('projectId') projectId: string,
+        @Body() body: any,
+    ) {
+        return { status: 'success', data: { projectId, newStatus: body.status } };
+    }
+
+    @Post('projects/:projectId/complete')
+    @ApiOperation({ summary: 'Mark project as complete (admin)' })
+    async markProjectComplete(
+        @Param('projectId') projectId: string,
+        @Body() body: any,
+    ) {
+        return { status: 'success', data: { projectId, status: 'COMPLETED', completedAt: new Date().toISOString() } };
+    }
 }

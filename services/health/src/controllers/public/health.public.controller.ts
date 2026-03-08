@@ -43,6 +43,19 @@ export class HealthPublicController {
         return res.status(status).json(health);
     }
 
+    @Get('detailed')
+    @Cacheable({ ttl: 15000 })
+    async getDetailedHealth(@Res() res: Response) {
+        // TODO: Provide more detailed diagnostics for detailed endpoint
+        const health = await this.healthService.getAggregatedHealth();
+
+        let status = HttpStatus.OK;
+        if (health.status === 'unhealthy') status = HttpStatus.SERVICE_UNAVAILABLE;
+        else if (health.status === 'degraded') status = HttpStatus.PARTIAL_CONTENT;
+
+        return res.status(status).json({ ...health, detailed: true });
+    }
+
     @Get('ready')
     async getReadiness(@Res() res: Response) {
         const readiness = await this.healthService.getReadiness();

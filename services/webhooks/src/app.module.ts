@@ -9,6 +9,7 @@ import { QueueModule, QueuePublisherService } from '@nestlancer/queue';
 import { AuthLibModule } from '@nestlancer/auth-lib';
 
 import { WebhookReceiverController } from './controllers/webhook/webhook-receiver.controller';
+import { WebhooksHealthController } from './controllers/webhook/webhooks-health.controller';
 import { WebhookIngestionService } from './services/webhook-ingestion.service';
 import { WebhookDispatcherService } from './services/webhook-dispatcher.service';
 import { RazorpayProvider } from './providers/razorpay.provider';
@@ -26,7 +27,7 @@ import { webhooksConfig } from './config/webhooks.config';
         QueueModule.forRoot({ url: process.env.RABBITMQ_URL || 'amqp://localhost:5672' }),
         AuthLibModule,
     ],
-    controllers: [WebhookReceiverController],
+    controllers: [WebhooksHealthController, WebhookReceiverController],
     providers: [
         WebhookIngestionService,
         WebhookDispatcherService,

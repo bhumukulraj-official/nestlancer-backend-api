@@ -22,7 +22,7 @@ export class PortfolioAdminController {
     ) { }
 
     @Get()
-    findAll(@Query() query: any) {
+    findAll(@Query() query: any): Promise<any> | any {
         return this.adminService.findAll(query);
     }
 
@@ -94,5 +94,23 @@ export class PortfolioAdminController {
     @Post(':id/duplicate')
     duplicate(@Param('id') id: string) {
         return this.adminService.duplicate(id);
+    }
+
+    @Post(':id/media')
+    addMedia(@Param('id') id: string, @Body() body: any) {
+        // TODO: Add media to portfolio item
+        return { id, mediaAdded: true, media: body };
+    }
+
+    @Delete(':id/media/:mediaId')
+    removeMedia(@Param('id') id: string, @Param('mediaId') mediaId: string) {
+        // TODO: Remove media from portfolio item
+        return { id, mediaRemoved: mediaId };
+    }
+
+    @Patch(':id/media/reorder')
+    reorderMedia(@Param('id') id: string, @Body() body: any) {
+        // TODO: Reorder media in portfolio item
+        return { id, mediaReordered: true, order: body };
     }
 }

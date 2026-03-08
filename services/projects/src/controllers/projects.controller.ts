@@ -25,6 +25,24 @@ export class ProjectsController {
         return { status: 'ok', service: 'projects' };
     }
 
+    @Get('stats')
+    @ApiStandardResponse()
+    getStats(@ActiveUser('sub') userId: string) {
+        return this.projectsService.getUserStats(userId);
+    }
+
+    @Get('templates')
+    @ApiStandardResponse()
+    getTemplates() {
+        return { templates: [] };
+    }
+
+    @Post('templates')
+    @ApiStandardResponse({ message: 'Template created' })
+    createTemplate(@ActiveUser('sub') userId: string, @Body() body: any) {
+        return { id: `tpl_${Date.now()}`, ...body };
+    }
+
     @Get()
     @ApiStandardResponse()
     listProjects(@ActiveUser('sub') userId: string) {
@@ -65,5 +83,46 @@ export class ProjectsController {
     @ApiStandardResponse({ message: 'Revision request submitted successfully' })
     requestRevision(@ActiveUser('sub') userId: string, @Param('id') id: string, @Body() dto: RequestProjectRevisionDto) {
         return this.projectsService.requestRevision(userId, id, dto);
+    }
+
+    @Get(':id/progress')
+    @ApiStandardResponse()
+    getProgress(@ActiveUser('sub') userId: string, @Param('id') id: string) {
+        // TODO: Get project progress summary
+        return { projectId: id, overallProgress: 0, milestones: [], recentUpdates: [] };
+    }
+
+    @Get(':id/milestones')
+    @ApiStandardResponse()
+    getMilestones(@ActiveUser('sub') userId: string, @Param('id') id: string) {
+        // TODO: Get project milestones
+        return { projectId: id, milestones: [] };
+    }
+
+    @Get(':id/messages')
+    @ApiStandardResponse()
+    getMessages(@ActiveUser('sub') userId: string, @Param('id') id: string) {
+        // TODO: Get project-related messages
+        return { projectId: id, messages: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+    }
+
+    @Post(':id/messages')
+    @ApiStandardResponse({ message: 'Message sent successfully' })
+    sendMessage(@ActiveUser('sub') userId: string, @Param('id') id: string, @Body() body: any) {
+        return { projectId: id, messageId: `msg_${Date.now()}`, sent: true };
+    }
+
+    @Post(':id/feedback')
+    @ApiStandardResponse({ message: 'Feedback submitted successfully' })
+    submitFeedback(@ActiveUser('sub') userId: string, @Param('id') id: string, @Body() body: any) {
+        // TODO: Submit project feedback
+        return { projectId: id, feedbackId: `fb_${Date.now()}`, submitted: true };
+    }
+
+    @Get(':id/feedback')
+    @ApiStandardResponse()
+    getFeedback(@ActiveUser('sub') userId: string, @Param('id') id: string) {
+        // TODO: Get project feedback
+        return { projectId: id, feedback: [] };
     }
 }

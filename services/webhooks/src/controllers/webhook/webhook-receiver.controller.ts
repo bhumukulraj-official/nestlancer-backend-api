@@ -30,6 +30,26 @@ export class WebhookReceiverController {
     }
 
     @Public()
+    @Post('github')
+    @HttpCode(HttpStatus.OK)
+    async handleGitHub(
+        @Headers() headers: Record<string, string>,
+        @Req() req: RawBodyRequest<Request>,
+    ): Promise<void> {
+        await this.processWebhook('github', req.rawBody, headers);
+    }
+
+    @Public()
+    @Post('stripe')
+    @HttpCode(HttpStatus.OK)
+    async handleStripe(
+        @Headers() headers: Record<string, string>,
+        @Req() req: RawBodyRequest<Request>,
+    ): Promise<void> {
+        await this.processWebhook('stripe', req.rawBody, headers);
+    }
+
+    @Public()
     @Post(':provider')
     @HttpCode(HttpStatus.OK)
     async handleProvider(

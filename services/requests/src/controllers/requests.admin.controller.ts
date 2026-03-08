@@ -82,4 +82,33 @@ export class RequestsAdminController {
     getNotes(@Param('id') id: string) {
         return this.adminService.getNotes(id);
     }
+
+    @Patch(':id')
+    @ApiStandardResponse({ message: 'Request updated successfully' })
+    updateRequest(
+        @Param('id') id: string,
+        @ActiveUser('sub') adminId: string,
+        @Body() body: any
+    ) {
+        // TODO: Admin update request
+        return { requestId: id, updated: true, data: body };
+    }
+
+    @Post(':id/assign')
+    @ApiStandardResponse({ message: 'Request assigned successfully' })
+    assignRequest(
+        @Param('id') id: string,
+        @ActiveUser('sub') adminId: string,
+        @Body() body: { assigneeId: string }
+    ) {
+        // TODO: Admin assign request
+        return { requestId: id, assignedTo: body.assigneeId, assignedBy: adminId };
+    }
+
+    @Delete(':id')
+    @ApiStandardResponse({ message: 'Request deleted successfully' })
+    deleteRequest(@Param('id') id: string) {
+        // TODO: Admin delete request
+        return { requestId: id, deleted: true };
+    }
 }

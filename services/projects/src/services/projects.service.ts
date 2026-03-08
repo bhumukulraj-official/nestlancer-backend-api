@@ -32,6 +32,22 @@ export class ProjectsService {
         }));
     }
 
+    async getUserStats(userId: string) {
+        const projects = await this.prismaRead.project.findMany({
+            where: { clientId: userId },
+            select: { status: true },
+        });
+
+        const stats = { total: projects.length, active: 0, completed: 0, cancelled: 0 };
+        for (const p of projects) {
+            if (p.status === 'COMPLETED') stats.completed++;
+            else if (p.status === 'CANCELLED') stats.cancelled++;
+            else stats.active++;
+        }
+
+        return stats;
+    }
+
     async getProjectDetails(userId: string, projectId: string) {
         const project = await this.prismaRead.project.findFirst({
             where: { id: projectId, clientId: userId },
