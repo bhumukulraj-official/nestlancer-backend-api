@@ -4,6 +4,11 @@ import { InAppNotificationProcessor } from '../processors/in-app-notification.pr
 import { PushProviderService } from './push-provider.service';
 import { PrismaWriteService } from '@nestlancer/database';
 
+/**
+ * Orchestrator service for the Notification Worker.
+ * Handles delivery of across multiple channels (In-App, Push, Email).
+ * Manages user notification preference checks and channel-specific dispatching.
+ */
 @Injectable()
 export class NotificationWorkerService {
     private readonly logger = new Logger(NotificationWorkerService.name);
@@ -14,9 +19,16 @@ export class NotificationWorkerService {
         private readonly prisma: PrismaWriteService,
     ) { }
 
+    /**
+     * Processes a notification job by dispatching to all requested channels.
+     * Uses parallel execution (Promise.allSettled) for reliability across channels.
+     * 
+     * @param job - The notification job containing content and target channels
+     * @returns A promise that resolves when all delivery attempts have settled
+     */
     async processNotification(job: NotificationJob): Promise<void> {
         const { userId, channels = [NotificationChannel.IN_APP] } = job;
-        this.logger.log(`Processing notification for user ${userId}, channels: ${channels.join(', ')}`);
+        this.logger.log(`[NotificationWorker] Dispatching notification for UserID: ${userId} | Channels: ${channels.join(', ')}`);
 
         const results = await Promise.allSettled(
             channels.map(async (channel) => {
@@ -26,28 +38,33 @@ export class NotificationWorkerService {
                     case NotificationChannel.PUSH:
                         return this.processPushNotification(job);
                     default:
-                        this.logger.warn(`Channel ${channel} not yet implemented`);
+                        this.logger.warn(`[NotificationWorker] Channel ${channel} is currently not implemented/supported.`);
                 }
             }),
         );
 
-        // Logs results
+        // Aggregate and log delivery results
         results.forEach((res, index) => {
             if (res.status === 'rejected') {
-                this.logger.error(`Failed to deliver via channel ${channels[index]}:`, res.reason);
+                this.logger.error(`[NotificationWorker] Failure in channel ${channels[index]}: ${res.reason?.message || res.reason}`);
             }
         });
-
-        // We consider it a success if at least one channel worked or we decide based on business logic
     }
 
-    private async processPushNotification(job: NotificationJob) {
+    /**
+     * Handles push notification delivery to all registered devices of a user.
+     * Automatically prunes invalid/expired subscriptions based on provider feedback.
+     * 
+     * @param job - The notification job containing content
+     * @returns A promise that resolves when all push attempts are complete
+     */
+    private async processPushNotification(job: NotificationJob): Promise<void> {
         const subscriptions = await this.prisma.userPushSubscription.findMany({
             where: { userId: job.userId },
         });
 
         if (subscriptions.length === 0) {
-            this.logger.debug(`No push subscriptions found for user ${job.userId}`);
+            this.logger.debug(`[NotificationWorker] No push tokens found for UserID: ${job.userId}`);
             return;
         }
 
@@ -62,7 +79,8 @@ export class NotificationWorkerService {
             });
 
             if (!success) {
-                // Remove invalid subscription
+                // Subscription is stale, remove from database
+                this.logger.log(`[NotificationWorker] Pruning invalid push subscription ID: ${sub.id}`);
                 await this.prisma.userPushSubscription.delete({ where: { id: sub.id } });
             }
         }
