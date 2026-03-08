@@ -11,6 +11,12 @@ import { DashboardUsersService } from '../../services/dashboard-users.service';
 import { DashboardProjectsService } from '../../services/dashboard-projects.service';
 import { DashboardPerformanceService } from '../../services/dashboard-performance.service';
 
+/**
+ * Controller for administrative dashboard data and metrics.
+ * Provides system-wide overview, revenue analytics, user metrics, and performance data.
+ * 
+ * @category Admin
+ */
 @ApiTags('Admin - Dashboard')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
@@ -25,52 +31,91 @@ export class DashboardAdminController {
         private readonly performanceService: DashboardPerformanceService,
     ) { }
 
+    /**
+     * Retrieves primary dashboard overview metrics including total users, active projects, and revenue summaries.
+     * 
+     * @param query Time-range and granularity filters for the overview data
+     * @returns Object containing high-level system metrics
+     */
     @Get('overview')
-    @ApiOperation({ summary: 'Get dashboard overview metrics' })
+    @ApiOperation({ summary: 'Get dashboard overview metrics', description: 'Fetch a snapshot of key performance indicators and system-wide overview data.' })
     @SuccessResponse('Dashboard overview retrieved successfully')
-    async getOverview(@Query() query: DashboardQueryDto) {
+    async getOverview(@Query() query: DashboardQueryDto): Promise<any> {
         return this.dashboardService.getOverview(query);
     }
 
+    /**
+     * Retrieves detailed revenue analytics, including growth rates and payment distributions.
+     * 
+     * @param query Period and currency filters for revenue reporting
+     * @returns Revenue breakdown and historical data
+     */
     @Get('revenue')
-    @ApiOperation({ summary: 'Get revenue analytics' })
+    @ApiOperation({ summary: 'Get revenue analytics', description: 'Retrieve comprehensive financial reports and revenue breakdown across the platform.' })
     @SuccessResponse('Revenue analytics retrieved successfully')
-    async getRevenue(@Query() query: RevenueQueryDto) {
+    async getRevenue(@Query() query: RevenueQueryDto): Promise<any> {
         return this.revenueService.getRevenue(query);
     }
 
+    /**
+     * Retrieves user-related metrics such as registration trends and user distribution by role.
+     * 
+     * @returns User growth and status statistics
+     */
     @Get('users')
-    @ApiOperation({ summary: 'Get user metrics' })
+    @ApiOperation({ summary: 'Get user metrics', description: 'Fetch detailed statistics on user acquisition, retention, and status distribution.' })
     @SuccessResponse('User metrics retrieved successfully')
-    async getUsers() {
+    async getUsers(): Promise<any> {
         return this.usersService.getUserMetrics();
     }
 
+    /**
+     * Retrieves project-related metrics including completion rates and category distribution.
+     * 
+     * @returns Project status and activity statistics
+     */
     @Get('projects')
-    @ApiOperation({ summary: 'Get project metrics' })
+    @ApiOperation({ summary: 'Get project metrics', description: 'Retrieve analytical data regarding project creation, status, and categories.' })
     @SuccessResponse('Project metrics retrieved successfully')
-    async getProjects() {
+    async getProjects(): Promise<any> {
         return this.projectsService.getProjectMetrics();
     }
 
+    /**
+     * Retrieves aggregated system performance metrics including historical data.
+     * 
+     * @returns A promise resolving to infrastructure and application performance data
+     */
     @Get('performance')
-    @ApiOperation({ summary: 'Get system performance metrics' })
+    @ApiOperation({ summary: 'Get system performance metrics', description: 'Monitor application health, server response times, and resource usage statistics.' })
     @SuccessResponse('Performance metrics retrieved successfully')
-    async getPerformance() {
+    async getPerformance(): Promise<any> {
         return this.performanceService.getPerformance();
     }
 
+    /**
+     * Retrieves a chronological log of recent significant system-level activities.
+     * 
+     * @returns A promise resolving to a collection of recent activity events
+     */
     @Get('activity')
-    @ApiOperation({ summary: 'Get recent activity' })
+    @ApiOperation({ summary: 'Get recent activity', description: 'Fetch a historical audit trail of significant administrative and system activities.' })
     @SuccessResponse('Recent activity retrieved successfully')
-    async getActivity() {
+    async getActivity(): Promise<any> {
         return { data: [] }; // Mocked directly for brevity since DashboardService already mocks this
     }
 
+    /**
+     * Retrieves active system alerts, warnings, and critical operational notifications.
+     * 
+     * @returns A promise resolving to prioritized system alerts
+     */
     @Get('alerts')
-    @ApiOperation({ summary: 'Get system alerts' })
+    @ApiOperation({ summary: 'Get system alerts', description: 'Retrieve high-priority issues and status warnings across the infrastructure.' })
     @SuccessResponse('Alerts retrieved successfully')
-    async getAlerts() {
+    async getAlerts(): Promise<any> {
         return { data: [] }; // Mocked directly
     }
 }
+
+

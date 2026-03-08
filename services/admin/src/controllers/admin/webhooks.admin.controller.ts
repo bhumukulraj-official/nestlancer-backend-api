@@ -13,6 +13,12 @@ import { UpdateWebhookDto } from '../../dto/update-webhook.dto';
 import { TestWebhookDto } from '../../dto/test-webhook.dto';
 import { QueryWebhookDeliveriesDto } from '../../dto/query-webhook-deliveries.dto';
 
+/**
+ * Controller for administrative webhook management and monitoring.
+ * Provides endpoints for configuring webhooks, listing events, and auditing delivery history.
+ * 
+ * @category Admin
+ */
 @ApiTags('Admin - Webhooks')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
@@ -25,31 +31,48 @@ export class WebhooksAdminController {
         private readonly testingService: WebhookTestingService,
     ) { }
 
+    /**
+     * Retrieves a list of all configured webhooks.
+     * 
+     * @returns Array of webhook configurations
+     */
     @Get('webhooks')
-    @ApiOperation({ summary: 'List webhooks' })
+    @ApiOperation({ summary: 'List webhooks', description: 'Fetch all registered webhooks for the system.' })
     @SuccessResponse('Webhooks retrieved')
-    async list() {
+    async list(): Promise<any> {
         return this.webhooksService.findAll();
     }
 
+    /**
+     * Registers a new system-wide webhook.
+     * 
+     * @param dto Webhook configuration (target URL, events, secret)
+     * @returns The created webhook object
+     */
     @Post('webhooks')
-    @ApiOperation({ summary: 'Create webhook' })
+    @ApiOperation({ summary: 'Create webhook', description: 'Register a new webhook endpoint to receive specified system events.' })
     @SuccessResponse('Webhook created')
-    async create(@Body() dto: CreateWebhookDto) {
+    async create(@Body() dto: CreateWebhookDto): Promise<any> {
         return this.webhooksService.create(dto);
     }
 
     @Get('webhooks/health')
     @ApiOperation({ summary: 'Webhooks health check' })
     @SuccessResponse('Webhooks health')
-    health() {
+    async health(): Promise<any> {
         return { status: 'ok', service: 'webhooks-admin' };
     }
 
+
+    /**
+     * Retrieves an enumeration of all system events compatible with webhook triggers.
+     * 
+     * @returns A promise resolving to an object containing an array of supported event identifiers
+     */
     @Get('webhooks/events')
-    @ApiOperation({ summary: 'List available webhook events' })
+    @ApiOperation({ summary: 'List available webhook events', description: 'Retrieve a comprehensive registry of all platform events that can trigger a webhook notification.' })
     @SuccessResponse('Available events')
-    events() {
+    async events(): Promise<any> {
         return {
             events: [
                 'project.created', 'project.updated', 'project.completed',
@@ -60,45 +83,79 @@ export class WebhooksAdminController {
         };
     }
 
+
+    /**
+     * Retrieves detailed configuration for a specific webhook.
+     * 
+     * @param id The unique identifier of the webhook
+     * @returns Detailed webhook configuration
+     */
     @Get('webhooks/:id')
-    @ApiOperation({ summary: 'Get webhook' })
+    @ApiOperation({ summary: 'Get webhook', description: 'Retrieve comprehensive configuration for a specific webhook by ID.' })
     @SuccessResponse('Webhook retrieved')
-    async get(@Param('id') id: string) {
+    async get(@Param('id') id: string): Promise<any> {
         return this.webhooksService.findOne(id);
     }
 
+    /**
+     * Updates an existing webhook configuration.
+     * 
+     * @param id The unique identifier of the webhook
+     * @param dto New configuration values
+     * @returns Updated webhook configuration
+     */
     @Patch('webhooks/:id')
-    @ApiOperation({ summary: 'Update webhook' })
+    @ApiOperation({ summary: 'Update webhook', description: 'Modify the URL, events, or status of an existing webhook.' })
     @SuccessResponse('Webhook updated')
-    async update(@Param('id') id: string, @Body() dto: UpdateWebhookDto) {
+    async update(@Param('id') id: string, @Body() dto: UpdateWebhookDto): Promise<any> {
         return this.webhooksService.update(id, dto);
     }
 
+    /**
+     * Permanently deletes a webhook from the system.
+     * 
+     * @param id The unique identifier of the webhook
+     * @returns Confirmation of deletion
+     */
     @Delete('webhooks/:id')
-    @ApiOperation({ summary: 'Delete webhook' })
+    @ApiOperation({ summary: 'Delete webhook', description: 'Remove a webhook registration and stop all future delivery attempts.' })
     @SuccessResponse('Webhook deleted')
-    async remove(@Param('id') id: string) {
+    async remove(@Param('id') id: string): Promise<any> {
         return this.webhooksService.remove(id);
     }
 
+    /**
+     * Sends a test event to the specified webhook to verify connectivity.
+     * 
+     * @param id The unique identifier of the webhook
+     * @param dto Test configuration (optional test event type)
+     * @returns Result of the test delivery
+     */
     @Post('webhooks/:id/test')
-    @ApiOperation({ summary: 'Test webhook' })
+    @ApiOperation({ summary: 'Test webhook', description: 'Trigger a sample event to verify the target URL is reachable and correctly configured.' })
     @SuccessResponse()
-    async test(@Param('id') id: string, @Body() dto: TestWebhookDto) {
+    async test(@Param('id') id: string, @Body() dto: TestWebhookDto): Promise<any> {
         return this.testingService.testDelivery(id, dto);
     }
 
+    /**
+     * Retrieves recent delivery history for a specific webhook.
+     * 
+     * @param id The unique identifier of the webhook
+     * @param query Pagination and filtering for delivery records
+     * @returns Paginated list of webhook delivery attempts
+     */
     @Get('webhooks/:id/deliveries')
-    @ApiOperation({ summary: 'Get webhook deliveries' })
+    @ApiOperation({ summary: 'Get webhook deliveries', description: 'Fetch a history of delivery attempts, status codes, and response bodies for a specific webhook.' })
     @SuccessResponse('Deliveries retrieved')
-    async getDeliveries(@Param('id') id: string, @Query() query: QueryWebhookDeliveriesDto) {
+    async getDeliveries(@Param('id') id: string, @Query() query: QueryWebhookDeliveriesDto): Promise<any> {
         return this.deliveriesService.findAll(id, query);
     }
 
     @Post('webhooks/:id/enable')
     @ApiOperation({ summary: 'Enable webhook' })
     @SuccessResponse('Webhook enabled')
-    async enableWebhook(@Param('id') id: string) {
+    async enableWebhook(@Param('id') id: string): Promise<any> {
         // TODO: Enable webhook
         return { id, status: 'active' };
     }
@@ -106,7 +163,7 @@ export class WebhooksAdminController {
     @Post('webhooks/:id/disable')
     @ApiOperation({ summary: 'Disable webhook' })
     @SuccessResponse('Webhook disabled')
-    async disableWebhook(@Param('id') id: string) {
+    async disableWebhook(@Param('id') id: string): Promise<any> {
         // TODO: Disable webhook
         return { id, status: 'disabled' };
     }
@@ -114,7 +171,7 @@ export class WebhooksAdminController {
     @Get('webhooks/:id/deliveries/:deliveryId')
     @ApiOperation({ summary: 'Get delivery details' })
     @SuccessResponse('Delivery details retrieved')
-    async getDeliveryDetails(@Param('id') id: string, @Param('deliveryId') deliveryId: string) {
+    async getDeliveryDetails(@Param('id') id: string, @Param('deliveryId') deliveryId: string): Promise<any> {
         // TODO: Get delivery details
         return { id: deliveryId, webhookId: id, details: {} };
     }
@@ -122,7 +179,7 @@ export class WebhooksAdminController {
     @Post('webhooks/:id/deliveries/:deliveryId/retry')
     @ApiOperation({ summary: 'Retry delivery' })
     @SuccessResponse('Delivery retry initiated')
-    async retryDelivery(@Param('id') id: string, @Param('deliveryId') deliveryId: string) {
+    async retryDelivery(@Param('id') id: string, @Param('deliveryId') deliveryId: string): Promise<any> {
         // TODO: Retry a failed webhook delivery
         return { id: deliveryId, webhookId: id, status: 'pending' };
     }
@@ -130,7 +187,7 @@ export class WebhooksAdminController {
     @Get('webhooks/:id/stats')
     @ApiOperation({ summary: 'Get webhook statistics' })
     @SuccessResponse('Webhook stats retrieved')
-    async getWebhookStats(@Param('id') id: string) {
+    async getWebhookStats(@Param('id') id: string): Promise<any> {
         // TODO: Get webhook stats (success rate, volume, etc)
         return { webhookId: id, total: 0, failed: 0, successRate: 100 };
     }

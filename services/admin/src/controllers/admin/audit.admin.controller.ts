@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query, UseGuards, Res } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, UseGuards, Res, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, SuccessResponse } from '@nestlancer/common';
@@ -9,6 +9,12 @@ import { AuditExportService } from '../../services/audit-export.service';
 import { QueryAuditDto } from '../../dto/query-audit.dto';
 import { ExportAuditDto } from '../../dto/export-audit.dto';
 
+/**
+ * Controller for administrative audit log management.
+ * Provides endpoints for viewing, searching, and exporting system-wide audit trails.
+ * 
+ * @category Admin
+ */
 @ApiTags('Admin - Audit')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
@@ -20,45 +26,84 @@ export class AuditAdminController {
         private readonly exportService: AuditExportService,
     ) { }
 
+    /**
+     * Retrieves a paginated list of audit logs based on provided query filters.
+     * 
+     * @param query Filters for user ID, resource type, action, and date range
+     * @returns Paginated list of audit records
+     */
     @Get()
-    @ApiOperation({ summary: 'List audit logs' })
+    @ApiOperation({ summary: 'List audit logs', description: 'Retrieve a paginated list of system audit logs with optional filtering.' })
     @SuccessResponse('Logs retrieved')
-    async list(@Query() query: QueryAuditDto) {
+    async list(@Query() query: QueryAuditDto): Promise<any> {
         return this.auditService.findAll(query);
     }
 
+    /**
+     * Retrieves aggregate statistics for the audit system.
+     * Includes counts of actions and most active resources/users.
+     * 
+     * @returns Audit system status and statistics
+     */
     @Get('stats')
-    @ApiOperation({ summary: 'Audit statistics' })
+    @ApiOperation({ summary: 'Audit statistics', description: 'Get aggregate overview of audit activity.' })
     @SuccessResponse('Statistics retrieved')
-    async getStats() {
+    async getStats(): Promise<any> {
         return this.auditService.getStats();
     }
 
+    /**
+     * Retrieves the audit trail for a specific user.
+     * 
+     * @param userId The ID of the user to retrieve the trail for
+     * @returns List of audit entries for the user
+     */
     @Get('user/:userId')
-    @ApiOperation({ summary: 'User audit trail' })
+    @ApiOperation({ summary: 'User audit trail', description: 'Retrieve all audit logs associated with a specific user ID.' })
     @SuccessResponse('User trail retrieved')
-    async getUserTrail(@Param('userId') userId: string) {
+    async getUserTrail(@Param('userId') userId: string): Promise<any> {
         return this.auditService.getUserTrail(userId);
     }
 
+    /**
+     * Retrieves the audit trail for a specific resource.
+     * 
+     * @param type The type of resource (e.g., 'Project', 'User')
+     * @param id The unique identifier of the resource
+     * @returns List of audit entries for the resource
+     */
     @Get('resource/:type/:id')
-    @ApiOperation({ summary: 'Resource audit trail' })
+    @ApiOperation({ summary: 'Resource audit trail', description: 'Retrieve all audit logs associated with a specific resource type and ID.' })
     @SuccessResponse('Resource trail retrieved')
-    async getResourceTrail(@Param('type') type: string, @Param('id') id: string) {
+    async getResourceTrail(@Param('type') type: string, @Param('id') id: string): Promise<any> {
         return this.auditService.getResourceTrail(type, id);
     }
 
+    /**
+     * Retrieves a single audit log entry by its ID.
+     * 
+     * @param id The unique identifier of the audit log
+     * @returns A single audit log entry
+     */
     @Get(':id')
-    @ApiOperation({ summary: 'Get audit entry' })
+    @ApiOperation({ summary: 'Get audit entry', description: 'Retrieve detailed information for a specific audit log entry.' })
     @SuccessResponse('Audit entry retrieved')
-    async get(@Param('id') id: string) {
+    async get(@Param('id') id: string): Promise<any> {
         return this.auditService.findOne(id);
     }
 
+    /**
+     * Triggers an asynchronous export of audit logs.
+     * The export format and filters are specified in the DTO.
+     * 
+     * @param dto Export configuration (format, filters)
+     * @returns Success response indicating the export process has started
+     */
     @Post('export')
-    @ApiOperation({ summary: 'Export audit logs' })
+    @ApiOperation({ summary: 'Export audit logs', description: 'Initiate a background process to export audit logs in CSV or JSON format.' })
     @SuccessResponse('Export started')
-    async export(@Param() dto: ExportAuditDto) {
+    async export(@Body() dto: ExportAuditDto): Promise<any> {
         return this.exportService.triggerExport(dto);
     }
 }
+
