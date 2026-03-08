@@ -2,30 +2,33 @@ import { IsOptional, IsUUID, IsInt, Min, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
+/**
+ * Data Transfer Object for querying and filtering messages.
+ */
 export class QueryMessagesDto {
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ description: 'Filter messages by project ID' })
     @IsOptional()
     @IsUUID()
     projectId?: string;
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ description: 'Filter messages by parent message thread ID' })
     @IsOptional()
     @IsUUID()
     replyToId?: string; // To fetch threads
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ description: 'Search term for message content' })
     @IsOptional()
     @IsString()
     search?: string;
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ example: 1, description: 'Pagination page number' })
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(1)
     page?: number = 1;
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ example: 50, description: 'Number of items per page' })
     @IsOptional()
     @Type(() => Number)
     @IsInt()
