@@ -10,13 +10,21 @@ import { GithubPushHandler } from '../handlers/github/push.handler';
 import { GithubPullRequestHandler } from '../handlers/github/pull-request.handler';
 import { GithubDeploymentHandler } from '../handlers/github/deployment.handler';
 
+/**
+ * Orchestrator service for the Webhook Worker.
+ * Dynamically resolves and dispatches incoming webhooks to specific domain handlers.
+ * Supports multiple providers (e.g. Razorpay, GitHub) and their various event types.
+ */
 @Injectable()
 export class WebhookWorkerService implements OnModuleInit {
     private handlers: WebhookHandler[] = [];
 
     constructor(private readonly moduleRef: ModuleRef) { }
 
-    onModuleInit() {
+    /**
+     * Initializes the service by collecting all registered webhook handlers.
+     */
+    onModuleInit(): void {
         this.handlers = [
             this.moduleRef.get(PaymentCapturedHandler),
             this.moduleRef.get(PaymentFailedHandler),
@@ -28,6 +36,15 @@ export class WebhookWorkerService implements OnModuleInit {
         ];
     }
 
+    /**
+     * Dispatches an incoming webhook to the matching handler.
+     * 
+     * @param provider - The source of the webhook (e.g. 'razorpay', 'github')
+     * @param eventType - The specific event name from the provider
+     * @param payload - The raw data payload from the provider
+     * @returns A promise that resolves when the handler completes its logic
+     * @throws ResourceNotFoundException if no handler is registered for the provider:eventType pair
+     */
     async dispatch(provider: string, eventType: string, payload: any): Promise<void> {
         const handler = this.handlers.find(h => h.canHandle(provider, eventType));
         if (handler) {
