@@ -1,28 +1,32 @@
 import { DeliverableStatus } from '../interfaces/deliverable.interface';
 import { ApiProperty } from '@nestjs/swagger';
 
+/**
+ * Represents a project deliverable submission.
+ */
 export class DeliverableResponseDto {
-    @ApiProperty()
+    @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174222', description: 'Unique identifier for the deliverable' })
     id: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174111', description: 'Associated milestone ID' })
     milestoneId: string;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({ required: false, example: 'Phase 1 Documentation Draft', description: 'Optional description of the deliverable' })
     description?: string;
 
-    @ApiProperty({ type: [Object] })
+    @ApiProperty({ type: [Object], description: 'Metadata for associated media/files' })
     media: any[];
 
-    @ApiProperty({ enum: DeliverableStatus })
+    @ApiProperty({ enum: DeliverableStatus, example: DeliverableStatus.UPLOADED, description: 'Current status of the deliverable' })
     status: DeliverableStatus;
 
-    @ApiProperty()
+    @ApiProperty({ example: 1, description: 'Submission version number' })
     version: number;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({ required: false, description: 'Current review status/notes' })
     reviewStatus?: any;
 
-    @ApiProperty()
+    @ApiProperty({ example: '2024-01-10T15:30:00Z', description: 'Timestamp of creation' })
     createdAt: Date;
 }
+
