@@ -66,6 +66,8 @@ Manages user notifications across multiple channels (in-app, email, push). Suppo
 | `GET` | `/channels` | List notification channels | 200/hour | Yes |
 | `POST` | `/push-subscription` | Register push subscription | 100/hour | No |
 | `DELETE` | `/push-subscription` | Remove push subscription | 100/hour | Yes |
+| `POST` | `/push/register` | Register push notification device | 100/hour | No |
+| `DELETE` | `/push/unregister/{deviceId}` | Unregister push device | 100/hour | Yes |
 | `POST` | `/test` | Send test notification | 10/hour | No |
 | `GET` | `/history` | Get notification history | 200/hour | Yes |
 
@@ -84,6 +86,7 @@ Manages user notifications across multiple channels (in-app, email, push). Suppo
 | `POST` | `/templates` | Create template | 50/hour | No |
 | `PATCH` | `/templates/{id}` | Update template | 100/hour | No |
 | `DELETE` | `/templates/{id}` | Delete template | 50/hour | Yes |
+| `POST` | `/{id}/resend` | Resend a failed notification | 100/hour | No |
 
 ### 11.6 WebSocket Connection
 

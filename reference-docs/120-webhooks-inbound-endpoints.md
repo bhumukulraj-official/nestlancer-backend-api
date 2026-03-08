@@ -15,6 +15,8 @@ Dedicated webhook ingestion service responsible for receiving, verifying, and en
 | `POST` | `/razorpay` | Razorpay webhook events | API Key + Signature | 5000/hour |
 | `POST` | `/github` | GitHub webhook events | Secret Signature | 5000/hour |
 | `POST` | `/stripe` | Stripe webhook events | Secret Signature | 5000/hour |
+| `POST` | `/cloudflare` | Cloudflare CDN webhook events | Signature Verification | 5000/hour |
+| `POST` | `/{provider}` | Generic webhook handler | Provider-specific | 5000/hour |
 
 ### 20.3 Request/Response Examples
 
@@ -131,6 +133,76 @@ X-RateLimit-Reset: 1705326600
   }
 }
 ```
+
+#### POST /cloudflare
+```json
+// Request (from Cloudflare)
+POST /api/v1/webhooks/cloudflare
+cf-webhook-auth: whsec_cloudflare_secret_key_abc123
+Content-Type: application/json
+
+{
+  "event": "cache.purge.completed",
+  "zone": {
+    "id": "zone_abc123",
+    "name": "example.com"
+  },
+  "data": {
+    "purgeType": "everything",
+    "completedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "createdAt": "2024-01-15T10:30:05.000Z"
+}
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqWhkCf123
+X-RateLimit-Limit: 5000
+X-RateLimit-Remaining: 4999
+X-RateLimit-Reset: 1705326600
+
+{
+  "received": true
+}
+```
+
+Events handled: `cache.purge.completed`, `security.event`, `zone.update`
+Processing: Async via webhook-worker queue
+
+#### POST /{provider}
+```json
+// Request (from generic provider)
+POST /api/v1/webhooks/custom-provider
+X-Webhook-Signature: sha256=abcdef1234567890...
+Content-Type: application/json
+
+{
+  "type": "event.occurred",
+  "id": "evt_generic_123",
+  "data": {
+    "key": "value"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqWhkGen123
+X-RateLimit-Limit: 5000
+X-RateLimit-Remaining: 4999
+X-RateLimit-Reset: 1705326600
+
+{
+  "received": true
+}
+```
+
+Catch-all handler for future webhook providers. Routes to `generic.provider.ts` for processing. Validates against registered webhook configurations.
+Processing: Async via webhook-worker queue
 
 ### 20.4 Error Codes
 

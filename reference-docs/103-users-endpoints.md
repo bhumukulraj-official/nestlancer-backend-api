@@ -32,6 +32,7 @@ Manages user profiles, preferences, sessions, two-factor authentication, and acc
 | `POST` | `/2fa/disable` | Disable 2FA | 20/hour | No |
 | `GET` | `/2fa/backup-codes` | Get backup codes | 20/hour | Yes |
 | `POST` | `/2fa/regenerate-codes` | Regenerate backup codes | 10/hour | No |
+| `GET` | `/2fa/status` | Check 2FA enrollment status | 100/hour | Yes |
 
 #### Session Management
 
@@ -51,6 +52,7 @@ Manages user profiles, preferences, sessions, two-factor authentication, and acc
 | `POST` | `/cancel-deletion` | Cancel deletion request | 10/hour | No |
 | `GET` | `/activity` | View activity history | 100/hour | Yes |
 | `GET` | `/data-export` | Request GDPR data export | 5/day | No |
+| `GET` | `/export/{id}` | Download a specific data export | 20/hour | Yes |
 
 ### 4.3 Admin User Endpoints (Admin JWT Required)
 
@@ -399,6 +401,36 @@ X-Request-ID: reqAbc123
 }
 ```
 
+#### GET /2fa/status
+```json
+// Request
+GET /api/v1/users/2fa/status
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1705323000
+X-API-Version: v1
+X-Request-ID: reqAbc123
+
+{
+  "status": "success",
+  "data": {
+    "twoFactorEnabled": true,
+    "method": "totp",
+    "enrolledAt": "2024-01-15T10:30:00.000Z"
+  },
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00.000Z",
+    "requestId": "reqAbc123",
+    "version": "v1"
+  }
+}
+```
+
 #### GET /sessions
 ```json
 // Request
@@ -549,6 +581,36 @@ X-Request-ID: reqAbc123
     "deletionDate": "2024-02-14T10:30:00.000Z",
     "gracePeriodDays": 30,
     "canCancelUntil": "2024-02-14T10:30:00.000Z"
+  },
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00.000Z",
+    "requestId": "reqAbc123",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /export/{id}
+```json
+// Request
+GET /api/v1/users/export/expAbc123
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1705323000
+X-API-Version: v1
+X-Request-ID: reqAbc123
+
+{
+  "status": "success",
+  "data": {
+    "downloadUrl": "https://cdn.example.com/exports/expAbc123.json",
+    "expiresAt": "2024-01-16T10:30:00.000Z",
+    "format": "json"
   },
   "metadata": {
     "timestamp": "2024-01-15T10:30:00.000Z",

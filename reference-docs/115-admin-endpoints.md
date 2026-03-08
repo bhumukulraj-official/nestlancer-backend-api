@@ -49,6 +49,10 @@ Administrative dashboard, system configuration, audit logging, webhook managemen
 | `GET` | `/system/logs` | View system logs | 1000/hour | admin |
 | `GET` | `/system/logs/download` | Download logs | 50/hour | admin |
 
+> **Note:** Feature flags are managed via `GET /system/features` (list) and `PATCH /system/features/{flag}` (toggle).
+> Feature flags are seeded via database migrations (`08-feature-flags.seed.ts`) and should not be created or deleted
+> via the API. Use the toggle endpoint to enable/disable flags at runtime.
+
 ### 16.5 Audit Endpoints
 
 | Method | Endpoint | Description | Rate Limit | Role |

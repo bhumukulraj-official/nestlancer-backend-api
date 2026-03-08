@@ -81,6 +81,13 @@ Full-featured blog system with posts, categories, tags, comments, and SEO optimi
 | `POST` | `/posts/{id}/duplicate` | Duplicate post | 100/hour | No |
 | `GET` | `/posts/{id}/revisions` | Get revision history | 500/hour | Yes |
 | `POST` | `/posts/{id}/revisions/{revisionId}/restore` | Restore revision | 50/hour | No |
+| `POST` | `/posts/{id}/feature` | Mark post as featured | 200/hour | Yes |
+| `POST` | `/posts/{id}/unfeature` | Remove featured flag | 200/hour | Yes |
+| `POST` | `/posts/{id}/pin` | Pin post to top of feed | 200/hour | Yes |
+| `POST` | `/posts/{id}/unpin` | Unpin post | 200/hour | Yes |
+| `POST` | `/posts/import` | Bulk import posts from external source | 50/hour | No |
+| `POST` | `/posts/export` | Export blog posts | 50/hour | No |
+| `PATCH` | `/posts/settings` | Update blog-wide settings | 100/hour | No |
 | `GET` | `/comments` | List all comments | 1000/hour | Yes |
 | `GET` | `/comments/pending` | List pending comments | 500/hour | Yes |
 | `GET` | `/comments/reported` | List reported comments | 500/hour | Yes |

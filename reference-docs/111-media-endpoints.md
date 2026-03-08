@@ -87,6 +87,8 @@ Handles file uploads, storage, processing, and delivery. Supports images, docume
 | `POST` | `/quarantine/{mediaId}/release` | Release from quarantine | 100/hour | No |
 | `DELETE` | `/quarantine/{mediaId}` | Delete quarantined file | 100/hour | Yes |
 | `POST` | `/cleanup` | Trigger storage cleanup | 10/hour | No |
+| `GET` | `/users/{userId}` | List media for a specific user | 1000/hour | Yes |
+| `PATCH` | `/settings` | Update media upload configuration | 100/hour | No |
 
 ### 12.5 Request/Response Examples
 
@@ -564,6 +566,96 @@ X-Request-ID: reqAbc123
   },
   "metadata": {
     "timestamp": "2024-02-18T10:30:00.000Z",
+    "requestId": "reqAbc123",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /admin/media/users/{userId}
+```json
+// Request
+GET /api/v1/admin/media/users/usrAbc123?page=1&limit=20&type=image
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1705323000
+X-API-Version: v1
+X-Request-ID: reqAbc123
+
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "mediaAbc123",
+      "filename": "design-mockup.png",
+      "mimeType": "image/png",
+      "size": 2456789,
+      "sizeFormatted": "2.34 MB",
+      "status": "ready",
+      "type": "image",
+      "visibility": "private",
+      "urls": {
+        "original": "https://api.yourdomain.com/v1/media/mediaAbc123/download?size=original",
+        "thumbnail": "https://api.yourdomain.com/v1/media/mediaAbc123/download?size=thumbnail"
+      },
+      "createdAt": "2024-02-18T10:30:00.000Z",
+      "updatedAt": "2024-02-18T10:31:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 45,
+    "totalPages": 3,
+    "hasNext": true,
+    "hasPrev": false
+  },
+  "metadata": {
+    "timestamp": "2024-02-18T11:00:00.000Z",
+    "requestId": "reqAbc123",
+    "version": "v1"
+  }
+}
+```
+
+#### PATCH /admin/media/settings
+```json
+// Request
+PATCH /api/v1/admin/media/settings
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "maxFileSize": 52428800,
+  "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+  "storageQuotaPerUser": 10737418240
+}
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1705323000
+X-API-Version: v1
+X-Request-ID: reqAbc123
+
+{
+  "status": "success",
+  "message": "Media settings updated successfully",
+  "data": {
+    "maxFileSize": 52428800,
+    "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+    "storageQuotaPerUser": 10737418240,
+    "updatedAt": "2024-02-18T11:00:00.000Z"
+  },
+  "metadata": {
+    "timestamp": "2024-02-18T11:00:00.000Z",
     "requestId": "reqAbc123",
     "version": "v1"
   }

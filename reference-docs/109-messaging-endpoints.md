@@ -36,6 +36,9 @@ Real-time messaging system for project communication between clients and admin. 
 | `GET` | `/unread-count` | Get unread message count | 2000/hour | Yes |
 | `GET` | `/{messageId}/thread` | Get message thread | 500/hour | Yes |
 | `POST` | `/{messageId}/thread` | Reply in thread | 500/hour | No |
+| `POST` | `/{messageId}/pin` | Pin a message in project chat | 200/hour | No |
+| `POST` | `/{messageId}/unpin` | Unpin a message | 200/hour | No |
+| `GET` | `/projects/{projectId}/attachments` | List all shared files in a project chat | 500/hour | Yes |
 
 ### 10.4 Admin Endpoints (Admin JWT Required)
 
@@ -479,6 +482,126 @@ X-Request-ID: reqAbc123
   },
   "metadata": {
     "timestamp": "2024-02-01T09:35:00.000Z",
+    "requestId": "reqAbc123",
+    "version": "v1"
+  }
+}
+```
+
+#### POST /{messageId}/pin
+```json
+// Request
+POST /api/v1/messages/msgAbc123/pin
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1705323000
+X-API-Version: v1
+X-Request-ID: reqAbc123
+
+{
+  "status": "success",
+  "data": {
+    "id": "msgAbc123",
+    "pinned": true
+  },
+  "metadata": {
+    "timestamp": "2024-02-01T09:35:00.000Z",
+    "requestId": "reqAbc123",
+    "version": "v1"
+  }
+}
+```
+
+#### POST /{messageId}/unpin
+```json
+// Request
+POST /api/v1/messages/msgAbc123/unpin
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1705323000
+X-API-Version: v1
+X-Request-ID: reqAbc123
+
+{
+  "status": "success",
+  "data": {
+    "id": "msgAbc123",
+    "pinned": false
+  },
+  "metadata": {
+    "timestamp": "2024-02-01T09:36:00.000Z",
+    "requestId": "reqAbc123",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /projects/{projectId}/attachments
+```json
+// Request
+GET /api/v1/messages/projects/projAbc123/attachments?page=1&limit=20&type=all
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1705323000
+X-API-Version: v1
+X-Request-ID: reqAbc123
+
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "mediaDesign1",
+      "type": "image",
+      "filename": "homepage-design.png",
+      "url": "https://cdn.example.com/messages/mediaDesign1.png",
+      "thumbnail": "https://cdn.example.com/thumbnails/mediaDesign1Thumb.png",
+      "size": 524288,
+      "sender": {
+        "id": "usrPm123",
+        "name": "Sarah Johnson"
+      },
+      "messageId": "msgNew456",
+      "createdAt": "2024-02-16T14:30:00.000Z"
+    },
+    {
+      "id": "mediaBrief1",
+      "type": "document",
+      "filename": "project-brief.pdf",
+      "url": "https://cdn.example.com/messages/mediaBrief1.pdf",
+      "size": 1048576,
+      "sender": {
+        "id": "usrPm123",
+        "name": "Sarah Johnson"
+      },
+      "messageId": "msg4",
+      "createdAt": "2024-02-01T14:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 2,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  },
+  "metadata": {
+    "timestamp": "2024-02-16T15:00:00.000Z",
     "requestId": "reqAbc123",
     "version": "v1"
   }

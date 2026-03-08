@@ -45,6 +45,11 @@ CREATED → PENDING → PROCESSING → COMPLETED
 | `POST` | `/methods` | Save payment method | 50/hour | No |
 | `DELETE` | `/methods/{id}` | Remove payment method | 50/hour | Yes |
 | `GET` | `/stats` | User payment statistics | 100/hour | Yes |
+| `POST` | `/{id}/verify` | Verify payment after Razorpay callback | 100/hour | Yes |
+| `POST` | `/{id}/dispute` | File a payment dispute | 50/hour | No |
+| `GET` | `/invoices` | List user invoices | 500/hour | Yes |
+| `GET` | `/invoices/{id}` | Get invoice details | 500/hour | Yes |
+| `GET` | `/invoices/{id}/download` | Download invoice PDF | 100/hour | Yes |
 
 ### 9.5 Admin Endpoints (Admin JWT Required)
 
@@ -67,6 +72,14 @@ CREATED → PENDING → PROCESSING → COMPLETED
 | `POST` | `/disputes/{id}/respond` | Respond to dispute | 100/hour | No |
 | `POST` | `/disputes/{id}/resolve` | Resolve dispute | 50/hour | No |
 | `GET` | `/reconciliation` | Payment reconciliation report | 200/hour | Yes |
+| `POST` | `/manual` | Create manual payment entry | 100/hour | No |
+| `GET` | `/revenue/report` | Revenue analytics report | 500/hour | Yes |
+| `GET` | `/revenue/export` | Export revenue data | 200/hour | Yes |
+| `GET` | `/{id}/transactions` | Payment transaction history | 500/hour | Yes |
+| `GET` | `/{id}/timeline` | Payment lifecycle timeline | 500/hour | Yes |
+| `GET` | `/methods/supported` | List supported payment methods | 500/hour | Yes |
+| `PATCH` | `/settings` | Update payment configuration | 50/hour | No |
+| `POST` | `/reconcile` | Trigger payment reconciliation | 50/hour | No |
 
 ### 9.6 Webhook Endpoint (Moved to Ingestion Service)
 
@@ -493,6 +506,579 @@ X-Request-ID: reqAbc123
   "metadata": {
     "timestamp": "2024-02-16T11:00:00.000Z",
     "requestId": "reqAbc123",
+    "version": "v1"
+  }
+}
+```
+
+#### POST /{id}/verify
+```json
+// Request
+POST /api/v1/payments/pmtAbc123/verify
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "razorpayPaymentId": "payRazorpayXyz789",
+  "razorpaySignature": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+}
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqDef456
+
+{
+  "status": "success",
+  "data": {
+    "id": "pmtAbc123",
+    "verified": true
+  },
+  "metadata": {
+    "timestamp": "2024-01-15T10:36:00.000Z",
+    "requestId": "reqDef456",
+    "version": "v1"
+  }
+}
+```
+
+#### POST /{id}/dispute
+```json
+// Request
+POST /api/v1/payments/pmtAbc123/dispute
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "reason": "serviceNotDelivered",
+  "description": "The milestone deliverables were not completed as agreed upon in the project scope."
+}
+
+// Response (201 Created)
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqGhi789
+
+{
+  "status": "success",
+  "data": {
+    "disputeId": "dspXyz456",
+    "paymentId": "pmtAbc123",
+    "status": "OPEN"
+  },
+  "metadata": {
+    "timestamp": "2024-01-18T09:00:00.000Z",
+    "requestId": "reqGhi789",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /invoices
+```json
+// Request
+GET /api/v1/invoices?page=1&limit=10
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqJkl012
+
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "invAbc001",
+      "invoiceNumber": "INV-2024-001234",
+      "amount": 2550,
+      "currency": "INR",
+      "status": "paid",
+      "issuedAt": "2024-01-15T10:35:00.000Z",
+      "project": {
+        "id": "projAbc123",
+        "title": "E-commerce Website Development"
+      }
+    },
+    {
+      "id": "invAbc002",
+      "invoiceNumber": "INV-2024-001235",
+      "amount": 2975,
+      "currency": "INR",
+      "status": "pending",
+      "issuedAt": "2024-02-20T12:00:00.000Z",
+      "project": {
+        "id": "projAbc123",
+        "title": "E-commerce Website Development"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 2,
+    "totalPages": 1
+  },
+  "metadata": {
+    "timestamp": "2024-02-25T11:00:00.000Z",
+    "requestId": "reqJkl012",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /invoices/{id}
+```json
+// Request
+GET /api/v1/invoices/invAbc001
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqMno345
+
+{
+  "status": "success",
+  "data": {
+    "id": "invAbc001",
+    "invoiceNumber": "INV-2024-001234",
+    "status": "paid",
+    "issuedAt": "2024-01-15T10:35:00.000Z",
+    "paidAt": "2024-01-15T10:35:00.000Z",
+    "dueDate": "2024-02-15T00:00:00.000Z",
+    "currency": "INR",
+    "lineItems": [
+      {
+        "description": "Advance payment — E-commerce Website Development",
+        "quantity": 1,
+        "unitPrice": 2550,
+        "amount": 2550
+      }
+    ],
+    "subtotal": 2550,
+    "tax": 0,
+    "total": 2550,
+    "project": {
+      "id": "projAbc123",
+      "title": "E-commerce Website Development"
+    },
+    "billedTo": {
+      "name": "John Doe",
+      "email": "john@example.com"
+    }
+  },
+  "metadata": {
+    "timestamp": "2024-02-25T11:00:00.000Z",
+    "requestId": "reqMno345",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /invoices/{id}/download
+```json
+// Request
+GET /api/v1/invoices/invAbc001/download
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqPqr678
+
+{
+  "status": "success",
+  "data": {
+    "downloadUrl": "https://cdn.yourdomain.com/invoices/invAbc001.pdf?token=signedTokenXyz",
+    "expiresAt": "2024-02-25T12:00:00.000Z"
+  },
+  "metadata": {
+    "timestamp": "2024-02-25T11:00:00.000Z",
+    "requestId": "reqPqr678",
+    "version": "v1"
+  }
+}
+```
+
+#### POST /manual (Admin)
+```json
+// Request
+POST /api/v1/admin/payments/manual
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "userId": "userXyz456",
+  "projectId": "projAbc123",
+  "amount": 5000,
+  "method": "bank_transfer",
+  "reference": "NEFT-REF-20240120-001"
+}
+
+// Response (201 Created)
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqStu901
+
+{
+  "status": "success",
+  "data": {
+    "id": "pmtManual001",
+    "userId": "userXyz456",
+    "projectId": "projAbc123",
+    "amount": 5000,
+    "currency": "INR",
+    "method": "bank_transfer",
+    "reference": "NEFT-REF-20240120-001",
+    "status": "completed",
+    "createdBy": "adminUser001",
+    "createdAt": "2024-01-20T14:00:00.000Z"
+  },
+  "metadata": {
+    "timestamp": "2024-01-20T14:00:00.000Z",
+    "requestId": "reqStu901",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /revenue/report (Admin)
+```json
+// Request
+GET /api/v1/admin/payments/revenue/report?from=2024-01-01&to=2024-03-31&groupBy=month
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqVwx234
+
+{
+  "status": "success",
+  "data": {
+    "from": "2024-01-01",
+    "to": "2024-03-31",
+    "groupBy": "month",
+    "currency": "INR",
+    "periods": [
+      {
+        "period": "2024-01",
+        "revenue": 125000,
+        "transactionCount": 42,
+        "refunds": 3500
+      },
+      {
+        "period": "2024-02",
+        "revenue": 98000,
+        "transactionCount": 35,
+        "refunds": 0
+      },
+      {
+        "period": "2024-03",
+        "revenue": 156000,
+        "transactionCount": 51,
+        "refunds": 7800
+      }
+    ],
+    "totals": {
+      "revenue": 379000,
+      "transactionCount": 128,
+      "refunds": 11300,
+      "netRevenue": 367700
+    }
+  },
+  "metadata": {
+    "timestamp": "2024-04-01T09:00:00.000Z",
+    "requestId": "reqVwx234",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /revenue/export (Admin)
+```json
+// Request
+GET /api/v1/admin/payments/revenue/export?from=2024-01-01&to=2024-03-31&format=csv
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqYza567
+
+{
+  "status": "success",
+  "data": {
+    "exportId": "expAbc123",
+    "status": "processing",
+    "format": "csv",
+    "from": "2024-01-01",
+    "to": "2024-03-31",
+    "estimatedCompletionAt": "2024-04-01T09:05:00.000Z"
+  },
+  "metadata": {
+    "timestamp": "2024-04-01T09:00:00.000Z",
+    "requestId": "reqYza567",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /{id}/transactions (Admin)
+```json
+// Request
+GET /api/v1/admin/payments/pmtAbc123/transactions
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqBcd890
+
+{
+  "status": "success",
+  "data": {
+    "paymentId": "pmtAbc123",
+    "transactions": [
+      {
+        "id": "txnAttempt001",
+        "type": "attempt",
+        "amount": 2550,
+        "currency": "INR",
+        "status": "success",
+        "method": "card",
+        "razorpayPaymentId": "payRazorpayXyz789",
+        "timestamp": "2024-01-15T10:31:00.000Z"
+      },
+      {
+        "id": "txnCapture001",
+        "type": "capture",
+        "amount": 2550,
+        "currency": "INR",
+        "status": "success",
+        "razorpayPaymentId": "payRazorpayXyz789",
+        "timestamp": "2024-01-15T10:35:00.000Z"
+      }
+    ]
+  },
+  "metadata": {
+    "timestamp": "2024-02-01T10:00:00.000Z",
+    "requestId": "reqBcd890",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /{id}/timeline (Admin)
+```json
+// Request
+GET /api/v1/admin/payments/pmtAbc123/timeline
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqEfg123
+
+{
+  "status": "success",
+  "data": {
+    "paymentId": "pmtAbc123",
+    "timeline": [
+      {
+        "status": "created",
+        "timestamp": "2024-01-15T10:30:00.000Z",
+        "actor": "userXyz456"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2024-01-15T10:30:05.000Z",
+        "details": "Payment intent created with Razorpay"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2024-01-15T10:31:00.000Z",
+        "details": "Payment initiated via card"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2024-01-15T10:35:00.000Z",
+        "details": "Payment captured successfully"
+      }
+    ]
+  },
+  "metadata": {
+    "timestamp": "2024-02-01T10:00:00.000Z",
+    "requestId": "reqEfg123",
+    "version": "v1"
+  }
+}
+```
+
+#### GET /methods/supported (Admin)
+```json
+// Request
+GET /api/v1/admin/payments/methods/supported
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqHij456
+
+{
+  "status": "success",
+  "data": [
+    {
+      "method": "card",
+      "provider": "razorpay",
+      "currencies": ["INR", "EUR", "GBP"],
+      "enabled": true
+    },
+    {
+      "method": "upi",
+      "provider": "razorpay",
+      "currencies": ["INR"],
+      "enabled": true
+    },
+    {
+      "method": "netbanking",
+      "provider": "razorpay",
+      "currencies": ["INR"],
+      "enabled": true
+    },
+    {
+      "method": "wallet",
+      "provider": "razorpay",
+      "currencies": ["INR"],
+      "enabled": false
+    },
+    {
+      "method": "bank_transfer",
+      "provider": "manual",
+      "currencies": ["INR"],
+      "enabled": true
+    }
+  ],
+  "metadata": {
+    "timestamp": "2024-02-01T10:00:00.000Z",
+    "requestId": "reqHij456",
+    "version": "v1"
+  }
+}
+```
+
+#### PATCH /settings (Admin)
+```json
+// Request
+PATCH /api/v1/admin/payments/settings
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "currency": "INR",
+  "minAmount": 500,
+  "maxAmount": 500000,
+  "gatewaySettings": {
+    "razorpay": {
+      "autoCapture": true,
+      "captureDelayMinutes": 0
+    }
+  }
+}
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqKlm789
+
+{
+  "status": "success",
+  "data": {
+    "currency": "INR",
+    "minAmount": 500,
+    "maxAmount": 500000,
+    "gatewaySettings": {
+      "razorpay": {
+        "autoCapture": true,
+        "captureDelayMinutes": 0
+      }
+    },
+    "updatedAt": "2024-02-01T10:05:00.000Z",
+    "updatedBy": "adminUser001"
+  },
+  "metadata": {
+    "timestamp": "2024-02-01T10:05:00.000Z",
+    "requestId": "reqKlm789",
+    "version": "v1"
+  }
+}
+```
+
+#### POST /reconcile (Admin)
+```json
+// Request
+POST /api/v1/admin/payments/reconcile
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "from": "2024-01-01",
+  "to": "2024-01-31",
+  "provider": "razorpay"
+}
+
+// Response (200 OK)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-API-Version: v1
+X-Request-ID: reqNop012
+
+{
+  "status": "success",
+  "data": {
+    "reconciliationId": "recAbc123",
+    "from": "2024-01-01",
+    "to": "2024-01-31",
+    "provider": "razorpay",
+    "matched": 120,
+    "unmatched": 3,
+    "totalProcessed": 123,
+    "unmatchedDetails": [
+      {
+        "razorpayPaymentId": "payOrphan001",
+        "amount": 1500,
+        "reason": "noMatchingRecord"
+      },
+      {
+        "razorpayPaymentId": "payOrphan002",
+        "amount": 3200,
+        "reason": "amountMismatch"
+      },
+      {
+        "localPaymentId": "pmtOrphan001",
+        "amount": 800,
+        "reason": "noRazorpayRecord"
+      }
+    ],
+    "completedAt": "2024-02-01T10:10:00.000Z"
+  },
+  "metadata": {
+    "timestamp": "2024-02-01T10:10:00.000Z",
+    "requestId": "reqNop012",
     "version": "v1"
   }
 }
