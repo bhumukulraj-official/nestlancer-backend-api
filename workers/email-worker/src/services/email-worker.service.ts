@@ -5,6 +5,11 @@ import { EmailRendererService } from './email-renderer.service';
 import { EmailRetryService } from './email-retry.service';
 import { ConfigService } from '@nestjs/config';
 
+/**
+ * Orchestrator service for the Email Worker.
+ * Handles template selection, rendering, and dispatching emails via SMTP.
+ * Implements a retry mechanism for failed delivery attempts.
+ */
 @Injectable()
 export class EmailWorkerService {
     private readonly logger = new Logger(EmailWorkerService.name);
@@ -16,9 +21,16 @@ export class EmailWorkerService {
         private readonly retryService: EmailRetryService,
     ) { }
 
+    /**
+     * Processes a single email job from the queue.
+     * Renders the appropriate template, determines the subject, and sends the mail.
+     * 
+     * @param job - The email job payload containing recipient and data
+     * @returns A promise that resolves when the email is sent or scheduled for retry
+     */
     async processEmail(job: EmailJob): Promise<void> {
         const { type, to, data, attachments } = job;
-        this.logger.log(`Processing email of type ${type} to ${to}`);
+        this.logger.log(`[EmailWorker] Processing notification: Type=${type} | To=${to}`);
 
         try {
             const html = await this.emailRenderer.render(type.toLowerCase(), {
@@ -35,9 +47,9 @@ export class EmailWorkerService {
                 attachments: attachments as any, // Cast to MailOptions attachments
             });
 
-            this.logger.log(`Email of type ${type} sent to ${to}`);
+            this.logger.log(`[EmailWorker] Successfully sent email: ${type} -> ${to}`);
         } catch (error: any) {
-            this.logger.error(`Failed to process email of type ${type} to ${to}:`, error);
+            this.logger.error(`[EmailWorker] Failed to deliver email ${type} to ${to}: ${error.message}`, error.stack);
             await this.retryService.handleFailure(
                 this.configService.get('email-worker.rabbitmq.queue') || 'email.queue',
                 job,
@@ -46,7 +58,12 @@ export class EmailWorkerService {
         }
     }
 
-    private getCommonData() {
+    /**
+     * Aggregates common data required by almost all email templates.
+     * 
+     * @returns An object containing common template variables
+     */
+    private getCommonData(): Record<string, any> {
         return {
             currentYear: new Date().getFullYear(),
             companyName: this.configService.get('email-worker.from.name'),
@@ -55,6 +72,13 @@ export class EmailWorkerService {
         };
     }
 
+    /**
+     * Maps email job types to human-readable subject lines.
+     * 
+     * @param type - The EmailJobType string
+     * @param data - Job data, used for dynamic subject lines (e.g., project name)
+     * @returns A string representing the email subject
+     */
     private getSubjectForType(type: string, data: any): string {
         switch (type) {
             case 'EMAIL_VERIFICATION':
