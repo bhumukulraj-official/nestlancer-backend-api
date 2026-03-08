@@ -13,7 +13,7 @@ import { PostsPublicController } from './controllers/public/posts.public.control
 import { BlogCategoriesPublicController, BlogTagsPublicController, AuthorsPublicController } from './controllers/public/taxonomy.public.controller';
 import { FeedPublicController } from './controllers/public/feed.public.controller';
 import { PostInteractionsController } from './controllers/user/post-interactions.controller';
-import { CommentsController } from './controllers/user/comments.controller';
+import { CommentsController, StandaloneCommentsController } from './controllers/user/comments.controller';
 import { PostsAdminController } from './controllers/admin/posts.admin.controller';
 import { CommentsAdminController } from './controllers/admin/comments.admin.controller';
 import { BlogCategoriesAdminController, BlogTagsAdminController } from './controllers/admin/taxonomy.admin.controller';
@@ -52,6 +52,7 @@ import { BlogAdminService } from './services/blog-admin.service';
         FeedPublicController,
         PostInteractionsController,
         CommentsController,
+        StandaloneCommentsController,
         // BookmarksController,
         PostsAdminController,
         CommentsAdminController,

@@ -60,3 +60,12 @@ export class BlogTagsAdminController {
         return { merged: true, from: dto.fromTagId, to: dto.toTagId };
     }
 }
+
+@Controller('admin/blog/authors')
+@Auth(UserRole.ADMIN)
+export class BlogAuthorsAdminController {
+    @Get()
+    findAll() {
+        return { data: [] };
+    }
+}
