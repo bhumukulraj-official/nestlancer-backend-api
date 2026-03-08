@@ -10,8 +10,14 @@ import { PortfolioAnalyticsProcessor } from '../processors/portfolio-analytics.p
 import { BlogAnalyticsProcessor } from '../processors/blog-analytics.processor';
 import { EngagementAnalyticsProcessor } from '../processors/engagement-analytics.processor';
 
+/**
+ * RabbitMQ consumer for analytics processing jobs.
+ * Orchestrates the dispatch of processing tasks to specialized analytics processors.
+ */
 @Injectable()
 export class AnalyticsConsumer implements OnModuleInit {
+    private readonly QUEUE_NAME = 'analytics.queue';
+
     constructor(
         private readonly logger: LoggerService,
         private readonly queueConsumer: QueueConsumerService,
@@ -23,15 +29,32 @@ export class AnalyticsConsumer implements OnModuleInit {
         private readonly engagementAnalytics: EngagementAnalyticsProcessor,
     ) { }
 
-    async onModuleInit() {
-        await this.queueConsumer.consume('analytics.queue', async (msg: ConsumeMessage) => {
-            const job: AnalyticsJob = JSON.parse(msg.content.toString());
-            await this.handleJob(job);
+    /**
+     * Initializes the consumer on module startup.
+     * Registers the handler for the analytics queue.
+     */
+    async onModuleInit(): Promise<void> {
+        this.logger.log(`[AnalyticsConsumer] Initializing consumer for queue: ${this.QUEUE_NAME}`);
+        await this.queueConsumer.consume(this.QUEUE_NAME, async (msg: ConsumeMessage) => {
+            try {
+                const job: AnalyticsJob = JSON.parse(msg.content.toString());
+                await this.handleJob(job);
+            } catch (error: any) {
+                this.logger.error(`[AnalyticsConsumer] Failed to process message: ${error.message}`, error.stack);
+                // Note: QueueConsumer handles basic nack logic if callback throws
+                throw error;
+            }
         });
     }
 
+    /**
+     * Dispatches the analytics job to the appropriate domain processor.
+     * 
+     * @param job - The analytics job payload received from the queue
+     * @returns A promise that resolves when processing is triggered/complete
+     */
     async handleJob(job: AnalyticsJob): Promise<void> {
-        this.logger.log(`Received analytics job: ${job.type} (${job.period})`);
+        this.logger.log(`[AnalyticsConsumer] Dispatching job: ${job.type} | Period: ${job.period}`);
 
         switch (job.type) {
             case AnalyticsJobType.USER_STATS:
@@ -53,7 +76,7 @@ export class AnalyticsConsumer implements OnModuleInit {
                 await this.engagementAnalytics.process(job.period);
                 break;
             default:
-                this.logger.warn(`Unknown analytics job type: ${job.type}`);
+                this.logger.warn(`[AnalyticsConsumer] Unsupported job type received: ${job.type}`);
         }
     }
 }
