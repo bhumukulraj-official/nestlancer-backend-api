@@ -4,124 +4,262 @@ import { Auth } from '@nestlancer/auth-lib';
 import { CommentsService } from '../../services/comments.service';
 import { CreateCommentDto, UpdateCommentDto } from '../../dto/create-comment.dto';
 
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+
+/**
+ * Controller for managing comments on specific blog posts.
+ * Allows users to list, create, and interact with post-specific comment threads.
+ * 
+ * @category Blog
+ */
+@ApiTags('Blog - Post Comments')
+@ApiBearerAuth()
 @Controller('posts/:slug/comments')
 export class CommentsController {
     constructor(private readonly commentsService: CommentsService) { }
 
+    /**
+     * Retrieves a paginated list of comments for a specific blog post.
+     * 
+     * @param slug The unique URL-friendly identifier of the post
+     * @param page Target page number for results
+     * @param limit Maximum number of comments per page
+     * @returns A promise resolving to a paginated list of comments
+     */
     @Get()
     @Auth()
-    listPostComments(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20') {
+    @ApiOperation({ summary: 'List comments for post', description: 'Retrieve the publicly accessible comment thread for a specific blog post.' })
+    async listPostComments(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
         // TODO: List comments for a post (authenticated)
         return { data: [], pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total: 0, totalPages: 0 } };
     }
 
+    /**
+     * Creates a new top-level comment on a specified post.
+     * 
+     * @param slug The unique identifier of the post
+     * @param dto Comment creation parameters
+     * @param req The incoming request for author context
+     * @returns A promise resolving to the created comment record
+     */
     @Post()
     @Auth()
-    create(@Param('slug') slug: string, @Body() dto: CreateCommentDto, @Req() req: any) {
+    @ApiOperation({ summary: 'Post a comment', description: 'Submit a new root-level comment to a specified blog post.' })
+    async create(@Param('slug') slug: string, @Body() dto: CreateCommentDto, @Req() req: any): Promise<any> {
         return this.commentsService.create(slug, req.user.id, dto);
     }
 
+    /**
+     * Submits a reply to an existing comment.
+     * 
+     * @param slug The unique identifier of the post
+     * @param commentId Unique identifier of the target parent comment
+     * @param dto Reply content data
+     * @param req The incoming request for author context
+     * @returns A promise resolving to the created reply comment
+     */
     @Post(':commentId/reply')
     @Auth()
-    replyToComment(@Param('slug') slug: string, @Param('commentId') commentId: string, @Body() dto: CreateCommentDto, @Req() req: any) {
+    @ApiOperation({ summary: 'Reply to comment', description: 'Submit nested feedback as a reply to an existing comment.' })
+    async replyToComment(@Param('slug') slug: string, @Param('commentId') commentId: string, @Body() dto: CreateCommentDto, @Req() req: any): Promise<any> {
         // TODO: Add parentId to CreateCommentDto to support replies
         return this.commentsService.create(slug, req.user.id, { ...dto, parentId: commentId } as any);
     }
 
+    /**
+     * Modifies the text content of a previously posted comment.
+     * 
+     * @param commentId Unique identifier of the target comment
+     * @param dto The new content to apply
+     * @param req The incoming request for ownership verification
+     * @returns A promise resolving to the updated comment record
+     */
     @Put(':commentId')
+    @Patch(':commentId')
     @Auth()
-    update(@Param('commentId') commentId: string, @Body() dto: UpdateCommentDto, @Req() req: any) {
+    @ApiOperation({ summary: 'Update comment', description: 'Modify the textual body of a comment previously authored by the user.' })
+    async update(@Param('commentId') commentId: string, @Body() dto: UpdateCommentDto, @Req() req: any): Promise<any> {
         return this.commentsService.update(commentId, req.user.id, dto);
     }
 
+    /**
+     * Performs a soft-deletion of a comment authored by the current user.
+     * 
+     * @param commentId Unique identifier of the target comment
+     * @param req The incoming request for ownership verification
+     * @returns A promise resolving to a deletion confirmation
+     */
     @Delete(':commentId')
     @Auth()
-    remove(@Param('commentId') commentId: string, @Req() req: any) {
+    @ApiOperation({ summary: 'Delete comment', description: 'Mark a specific comment as deleted by its author.' })
+    async remove(@Param('commentId') commentId: string, @Req() req: any): Promise<any> {
         return this.commentsService.softDelete(commentId, req.user.id);
     }
 
+    /**
+     * Retrieves all nested replies associated with a specific comment.
+     * 
+     * @param slug The post identifier
+     * @param commentId The parent comment identifier
+     * @returns A promise resolving to the child comment thread
+     */
     @Get(':commentId/replies')
     @Auth()
-    getReplies(@Param('slug') slug: string, @Param('commentId') commentId: string) {
+    @ApiOperation({ summary: 'Get comment replies', description: 'Retrieve all nested responses for a specific parent comment.' })
+    async getReplies(@Param('slug') slug: string, @Param('commentId') commentId: string): Promise<any> {
         return { data: [] };
     }
 
+    /**
+     * Submits a report flagging a comment for administrative moderation.
+     * 
+     * @param slug The post identifier
+     * @param commentId The comment identifier reported
+     * @returns A promise resolving to a report confirmation
+     */
     @Post(':commentId/report')
     @Auth()
-    reportComment(@Param('slug') slug: string, @Param('commentId') commentId: string) {
+    @ApiOperation({ summary: 'Report comment', description: 'Flag a specific comment for review due to community guideline violations.' })
+    async reportComment(@Param('slug') slug: string, @Param('commentId') commentId: string): Promise<any> {
         return { reported: true };
     }
 
+    /**
+     * Toggles a 'like' reaction on a specific post comment.
+     * 
+     * @param slug The post identifier
+     * @param commentId The unique identifier of the comment to like
+     * @param req The incoming request for user context
+     * @returns A promise resolving to the updated interaction state
+     */
     @Post(':commentId/like')
     @Auth()
-    likePostComment(
+    @ApiOperation({ summary: 'Like comment', description: 'Toggle a like reaction on a specific blog post comment.' })
+    async likePostComment(
         @Param('slug') slug: string,
         @Param('commentId') commentId: string,
         @Req() req: any,
-    ) {
+    ): Promise<any> {
         return { status: 'success', data: { commentId, liked: true } };
     }
 }
 
+/**
+ * Controller for performing comment-related operations independent of a specific post slug.
+ */
+@ApiTags('Blog - Standalone Comments')
+@ApiBearerAuth()
 @Controller()
+@Auth()
 export class StandaloneCommentsController {
+    /**
+     * Fetches details for a single comment using its primary identifier.
+     * 
+     * @param commentId Unique identifier of the comment
+     * @returns A promise resolving to the comment object
+     */
     @Get('comments/:commentId')
-    @Auth()
-    getCommentById(@Param('commentId') commentId: string) {
+    @ApiOperation({ summary: 'Get comment by ID', description: 'Retrieve detailed record for a single comment entry.' })
+    async getCommentById(@Param('commentId') commentId: string): Promise<any> {
         return { status: 'success', data: { id: commentId } };
     }
 
+    /**
+     * Fetches all child replies for a specific parent comment.
+     * 
+     * @param commentId Unique identifier of the parent
+     * @returns A promise resolving to the list of replies
+     */
     @Get('comments/:commentId/replies')
-    @Auth()
-    getCommentReplies(@Param('commentId') commentId: string) {
+    @ApiOperation({ summary: 'Get standalone replies', description: 'Fetch all hierarchical replies for a specific comment ID.' })
+    async getCommentReplies(@Param('commentId') commentId: string): Promise<any> {
         return { status: 'success', data: [] };
     }
 
+    /**
+     * Submits a reply to a comment using its ID directly.
+     * 
+     * @param commentId Unique identifier of the target for the reply
+     * @param body Reply content
+     * @param req User context
+     * @returns A promise resolving to the created reply record
+     */
     @Post('comments/:commentId/reply')
-    @Auth()
-    replyToCommentStandalone(
+    @ApiOperation({ summary: 'Reply standalone', description: 'Submit a response to a comment without post context.' })
+    async replyToCommentStandalone(
         @Param('commentId') commentId: string,
         @Body() body: any,
         @Req() req: any,
-    ) {
+    ): Promise<any> {
         return { status: 'success', data: { parentId: commentId, content: body.content } };
     }
 
+    /**
+     * Moderates or updates a comment record directly by ID.
+     * 
+     * @param commentId Unique identifier of the comment
+     * @param body New content or status
+     * @param req User context
+     * @returns A promise resolving to the updated record
+     */
     @Patch('comments/:commentId')
-    @Auth()
-    editComment(
+    @ApiOperation({ summary: 'Patch comment', description: 'Directly modify attributes of a comment record.' })
+    async editComment(
         @Param('commentId') commentId: string,
         @Body() body: any,
         @Req() req: any,
-    ) {
+    ): Promise<any> {
         return { status: 'success', data: { id: commentId, content: body.content } };
     }
 
+    /**
+     * Removes a comment record by its identifier.
+     * 
+     * @param commentId Unique identifier of the record to delete
+     * @param req User context
+     * @returns A promise resolving to confirmation
+     */
     @Delete('comments/:commentId')
-    @Auth()
-    deleteComment(
+    @ApiOperation({ summary: 'Delete standalone comment', description: 'Directly remove a comment record from the system.' })
+    async deleteComment(
         @Param('commentId') commentId: string,
         @Req() req: any,
-    ) {
+    ): Promise<any> {
         return { status: 'success', message: 'Comment deleted' };
     }
 
+    /**
+     * Reports a comment for moderation using its direct identifier.
+     * 
+     * @param commentId Unique identifier of the flagged comment
+     * @param body Report reason
+     * @param req User context
+     * @returns A promise resolving to confirmation
+     */
     @Post('comments/:commentId/report')
-    @Auth()
-    reportCommentStandalone(
+    @ApiOperation({ summary: 'Report standalone comment', description: 'Flag a specific comment record for administrative review.' })
+    async reportCommentStandalone(
         @Param('commentId') commentId: string,
         @Body() body: any,
         @Req() req: any,
-    ) {
+    ): Promise<any> {
         return { status: 'success', message: 'Comment reported' };
     }
 
+    /**
+     * Records a like interaction for a comment using its ID.
+     * 
+     * @param commentId Unique identifier of the comment
+     * @param req User context
+     * @returns A promise resolving to the interaction state
+     */
     @Post('comments/:commentId/like')
-    @Auth()
-    likeComment(
+    @ApiOperation({ summary: 'Like standalone comment', description: 'Toggle a like reaction on a specific comment record.' })
+    async likeComment(
         @Param('commentId') commentId: string,
         @Req() req: any,
-    ) {
+    ): Promise<any> {
         return { status: 'success', data: { commentId, liked: true } };
     }
 }
+

@@ -14,7 +14,14 @@ export class PostsService {
         private readonly configService: ConfigService,
     ) { }
 
-    async create(dto: CreatePostDto) {
+    /**
+     * Creates a new blog post entry in the database.
+     * Calculates reading time based on word count and configured WPM.
+     * 
+     * @param dto Data Transfer Object containing post details
+     * @returns A promise resolving to the created blog post record
+     */
+    async create(dto: CreatePostDto): Promise<any> {
         const slug = dto.slug || Math.random().toString(36).substring(2, 15);
         const readingWpm = this.configService.get<number>('blog.readingWpm', 200);
         const wordCount = dto.content.split(/\s+/).length;
@@ -40,8 +47,14 @@ export class PostsService {
         });
     }
 
+    /**
+     * Retrieves a paginated list of published blog posts based on filter criteria.
+     * 
+     * @param query Filtering and pagination parameters
+     * @returns A promise resolving to a paginated set of blog posts
+     */
     @ReadOnly()
-    async findPublished(query: QueryPostsDto) {
+    async findPublished(query: QueryPostsDto): Promise<any> {
         const { page = 1, limit = 10, categoryId, tag, authorId, search } = query;
         const skip = (page - 1) * limit;
 
@@ -76,8 +89,15 @@ export class PostsService {
         };
     }
 
+    /**
+     * Retrieves a single blog post by its unique slug.
+     * 
+     * @param slug The unique URL-friendly identifier of the post
+     * @throws NotFoundException if the post does not exist
+     * @returns A promise resolving to the found blog post
+     */
     @ReadOnly()
-    async findBySlug(slug: string) {
+    async findBySlug(slug: string): Promise<any> {
         const post = await this.prismaRead.blogPost.findUnique({
             where: { slug },
             include: { category: true, tags: true },
@@ -86,3 +106,4 @@ export class PostsService {
         return post;
     }
 }
+

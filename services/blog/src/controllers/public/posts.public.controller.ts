@@ -7,7 +7,16 @@ import { PostViewsService } from '../../services/post-views.service';
 import { QueryPostsDto } from '../../dto/query-posts.dto';
 import { SearchPostsDto } from '../../dto/search-posts.dto';
 
-@Controller()
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+
+/**
+ * Controller for public access to blog posts.
+ * Provides endpoints for listing, searching, and viewing published blog content.
+ * 
+ * @category Blog
+ */
+@ApiTags('Blog - Public Posts')
+@Controller('posts')
 export class PostsPublicController {
     constructor(
         private readonly postsService: PostsService,
@@ -15,29 +24,58 @@ export class PostsPublicController {
         private readonly viewsService: PostViewsService,
     ) { }
 
+    /**
+     * Retrieves a paginated list of published blog posts based on filter criteria.
+     * 
+     * @param query Filtering and pagination parameters including category, tag, and author
+     * @returns A promise resolving to a paginated set of blog posts
+     */
     @Public()
     @Get()
+    @ApiOperation({ summary: 'List published posts', description: 'Retrieve a paginated list of blog posts that are currently published and visible to the public.' })
     @Cacheable({ ttl: 300 })
-    list(@Query() query: QueryPostsDto) {
+    async list(@Query() query: QueryPostsDto): Promise<any> {
         return this.postsService.findPublished(query);
     }
 
+    /**
+     * Performs a full-text search across all published blog posts.
+     * 
+     * @param query Search parameters including the query string
+     * @returns A promise resolving to matching blog post results
+     */
     @Public()
     @Get('search')
-    search(@Query() query: SearchPostsDto) {
+    @ApiOperation({ summary: 'Search blog posts', description: 'Perform a full-text search across published blog posts titles and content.' })
+    async search(@Query() query: SearchPostsDto): Promise<any> {
         return this.searchService.search(query);
     }
 
+    /**
+     * Verifies the connectivity and operational status of the blog microservice.
+     * 
+     * @returns A promise resolving to the technical health state
+     */
     @Public()
     @Get('health')
-    health() {
+    @ApiOperation({ summary: 'Service health check', description: 'Verify that the blog microservice is online and operational.' })
+    async health(): Promise<any> {
         return { status: 'ok', service: 'blog' };
     }
 
+    /**
+     * Retrieves comprehensive metadata and content for a specific blog post by slug.
+     * Includes automated view tracking for the request context.
+     * 
+     * @param slug The unique URL-friendly slug identifier of the post
+     * @param req The incoming request for IP-based view attribution
+     * @returns A promise resolving to the full post object
+     */
     @Public()
     @Get(':slug')
+    @ApiOperation({ summary: 'Get post detail', description: 'Fetch the full content, author info, and metadata of a specific blog post.' })
     @Cacheable({ ttl: 300 })
-    async getDetail(@Param('slug') slug: string, @Req() req: any) {
+    async getDetail(@Param('slug') slug: string, @Req() req: any): Promise<any> {
         const post = await this.postsService.findBySlug(slug);
 
         // Track views
@@ -48,15 +86,30 @@ export class PostsPublicController {
         return post;
     }
 
+    /**
+     * Retrieves a collection of blog posts related to the reference post.
+     * 
+     * @param slug The slug of the source post for finding relations
+     * @returns A promise resolving to a list of related content suggestions
+     */
     @Public()
     @Get(':slug/related')
-    async getRelated(@Param('slug') slug: string) {
+    @ApiOperation({ summary: 'Get related posts', description: 'Retrieve a collection of blog posts that are semantically or taxonomically similar to the given post.' })
+    async getRelated(@Param('slug') slug: string): Promise<any> {
         return { data: [] };
     }
 
+    /**
+     * Manually triggers a view increment event for a specific blog post.
+     * 
+     * @param slug The unique slug of the post viewed
+     * @param req The incoming request for IP-based view attribution
+     * @returns A promise resolving to a success indicator
+     */
     @Public()
     @Post(':slug/view')
-    async recordViewExplicit(@Param('slug') slug: string, @Req() req: any) {
+    @ApiOperation({ summary: 'Record post view', description: 'Explicitly record a reader view event for a specific blog post.' })
+    async recordViewExplicit(@Param('slug') slug: string, @Req() req: any): Promise<any> {
         const ip = req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown';
         const ipHash = Buffer.from(ip).toString('base64');
         const post = await this.postsService.findBySlug(slug);
@@ -66,11 +119,21 @@ export class PostsPublicController {
         return { success: true };
     }
 
+    /**
+     * Retrieves the public comment thread for a specific blog post with pagination.
+     * 
+     * @param slug The post identifier
+     * @param page Target page number
+     * @param limit Number of items per result set
+     * @returns A promise resolving to the public comment thread
+     */
     @Public()
     @Get(':slug/comments')
+    @ApiOperation({ summary: 'Get post comments', description: 'Retrieve the public, approved comment thread for a specific blog post.' })
     @Cacheable({ ttl: 60 })
-    getPostComments(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20') {
+    async getPostComments(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
         // TODO: Implement public comment listing
         return { data: [], pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total: 0, totalPages: 0 } };
     }
 }
+

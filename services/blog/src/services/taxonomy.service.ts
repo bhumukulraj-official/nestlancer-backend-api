@@ -32,6 +32,11 @@ export class CategoriesService {
         private readonly prismaWrite: PrismaWriteService,
     ) { }
 
+    /**
+     * Retrieves all available blog categories with their post counts.
+     * 
+     * @returns A promise resolving to a list of categories
+     */
     async findAll(): Promise<CategoryResponse[]> {
         const categories = await this.prismaRead.blogCategory.findMany({
             include: {
@@ -52,6 +57,13 @@ export class CategoriesService {
         }));
     }
 
+    /**
+     * Retrieves detailed information for a single category by its slug.
+     * 
+     * @param slug The unique URL-friendly identifier of the category
+     * @throws NotFoundException if the category does not exist
+     * @returns A promise resolving to the category details
+     */
     async findBySlug(slug: string): Promise<CategoryResponse> {
         const category = await this.prismaRead.blogCategory.findUnique({
             where: { slug },
@@ -76,6 +88,12 @@ export class CategoriesService {
         };
     }
 
+    /**
+     * Creates a new blog category.
+     * 
+     * @param data Initial category data
+     * @returns A promise resolving to the created category
+     */
     async create(data: { name: string; slug: string; description?: string }): Promise<CategoryResponse> {
         const category = await this.prismaWrite.blogCategory.create({
             data: {
@@ -101,6 +119,9 @@ export class CategoriesService {
     }
 }
 
+/**
+ * Service for managing taxonomical tags used in blog content.
+ */
 @Injectable()
 export class TagsService {
     constructor(
@@ -108,6 +129,11 @@ export class TagsService {
         private readonly prismaWrite: PrismaWriteService,
     ) { }
 
+    /**
+     * Retrieves all blog tags sorted alphabetically.
+     * 
+     * @returns A promise resolving to a list of tags
+     */
     async findAll(): Promise<TagResponse[]> {
         const tags = await this.prismaRead.blogTag.findMany({
             include: {
@@ -127,6 +153,13 @@ export class TagsService {
         }));
     }
 
+    /**
+     * Retrieves metadata for a specific tag by its slug.
+     * 
+     * @param slug The unique identifier of the tag
+     * @throws NotFoundException if the tag does not exist
+     * @returns A promise resolving to the tag metadata
+     */
     async findBySlug(slug: string): Promise<TagResponse> {
         const tag = await this.prismaRead.blogTag.findUnique({
             where: { slug },
@@ -150,6 +183,12 @@ export class TagsService {
         };
     }
 
+    /**
+     * Retrieves the most frequently used tags.
+     * 
+     * @param limit Maximum number of tags to return
+     * @returns A promise resolving to the most popular tags
+     */
     async findPopular(limit: number = 10): Promise<TagResponse[]> {
         const tags = await this.prismaRead.blogTag.findMany({
             include: {
@@ -174,6 +213,12 @@ export class TagsService {
         }));
     }
 
+    /**
+     * Creates a new metadata tag.
+     * 
+     * @param data Initial tag data
+     * @returns A promise resolving to the created tag
+     */
     async create(data: { name: string; slug: string }): Promise<TagResponse> {
         const tag = await this.prismaWrite.blogTag.create({
             data: {
@@ -197,10 +242,18 @@ export class TagsService {
     }
 }
 
+/**
+ * Service for retrieving public profiles and contributions of blog authors.
+ */
 @Injectable()
 export class AuthorsService {
     constructor(private readonly prismaRead: PrismaReadService) { }
 
+    /**
+     * Retrieves a list of active blog authors with their associated post counts.
+     * 
+     * @returns A promise resolving to the list of authors
+     */
     async findAll(): Promise<AuthorResponse[]> {
         const authors = await this.prismaRead.user.findMany({
             where: {
@@ -232,6 +285,13 @@ export class AuthorsService {
         }));
     }
 
+    /**
+     * Retrieves a specific author profile by its unique identifier.
+     * 
+     * @param id The unique identifier of the user (author)
+     * @throws NotFoundException if the author does not exist
+     * @returns A promise resolving to the author profile
+     */
     async findById(id: string): Promise<AuthorResponse> {
         const author = await this.prismaRead.user.findUnique({
             where: { id },
@@ -258,3 +318,4 @@ export class AuthorsService {
         };
     }
 }
+
