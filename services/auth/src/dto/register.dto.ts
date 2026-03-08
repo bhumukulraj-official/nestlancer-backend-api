@@ -1,11 +1,20 @@
-import { IsEmail, IsString, MinLength, MaxLength, Matches, IsBoolean, IsOptional, ValidateIf } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsString, MinLength, MaxLength, Matches, IsBoolean, IsOptional, ValidateIf, Length } from 'class-validator';
 import { Trim } from '@nestlancer/common';
 
+/**
+ * Data required to register a new user account.
+ */
 export class RegisterDto {
+    @ApiProperty({ example: 'newuser@example.com', description: 'Unique email address for registration' })
     @IsEmail()
     @Trim()
     email: string;
 
+    @ApiProperty({
+        example: 'SecureP@ss123',
+        description: 'Account password. Must be 8-64 characters and include uppercase, lowercase, number, and special character.'
+    })
     @IsString()
     @MinLength(8)
     @MaxLength(64)
@@ -14,18 +23,24 @@ export class RegisterDto {
     })
     password: string;
 
+    @ApiProperty({ example: 'John', description: 'User first name' })
     @IsString()
     @MinLength(2)
     @MaxLength(50)
     @Trim()
     firstName: string;
 
+    @ApiProperty({ example: 'Doe', description: 'User last name' })
     @IsString()
     @MinLength(2)
     @MaxLength(50)
     @Trim()
     lastName: string;
 
+    @ApiPropertyOptional({
+        example: '+1234567890',
+        description: 'Contact phone number in E.164 format'
+    })
     @IsOptional()
     @IsString()
     @Matches(/^\+?[1-9]\d{1,14}$/, {
@@ -33,14 +48,21 @@ export class RegisterDto {
     })
     phone?: string;
 
+    @ApiProperty({ example: true, description: 'Acceptance of platform terms of service' })
     @IsBoolean()
     acceptTerms: boolean;
 
+    @ApiPropertyOptional({ example: false, description: 'Consent for marketing communications' })
     @IsOptional()
     @IsBoolean()
     marketingConsent?: boolean;
 
+    @ApiProperty({
+        description: 'Cloudflare Turnstile token for client-side bot protection verification.',
+        example: '0.xtoken...'
+    })
     @IsString()
     @ValidateIf((o) => process.env.NODE_ENV !== 'test') // Optional in test env
     turnstileToken: string;
 }
+
