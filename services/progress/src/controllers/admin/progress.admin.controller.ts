@@ -7,6 +7,7 @@ import { QueryProgressDto } from '../../dto/query-progress.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { ApiStandardResponse } from '@nestlancer/common';
 import { ProgressEntryResponseDto } from '../../dto/progress-entry-response.dto';
+import { PrismaReadService } from '@nestlancer/database';
 
 /**
  * Controller for administrative management of project progress and timeline entries.
@@ -16,7 +17,10 @@ import { ProgressEntryResponseDto } from '../../dto/progress-entry-response.dto'
 @Auth('ADMIN')
 @Controller('admin/progress')
 export class ProgressAdminController {
-    constructor(private readonly progressService: ProgressService) { }
+    constructor(
+        private readonly progressService: ProgressService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Creates a new progress entry for a project.
@@ -85,8 +89,23 @@ export class ProgressAdminController {
     @ApiParam({ name: 'projectId', description: 'Project UUID' })
     @ApiResponse({ status: 200, description: 'Analytics retrieved' })
     async getAnalytics(@Param('projectId') projectId: string): Promise<any> {
-        // TODO: Admin analytics for progress
-        return { status: 'success', projectId, analytics: {} };
+        const [byType, byMilestone, totalCount] = await Promise.all([
+            this.prismaRead.progressEntry.groupBy({
+                by: ['type'],
+                where: { projectId },
+                _count: { _all: true }
+            }),
+            this.prismaRead.progressEntry.groupBy({
+                by: ['milestoneId'],
+                where: { projectId, milestoneId: { not: null } },
+                _count: { _all: true }
+            }),
+            this.prismaRead.progressEntry.count({
+                where: { projectId }
+            })
+        ]);
+
+        return { status: 'success', projectId, analytics: { byType, byMilestone, totalCount } };
     }
 
     /**
@@ -97,8 +116,12 @@ export class ProgressAdminController {
     @ApiParam({ name: 'projectId', description: 'Project UUID' })
     @ApiResponse({ status: 200, description: 'Timeline retrieved' })
     async getAdminTimeline(@Param('projectId') projectId: string): Promise<any> {
-        // TODO: Admin full timeline view
-        return { status: 'success', projectId, timeline: [] };
+        const timeline = await this.prismaRead.progressEntry.findMany({
+            where: { projectId },
+            orderBy: { createdAt: 'asc' },
+            include: { milestone: true, deliverable: true }
+        });
+        return { status: 'success', projectId, timeline };
     }
 
     /**

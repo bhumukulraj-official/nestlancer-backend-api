@@ -110,8 +110,8 @@ export class ProgressController {
         @CurrentUser('userId') userId: string,
         @Body() dto: CreateProgressEntryDto
     ): Promise<any> {
-        // TODO: User creates progress update
-        return { status: 'success', projectId, entryId: `prog_${Date.now()}` };
+        const entry = await this.progressService.createEntry(userId, projectId, dto);
+        return { status: 'success', projectId, entry };
     }
 }
 
