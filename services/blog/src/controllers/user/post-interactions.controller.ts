@@ -1,8 +1,9 @@
 import { UserRole } from '@nestlancer/common';
-import { Controller, Post, Delete, Get, Param, Req } from '@nestjs/common';
+import { Controller, Post, Delete, Get, Param, Query, Req } from '@nestjs/common';
 import { Auth } from '@nestlancer/auth-lib';
 import { PostInteractionsService } from '../../services/post-interactions.service';
 import { Request } from 'express';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
@@ -16,7 +17,11 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 @ApiBearerAuth()
 @Controller('posts/:slug')
 export class PostInteractionsController {
-    constructor(private readonly interactionsService: PostInteractionsService) { }
+    constructor(
+        private readonly interactionsService: PostInteractionsService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Toggles a 'like' reaction on a blog post for the current user.
@@ -74,7 +79,14 @@ export class PostInteractionsController {
     @Auth(UserRole.USER)
     @ApiOperation({ summary: 'Track authenticated view', description: 'Record a post view specifically for a logged-in user context.' })
     async trackView(@Param('slug') slug: string, @Req() req: any): Promise<any> {
-        // TODO: Track post view for authenticated user
+        const post = await this.prismaRead.blogPost.findUnique({ where: { slug }, select: { id: true } });
+        if (!post) throw new Error('Post not found');
+
+        await this.prismaWrite.blogPost.update({
+            where: { id: post.id },
+            data: { viewCount: { increment: 1 } }
+        });
+
         return { tracked: true };
     }
 
@@ -89,7 +101,16 @@ export class PostInteractionsController {
     @Auth(UserRole.USER)
     @ApiOperation({ summary: 'Track share', description: 'Record that a post has been shared by the user.' })
     async trackShare(@Param('slug') slug: string, @Req() req: any): Promise<any> {
-        // TODO: Track share event
+        const post = await this.prismaRead.blogPost.findUnique({ where: { slug }, select: { id: true } });
+        if (!post) throw new Error('Post not found');
+
+        await this.prismaWrite.outbox.create({
+            data: {
+                type: 'POST_SHARED',
+                payload: { postId: post.id, userId: req.user.id }
+            }
+        });
+
         return { shared: true };
     }
 }
@@ -114,9 +135,8 @@ export class BookmarksController {
     @Get()
     @Auth(UserRole.USER)
     @ApiOperation({ summary: 'List bookmarked posts', description: 'Fetch all blog posts that the current user has saved to their bookmarks.' })
-    async listBookmarks(@Req() req: any): Promise<any> {
-        // TODO: List user bookmarks
-        return { data: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+    async listBookmarks(@Req() req: any, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
+        return this.interactionsService.getUserBookmarks(req.user.id, parseInt(page, 10), parseInt(limit, 10));
     }
 }
 

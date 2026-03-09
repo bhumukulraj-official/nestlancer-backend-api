@@ -8,6 +8,7 @@ import { PostSchedulingService } from '../../services/post-scheduling.service';
 import { CreatePostDto } from '../../dto/create-post.dto';
 import { UpdatePostDto } from '../../dto/update-post.dto';
 import { SchedulePostDto } from '../../dto/schedule-post.dto';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiProperty } from '@nestjs/swagger';
 
@@ -27,6 +28,8 @@ export class PostsAdminController {
         private readonly postsService: PostsService,
         private readonly publishingService: PostPublishingService,
         private readonly schedulingService: PostSchedulingService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -140,7 +143,10 @@ export class PostsAdminController {
     @Post(':id/feature')
     @ApiOperation({ summary: 'Feature blog post', description: 'Mark a post as a featured piece of content for site-wide promotion.' })
     async featurePost(@Param('id') id: string): Promise<any> {
-        // TODO: Mark post as featured
+        const post = await this.prismaWrite.blogPost.update({
+            where: { id },
+            data: { featured: true },
+        });
         return { id, featured: true };
     }
 
@@ -153,7 +159,10 @@ export class PostsAdminController {
     @Post(':id/unfeature')
     @ApiOperation({ summary: 'Unfeature blog post', description: 'Remove the featured status flag from a blog post.' })
     async unfeaturePost(@Param('id') id: string): Promise<any> {
-        // TODO: Remove featured flag
+        const post = await this.prismaWrite.blogPost.update({
+            where: { id },
+            data: { featured: false },
+        });
         return { id, featured: false };
     }
 
@@ -166,7 +175,17 @@ export class PostsAdminController {
     @Post(':id/pin')
     @ApiOperation({ summary: 'Pin blog post', description: 'Pin a post to ensure it remains at the top of categorized listings.' })
     async pinPost(@Param('id') id: string): Promise<any> {
-        // TODO: Pin post
+        const post = await this.prismaRead.blogPost.findUnique({ where: { id } });
+        if (!post) throw new Error('Post not found');
+
+        const seoData: any = typeof post.seo === 'object' && post.seo !== null ? post.seo : {};
+        seoData.pinned = true;
+
+        await this.prismaWrite.blogPost.update({
+            where: { id },
+            data: { seo: seoData },
+        });
+
         return { id, pinned: true };
     }
 
@@ -179,7 +198,17 @@ export class PostsAdminController {
     @Post(':id/unpin')
     @ApiOperation({ summary: 'Unpin blog post', description: 'Remove the pinned status from a blog post.' })
     async unpinPost(@Param('id') id: string): Promise<any> {
-        // TODO: Unpin post
+        const post = await this.prismaRead.blogPost.findUnique({ where: { id } });
+        if (!post) throw new Error('Post not found');
+
+        const seoData: any = typeof post.seo === 'object' && post.seo !== null ? post.seo : {};
+        seoData.pinned = false;
+
+        await this.prismaWrite.blogPost.update({
+            where: { id },
+            data: { seo: seoData },
+        });
+
         return { id, pinned: false };
     }
 
@@ -192,8 +221,21 @@ export class PostsAdminController {
     @Post(':id/duplicate')
     @ApiOperation({ summary: 'Duplicate post', description: 'Create a new draft post by copying content and settings from an existing post.' })
     async duplicatePost(@Param('id') id: string): Promise<any> {
-        // TODO: Duplicate post as draft
-        return { originalId: id, duplicateId: `draft_${Date.now()}`, status: 'draft' };
+        const post = await this.prismaRead.blogPost.findUnique({ where: { id } });
+        if (!post) throw new Error('Post not found');
+
+        const { id: _, slug, createdAt, updatedAt, publishedAt, ...postData } = post;
+
+        const duplicated = await this.prismaWrite.blogPost.create({
+            data: {
+                ...postData,
+                title: `${post.title} (Copy)`,
+                slug: `${slug}-copy-${Date.now()}`,
+                status: 'DRAFT',
+            } as any
+        });
+
+        return { originalId: id, duplicateId: duplicated.id, status: 'DRAFT' };
     }
 
     /**
@@ -242,8 +284,30 @@ export class PostsAdminController {
     @Post('import')
     @ApiOperation({ summary: 'Import posts', description: 'Batch process and import blog content from standardized JSON/CSV formats.' })
     async importPosts(@Body() body: any): Promise<any> {
-        // TODO: Import posts from external source
-        return { imported: 0, failed: 0, errors: [] };
+        if (!body.posts || !Array.isArray(body.posts)) {
+            return { error: 'Invalid payload: posts array required' };
+        }
+
+        // Basic bulk insert structure mapped to DTO concept
+        let imported = 0;
+        let failed = 0;
+        const errors = [];
+
+        for (const postData of body.posts) {
+            try {
+                // Assuming postsService.create handles internal validation/creation
+                await this.postsService.create({
+                    ...postData,
+                    status: 'DRAFT' // Enforce draft status on import
+                });
+                imported++;
+            } catch (err: any) {
+                failed++;
+                errors.push({ title: postData.title, error: err.message });
+            }
+        }
+
+        return { imported, failed, errors };
     }
 
     /**
@@ -255,8 +319,16 @@ export class PostsAdminController {
     @Post('export')
     @ApiOperation({ summary: 'Export posts', description: 'Initiate a background export of blog content for data portability.' })
     async exportPosts(@Body() body: any): Promise<any> {
-        // TODO: Export posts
-        return { exportId: `export_${Date.now()}`, status: 'processing' };
+        const exportId = `export_${Date.now()}`;
+
+        await this.prismaWrite.outbox.create({
+            data: {
+                type: 'BLOG_POSTS_EXPORT_REQUESTED',
+                payload: { exportId, filters: body.filters || {} },
+            },
+        });
+
+        return { exportId, status: 'processing' };
     }
 
     /**
@@ -268,7 +340,17 @@ export class PostsAdminController {
     @Patch('settings')
     @ApiOperation({ summary: 'Update blog settings', description: 'Modify service-level configurations such as default pagination, moderation rules, etc.' })
     async updateBlogSettings(@Body() body: any): Promise<any> {
-        // TODO: Update blog-wide settings
+        await this.prismaWrite.systemConfig.upsert({
+            where: { key: 'blog.settings' },
+            create: {
+                key: 'blog.settings',
+                value: body,
+            },
+            update: {
+                value: body,
+            },
+        });
+
         return { updated: true, settings: body };
     }
 }

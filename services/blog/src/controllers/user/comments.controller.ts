@@ -1,6 +1,7 @@
 import { UserRole } from '@nestlancer/common';
 import { Controller, Get, Post, Put, Patch, Delete, Body, Param, Query, Req } from '@nestjs/common';
 import { Auth } from '@nestlancer/auth-lib';
+import { PrismaReadService } from '@nestlancer/database';
 import { CommentsService } from '../../services/comments.service';
 import { CreateCommentDto, UpdateCommentDto } from '../../dto/create-comment.dto';
 
@@ -16,7 +17,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 @ApiBearerAuth()
 @Controller('posts/:slug/comments')
 export class CommentsController {
-    constructor(private readonly commentsService: CommentsService) { }
+    constructor(
+        private readonly commentsService: CommentsService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Retrieves a paginated list of comments for a specific blog post.
@@ -30,8 +34,28 @@ export class CommentsController {
     @Auth()
     @ApiOperation({ summary: 'List comments for post', description: 'Retrieve the publicly accessible comment thread for a specific blog post.' })
     async listPostComments(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
-        // TODO: List comments for a post (authenticated)
-        return { data: [], pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total: 0, totalPages: 0 } };
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const post = await this.prismaRead.blogPost.findUnique({ where: { slug }, select: { id: true } });
+        if (!post) return { data: [], pagination: { page: pageNum, limit: limitNum, total: 0, totalPages: 0 } };
+
+        const [comments, total] = await Promise.all([
+            this.prismaRead.blogComment.findMany({
+                where: { postId: post.id, status: 'APPROVED' },
+                skip,
+                take: limitNum,
+                orderBy: { createdAt: 'desc' },
+                include: { author: { select: { id: true, firstName: true, lastName: true, avatar: true } } }
+            }),
+            this.prismaRead.blogComment.count({ where: { postId: post.id, status: 'APPROVED' } })
+        ]);
+
+        return {
+            data: comments,
+            pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) }
+        };
     }
 
     /**
@@ -62,7 +86,7 @@ export class CommentsController {
     @Auth()
     @ApiOperation({ summary: 'Reply to comment', description: 'Submit nested feedback as a reply to an existing comment.' })
     async replyToComment(@Param('slug') slug: string, @Param('commentId') commentId: string, @Body() dto: CreateCommentDto, @Req() req: any): Promise<any> {
-        // TODO: Add parentId to CreateCommentDto to support replies
+        // Adding parentId to CreateCommentDto type dynamically since the dto type might not have it
         return this.commentsService.create(slug, req.user.id, { ...dto, parentId: commentId } as any);
     }
 
@@ -107,7 +131,10 @@ export class CommentsController {
     @Auth()
     @ApiOperation({ summary: 'Get comment replies', description: 'Retrieve all nested responses for a specific parent comment.' })
     async getReplies(@Param('slug') slug: string, @Param('commentId') commentId: string): Promise<any> {
-        return { data: [] };
+        const post = await this.prismaRead.blogPost.findUnique({ where: { slug }, select: { id: true } });
+        if (!post) return { data: [] };
+        const data = await this.commentsService.getReplies(commentId, post.id);
+        return { data };
     }
 
     /**
@@ -115,17 +142,25 @@ export class CommentsController {
      * 
      * @param slug The post identifier
      * @param commentId The comment identifier reported
+     * @param body Optional reason
+     * @param req User context
      * @returns A promise resolving to a report confirmation
      */
     @Post(':commentId/report')
     @Auth()
     @ApiOperation({ summary: 'Report comment', description: 'Flag a specific comment for review due to community guideline violations.' })
-    async reportComment(@Param('slug') slug: string, @Param('commentId') commentId: string): Promise<any> {
+    async reportComment(
+        @Param('slug') slug: string,
+        @Param('commentId') commentId: string,
+        @Body() body: { reason?: string },
+        @Req() req: any,
+    ): Promise<any> {
+        await this.commentsService.reportComment(commentId, req.user.id, body?.reason);
         return { reported: true };
     }
 
     /**
-     * Toggles a 'like' reaction on a specific post comment.
+     * Adds a like to a comment (increments like count).
      * 
      * @param slug The post identifier
      * @param commentId The unique identifier of the comment to like
@@ -134,13 +169,14 @@ export class CommentsController {
      */
     @Post(':commentId/like')
     @Auth()
-    @ApiOperation({ summary: 'Like comment', description: 'Toggle a like reaction on a specific blog post comment.' })
+    @ApiOperation({ summary: 'Like comment', description: 'Add a like to a blog post comment.' })
     async likePostComment(
         @Param('slug') slug: string,
         @Param('commentId') commentId: string,
         @Req() req: any,
     ): Promise<any> {
-        return { status: 'success', data: { commentId, liked: true } };
+        const result = await this.commentsService.likeComment(commentId, req.user.id);
+        return { status: 'success', data: result };
     }
 }
 
@@ -152,6 +188,11 @@ export class CommentsController {
 @Controller()
 @Auth()
 export class StandaloneCommentsController {
+    constructor(
+        private readonly commentsService: CommentsService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
+
     /**
      * Fetches details for a single comment using its primary identifier.
      * 
@@ -161,7 +202,12 @@ export class StandaloneCommentsController {
     @Get('comments/:commentId')
     @ApiOperation({ summary: 'Get comment by ID', description: 'Retrieve detailed record for a single comment entry.' })
     async getCommentById(@Param('commentId') commentId: string): Promise<any> {
-        return { status: 'success', data: { id: commentId } };
+        const comment = await this.prismaRead.blogComment.findUnique({
+            where: { id: commentId, status: 'APPROVED' },
+            include: { author: { select: { id: true, firstName: true, lastName: true, avatar: true } }, post: { select: { id: true, title: true, slug: true } } },
+        });
+        if (!comment) return { status: 'success', data: null };
+        return { status: 'success', data: comment };
     }
 
     /**
@@ -173,7 +219,8 @@ export class StandaloneCommentsController {
     @Get('comments/:commentId/replies')
     @ApiOperation({ summary: 'Get standalone replies', description: 'Fetch all hierarchical replies for a specific comment ID.' })
     async getCommentReplies(@Param('commentId') commentId: string): Promise<any> {
-        return { status: 'success', data: [] };
+        const data = await this.commentsService.getReplies(commentId);
+        return { status: 'success', data };
     }
 
     /**
@@ -188,10 +235,11 @@ export class StandaloneCommentsController {
     @ApiOperation({ summary: 'Reply standalone', description: 'Submit a response to a comment without post context.' })
     async replyToCommentStandalone(
         @Param('commentId') commentId: string,
-        @Body() body: any,
+        @Body() body: { content: string },
         @Req() req: any,
     ): Promise<any> {
-        return { status: 'success', data: { parentId: commentId, content: body.content } };
+        const result = await this.commentsService.createReplyByParentId(commentId, req.user.id, body.content);
+        return { status: 'success', data: result };
     }
 
     /**
@@ -240,26 +288,28 @@ export class StandaloneCommentsController {
     @ApiOperation({ summary: 'Report standalone comment', description: 'Flag a specific comment record for administrative review.' })
     async reportCommentStandalone(
         @Param('commentId') commentId: string,
-        @Body() body: any,
+        @Body() body: { reason?: string },
         @Req() req: any,
     ): Promise<any> {
+        await this.commentsService.reportComment(commentId, req.user.id, body?.reason);
         return { status: 'success', message: 'Comment reported' };
     }
 
     /**
-     * Records a like interaction for a comment using its ID.
+     * Records a like for a comment using its ID.
      * 
      * @param commentId Unique identifier of the comment
      * @param req User context
      * @returns A promise resolving to the interaction state
      */
     @Post('comments/:commentId/like')
-    @ApiOperation({ summary: 'Like standalone comment', description: 'Toggle a like reaction on a specific comment record.' })
+    @ApiOperation({ summary: 'Like standalone comment', description: 'Add a like to a specific comment record.' })
     async likeComment(
         @Param('commentId') commentId: string,
         @Req() req: any,
     ): Promise<any> {
-        return { status: 'success', data: { commentId, liked: true } };
+        const result = await this.commentsService.likeComment(commentId, req.user.id);
+        return { status: 'success', data: result };
     }
 }
 

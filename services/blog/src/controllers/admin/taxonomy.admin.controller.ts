@@ -1,7 +1,7 @@
 import { UserRole } from '@nestlancer/common';
 import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
 import { Auth } from '@nestlancer/auth-lib';
-import { CategoriesService, TagsService } from '../../services/taxonomy.service';
+import { CategoriesService, TagsService, AuthorsService } from '../../services/taxonomy.service';
 import { CreateCategoryDto, UpdateCategoryDto, CreateTagDto, UpdateTagDto, MergeTagsDto } from '../../dto/create-category.dto';
 
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
@@ -152,6 +152,8 @@ export class BlogTagsAdminController {
 @Controller('admin/blog/authors')
 @Auth(UserRole.ADMIN)
 export class BlogAuthorsAdminController {
+    constructor(private readonly authorsService: AuthorsService) { }
+
     /**
      * Retrieves all blog authors for administration.
      * 
@@ -160,6 +162,7 @@ export class BlogAuthorsAdminController {
     @Get()
     @ApiOperation({ summary: 'List all authors', description: 'Fetch all blog authors and their associated metadata for management.' })
     async findAll(): Promise<any> {
-        return { data: [] };
+        const authors = await this.authorsService.findAll();
+        return { data: authors };
     }
 }

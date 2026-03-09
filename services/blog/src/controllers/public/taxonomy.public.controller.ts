@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { Public } from '@nestlancer/common';
 import { Cacheable } from '@nestlancer/cache';
+import { PrismaReadService } from '@nestlancer/database';
 import { CategoriesService, TagsService, AuthorsService } from '../../services/taxonomy.service';
 
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -14,7 +15,10 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 @ApiTags('Blog - Public Categories')
 @Controller('categories')
 export class BlogCategoriesPublicController {
-    constructor(private readonly categoriesService: CategoriesService) { }
+    constructor(
+        private readonly categoriesService: CategoriesService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Retrieves all active blog categories.
@@ -40,8 +44,15 @@ export class BlogCategoriesPublicController {
     @ApiOperation({ summary: 'Get category detail', description: 'Retrieve metadata and metadata for a specific blog category.' })
     @Cacheable({ ttl: 300 })
     async getBySlug(@Param('slug') slug: string): Promise<any> {
-        // TODO: Implement category detail
-        return { slug, name: slug, description: '', postCount: 0 };
+        const category = await this.prismaRead.blogCategory.findUnique({
+            where: { slug }
+        });
+
+        if (!category) throw new Error('Category not found');
+
+        const postCount = await this.prismaRead.blogPost.count({ where: { categoryId: category.id, status: 'PUBLISHED' } });
+
+        return { ...category, postCount };
     }
 
     /**
@@ -57,8 +68,28 @@ export class BlogCategoriesPublicController {
     @ApiOperation({ summary: 'Get posts by category', description: 'Fetch a paginated list of published blog posts associated with a specific category.' })
     @Cacheable({ ttl: 300 })
     async getPostsByCategory(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
-        // TODO: Filter posts by category
-        return { data: [], pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total: 0, totalPages: 0 } };
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const category = await this.prismaRead.blogCategory.findUnique({ where: { slug }, select: { id: true } });
+        if (!category) return { data: [], pagination: { page: pageNum, limit: limitNum, total: 0, totalPages: 0 } };
+
+        const [posts, total] = await Promise.all([
+            this.prismaRead.blogPost.findMany({
+                where: { categoryId: category.id, status: 'PUBLISHED' },
+                skip,
+                take: limitNum,
+                orderBy: { publishedAt: 'desc' },
+                include: { author: { select: { firstName: true, lastName: true } } }
+            }),
+            this.prismaRead.blogPost.count({ where: { categoryId: category.id, status: 'PUBLISHED' } })
+        ]);
+
+        return {
+            data: posts,
+            pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) }
+        };
     }
 }
 
@@ -71,7 +102,10 @@ export class BlogCategoriesPublicController {
 @ApiTags('Blog - Public Tags')
 @Controller('tags')
 export class BlogTagsPublicController {
-    constructor(private readonly tagsService: TagsService) { }
+    constructor(
+        private readonly tagsService: TagsService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Retrieves all active blog tags.
@@ -97,8 +131,17 @@ export class BlogTagsPublicController {
     @ApiOperation({ summary: 'Get tag detail', description: 'Retrieve metadata and metadata for a specific blog tag.' })
     @Cacheable({ ttl: 300 })
     async getBySlug(@Param('slug') slug: string): Promise<any> {
-        // TODO: Implement tag detail
-        return { slug, name: slug, postCount: 0 };
+        const tag = await this.prismaRead.blogTag.findUnique({
+            where: { slug }
+        });
+
+        if (!tag) throw new Error('Tag not found');
+
+        const postCount = await this.prismaRead.blogPost.count({
+            where: { tags: { some: { id: tag.id } }, status: 'PUBLISHED' }
+        });
+
+        return { ...tag, postCount };
     }
 
     /**
@@ -114,8 +157,28 @@ export class BlogTagsPublicController {
     @ApiOperation({ summary: 'Get posts by tag', description: 'Fetch a paginated list of published blog posts that share a specific tag.' })
     @Cacheable({ ttl: 300 })
     async getPostsByTag(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
-        // TODO: Filter posts by tag
-        return { data: [], pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total: 0, totalPages: 0 } };
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const tag = await this.prismaRead.blogTag.findUnique({ where: { slug }, select: { id: true } });
+        if (!tag) return { data: [], pagination: { page: pageNum, limit: limitNum, total: 0, totalPages: 0 } };
+
+        const [posts, total] = await Promise.all([
+            this.prismaRead.blogPost.findMany({
+                where: { tags: { some: { id: tag.id } }, status: 'PUBLISHED' },
+                skip,
+                take: limitNum,
+                orderBy: { publishedAt: 'desc' },
+                include: { author: { select: { firstName: true, lastName: true } } }
+            }),
+            this.prismaRead.blogPost.count({ where: { tags: { some: { id: tag.id } }, status: 'PUBLISHED' } })
+        ]);
+
+        return {
+            data: posts,
+            pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) }
+        };
     }
 }
 

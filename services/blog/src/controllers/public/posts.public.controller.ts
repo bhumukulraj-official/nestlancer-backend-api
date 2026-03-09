@@ -4,6 +4,7 @@ import { Cacheable } from '@nestlancer/cache';
 import { PostsService } from '../../services/posts.service';
 import { PostSearchService } from '../../services/post-search.service';
 import { PostViewsService } from '../../services/post-views.service';
+import { PrismaReadService } from '@nestlancer/database';
 import { QueryPostsDto } from '../../dto/query-posts.dto';
 import { SearchPostsDto } from '../../dto/search-posts.dto';
 
@@ -22,6 +23,7 @@ export class PostsPublicController {
         private readonly postsService: PostsService,
         private readonly searchService: PostSearchService,
         private readonly viewsService: PostViewsService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -95,8 +97,29 @@ export class PostsPublicController {
     @Public()
     @Get(':slug/related')
     @ApiOperation({ summary: 'Get related posts', description: 'Retrieve a collection of blog posts that are semantically or taxonomically similar to the given post.' })
-    async getRelated(@Param('slug') slug: string): Promise<any> {
-        return { data: [] };
+    async getRelated(@Param('slug') slug: string, @Query('limit') limit?: string): Promise<any> {
+        const post = await this.prismaRead.blogPost.findUnique({
+            where: { slug, status: 'PUBLISHED' },
+            select: { id: true, categoryId: true, tags: { select: { id: true } } },
+        });
+        if (!post) return { data: [] };
+        const take = Math.min(10, Math.max(1, parseInt(limit || '5', 10)));
+        const tagIds = post.tags?.map((t: any) => t.id) ?? [];
+        const related = await this.prismaRead.blogPost.findMany({
+            where: {
+                id: { not: post.id },
+                status: 'PUBLISHED',
+                publishedAt: { not: null },
+                OR: [
+                    { categoryId: post.categoryId },
+                    ...(tagIds.length > 0 ? [{ tags: { some: { id: { in: tagIds } } } }] : []),
+                ],
+            },
+            orderBy: { publishedAt: 'desc' },
+            take,
+            select: { id: true, title: true, slug: true, excerpt: true, publishedAt: true, featuredImageId: true },
+        });
+        return { data: related };
     }
 
     /**
@@ -132,8 +155,30 @@ export class PostsPublicController {
     @ApiOperation({ summary: 'Get post comments', description: 'Retrieve the public, approved comment thread for a specific blog post.' })
     @Cacheable({ ttl: 60 })
     async getPostComments(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
-        // TODO: Implement public comment listing
-        return { data: [], pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total: 0, totalPages: 0 } };
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const post = await this.prismaRead.blogPost.findUnique({ where: { slug }, select: { id: true } });
+        if (!post) {
+            return { data: [], pagination: { page: pageNum, limit: limitNum, total: 0, totalPages: 0 } };
+        }
+
+        const [comments, total] = await Promise.all([
+            this.prismaRead.blogComment.findMany({
+                where: { postId: post.id, status: 'APPROVED' },
+                skip,
+                take: limitNum,
+                orderBy: { createdAt: 'desc' },
+                include: { author: { select: { id: true, firstName: true, lastName: true, avatar: true } } }
+            }),
+            this.prismaRead.blogComment.count({ where: { postId: post.id, status: 'APPROVED' } })
+        ]);
+
+        return {
+            data: comments,
+            pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) }
+        };
     }
 }
 
