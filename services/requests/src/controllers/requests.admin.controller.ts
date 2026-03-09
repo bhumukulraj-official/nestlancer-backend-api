@@ -8,6 +8,7 @@ import { RequestStatsService } from '../services/request-stats.service';
 import { UpdateRequestStatusDto } from '../dto/update-request-status.dto';
 import { CreateQuoteDto } from '../dto/create-quote.dto';
 import { AddNoteDto } from '../dto/add-note.dto';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 /**
@@ -23,6 +24,8 @@ export class RequestsAdminController {
         private readonly adminService: RequestsAdminService,
         private readonly quotesService: QuotesAdminService,
         private readonly statsService: RequestStatsService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -149,8 +152,11 @@ export class RequestsAdminController {
         @ActiveUser('sub') adminId: string,
         @Body() body: any
     ): Promise<any> {
-        // TODO: Admin update request
-        return { requestId: id, updated: true, data: body };
+        const req = await this.prismaWrite.projectRequest.update({
+            where: { id },
+            data: body
+        });
+        return { requestId: id, updated: true, data: req };
     }
 
     /**
@@ -165,7 +171,20 @@ export class RequestsAdminController {
         @ActiveUser('sub') adminId: string,
         @Body() body: { assigneeId: string }
     ): Promise<any> {
-        // TODO: Admin assign request
+        const req = await this.prismaWrite.projectRequest.update({
+            where: { id },
+            data: { assigneeId: body.assigneeId }
+        });
+
+        await this.prismaWrite.outboxEvent.create({
+            data: {
+                aggregateType: 'REQUEST',
+                aggregateId: id,
+                eventType: 'REQUEST_ASSIGNED',
+                payload: { assigneeId: body.assigneeId, assignedBy: adminId }
+            }
+        });
+
         return { requestId: id, assignedTo: body.assigneeId, assignedBy: adminId };
     }
 
@@ -178,7 +197,10 @@ export class RequestsAdminController {
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiResponse({ status: 204, description: 'Request deleted' })
     async deleteRequest(@Param('id') id: string): Promise<any> {
-        // TODO: Admin delete request
+        await this.prismaWrite.projectRequest.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        });
         return { requestId: id, deleted: true };
     }
 }

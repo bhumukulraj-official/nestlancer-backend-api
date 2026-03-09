@@ -104,8 +104,14 @@ export class RequestAttachmentsService {
             where: { id: attachmentId }
         });
 
-        // Optionally delete from S3
-        // await this.storageService.deleteFile(attachment.fileUrl);
+        const bucket = this.config.get<string>('requestsService.attachments.s3Bucket') || 'nestlancer-requests';
+        try {
+            const urlObj = new URL(attachment.fileUrl);
+            const key = urlObj.pathname.substring(1);
+            await this.storageService.delete(bucket, key);
+        } catch (e) {
+            console.error('Failed to parse URL or delete attachment from storage', e);
+        }
 
         return true;
     }

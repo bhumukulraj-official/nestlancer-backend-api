@@ -3,6 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { ApiStandardResponse, Public } from '@nestlancer/common';
 import { ActiveUser, JwtAuthGuard } from '@nestlancer/auth-lib';
+import { PrismaReadService } from '@nestlancer/database';
 import { RequestsService } from '../services/requests.service';
 import { RequestAttachmentsService } from '../services/request-attachments.service';
 import { RequestStatsService } from '../services/request-stats.service';
@@ -22,6 +23,7 @@ export class RequestsController {
         private readonly requestsService: RequestsService,
         private readonly attachmentsService: RequestAttachmentsService,
         private readonly statsService: RequestStatsService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -205,8 +207,15 @@ export class RequestsController {
     @ApiParam({ name: 'id', description: 'Request UUID' })
     @ApiStandardResponse()
     async getRequestQuotes(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        // TODO: Get quotes for a request
-        return { requestId: id, quotes: [] };
+        // Verify user owns the request
+        await this.requestsService.getRequestDetails(userId, id);
+
+        const quotes = await this.prismaRead.quote.findMany({
+            where: { requestId: id },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return { requestId: id, quotes };
     }
 }
 
