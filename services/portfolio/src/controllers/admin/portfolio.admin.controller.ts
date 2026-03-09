@@ -1,6 +1,7 @@
 import { UserRole, ApiStandardResponse } from '@nestlancer/common';
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query, HttpCode } from '@nestjs/common';
 import { Auth } from '@nestlancer/auth-lib';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { PortfolioAdminService } from '../../services/portfolio-admin.service';
 import { PortfolioAnalyticsService } from '../../services/portfolio-analytics.service';
 import { PortfolioOrderingService } from '../../services/portfolio-ordering.service';
@@ -26,6 +27,8 @@ export class PortfolioAdminController {
         private readonly analyticsService: PortfolioAnalyticsService,
         private readonly orderingService: PortfolioOrderingService,
         private readonly portfolioService: PortfolioService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -227,9 +230,23 @@ export class PortfolioAdminController {
     @ApiOperation({ summary: 'Add media assets' })
     @ApiParam({ name: 'id', description: 'Portfolio item UUID' })
     @ApiResponse({ status: 201, description: 'Media added successfully' })
-    addMedia(@Param('id') id: string, @Body() body: any) {
-        // TODO: Add media to portfolio item
-        return { id, mediaAdded: true, media: body };
+    async addMedia(@Param('id') id: string, @Body() body: any) {
+        const item = await this.prismaRead.portfolioItem.findUnique({ where: { id }, include: { images: true } });
+        if (!item) throw new Error('Portfolio item not found');
+        const order = body.order ?? item.images.length;
+        const mediaId = body.id || body.mediaId || require('crypto').randomUUID();
+
+        const newImage = await this.prismaWrite.portfolioImage.create({
+            data: {
+                portfolioItemId: id,
+                mediaId,
+                alt: body.alt ?? null,
+                caption: body.caption ?? null,
+                order
+            }
+        });
+
+        return { id, mediaAdded: true, media: { id: newImage.id, mediaId, order, ...body } };
     }
 
     /**
@@ -240,8 +257,17 @@ export class PortfolioAdminController {
     @ApiParam({ name: 'id', description: 'Portfolio item UUID' })
     @ApiParam({ name: 'mediaId', description: 'Media UUID' })
     @ApiResponse({ status: 200, description: 'Media removed' })
-    removeMedia(@Param('id') id: string, @Param('mediaId') mediaId: string) {
-        // TODO: Remove media from portfolio item
+    async removeMedia(@Param('id') id: string, @Param('mediaId') mediaId: string) {
+        const item = await this.prismaRead.portfolioItem.findUnique({ where: { id } });
+        if (!item) throw new Error('Portfolio item not found');
+
+        await this.prismaWrite.portfolioImage.deleteMany({
+            where: {
+                portfolioItemId: id,
+                OR: [{ id: mediaId }, { mediaId }]
+            }
+        });
+
         return { id, mediaRemoved: mediaId };
     }
 
@@ -252,8 +278,27 @@ export class PortfolioAdminController {
     @ApiOperation({ summary: 'Reorder media assets' })
     @ApiParam({ name: 'id', description: 'Portfolio item UUID' })
     @ApiResponse({ status: 200, description: 'Media reordered successfully' })
-    reorderMedia(@Param('id') id: string, @Body() body: any) {
-        // TODO: Reorder media in portfolio item
-        return { id, mediaReordered: true, order: body };
+    async reorderMedia(@Param('id') id: string, @Body() body: any) {
+        const item = await this.prismaRead.portfolioItem.findUnique({ where: { id }, include: { images: true } });
+        if (!item) throw new Error('Portfolio item not found');
+
+        const updates = Array.isArray(body) ? body : body.order || [];
+
+        for (const img of item.images) {
+            const update = updates.find((u: any) => u.id === img.id || u.mediaId === img.mediaId);
+            if (update && update.order !== undefined) {
+                await this.prismaWrite.portfolioImage.update({
+                    where: { id: img.id },
+                    data: { order: update.order }
+                });
+            }
+        }
+
+        const updatedImages = await this.prismaRead.portfolioImage.findMany({
+            where: { portfolioItemId: id },
+            orderBy: { order: 'asc' }
+        });
+
+        return { id, mediaReordered: true, images: updatedImages };
     }
 }
