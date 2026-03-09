@@ -73,7 +73,6 @@ export class HealthPublicController {
     @Cacheable({ ttl: 15000 })
     @ApiOperation({ summary: 'Get detailed health diagnostics', description: 'Access in-depth availability and performance data for all individual subsystems.' })
     async getDetailedHealth(@Res() res: Response): Promise<any> {
-        // TODO: Provide more detailed diagnostics for detailed endpoint
         const health = await this.healthService.getAggregatedHealth();
 
         let status = HttpStatus.OK;
