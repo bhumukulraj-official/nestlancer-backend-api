@@ -13,6 +13,7 @@
     "scripts": {
         "dev": "turbo dev",
         "build": "turbo build",
+        "build:log": "turbo run build --continue --force --parallel 2>&1 | tee build.log.txt",
         "test": "turbo test",
         "test:unit": "NODE_OPTIONS='--max-old-space-size=4096' jest --testPathPattern=tests/unit",
         "test:integration": "NODE_OPTIONS='--max-old-space-size=4096' jest --testPathPattern=tests/integration",
