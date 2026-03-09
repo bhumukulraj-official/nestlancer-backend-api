@@ -104,6 +104,15 @@ export class S3Provider implements StorageProvider {
     }
   }
 
+  async getFileSize(bucket: string, key: string): Promise<number> {
+    try {
+      const result = await this.client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+      return result.ContentLength ?? 0;
+    } catch {
+      return 0;
+    }
+  }
+
   private buildObjectUrl(bucket: string, key: string): string {
     if (this.config.endpoint) {
       return `${this.config.endpoint}/${bucket}/${key}`;

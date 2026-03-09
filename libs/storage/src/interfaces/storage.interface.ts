@@ -4,6 +4,8 @@ export interface StorageProvider {
   delete(bucket: string, key: string): Promise<void>;
   getSignedUrl(options: SignedUrlOptions): Promise<string>;
   exists(bucket: string, key: string): Promise<boolean>;
+  /** Returns size in bytes, or 0 if object not found / unknown. */
+  getFileSize?(bucket: string, key: string): Promise<number>;
 }
 
 export interface UploadResult {

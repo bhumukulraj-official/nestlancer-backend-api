@@ -122,4 +122,14 @@ export class CloudflareR2Provider implements StorageProvider {
       return false;
     }
   }
+
+  async getFileSize(bucket: string, key: string): Promise<number> {
+    this.checkClient();
+    try {
+      const result = await this.client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+      return result.ContentLength ?? 0;
+    } catch {
+      return 0;
+    }
+  }
 }

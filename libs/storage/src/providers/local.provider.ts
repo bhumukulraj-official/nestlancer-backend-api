@@ -81,6 +81,16 @@ export class LocalProvider implements StorageProvider {
     }
   }
 
+  async getFileSize(bucket: string, key: string): Promise<number> {
+    const filePath = this.resolvePath(bucket, key);
+    try {
+      const stat = await fs.stat(filePath);
+      return stat.size;
+    } catch {
+      return 0;
+    }
+  }
+
   private resolvePath(bucket: string, key: string): string {
     return join(this.config.basePath, bucket, key);
   }

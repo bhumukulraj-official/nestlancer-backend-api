@@ -52,4 +52,11 @@ export class StorageService implements OnModuleInit {
   async exists(bucket: string, key: string): Promise<boolean> {
     return this.provider.exists(bucket, key);
   }
+
+  async getFileSize(bucket: string, key: string): Promise<number> {
+    if (typeof this.provider.getFileSize === 'function') {
+      return this.provider.getFileSize(bucket, key);
+    }
+    return 0;
+  }
 }
