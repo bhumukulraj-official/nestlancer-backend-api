@@ -225,100 +225,100 @@ export class UsersController {
     @ApiOperation({ summary: 'Get session details' })
     @ApiParam({ name: 'sessionId', description: 'Session UUID' })
     @ApiStandardResponse()
-    async getSessionDetails(@ActiveUser('sub) userId: string, @Param('sessionId') sessionId: string): Promise<any> {
+    async getSessionDetails(@ActiveUser('sub') userId: string, @Param('sessionId') sessionId: string): Promise<any> {
         return this.sessionsService.getSessionById(userId, sessionId);
     }
 
-/**
- * Immediately terminates a specific login session.
- */
-@Delete('sessions/:sessionId')
-@ApiOperation({ summary: 'Terminate specific session' })
-@ApiParam({ name: 'sessionId', description: 'Session UUID' })
-@ApiStandardResponse({ message: 'Session terminated successfully' })
-async terminateSession(@ActiveUser('sub') userId: string, @Param('sessionId') sessionId: string, @ActiveUser('jti') jti: string): Promise < any > {
-    return this.sessionsService.terminateSession(userId, sessionId, jti);
-}
+    /**
+     * Immediately terminates a specific login session.
+     */
+    @Delete('sessions/:sessionId')
+    @ApiOperation({ summary: 'Terminate specific session' })
+    @ApiParam({ name: 'sessionId', description: 'Session UUID' })
+    @ApiStandardResponse({ message: 'Session terminated successfully' })
+    async terminateSession(@ActiveUser('sub') userId: string, @Param('sessionId') sessionId: string, @ActiveUser('jti') jti: string): Promise<any> {
+        return this.sessionsService.terminateSession(userId, sessionId, jti);
+    }
 
-/**
- * Revokes all active user sessions except for the current one.
- */
-@Post('sessions/terminate-others')
-@ApiOperation({ summary: 'Terminate all other sessions' })
-@ApiStandardResponse({ message: 'All other sessions terminated successfully' })
-async terminateOtherSessions(@ActiveUser('sub') userId: string, @ActiveUser('jti') jti: string): Promise < any > {
-    return this.sessionsService.terminateOtherSessions(userId, jti);
-}
+    /**
+     * Revokes all active user sessions except for the current one.
+     */
+    @Post('sessions/terminate-others')
+    @ApiOperation({ summary: 'Terminate all other sessions' })
+    @ApiStandardResponse({ message: 'All other sessions terminated successfully' })
+    async terminateOtherSessions(@ActiveUser('sub') userId: string, @ActiveUser('jti') jti: string): Promise<any> {
+        return this.sessionsService.terminateOtherSessions(userId, jti);
+    }
 
-// --- Account Management ---
+    // --- Account Management ---
 
-/**
- * Schedules the account for permanent deletion after a grace period.
- */
-@Post('delete-account')
-@ApiOperation({ summary: 'Request account deletion' })
-@ApiStandardResponse({ message: 'Account deletion scheduled. You have 30 days to cancel this request.' })
-async deleteAccount(@ActiveUser('sub') userId: string, @Body() dto: DeleteAccountDto): Promise < any > {
-    return this.accountService.requestAccountDeletion(userId, dto);
-}
+    /**
+     * Schedules the account for permanent deletion after a grace period.
+     */
+    @Post('delete-account')
+    @ApiOperation({ summary: 'Request account deletion' })
+    @ApiStandardResponse({ message: 'Account deletion scheduled. You have 30 days to cancel this request.' })
+    async deleteAccount(@ActiveUser('sub') userId: string, @Body() dto: DeleteAccountDto): Promise<any> {
+        return this.accountService.requestAccountDeletion(userId, dto);
+    }
 
-/**
- * Aborts a previously scheduled account deletion request.
- */
-@Post('cancel-deletion')
-@ApiOperation({ summary: 'Cancel deletion request' })
-@ApiStandardResponse({ message: 'Account deletion cancelled successfully.' })
-async cancelDeletion(@ActiveUser('sub') userId: string): Promise < any > {
-    return this.accountService.cancelDeletionRequest(userId);
-}
+    /**
+     * Aborts a previously scheduled account deletion request.
+     */
+    @Post('cancel-deletion')
+    @ApiOperation({ summary: 'Cancel deletion request' })
+    @ApiStandardResponse({ message: 'Account deletion cancelled successfully.' })
+    async cancelDeletion(@ActiveUser('sub') userId: string): Promise<any> {
+        return this.accountService.cancelDeletionRequest(userId);
+    }
 
-// --- Activity & Data Export ---
+    // --- Activity & Data Export ---
 
-/**
- * Retrieves a paginated history of user account and platform activities.
- */
-@Get('activity')
-@ApiOperation({ summary: 'Get user activity log' })
-@ApiQuery({ name: 'page', required: false, example: '1' })
-@ApiQuery({ name: 'limit', required: false, example: '20' })
-@ApiStandardResponse()
-async getActivity(
-    @ActiveUser('sub') userId: string,
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '20',
-): Promise < any > {
-    return this.activityService.getActivityLog(userId, parseInt(page, 10), parseInt(limit, 10));
-}
+    /**
+     * Retrieves a paginated history of user account and platform activities.
+     */
+    @Get('activity')
+    @ApiOperation({ summary: 'Get user activity log' })
+    @ApiQuery({ name: 'page', required: false, example: '1' })
+    @ApiQuery({ name: 'limit', required: false, example: '20' })
+    @ApiStandardResponse()
+    async getActivity(
+        @ActiveUser('sub') userId: string,
+        @Query('page') page: string = '1',
+        @Query('limit') limit: string = '20',
+    ): Promise<any> {
+        return this.activityService.getActivityLog(userId, parseInt(page, 10), parseInt(limit, 10));
+    }
 
-/**
- * Triggers a job to prepare a complete archive of user data for export.
- */
-@Get('export')
-@ApiOperation({ summary: 'Request data export' })
-@ApiStandardResponse()
-async requestDataExport(@ActiveUser('sub') userId: string): Promise < any > {
-    return this.activityService.requestDataExport(userId);
-}
+    /**
+     * Triggers a job to prepare a complete archive of user data for export.
+     */
+    @Get('export')
+    @ApiOperation({ summary: 'Request data export' })
+    @ApiStandardResponse()
+    async requestDataExport(@ActiveUser('sub') userId: string): Promise<any> {
+        return this.activityService.requestDataExport(userId);
+    }
 
-/**
- * Formal endpoint for requesting data export (Spec compliant alias).
- */
-@Get('data-export')
-@ApiOperation({ summary: 'Request data export (alias)' })
-@ApiStandardResponse()
-async requestDataExportAlias(@ActiveUser('sub') userId: string): Promise < any > {
-    return this.activityService.requestDataExport(userId);
-}
+    /**
+     * Formal endpoint for requesting data export (Spec compliant alias).
+     */
+    @Get('data-export')
+    @ApiOperation({ summary: 'Request data export (alias)' })
+    @ApiStandardResponse()
+    async requestDataExportAlias(@ActiveUser('sub') userId: string): Promise<any> {
+        return this.activityService.requestDataExport(userId);
+    }
 
-/**
- * Direct download of a previously generated data export archive.
- */
-@Get('export/:id')
-@ApiOperation({ summary: 'Download data export' })
-@ApiParam({ name: 'id', description: 'Export Job UUID' })
-@ApiStandardResponse()
-async downloadDataExport(@ActiveUser('sub') userId: string, @Param('id') exportId: string): Promise < any > {
-    return this.activityService.downloadDataExport(userId, exportId);
-}
+    /**
+     * Direct download of a previously generated data export archive.
+     */
+    @Get('export/:id')
+    @ApiOperation({ summary: 'Download data export' })
+    @ApiParam({ name: 'id', description: 'Export Job UUID' })
+    @ApiStandardResponse()
+    async downloadDataExport(@ActiveUser('sub') userId: string, @Param('id') exportId: string): Promise<any> {
+        return this.activityService.downloadDataExport(userId, exportId);
+    }
 }
 

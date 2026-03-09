@@ -49,7 +49,7 @@ export class SessionsService {
             throw new BusinessLogicException('Session not found', 'USER_003');
         }
 
-        const parser = new UAParser(session.userAgent);
+        const parser = new UAParser(session.userAgent ?? undefined);
         return {
             id: session.id,
             device: {

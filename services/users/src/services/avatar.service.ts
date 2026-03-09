@@ -41,10 +41,14 @@ export class AvatarService {
             data: { avatar: url }
         });
 
-        // Delete old avatar if requested (optional logic)
-        // if (user?.avatar) {
-        //   await this.storageService.deleteFile(user.avatar);
-        // }
+        // Delete old avatar from storage to prevent orphaned files
+        if (user?.avatar) {
+            const oldKey = this.extractKeyFromUrl(user.avatar);
+            if (oldKey) {
+                const bucket = this.config.get<string>('usersService.avatar.s3Bucket') || 'avatars';
+                await this.storageService.delete(bucket, oldKey);
+            }
+        }
 
         return { avatarUrl: url };
     }
@@ -57,10 +61,36 @@ export class AvatarService {
                 where: { id: userId },
                 data: { avatar: null }
             });
-            // Optionally delete from storage
-            // await this.storageService.deleteFile(user.avatar);
+
+            // Delete avatar from storage to prevent orphaned files
+            const key = this.extractKeyFromUrl(user.avatar);
+            if (key) {
+                const bucket = this.config.get<string>('usersService.avatar.s3Bucket') || 'avatars';
+                await this.storageService.delete(bucket, key);
+            }
         }
 
         return true;
+    }
+
+    /**
+     * Extracts the storage key from an avatar URL.
+     * Avatar keys follow the pattern: users/{userId}/avatar_{timestamp}
+     */
+    private extractKeyFromUrl(url: string): string | null {
+        try {
+            const urlObj = new URL(url);
+            // Extract path after bucket name — storage keys start with "users/"
+            const pathParts = urlObj.pathname.split('/');
+            const usersIndex = pathParts.findIndex(p => p === 'users');
+            if (usersIndex >= 0) {
+                return pathParts.slice(usersIndex).join('/');
+            }
+            // Fallback: use full path without leading slash
+            return urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname;
+        } catch {
+            // If not a valid URL, treat as a key itself
+            return url;
+        }
     }
 }

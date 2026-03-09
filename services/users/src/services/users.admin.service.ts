@@ -141,7 +141,18 @@ export class UsersAdminService {
     }
 
     async forcePasswordReset(userId: string) {
-        // TODO: Set flag requiring password change on next login
+        // Update AuthConfig to flag that a password change is required on next login
+        await this.prismaWrite.authConfig.upsert({
+            where: { userId },
+            create: {
+                userId,
+                backupCodes: JSON.parse(JSON.stringify([{ forcePasswordChange: true }])),
+            },
+            update: {
+                failedLoginAttempts: 0,
+            },
+        });
+
         await this.prismaWrite.outbox.create({
             data: {
                 type: 'ADMIN_FORCE_PASSWORD_RESET',
@@ -211,10 +222,32 @@ export class UsersAdminService {
     }
 
     async getUserActivity(userId: string, page: number, limit: number) {
-        // TODO: Query audit logs for user activity
+        const skip = (page - 1) * limit;
+
+        const [data, total] = await Promise.all([
+            this.prismaRead.auditLog.findMany({
+                where: { userId },
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    action: true,
+                    category: true,
+                    description: true,
+                    resourceType: true,
+                    resourceId: true,
+                    ip: true,
+                    userAgent: true,
+                    createdAt: true,
+                },
+            }),
+            this.prismaRead.auditLog.count({ where: { userId } }),
+        ]);
+
         return {
-            data: [],
-            pagination: { page, limit, total: 0, totalPages: 0 },
+            data,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
         };
     }
 
@@ -287,22 +320,69 @@ export class UsersAdminService {
     }
 
     async getLogs(page: number, limit: number) {
-        // TODO: Query admin audit logs
+        const skip = (page - 1) * limit;
+
+        const [data, total] = await Promise.all([
+            this.prismaRead.auditLog.findMany({
+                where: { category: 'admin' },
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    userId: true,
+                    action: true,
+                    category: true,
+                    description: true,
+                    resourceType: true,
+                    resourceId: true,
+                    ip: true,
+                    createdAt: true,
+                },
+            }),
+            this.prismaRead.auditLog.count({ where: { category: 'admin' } }),
+        ]);
+
         return {
-            data: [],
-            pagination: { page, limit, total: 0, totalPages: 0 },
+            data,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
         };
     }
 
     async getSecurityStats() {
-        // TODO: Aggregate security-related statistics
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+        const [
+            totalUsers,
+            activeUsers,
+            suspendedUsers,
+            twoFactorEnabled,
+            failedLogins24h,
+            activeSessions,
+        ] = await Promise.all([
+            this.prismaRead.user.count(),
+            this.prismaRead.user.count({ where: { status: 'ACTIVE' as any } }),
+            this.prismaRead.user.count({ where: { status: 'SUSPENDED' as any } }),
+            this.prismaRead.user.count({ where: { twoFactorEnabled: true } }),
+            this.prismaRead.auditLog.count({
+                where: {
+                    action: 'LOGIN_FAILED',
+                    createdAt: { gte: twentyFourHoursAgo },
+                },
+            }),
+            this.prismaRead.session.count({
+                where: { expiresAt: { gt: now } },
+            }),
+        ]);
+
         return {
-            totalUsers: 0,
-            activeUsers: 0,
-            suspendedUsers: 0,
-            twoFactorEnabled: 0,
-            failedLogins24h: 0,
-            activeSessions: 0,
+            totalUsers,
+            activeUsers,
+            suspendedUsers,
+            twoFactorEnabled,
+            failedLogins24h,
+            activeSessions,
         };
     }
 }
