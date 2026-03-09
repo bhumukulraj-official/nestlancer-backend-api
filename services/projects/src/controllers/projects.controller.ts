@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiStandardResponse, Public } from '@nestlancer/common';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ActiveUser, JwtAuthGuard } from '@nestlancer/auth-lib';
 import { ProjectsService } from '../services/projects.service';
 import { ProjectTimelineService } from '../services/project-timeline.service';
@@ -8,7 +9,7 @@ import { ProjectPaymentsService } from '../services/project-payments.service';
 import { ApproveProjectDto } from '../dto/approve-project.dto';
 import { RequestProjectRevisionDto } from '../dto/request-project-revision.dto';
 import { SendMessageDto } from '../dto/send-message.dto';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 /**
  * Controller for managing user-specific projects and related activities.
@@ -23,6 +24,8 @@ export class ProjectsController {
         private readonly timelineService: ProjectTimelineService,
         private readonly deliverablesService: ProjectDeliverablesService,
         private readonly paymentsService: ProjectPaymentsService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -162,8 +165,14 @@ export class ProjectsController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse()
     async getProgress(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        // TODO: Get project progress summary
-        return { projectId: id, overallProgress: 0, milestones: [], recentUpdates: [] };
+        const [project, milestones, recentUpdates] = await Promise.all([
+            this.prismaRead.project.findUnique({ where: { id, clientId: userId }, select: { overallProgress: true } }),
+            this.prismaRead.milestone.findMany({ where: { projectId: id }, orderBy: { order: 'asc' } }),
+            this.prismaRead.progressEntry.findMany({ where: { projectId: id }, orderBy: { createdAt: 'desc' }, take: 5 })
+        ]);
+        if (!project) throw new Error('Project not found or unauthorized');
+
+        return { projectId: id, overallProgress: project.overallProgress, milestones, recentUpdates };
     }
 
     /**
@@ -174,8 +183,8 @@ export class ProjectsController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse()
     async getMilestones(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        // TODO: Get project milestones
-        return { projectId: id, milestones: [] };
+        const milestones = await this.prismaRead.milestone.findMany({ where: { projectId: id }, orderBy: { order: 'asc' } });
+        return { projectId: id, milestones };
     }
 
     /**
@@ -185,9 +194,29 @@ export class ProjectsController {
     @ApiOperation({ summary: 'Get project messages' })
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse()
-    async getMessages(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        // TODO: Get project-related messages
-        return { projectId: id, messages: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+    @ApiQuery({ name: 'page', required: false, example: '1' })
+    @ApiQuery({ name: 'limit', required: false, example: '20' })
+    async getMessages(@ActiveUser('sub') userId: string, @Param('id') id: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const [messages, total] = await Promise.all([
+            this.prismaRead.message.findMany({
+                where: { projectId: id },
+                skip,
+                take: limitNum,
+                orderBy: { createdAt: 'desc' },
+                include: { sender: { select: { id: true, firstName: true, lastName: true } } }
+            }),
+            this.prismaRead.message.count({ where: { projectId: id } })
+        ]);
+
+        return {
+            projectId: id,
+            messages,
+            pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) }
+        };
     }
 
     /**
@@ -209,8 +238,17 @@ export class ProjectsController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse({ message: 'Feedback submitted successfully' })
     async submitFeedback(@ActiveUser('sub') userId: string, @Param('id') id: string, @Body() body: any): Promise<any> {
-        // TODO: Submit project feedback
-        return { projectId: id, feedbackId: `fb_${Date.now()}`, submitted: true };
+        const entry = await this.prismaWrite.progressEntry.create({
+            data: {
+                projectId: id,
+                type: 'FEEDBACK',
+                title: body.title || 'Client Feedback',
+                description: body.feedback,
+                actorId: userId,
+                details: body.details || {}
+            }
+        });
+        return { projectId: id, feedbackId: entry.id, submitted: true };
     }
 
     /**
@@ -221,8 +259,11 @@ export class ProjectsController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse()
     async getFeedback(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        // TODO: Get project feedback
-        return { projectId: id, feedback: [] };
+        const feedback = await this.prismaRead.progressEntry.findMany({
+            where: { projectId: id, type: 'FEEDBACK' },
+            orderBy: { createdAt: 'desc' }
+        });
+        return { projectId: id, feedback };
     }
 }
 

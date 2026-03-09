@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, HttpStatus, HttpCode } from '@nestjs/common';
 import { ApiStandardResponse, UserRole } from '@nestlancer/common';
 import { ActiveUser, JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ProjectsAdminService } from '../services/projects.admin.service';
 import { UpdateProjectStatusAdminDto } from '../dto/update-project-status.admin.dto';
 import { UpdateProjectAdminDto } from '../dto/update-project.admin.dto';
@@ -17,6 +18,8 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse }
 export class ProjectsAdminController {
     constructor(
         private readonly adminService: ProjectsAdminService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -91,8 +94,18 @@ export class ProjectsAdminController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse()
     async getProjectDetails(@Param('id') id: string): Promise<any> {
-        // TODO: Admin-level project details
-        return { id, message: 'Project details placeholder' };
+        const project = await this.prismaRead.project.findUnique({
+            where: { id },
+            include: {
+                client: { select: { id: true, firstName: true, lastName: true, email: true } },
+                admin: { select: { id: true, firstName: true, lastName: true, email: true } },
+                milestones: true,
+                payments: true,
+                progressEntries: { orderBy: { createdAt: 'desc' }, take: 10 }
+            }
+        });
+        if (!project) throw new Error('Project not found');
+        return project;
     }
 
     /**
@@ -102,8 +115,17 @@ export class ProjectsAdminController {
     @ApiOperation({ summary: 'Create project (Admin)' })
     @ApiStandardResponse({ message: 'Project created successfully' })
     async createProject(@ActiveUser('sub') adminId: string, @Body() body: any): Promise<any> {
-        // TODO: Admin create project
-        return { id: `proj_${Date.now()}`, createdBy: adminId, ...body };
+        return this.prismaWrite.project.create({
+            data: {
+                title: body.title,
+                description: body.description,
+                status: 'CREATED',
+                quote: { connect: { id: body.quoteId } },
+                client: { connect: { id: body.clientId } },
+                admin: { connect: { id: adminId } },
+                targetEndDate: body.targetEndDate ? new Date(body.targetEndDate) : null
+            }
+        });
     }
 
     /**
@@ -115,7 +137,10 @@ export class ProjectsAdminController {
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiResponse({ status: 204, description: 'Project deleted' })
     async deleteProject(@Param('id') id: string): Promise<any> {
-        // TODO: Admin delete project
+        await this.prismaWrite.project.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        });
         return { id, deleted: true };
     }
 
@@ -127,8 +152,11 @@ export class ProjectsAdminController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse({ message: 'Team member added' })
     async manageTeam(@Param('id') id: string, @Body() body: any): Promise<any> {
-        // TODO: Add team member
-        return { projectId: id, action: 'added', ...body };
+        await this.prismaWrite.project.update({
+            where: { id },
+            data: { adminId: body.memberId }
+        });
+        return { projectId: id, action: 'added', memberId: body.memberId };
     }
 
     /**
@@ -140,7 +168,10 @@ export class ProjectsAdminController {
     @ApiParam({ name: 'memberId', description: 'Team member UUID' })
     @ApiStandardResponse({ message: 'Team member removed' })
     async removeTeamMember(@Param('id') id: string, @Param('memberId') memberId: string): Promise<any> {
-        // TODO: Remove team member
+        await this.prismaWrite.project.update({
+            where: { id },
+            data: { adminId: null }
+        });
         return { projectId: id, memberId, removed: true };
     }
 
@@ -152,8 +183,22 @@ export class ProjectsAdminController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse()
     async getAnalytics(@Param('id') id: string): Promise<any> {
-        // TODO: Project analytics
-        return { projectId: id, progress: 0, milestonesCompleted: 0, timeSpent: 0, budget: { spent: 0, remaining: 0 } };
+        const [milestones, payments, project] = await Promise.all([
+            this.prismaRead.milestone.findMany({ where: { projectId: id } }),
+            this.prismaRead.payment.findMany({ where: { projectId: id } }),
+            this.prismaRead.project.findUnique({ where: { id }, select: { overallProgress: true } })
+        ]);
+
+        const completedMilestones = milestones.filter(m => m.status === 'COMPLETED').length;
+        const budgetSpent = payments.filter(p => p.status === 'COMPLETED').reduce((acc, curr) => acc + curr.amount, 0);
+
+        return {
+            projectId: id,
+            progress: project?.overallProgress || 0,
+            milestonesCompleted: completedMilestones,
+            totalMilestones: milestones.length,
+            budget: { spent: budgetSpent }
+        };
     }
 
     /**
@@ -164,8 +209,17 @@ export class ProjectsAdminController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse({ message: 'Milestones created' })
     async createMilestones(@Param('id') id: string, @Body() body: any): Promise<any> {
-        // TODO: Create milestones for project
-        return { projectId: id, milestones: [] };
+        const milestones = await this.prismaWrite.milestone.createMany({
+            data: body.milestones.map((m: any) => ({
+                projectId: id,
+                name: m.name,
+                description: m.description,
+                amount: m.amount,
+                dueDate: m.dueDate ? new Date(m.dueDate) : null,
+                order: m.order || 0
+            }))
+        });
+        return { projectId: id, created: milestones.count };
     }
 
     /**
@@ -176,7 +230,20 @@ export class ProjectsAdminController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse({ message: 'Deadline extended' })
     async extendDeadline(@Param('id') id: string, @Body() body: { newDeadline: string; reason: string }): Promise<any> {
-        // TODO: Extend project deadline
+        await this.prismaWrite.project.update({
+            where: { id },
+            data: { targetEndDate: new Date(body.newDeadline) }
+        });
+
+        await this.prismaWrite.outboxEvent.create({
+            data: {
+                aggregateType: 'PROJECT',
+                aggregateId: id,
+                eventType: 'PROJECT_DEADLINE_EXTENDED',
+                payload: { projectId: id, newDeadline: body.newDeadline, reason: body.reason }
+            }
+        });
+
         return { projectId: id, newDeadline: body.newDeadline, extended: true };
     }
 
@@ -188,7 +255,10 @@ export class ProjectsAdminController {
     @ApiParam({ name: 'id', description: 'Project UUID' })
     @ApiStandardResponse({ message: 'Project archived' })
     async archiveProject(@Param('id') id: string): Promise<any> {
-        // TODO: Archive project
+        await this.prismaWrite.project.update({
+            where: { id },
+            data: { status: 'ARCHIVED' }
+        });
         return { projectId: id, archived: true };
     }
 
