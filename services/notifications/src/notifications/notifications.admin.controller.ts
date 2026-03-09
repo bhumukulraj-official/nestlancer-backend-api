@@ -7,8 +7,9 @@ import { QueryNotificationsDto } from '../dto/query-notifications.dto';
 import { SendNotificationDto } from '../dto/send-notification.dto';
 import { BroadcastNotificationDto } from '../dto/broadcast-notification.dto';
 import { SegmentNotificationDto } from '../dto/segment-notification.dto';
-import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, ApiStandardResponse, ApiPaginated } from '@nestlancer/common';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 
 /**
  * Controller for administrative notification operations.
@@ -24,6 +25,8 @@ export class NotificationsAdminController {
         private readonly adminService: NotificationsAdminService,
         private readonly broadcastService: NotificationBroadcastService,
         private readonly segmentService: NotificationSegmentService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -109,7 +112,18 @@ export class NotificationsAdminController {
     @ApiOperation({ summary: 'Resend a notification' })
     @ApiStandardResponse(Object)
     async resendNotification(@Param('id') id: string): Promise<any> {
-        // TODO: Resend a notification
+        const notification = await this.prismaRead.notification.findUnique({ where: { id } });
+        if (!notification) throw new Error('Notification not found');
+
+        await this.prismaWrite.outboxEvent.create({
+            data: {
+                aggregateType: 'NOTIFICATION',
+                aggregateId: id,
+                eventType: 'NOTIFICATION_RESEND_TRIGGERED',
+                payload: { notificationId: id }
+            }
+        });
+
         return { id, status: 'resent' };
     }
 }

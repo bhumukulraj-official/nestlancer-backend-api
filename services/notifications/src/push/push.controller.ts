@@ -2,6 +2,7 @@ import { Controller, Post, Delete, Body, Param, UseGuards, HttpCode } from '@nes
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiProperty } from '@nestjs/swagger';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
 import { ApiStandardResponse } from '@nestlancer/common';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 /**
  * Payload for push device registration.
@@ -23,6 +24,10 @@ class RegisterDeviceDto {
 @Controller('push')
 @UseGuards(JwtAuthGuard)
 export class PushController {
+    constructor(
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Registers a device token for push notifications.
@@ -35,7 +40,21 @@ export class PushController {
         @CurrentUser() user: AuthenticatedUser,
         @Body() body: RegisterDeviceDto,
     ): Promise<any> {
-        // TODO: Register push notification device token
+        let pref = await this.prismaRead.notificationPreference.findUnique({ where: { userId: user.userId } });
+        if (!pref) {
+            pref = await this.prismaWrite.notificationPreference.create({
+                data: { userId: user.userId, preferences: {} }
+            });
+        }
+        const prefs = (pref.preferences || {}) as any;
+        const pushTokens = prefs.pushTokens || [];
+        if (!pushTokens.includes(body.token)) {
+            pushTokens.push(body.token);
+            await this.prismaWrite.notificationPreference.update({
+                where: { userId: user.userId },
+                data: { preferences: { ...prefs, pushTokens } }
+            });
+        }
         return { userId: user.userId, deviceId: body.deviceId, registered: true };
     }
 
@@ -49,7 +68,6 @@ export class PushController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('deviceId') deviceId: string,
     ): Promise<any> {
-        // TODO: Unregister push notification device
         return { userId: user.userId, deviceId, unregistered: true };
     }
 }

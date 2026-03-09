@@ -77,7 +77,12 @@ export class PreferencesController {
         @Param('channel') channel: string,
         @Body() body: { enabled: boolean },
     ): Promise<any> {
-        // TODO: Update specific channel preference
+        const pref = await this.preferencesService.getPreferences(user.userId);
+        const currentPrefs = pref.preferences || {};
+        currentPrefs[channel] = body.enabled;
+
+        await this.preferencesService.updatePreferences(user.userId, { preferences: currentPrefs });
+
         return { userId: user.userId, channel, enabled: body.enabled, updated: true };
     }
 }
