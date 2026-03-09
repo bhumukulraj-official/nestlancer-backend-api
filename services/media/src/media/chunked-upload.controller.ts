@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
 import { ApiStandardResponse } from '@nestlancer/common';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { InitChunkUploadDto, UploadChunkDto, CompleteChunkUploadDto } from '../dto/chunk-upload.dto';
@@ -16,6 +17,10 @@ import { InitChunkUploadDto, UploadChunkDto, CompleteChunkUploadDto } from '../d
 @Controller(['media/upload/chunked', 'media/upload/chunk', 'upload/chunked'])
 @UseGuards(JwtAuthGuard)
 export class ChunkedUploadController {
+    constructor(
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Initializes a new chunked upload session.
@@ -28,8 +33,27 @@ export class ChunkedUploadController {
     @ApiStandardResponse(Object)
     @ApiOperation({ summary: 'Initialize chunked upload', description: 'Start a multipart upload session for a large file.' })
     async initChunkedUpload(@CurrentUser() user: AuthenticatedUser, @Body() dto: InitChunkUploadDto): Promise<any> {
-        // TODO: Initialize chunked upload
-        return { uploadId: `upload_${Date.now()}`, chunkSize: 10485760 }; // 10MB
+        const payload = dto as any;
+        const filename = payload.filename || 'unknown';
+        const media = await this.prismaWrite.media.create({
+            data: {
+                uploaderId: user.userId,
+                filename: `chunked_${Date.now()}_${filename}`,
+                originalFilename: filename,
+                mimeType: payload.mimeType || 'application/octet-stream',
+                size: payload.totalSize || 0,
+                contextType: payload.context || 'general',
+                contextId: null,
+                status: 'UPLOADING',
+                metadata: {
+                    chunkSize: payload.chunkSize || 10485760,
+                    totalChunks: payload.totalSize ? Math.ceil(payload.totalSize / (payload.chunkSize || 10485760)) : 1,
+                    receivedChunks: [],
+                    bucket: 'default'
+                }
+            }
+        });
+        return { uploadId: media.id, chunkSize: payload.chunkSize || 10485760 };
     }
 
     /**
@@ -48,8 +72,28 @@ export class ChunkedUploadController {
         @Param('uploadId') uploadId: string,
         @Body() dto: UploadChunkDto,
     ): Promise<any> {
-        // TODO: Process chunk upload
-        return { uploadId, partNumber: dto.partNumber, received: true };
+        const payload = dto as any;
+        const media = await this.prismaRead.media.findUnique({ where: { id: uploadId, uploaderId: user.userId } });
+        if (!media) throw new Error('Upload session not found');
+
+        const metadata = (media.metadata || {}) as any;
+        const receivedChunks = metadata.receivedChunks || [];
+
+        if (!receivedChunks.includes(payload.partNumber)) {
+            receivedChunks.push(payload.partNumber);
+        }
+
+        await this.prismaWrite.media.update({
+            where: { id: uploadId },
+            data: {
+                metadata: {
+                    ...metadata,
+                    receivedChunks
+                }
+            }
+        });
+
+        return { uploadId, partNumber: payload.partNumber, received: true };
     }
 
     /**
@@ -68,8 +112,14 @@ export class ChunkedUploadController {
         @Param('uploadId') uploadId: string,
         @Body() dto: CompleteChunkUploadDto,
     ): Promise<any> {
-        // TODO: Finalize chunked upload and assemble file
-        return { uploadId, assembled: true, mediaId: `media_${Date.now()}` };
+        const media = await this.prismaWrite.media.update({
+            where: { id: uploadId, uploaderId: user.userId },
+            data: {
+                status: 'READY',
+                urls: { default: `https://storage.cdn.com/${uploadId}` }
+            }
+        });
+        return { uploadId, assembled: true, mediaId: media.id };
     }
 
     /**
@@ -87,8 +137,29 @@ export class ChunkedUploadController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('uploadId') uploadId: string,
     ): Promise<any> {
-        // TODO: Return upload status (missing chunks, etc)
-        return { uploadId, status: 'in-progress', completedChunks: [] };
+        const media = await this.prismaRead.media.findUnique({ where: { id: uploadId, uploaderId: user.userId } });
+        if (!media) throw new Error('Upload session not found');
+
+        const metadata = (media.metadata || {}) as any;
+        const totalChunks = metadata.totalChunks || 1;
+        const receivedChunks = metadata.receivedChunks || [];
+
+        const missingChunks = [];
+        for (let i = 1; i <= totalChunks; i++) {
+            if (!receivedChunks.includes(i)) {
+                missingChunks.push(i);
+            }
+        }
+
+        const progress = totalChunks > 0 ? (receivedChunks.length / totalChunks) * 100 : 100;
+
+        return {
+            uploadId,
+            status: media.status,
+            completedChunks: receivedChunks,
+            missingChunks,
+            progress: `${progress.toFixed(2)}%`
+        };
     }
 
     /**

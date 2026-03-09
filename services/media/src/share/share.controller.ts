@@ -3,6 +3,7 @@ import { ShareService } from './share.service';
 import { ShareMediaDto } from '../dto/share-media.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
 import { ApiStandardResponse } from '@nestlancer/common';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
@@ -17,7 +18,11 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 @Controller('media')
 @UseGuards(JwtAuthGuard)
 export class ShareController {
-    constructor(private readonly shareService: ShareService) { }
+    constructor(
+        private readonly shareService: ShareService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Lists media assets that the authenticated user has shared with others.
@@ -29,8 +34,11 @@ export class ShareController {
     @ApiStandardResponse(Object)
     @ApiOperation({ summary: 'List shared media', description: 'Retrieve all media sharing links created by the current user.' })
     async listSharedMedia(@CurrentUser() user: AuthenticatedUser): Promise<any> {
-        // TODO: List shared media for user
-        return { data: [], total: 0 };
+        const shares = await this.prismaRead.mediaShareLink.findMany({
+            where: { media: { uploaderId: user.userId } },
+            include: { media: { select: { filename: true, key: true, url: true } } }
+        });
+        return { data: shares, total: shares.length };
     }
 
     /**
@@ -66,7 +74,9 @@ export class ShareController {
         @CurrentUser() user: AuthenticatedUser,
         @Param('id') mediaId: string,
     ): Promise<any> {
-        // TODO: Revoke media share
+        await this.prismaWrite.mediaShareLink.deleteMany({
+            where: { mediaId, media: { uploaderId: user.userId } }
+        });
         return { id: mediaId, shareRevoked: true };
     }
 }

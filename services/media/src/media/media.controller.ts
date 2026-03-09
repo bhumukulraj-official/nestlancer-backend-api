@@ -8,6 +8,7 @@ import { UpdateMediaMetadataDto } from '../dto/update-media-metadata.dto';
 import { QueryMediaDto } from '../dto/query-media.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
 import { ApiStandardResponse } from '@nestlancer/common';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
 
@@ -22,7 +23,11 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 @Controller('media')
 @UseGuards(JwtAuthGuard)
 export class MediaController {
-    constructor(private readonly mediaService: MediaService) { }
+    constructor(
+        private readonly mediaService: MediaService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Retrieves a paginated list of media files belonging to the authenticated user.
@@ -197,8 +202,25 @@ export class MediaController {
         @Param('id') id: string,
         @Body() body: { destinationFolderId?: string },
     ): Promise<any> {
-        // TODO: Copy media
-        return { id: `copied_${id}`, originalId: id, destination: body.destinationFolderId };
+        const media = await this.prismaRead.media.findUnique({ where: { id, uploaderId: user.userId } });
+        if (!media) throw new Error('Media not found');
+
+        const copiedMedia = await this.prismaWrite.media.create({
+            data: {
+                uploaderId: user.userId,
+                filename: `Copy of ${media.filename}`,
+                originalFilename: `Copy of ${media.originalFilename}`,
+                mimeType: media.mimeType,
+                size: media.size,
+                urls: media.urls ?? {},
+                contextType: body.destinationFolderId ? 'folder' : media.contextType,
+                contextId: body.destinationFolderId || media.contextId,
+                status: media.status,
+                metadata: media.metadata || {}
+            }
+        });
+
+        return copiedMedia;
     }
 
     /**
@@ -217,8 +239,18 @@ export class MediaController {
         @Param('id') id: string,
         @Body() body: { destinationFolderId: string },
     ): Promise<any> {
-        // TODO: Move media
-        return { id, movedTo: body.destinationFolderId };
+        const media = await this.prismaRead.media.findUnique({ where: { id, uploaderId: user.userId } });
+        if (!media) throw new Error('Media not found');
+
+        const movedMedia = await this.prismaWrite.media.update({
+            where: { id },
+            data: {
+                contextType: 'folder',
+                contextId: body.destinationFolderId
+            }
+        });
+
+        return movedMedia;
     }
 
     /**

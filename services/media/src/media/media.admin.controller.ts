@@ -3,6 +3,7 @@ import { MediaAdminService } from './media-admin.service';
 import { QueryMediaDto } from '../dto/query-media.dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, ApiStandardResponse } from '@nestlancer/common';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
@@ -18,7 +19,11 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class MediaAdminController {
-    constructor(private readonly adminService: MediaAdminService) { }
+    constructor(
+        private readonly adminService: MediaAdminService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
      * Retrieves a paginated list of all media files in the system.
@@ -44,8 +49,25 @@ export class MediaAdminController {
     @ApiStandardResponse(Object)
     @ApiOperation({ summary: 'List user media (admin)', description: "View another user's media library with administrative privileges." })
     async getUserMedia(@Param('userId') userId: string, @Query() query: QueryMediaDto): Promise<any> {
-        // TODO: List media for a specific user as admin
-        return { userId, data: [], total: 0 };
+        const page = query.page ? parseInt(query.page.toString(), 10) : 1;
+        const limit = query.limit ? parseInt(query.limit.toString(), 10) : 20;
+        const skip = (page - 1) * limit;
+
+        const [media, total] = await Promise.all([
+            this.prismaRead.media.findMany({
+                where: { uploaderId: userId },
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' }
+            }),
+            this.prismaRead.media.count({ where: { uploaderId: userId } })
+        ]);
+
+        return {
+            userId,
+            data: media,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+        };
     }
 
     /**
@@ -107,8 +129,15 @@ export class MediaAdminController {
     @ApiStandardResponse(Object)
     @ApiOperation({ summary: 'Run storage cleanup', description: 'Manually trigger the removal of orphaned files and temporary upload remnants.' })
     async runCleanup(): Promise<any> {
-        // TODO: Run unattached media storage cleanup
-        return { cleaned: 0, bytesFreed: 0 };
+        const orphanedMedia = await this.prismaRead.media.findMany({
+            where: { contextId: null }
+        });
+
+        for (const media of orphanedMedia) {
+            await this.prismaWrite.media.delete({ where: { id: media.id } });
+        }
+
+        return { cleaned: orphanedMedia.length, bytesFreed: orphanedMedia.reduce((acc, curr) => acc + curr.size, 0) };
     }
 
     /**
@@ -121,7 +150,11 @@ export class MediaAdminController {
     @ApiStandardResponse(Object)
     @ApiOperation({ summary: 'Update media settings', description: 'Configure global upload limits, allowed MIME types, and processing rules.' })
     async updateSettings(@Body() body: any): Promise<any> {
-        // TODO: Update media upload settings (limits, allowed types, etc.)
+        await this.prismaWrite.systemConfig.upsert({
+            where: { key: 'media.settings' },
+            update: { value: body },
+            create: { key: 'media.settings', value: body, description: 'Global Media Settings' }
+        });
         return { updated: true, settings: body };
     }
 

@@ -52,7 +52,7 @@ export class MediaStorageService {
         );
     }
 
-    async getFileSize(key: string) {
-        return 0;
+    async getFileSize(key: string): Promise<number> {
+        return this.storageProvider.getFileSize(MediaConfig.S3_PRIVATE_BUCKET, key);
     }
 }
