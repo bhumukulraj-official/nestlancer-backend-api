@@ -65,10 +65,10 @@ export class PaymentDisputesAdminController {
     @ApiOperation({ summary: 'Update a dispute' })
     @ApiResponse({ status: 200, description: 'Dispute updated successfully' })
     async updateDispute(@Param('id') id: string, @Body() body: any): Promise<any> {
-        // TODO: Implement dispute update
+        const dispute = await this.disputesService.updateDispute(id, body);
         return {
             status: 'success',
-            data: { id, ...body, updatedAt: new Date().toISOString() },
+            data: dispute,
         };
     }
 

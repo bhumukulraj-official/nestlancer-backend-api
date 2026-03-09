@@ -97,17 +97,96 @@ export class PaymentsService {
     }
 
     async getUserPaymentStats(userId: string) {
-        // TODO: Implement user payment stats
-        return { totalSpent: 0, pending: 0 };
+        const payments = await this.prismaRead.payment.findMany({
+            where: { clientId: userId },
+            select: { status: true, amount: true },
+        });
+
+        let totalSpent = 0;
+        let pending = 0;
+        let inDispute = 0;
+
+        for (const p of payments) {
+            const amount = Number(p.amount) || 0;
+            if (p.status === 'COMPLETED') totalSpent += amount;
+            else if (p.status === 'PENDING') pending += amount;
+            else if (p.status === 'DISPUTED') inDispute += amount;
+        }
+
+        return {
+            totalSpent,
+            pending,
+            inDispute,
+            totalPayments: payments.length,
+        };
     }
 
     async fileDispute(userId: string, id: string, body: any) {
-        // TODO: Implement file dispute logic
-        return { id, status: 'disputed', reason: body.reason };
+        const payment = await this.prismaRead.payment.findFirst({
+            where: { id, clientId: userId },
+        });
+
+        if (!payment) throw new NotFoundException('Payment not found');
+
+        if (payment.status !== 'COMPLETED') {
+            throw new NotFoundException('Only completed payments can be disputed');
+        }
+
+        const dispute = await this.prismaWrite.$transaction(async (tx: any) => {
+            const d = await tx.dispute.create({
+                data: {
+                    paymentId: id,
+                    reason: body.reason,
+                    description: body.description || '',
+                    status: 'OPEN',
+                    filedBy: userId,
+                },
+            });
+
+            await tx.payment.update({
+                where: { id },
+                data: { status: 'DISPUTED' },
+            });
+
+            await tx.outbox.create({
+                data: {
+                    type: 'PAYMENT_DISPUTED',
+                    payload: { paymentId: id, disputeId: d.id, userId, reason: body.reason },
+                },
+            });
+
+            return d;
+        });
+
+        return {
+            id: dispute.id,
+            paymentId: id,
+            status: 'disputed',
+            reason: body.reason,
+            filedAt: dispute.createdAt,
+        };
     }
 
     async cancelPayment(userId: string, id: string) {
-        // TODO: Implement cancel payment logic
-        return { id, status: 'cancelled' };
+        const payment = await this.prismaRead.payment.findFirst({
+            where: { id, clientId: userId },
+        });
+
+        if (!payment) throw new NotFoundException('Payment not found');
+
+        if (payment.status !== 'PENDING') {
+            throw new NotFoundException('Only pending payments can be cancelled');
+        }
+
+        const updated = await this.prismaWrite.payment.update({
+            where: { id },
+            data: { status: 'CANCELLED' },
+        });
+
+        return {
+            id: updated.id,
+            status: 'cancelled',
+            cancelledAt: new Date().toISOString(),
+        };
     }
 }

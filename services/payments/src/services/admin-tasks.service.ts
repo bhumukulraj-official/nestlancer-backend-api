@@ -132,6 +132,46 @@ export class PaymentDisputesService {
             newStatus,
         };
     }
+
+    /**
+     * Updates an existing dispute record with new information.
+     *
+     * @param disputeId - The ID of the payment with the dispute
+     * @param body - Fields to update on the dispute record
+     * @returns The updated dispute data
+     */
+    async updateDispute(disputeId: string, body: any): Promise<any> {
+        const payment = await this.prismaRead.payment.findUnique({
+            where: { id: disputeId },
+        });
+
+        if (!payment) {
+            throw new NotFoundException('Payment not found');
+        }
+
+        const existingDetails = (payment.providerDetails as any) || {};
+
+        const updated = await this.prismaWrite.payment.update({
+            where: { id: disputeId },
+            data: {
+                refundStatus: body.status || payment.refundStatus,
+                providerDetails: {
+                    ...existingDetails,
+                    disputeUpdate: {
+                        notes: body.notes,
+                        priority: body.priority,
+                        updatedAt: new Date().toISOString(),
+                    },
+                },
+            },
+        });
+
+        return {
+            id: updated.id,
+            status: updated.refundStatus,
+            updatedAt: updated.updatedAt,
+        };
+    }
 }
 
 @Injectable()
@@ -141,6 +181,52 @@ export class PaymentReconciliationService {
         private readonly prismaRead: PrismaReadService,
         private readonly razorpayService: RazorpayService,
     ) { }
+
+    /**
+     * Returns a read-only reconciliation report: payments with external IDs and status for audit.
+     * Optional date range; defaults to last 30 days.
+     */
+    async getReconciliationReport(query?: { startDate?: Date; endDate?: Date; page?: number; limit?: number }) {
+        const page = Math.max(1, query?.page ?? 1);
+        const limit = Math.min(100, Math.max(1, query?.limit ?? 50));
+        const skip = (page - 1) * limit;
+        const where: Record<string, unknown> = { externalId: { not: null } };
+        if (query?.startDate || query?.endDate) {
+            where.createdAt = {};
+            if (query.startDate) (where.createdAt as Record<string, Date>).gte = query.startDate;
+            if (query.endDate) (where.createdAt as Record<string, Date>).lte = query.endDate;
+        } else {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - 30);
+            where.createdAt = { gte: start, lte: end };
+        }
+
+        const [items, total] = await Promise.all([
+            this.prismaRead.payment.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    externalId: true,
+                    amount: true,
+                    currency: true,
+                    status: true,
+                    externalStatus: true,
+                    createdAt: true,
+                    paidAt: true,
+                },
+            }),
+            this.prismaRead.payment.count({ where }),
+        ]);
+
+        return {
+            items,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        };
+    }
 
     async reconcilePayments(query: ReconciliationQuery) {
         const { startDate, endDate } = query;

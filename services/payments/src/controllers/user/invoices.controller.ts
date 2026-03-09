@@ -1,19 +1,24 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Injectable } from '@nestjs/common';
 import { Auth, CurrentUser } from '@nestlancer/auth-lib';
+import { PrismaReadService } from '@nestlancer/database';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
 /**
  * Controller for managing user invoices.
+ * Invoices are generated from completed payments that have invoice numbers.
  */
 @ApiTags('Invoices')
 @ApiBearerAuth()
 @Auth()
 @Controller('invoices')
 export class InvoicesController {
+    constructor(
+        private readonly prismaRead: PrismaReadService,
+    ) { }
 
     /**
-     * retrieves a paginated registry of all digital invoices issued to the authenticated user.
-     * 
+     * Retrieves a paginated registry of all digital invoices issued to the authenticated user.
+     *
      * @param userId Unique identifier of the authenticated user
      * @param page Target page index for pagination
      * @param limit Maximum record limit per page
@@ -27,15 +32,50 @@ export class InvoicesController {
         @Query('page') page: string = '1',
         @Query('limit') limit: string = '20',
     ): Promise<any> {
-        // TODO: Implement invoice listing
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const where: any = {
+            clientId: userId,
+            invoiceNumber: { not: null },
+        };
+
+        const [items, total] = await Promise.all([
+            this.prismaRead.payment.findMany({
+                where,
+                skip,
+                take: limitNum,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    invoiceNumber: true,
+                    amount: true,
+                    currency: true,
+                    status: true,
+                    customNotes: true,
+                    createdAt: true,
+                },
+            }),
+            this.prismaRead.payment.count({ where }),
+        ]);
+
         return {
             status: 'success',
-            data: [],
+            data: items.map(p => ({
+                id: p.id,
+                invoiceNumber: p.invoiceNumber,
+                amount: p.amount,
+                currency: p.currency,
+                status: p.status,
+                customNotes: p.customNotes,
+                issuedAt: p.createdAt,
+            })),
             pagination: {
-                page: parseInt(page, 10),
-                limit: parseInt(limit, 10),
-                total: 0,
-                totalPages: 0,
+                page: pageNum,
+                limit: limitNum,
+                total,
+                totalPages: Math.ceil(total / limitNum),
             },
         };
     }
@@ -50,16 +90,31 @@ export class InvoicesController {
         @CurrentUser('userId') userId: string,
         @Param('id') id: string,
     ): Promise<any> {
-        // TODO: Implement invoice retrieval
+        const payment = await this.prismaRead.payment.findFirst({
+            where: { id, clientId: userId, invoiceNumber: { not: null } },
+            include: {
+                project: { select: { id: true, title: true } },
+            },
+        });
+
+        if (!payment) {
+            return { status: 'error', message: 'Invoice not found' };
+        }
+
         return {
             status: 'success',
             data: {
-                id,
-                userId,
-                status: 'pending',
-                items: [],
-                total: 0,
-                currency: 'INR',
+                id: payment.id,
+                invoiceNumber: payment.invoiceNumber,
+                userId: payment.clientId,
+                projectId: payment.projectId,
+                project: (payment as any).project,
+                amount: payment.amount,
+                currency: payment.currency,
+                status: payment.status,
+                customNotes: payment.customNotes,
+                invoiceUrl: payment.invoiceUrl,
+                issuedAt: payment.createdAt,
             },
         };
     }
@@ -74,12 +129,22 @@ export class InvoicesController {
         @CurrentUser('userId') userId: string,
         @Param('id') id: string,
     ): Promise<any> {
-        // TODO: Generate and return PDF download URL
+        const payment = await this.prismaRead.payment.findFirst({
+            where: { id, clientId: userId, invoiceNumber: { not: null } },
+            select: { invoiceUrl: true },
+        });
+
+        if (!payment) {
+            return { status: 'error', message: 'Invoice not found' };
+        }
+
         return {
             status: 'success',
             data: {
-                downloadUrl: null,
-                expiresAt: null,
+                downloadUrl: payment.invoiceUrl || null,
+                expiresAt: payment.invoiceUrl
+                    ? new Date(Date.now() + 3600000).toISOString()
+                    : null,
             },
         };
     }
