@@ -36,6 +36,9 @@ export class CustomRedisIoAdapter extends IoAdapter {
                 origin: '*',
                 credentials: true,
             },
+            // Protocol: ping every 30s, disconnect if no pong within 10s
+            pingInterval: 30_000,
+            pingTimeout: 10_000,
         });
 
         if (this.adapterConstructor) {

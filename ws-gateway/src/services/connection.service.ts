@@ -46,4 +46,15 @@ export class WsConnectionService {
       return [];
     }
   }
+
+  /** Get all user IDs that have at least one active connection (for heartbeat TTL refresh) */
+  async getAllConnectedUserIds(): Promise<string[]> {
+    try {
+      const keys = await this.cacheService.getClient().keys(`${this.CONNECTIONS_PREFIX}*`);
+      return keys.map((key: string) => key.replace(this.CONNECTIONS_PREFIX, ''));
+    } catch (error: any) {
+      this.logger.error('Failed to get connected user IDs', error);
+      return [];
+    }
+  }
 }

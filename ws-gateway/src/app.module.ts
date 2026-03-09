@@ -10,6 +10,8 @@ import { MessagingGateway } from './gateways/messaging.gateway';
 import { NotificationGateway } from './gateways/notification.gateway';
 import { WsConnectionService } from './services/connection.service';
 import { WsPresenceService } from './services/presence.service';
+import { HeartbeatService } from './services/heartbeat.service';
+import { RedisSubscriberService } from './services/redis-subscriber.service';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { WsPresenceService } from './services/presence.service';
     NotificationGateway,
     WsConnectionService,
     WsPresenceService,
+    HeartbeatService,
+    RedisSubscriberService,
   ],
 })
 export class WsAppModule { }

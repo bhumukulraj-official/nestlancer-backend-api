@@ -18,6 +18,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       if (userId) {
         client.join(`user:${userId}`);
         await this.connectionService.addConnection(userId, client.id);
+        this.server.to(`user:${userId}`).emit('presence:online', { userId, onlineAt: new Date().toISOString() });
       }
       this.logger.log(`Notification client connected: ${client.id}`);
     } catch (error: any) {
@@ -29,6 +30,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     try {
       const userId = client.data?.user?.userId;
       if (userId) {
+        this.server.to(`user:${userId}`).emit('presence:offline', { userId, offlineAt: new Date().toISOString() });
         await this.connectionService.removeConnection(userId, client.id);
       }
       this.logger.log(`Notification client disconnected: ${client.id}`);
@@ -45,6 +47,18 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       this.logger.debug(`Notification sent to user ${userId}`);
     } catch (error: any) {
       this.logger.error(`Failed to send notification to user ${userId}`, error);
+    }
+  }
+
+  /** Emit an event to a user's room (used by Redis subscriber for fan-out) */
+  emitToUser(userId: string, event: string, data: unknown): void {
+    try {
+      if (!userId || !event) return;
+      const wsEvent = event === 'notification.new' ? 'notification:new' : event;
+      this.server.to(`user:${userId}`).emit(wsEvent, data);
+      this.logger.debug(`Emitted ${wsEvent} to user ${userId}`);
+    } catch (error: any) {
+      this.logger.error(`Failed to emit to user ${userId}`, error);
     }
   }
 
