@@ -27,6 +27,7 @@ model BlogPost {
   categoryId      String
   status          BlogStatus    @default(DRAFT)
   commentsEnabled Boolean       @default(true)
+  featured        Boolean       @default(false)
   featuredImageId String?
   seo             Json?
   seriesId        String?

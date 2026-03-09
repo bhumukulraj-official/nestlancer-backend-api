@@ -37,6 +37,7 @@ model User {
   preferences         UserPreference?
   sessions            Session[]
   requests            ProjectRequest[]
+  assignedRequests    ProjectRequest[] @relation("RequestAssignee")
   clientProjects      Project[]       @relation("ClientProjects")
   adminProjects       Project[]       @relation("AdminProjects")
   payments            Payment[]

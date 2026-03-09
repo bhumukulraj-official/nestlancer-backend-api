@@ -10,6 +10,7 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   DISPUTED
+  CANCELLED
 }
 
 model Payment {

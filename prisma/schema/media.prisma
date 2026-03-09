@@ -5,6 +5,7 @@
 enum MediaStatus {
   PENDING
   PROCESSING
+  UPLOADING
   READY
   FAILED
   QUARANTINED
