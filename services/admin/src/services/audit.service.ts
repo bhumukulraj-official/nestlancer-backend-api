@@ -108,6 +108,40 @@ export class AuditService {
         });
     }
 
+    /**
+     * Returns recent audit entries for dashboard activity feed.
+     * Includes user relation for display.
+     */
+    async getRecentActivity(limit: number = 20) {
+        const logs = await this.prismaRead.auditLog.findMany({
+            take: Math.min(limit, 100),
+            orderBy: { createdAt: 'desc' },
+            include: {
+                user: {
+                    select: { id: true, firstName: true, lastName: true, email: true },
+                },
+            },
+        });
+
+        return logs.map((log) => ({
+            id: log.id,
+            type: log.category,
+            action: log.action,
+            title: log.action.replace(/_/g, ' '),
+            description: log.description,
+            resourceType: log.resourceType,
+            resourceId: log.resourceId,
+            user: log.user
+                ? {
+                    id: log.user.id,
+                    name: [log.user.firstName, log.user.lastName].filter(Boolean).join(' ') || log.user.email,
+                }
+                : null,
+            timestamp: log.createdAt,
+            metadata: log.metadata,
+        }));
+    }
+
     async getStats(): Promise<AuditStats> {
         const [totalLogs, actionGroups, categoryGroups, recentLogs] = await Promise.all([
             this.prismaRead.auditLog.count(),

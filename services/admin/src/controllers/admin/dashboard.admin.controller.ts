@@ -10,6 +10,7 @@ import { DashboardRevenueService } from '../../services/dashboard-revenue.servic
 import { DashboardUsersService } from '../../services/dashboard-users.service';
 import { DashboardProjectsService } from '../../services/dashboard-projects.service';
 import { DashboardPerformanceService } from '../../services/dashboard-performance.service';
+import { AuditService } from '../../services/audit.service';
 
 /**
  * Controller for administrative dashboard data and metrics.
@@ -29,6 +30,7 @@ export class DashboardAdminController {
         private readonly usersService: DashboardUsersService,
         private readonly projectsService: DashboardProjectsService,
         private readonly performanceService: DashboardPerformanceService,
+        private readonly auditService: AuditService,
     ) { }
 
     /**
@@ -96,13 +98,16 @@ export class DashboardAdminController {
     /**
      * Retrieves a chronological log of recent significant system-level activities.
      * 
+     * @param limit Optional max number of activity items (default 20, max 100)
      * @returns A promise resolving to a collection of recent activity events
      */
     @Get('activity')
     @ApiOperation({ summary: 'Get recent activity', description: 'Fetch a historical audit trail of significant administrative and system activities.' })
     @SuccessResponse('Recent activity retrieved successfully')
-    async getActivity(): Promise<any> {
-        return { data: [] }; // Mocked directly for brevity since DashboardService already mocks this
+    async getActivity(@Query('limit') limit?: string): Promise<any> {
+        const limitNum = limit ? Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100) : 20;
+        const data = await this.auditService.getRecentActivity(limitNum);
+        return { data };
     }
 
     /**
@@ -114,7 +119,8 @@ export class DashboardAdminController {
     @ApiOperation({ summary: 'Get system alerts', description: 'Retrieve high-priority issues and status warnings across the infrastructure.' })
     @SuccessResponse('Alerts retrieved successfully')
     async getAlerts(): Promise<any> {
-        return { data: [] }; // Mocked directly
+        const data = await this.performanceService.getAlerts();
+        return { data };
     }
 }
 

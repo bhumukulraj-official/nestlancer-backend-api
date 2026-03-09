@@ -12,6 +12,7 @@ import { CreateWebhookDto } from '../../dto/create-webhook.dto';
 import { UpdateWebhookDto } from '../../dto/update-webhook.dto';
 import { TestWebhookDto } from '../../dto/test-webhook.dto';
 import { QueryWebhookDeliveriesDto } from '../../dto/query-webhook-deliveries.dto';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 /**
  * Controller for administrative webhook management and monitoring.
@@ -29,6 +30,8 @@ export class WebhooksAdminController {
         private readonly webhooksService: WebhooksManagementService,
         private readonly deliveriesService: WebhookDeliveriesService,
         private readonly testingService: WebhookTestingService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -156,7 +159,7 @@ export class WebhooksAdminController {
     @ApiOperation({ summary: 'Enable webhook' })
     @SuccessResponse('Webhook enabled')
     async enableWebhook(@Param('id') id: string): Promise<any> {
-        // TODO: Enable webhook
+        await this.webhooksService.update(id, { enabled: true });
         return { id, status: 'active' };
     }
 
@@ -164,7 +167,7 @@ export class WebhooksAdminController {
     @ApiOperation({ summary: 'Disable webhook' })
     @SuccessResponse('Webhook disabled')
     async disableWebhook(@Param('id') id: string): Promise<any> {
-        // TODO: Disable webhook
+        await this.webhooksService.update(id, { enabled: false });
         return { id, status: 'disabled' };
     }
 
@@ -172,15 +175,34 @@ export class WebhooksAdminController {
     @ApiOperation({ summary: 'Get delivery details' })
     @SuccessResponse('Delivery details retrieved')
     async getDeliveryDetails(@Param('id') id: string, @Param('deliveryId') deliveryId: string): Promise<any> {
-        // TODO: Get delivery details
-        return { id: deliveryId, webhookId: id, details: {} };
+        const details = await this.prismaRead.webhookDelivery.findUnique({
+            where: { id: deliveryId }
+        });
+        if (!details || details.webhookId !== id) throw new Error('Delivery not found');
+        return details;
     }
 
     @Post('webhooks/:id/deliveries/:deliveryId/retry')
     @ApiOperation({ summary: 'Retry delivery' })
     @SuccessResponse('Delivery retry initiated')
     async retryDelivery(@Param('id') id: string, @Param('deliveryId') deliveryId: string): Promise<any> {
-        // TODO: Retry a failed webhook delivery
+        const delivery = await this.prismaRead.webhookDelivery.findUnique({ where: { id: deliveryId } });
+        if (!delivery || delivery.webhookId !== id) throw new Error('Delivery not found');
+
+        await this.prismaWrite.webhookDelivery.update({
+            where: { id: deliveryId },
+            data: { status: 'PENDING' }
+        });
+
+        await this.prismaWrite.outboxEvent.create({
+            data: {
+                aggregateType: 'WEBHOOK',
+                aggregateId: id,
+                eventType: 'WEBHOOK_DELIVERY_RETRY',
+                payload: { deliveryId }
+            }
+        });
+
         return { id: deliveryId, webhookId: id, status: 'pending' };
     }
 
@@ -188,7 +210,11 @@ export class WebhooksAdminController {
     @ApiOperation({ summary: 'Get webhook statistics' })
     @SuccessResponse('Webhook stats retrieved')
     async getWebhookStats(@Param('id') id: string): Promise<any> {
-        // TODO: Get webhook stats (success rate, volume, etc)
-        return { webhookId: id, total: 0, failed: 0, successRate: 100 };
+        const stats = await this.deliveriesService.getDeliveryStats(id);
+        const total = Object.values(stats as Record<string, number>).reduce((a, b) => a + b, 0);
+        const failed = stats['FAILED'] || 0;
+        const successRate = total > 0 ? ((total - failed) / total) * 100 : 100;
+
+        return { webhookId: id, total, failed, stats, successRate: parseFloat(successRate.toFixed(2)) };
     }
 }
