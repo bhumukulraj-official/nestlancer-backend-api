@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Delete, Param, Query, Body } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Auth } from '@nestlancer/auth-lib';
 import { PrismaReadService, PrismaWriteService } from '@nestlancer/database';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -64,8 +65,11 @@ export class MessagesAdminController {
     @Get('stats')
     @ApiOperation({ summary: 'Get global messaging stats', description: 'Retrieve platform-wide counts of messages and active conversations.' })
     async getMessageStats(): Promise<any> {
-        // TODO: Get overall messaging statistics
-        return { status: 'success', totalMessages: 0, activeChats: 0 };
+        const [totalMessages, chatGroups] = await Promise.all([
+            this.prismaRead.message.count(),
+            this.prismaRead.message.groupBy({ by: ['projectId'] })
+        ]);
+        return { status: 'success', totalMessages, activeChats: chatGroups.length };
     }
 
     /**
@@ -81,14 +85,59 @@ export class MessagesAdminController {
 
     /**
      * Lists all active project conversations for administrative review.
+     * Each conversation is a project with at least one message; returns latest message per project.
      * 
-     * @param query Filtering and pagination parameters
+     * @param query Filtering and pagination parameters (page, limit)
      * @returns List of project conversations
      */
     @Get('conversations')
     @ApiOperation({ summary: 'List all conversations', description: 'Administrative view of all active chat threads in the system.' })
     async getAdminConversations(@Query() query: any): Promise<any> {
-        return { status: 'success', data: [], pagination: { page: 1, limit: 20, total: 0 } };
+        const page = Math.max(1, Number(query.page) || 1);
+        const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+        const skip = (page - 1) * limit;
+
+        const projectIds = await this.prismaRead.message.findMany({
+            where: { deletedAt: null },
+            distinct: ['projectId'],
+            select: { projectId: true },
+            orderBy: { createdAt: 'desc' },
+        }).then((rows) => rows.map((r) => r.projectId));
+        const uniqueProjectIds = [...new Set(projectIds)];
+        const total = uniqueProjectIds.length;
+        const paginatedIds = uniqueProjectIds.slice(skip, skip + limit);
+
+        if (paginatedIds.length === 0) {
+            return { status: 'success', data: [], pagination: { page, limit, total } };
+        }
+
+        const projectsWithLatest = await this.prismaRead.project.findMany({
+            where: { id: { in: paginatedIds } },
+            select: {
+                id: true,
+                title: true,
+                status: true,
+                clientId: true,
+                adminId: true,
+                messages: {
+                    where: { deletedAt: null },
+                    orderBy: { createdAt: 'desc' },
+                    take: 1,
+                    include: { sender: { select: { id: true, firstName: true, lastName: true } } },
+                },
+            },
+        });
+
+        const data = projectsWithLatest.map((p) => ({
+            projectId: p.id,
+            title: p.title,
+            status: p.status,
+            clientId: p.clientId,
+            adminId: p.adminId,
+            latestMessage: (p as any).messages?.[0] ?? null,
+        }));
+
+        return { status: 'success', data, pagination: { page, limit, total } };
     }
 
     /**
@@ -100,8 +149,12 @@ export class MessagesAdminController {
     @Get('project/:projectId')
     @ApiOperation({ summary: 'Get project messages', description: 'Fetch the entire chat history for a specific project.' })
     async adminGetMessages(@Param('projectId') projectId: string): Promise<any> {
-        // TODO: Admin view project messages
-        return { status: 'success', projectId, messages: [] };
+        const messages = await this.prismaRead.message.findMany({
+            where: { projectId },
+            orderBy: { createdAt: 'desc' },
+            include: { sender: { select: { id: true, firstName: true, lastName: true, email: true } } }
+        });
+        return { status: 'success', projectId, messages };
     }
 
     /**
@@ -113,7 +166,16 @@ export class MessagesAdminController {
     @Post(':id/flag')
     @ApiOperation({ summary: 'Flag message', description: 'Mark a message as potentially violating terms for internal review.' })
     async flagMessage(@Param('id') id: string): Promise<any> {
-        // TODO: Flag a message
+        const message = await this.prismaRead.message.findUnique({ where: { id } });
+        if (!message) throw new Error('Message not found');
+
+        const reactions = (message.reactions || {}) as any;
+        reactions.flagged = true;
+
+        await this.prismaWrite.message.update({
+            where: { id },
+            data: { reactions }
+        });
         return { status: 'success', id, flagged: true };
     }
 
@@ -121,27 +183,47 @@ export class MessagesAdminController {
      * Sends a system-generated broadcast message to a project's chat.
      * 
      * @param projectId Destination project ID
-     * @param body Message content and metadata
+     * @param body Message content (content: string, senderId: string for admin)
      * @returns Confirmation of broadcast
      */
     @Post('projects/:projectId/system')
     @ApiOperation({ summary: 'Broadcast system message', description: 'Inject an automated system notification into a project chat stream.' })
     async broadcastSystemMessage(
         @Param('projectId') projectId: string,
-        @Body() body: any,
+        @Body() body: { content: string; senderId?: string },
     ): Promise<any> {
-        return { status: 'success', data: { projectId, sent: true } };
+        const project = await this.prismaRead.project.findUnique({ where: { id: projectId }, select: { id: true } });
+        if (!project) throw new Error('Project not found');
+        const senderId = body.senderId ?? (await this.prismaRead.user.findFirst({ where: { role: 'ADMIN' }, select: { id: true } }))?.id;
+        if (!senderId) throw new Error('No sender available for system message');
+        const message = await this.prismaWrite.message.create({
+            data: {
+                projectId,
+                senderId,
+                content: body.content ?? 'System notification',
+                type: 'SYSTEM',
+            },
+        });
+        return { status: 'success', data: { projectId, messageId: message.id, sent: true } };
     }
 
     /**
      * Retrieves a chronological log of system-flagged messages awaiting moderation.
+     * Messages are flagged via POST :id/flag (reactions.flagged = true).
      * 
      * @returns A promise resolving to a collection of messages requiring administrative attention
      */
     @Get('flagged')
     @ApiOperation({ summary: 'List flagged messages', description: 'Retrieve a priority queue of messages that have been identified as potentially violating community standards.' })
     async getFlagged(): Promise<any> {
-        return { status: 'success', data: [] };
+        const candidates = await this.prismaRead.message.findMany({
+            where: { deletedAt: null, reactions: { not: Prisma.DbNull } },
+            orderBy: { createdAt: 'desc' },
+            take: 500,
+            include: { sender: { select: { id: true, firstName: true, lastName: true, email: true } }, project: { select: { id: true, title: true } } },
+        });
+        const data = candidates.filter((m) => (m.reactions as Record<string, unknown>)?.flagged === true);
+        return { status: 'success', data };
     }
 }
 

@@ -1,9 +1,10 @@
 import { Controller, Post, Get, Put, Patch, Delete, Body, Param, Query } from '@nestjs/common';
 import { Auth, CurrentUser } from '@nestlancer/auth-lib';
-import { MessagingService, MessageReactionsService, MessageSearchService, MessageReadService, UnreadCountService } from '../../services';
+import { MessagingService, MessageReactionsService, MessageSearchService, MessageReadService, UnreadCountService, MessageThreadsService } from '../../services';
 import { CreateMessageDto } from '../../dto/create-message.dto';
 import { UpdateMessageDto } from '../../dto/update-message.dto';
 import { MessageReactionDto } from '../../dto/message-reaction.dto';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 /**
@@ -23,6 +24,9 @@ export class MessagesController {
         private readonly searchService: MessageSearchService,
         private readonly readService: MessageReadService,
         private readonly unreadCountService: UnreadCountService,
+        private readonly threadsService: MessageThreadsService,
+        private readonly prismaWrite: PrismaWriteService,
+        private readonly prismaRead: PrismaReadService,
     ) { }
 
     /**
@@ -282,7 +286,17 @@ export class MessagesController {
     @Post(':id/pin')
     @ApiOperation({ summary: 'Pin message', description: 'Highlight a message by pinning it to the chat header.' })
     async pinMessage(@CurrentUser('userId') userId: string, @Param('id') id: string): Promise<any> {
-        // TODO: Pin message
+        const message = await this.prismaRead.message.findUnique({ where: { id } });
+        if (!message) throw new Error('Message not found');
+
+        const reactions = (message.reactions || {}) as any;
+        reactions.pinned = true;
+
+        await this.prismaWrite.message.update({
+            where: { id },
+            data: { reactions }
+        });
+
         return { status: 'success', id, pinned: true };
     }
 
@@ -296,7 +310,18 @@ export class MessagesController {
     @Post(':id/unpin')
     @ApiOperation({ summary: 'Unpin message', description: 'Remove a message from the pinned list.' })
     async unpinMessage(@CurrentUser('userId') userId: string, @Param('id') id: string): Promise<any> {
-        // TODO: Unpin message
+        const message = await this.prismaRead.message.findUnique({ where: { id } });
+        if (!message) throw new Error('Message not found');
+
+        const reactions = (message.reactions || {}) as any;
+        if (reactions.pinned) {
+            delete reactions.pinned;
+            await this.prismaWrite.message.update({
+                where: { id },
+                data: { reactions }
+            });
+        }
+
         return { status: 'success', id, pinned: false };
     }
 
@@ -310,8 +335,11 @@ export class MessagesController {
     @Get('project/:projectId/attachments')
     @ApiOperation({ summary: 'List attachments', description: 'Extract all file attachments from a project message stream.' })
     async listAttachments(@CurrentUser('userId') userId: string, @Param('projectId') projectId: string): Promise<any> {
-        // TODO: List message attachments for project
-        return { status: 'success', projectId, attachments: [] };
+        const messages = await this.prismaRead.message.findMany({
+            where: { projectId, type: 'FILE' },
+            orderBy: { createdAt: 'desc' }
+        });
+        return { status: 'success', projectId, attachments: messages };
     }
 
     /**
@@ -362,8 +390,12 @@ export class MessagesController {
     @ApiOperation({ summary: 'Get thread history', description: 'Fetch all hierarchical replies for a given message.' })
     async getThread(
         @Param('messageId') id: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
     ): Promise<any> {
-        return { status: 'success', data: [] };
+        const query = { page: page ? parseInt(page, 10) : 1, limit: limit ? parseInt(limit, 10) : 50 };
+        const { items, meta } = await this.threadsService.getThreadReplies(id, query);
+        return { status: 'success', data: items, pagination: meta };
     }
 
     /**
