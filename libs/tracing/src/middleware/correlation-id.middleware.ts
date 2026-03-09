@@ -13,7 +13,7 @@ export class CorrelationIdMiddleware implements NestMiddleware {
     req.headers['x-correlation-id'] = correlationId;
     req.headers['x-request-id'] = correlationId;
 
-    // Set on response for client/E2E tests
+    // Set on response for client
     res.setHeader('X-Correlation-ID', correlationId);
     res.setHeader('X-Request-ID', correlationId);
     res.setHeader('X-API-Version', `v${API_VERSION.replace('v', '')}`);

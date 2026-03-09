@@ -20,7 +20,7 @@ export default registerAs('authService', () => ({
     },
     turnstile: {
         secretKey: process.env.TURNSTILE_SECRET_KEY,
-        bypassToken: process.env.TURNSTILE_BYPASS_TOKEN, // For e2e testing
+        bypassToken: process.env.TURNSTILE_BYPASS_TOKEN, // For local dev testing
     },
     tokens: {
         emailVerificationExpiresIn: parseInt(process.env.EMAIL_VERIFY_EXPIRES_IN || '86400', 10), // 24 hours

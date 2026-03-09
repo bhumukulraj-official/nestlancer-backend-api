@@ -20,7 +20,7 @@ export class TurnstileService {
     async verifyToken(token: string, ipAddress?: string): Promise<boolean> {
         if (!token) return false;
 
-        // For local dev/e2e testing
+        // For local dev testing
         if (this.bypassToken && token === this.bypassToken) {
             return true;
         }
