@@ -53,4 +53,25 @@ describe('[E2E] Health Service', () => {
             expect(res.status).toBe(200);
         });
     });
+
+    describe('Additional health endpoints', () => {
+        it('GET /health/ready should return readiness status', async () => {
+            const res = await apiGet('/health/ready');
+            expect(res.status).toBe(200);
+            expect(res.data).toHaveProperty('status');
+        });
+
+        it('GET /health/live should return liveness status', async () => {
+            const res = await apiGet('/health/live');
+            expect(res.status).toBe(200);
+            // Gateway wraps responses in { status: 'success', data, metadata }; payload is in res.data.data
+            const payload = res.data.data ?? res.data;
+            expect(payload).toHaveProperty('status', 'alive');
+        });
+
+        it('GET /health/dependencies should return dependency health', async () => {
+            const res = await apiGet('/health/dependencies');
+            expect(res.status).toBe(200);
+        });
+    });
 });

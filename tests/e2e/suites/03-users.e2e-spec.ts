@@ -24,9 +24,9 @@ describe('[E2E] Users Service', () => {
     });
 
     // ─── Profile ──────────────────────────────────────────────────────────
-    describe('GET /users/me', () => {
+    describe('GET /users/profile', () => {
         it('should return the current user profile', async () => {
-            const res = await apiGet('/users/me', clientToken);
+            const res = await apiGet('/users/profile', clientToken);
             expectSuccessResponse(res, 200);
             expect(res.data.data).toHaveProperty('email');
             expect(res.data.data).toHaveProperty('name');
@@ -34,26 +34,26 @@ describe('[E2E] Users Service', () => {
         });
     });
 
-    describe('PATCH /users/me', () => {
+    describe('PATCH /users/profile', () => {
         it('should update user profile fields', async () => {
-            const res = await apiPatch('/users/me', { name: 'Updated Client Name' }, clientToken);
+            const res = await apiPatch('/users/profile', { name: 'Updated Client Name' }, clientToken);
             expectSuccessResponse(res, 200);
             expect(res.data.data.name).toBe('Updated Client Name');
         });
     });
 
     // ─── Preferences ──────────────────────────────────────────────────────
-    describe('GET /users/me/preferences', () => {
+    describe('GET /users/preferences', () => {
         it('should return user preferences', async () => {
-            const res = await apiGet('/users/me/preferences', clientToken);
+            const res = await apiGet('/users/preferences', clientToken);
             expect(res.status).toBe(200);
         });
     });
 
-    describe('PATCH /users/me/preferences', () => {
+    describe('PATCH /users/preferences', () => {
         it('should update user preferences', async () => {
             const res = await apiPatch(
-                '/users/me/preferences',
+                '/users/preferences',
                 { timezone: 'Asia/Kolkata', theme: 'dark' },
                 clientToken,
             );
@@ -62,12 +62,34 @@ describe('[E2E] Users Service', () => {
     });
 
     // ─── Sessions ─────────────────────────────────────────────────────────
-    describe('GET /users/me/sessions', () => {
+    describe('GET /users/sessions', () => {
         it('should list active sessions', async () => {
-            const res = await apiGet('/users/me/sessions', clientToken);
+            const res = await apiGet('/users/sessions', clientToken);
             expect(res.status).toBe(200);
             expect(res.data).toHaveProperty('data');
             expect(Array.isArray(res.data.data)).toBe(true);
+        });
+    });
+
+    // ─── Activity & Data Export ───────────────────────────────────────────
+    describe('GET /users/activity', () => {
+        it('should return user activity log', async () => {
+            const res = await apiGet('/users/activity?page=1&limit=10', clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /users/data-export', () => {
+        it('should request data export', async () => {
+            const res = await apiGet('/users/data-export', clientToken);
+            expect([200, 400, 429]).toContain(res.status);
+        });
+    });
+
+    describe('GET /users/2fa/backup-codes', () => {
+        it('should return 2FA backup codes when 2FA is enabled', async () => {
+            const res = await apiGet('/users/2fa/backup-codes', clientToken);
+            expect([200, 400, 404]).toContain(res.status);
         });
     });
 
@@ -90,6 +112,13 @@ describe('[E2E] Users Service', () => {
                 expectSuccessResponse(res, 200);
                 expect(res.data.data).toHaveProperty('id', userId);
             }
+        });
+    });
+
+    describe('GET /admin/users/search (Admin)', () => {
+        it('should search users by query', async () => {
+            const res = await apiGet('/admin/users/search?q=client&page=1&limit=10', adminToken);
+            expect(res.status).toBe(200);
         });
     });
 

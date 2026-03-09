@@ -95,6 +95,44 @@ describe('[E2E] Auth Service', () => {
         });
     });
 
+    // ─── Auth: Additional Endpoints ─────────────────────────────────────────
+    describe('GET /auth/health', () => {
+        it('should return auth service health status', async () => {
+            const res = await apiGet('/auth/health');
+            expect(res.status).toBe(200);
+            expect(res.data).toHaveProperty('status');
+        });
+    });
+
+    describe('POST /auth/resend-verification', () => {
+        it('should accept resend verification request', async () => {
+            const res = await apiPost('/auth/resend-verification', {
+                email: CLIENT_USER.email,
+            });
+            expect([200, 429]).toContain(res.status);
+        });
+    });
+
+    describe('POST /auth/reset-password', () => {
+        it('should reject reset with invalid token', async () => {
+            const res = await apiPost('/auth/reset-password', {
+                token: 'invalid-token',
+                newPassword: 'NewPass@123456',
+            });
+            expect([400, 401, 422]).toContain(res.status);
+        });
+    });
+
+    describe('POST /auth/verify-2fa', () => {
+        it('should reject invalid 2FA code', async () => {
+            const res = await apiPost('/auth/verify-2fa', {
+                token: 'invalid-2fa-token',
+                code: '000000',
+            });
+            expect([400, 401, 422]).toContain(res.status);
+        });
+    });
+
     // ─── Token Refresh ──────────────────────────────────────────────────────
     describe('POST /auth/refresh', () => {
         let refreshToken: string;
@@ -189,13 +227,13 @@ describe('[E2E] Auth Service', () => {
     // ─── Protected Route Access ─────────────────────────────────────────────
     describe('Authorization guards', () => {
         it('should return 401 when accessing protected route without token', async () => {
-            const res = await apiGet('/users/me');
+            const res = await apiGet('/users/profile');
             expect(res.status).toBe(401);
         });
 
         it('should return 200 when accessing protected route with valid user token', async () => {
             const token = await loginAsClient();
-            const res = await apiGet('/users/me', token);
+            const res = await apiGet('/users/profile', token);
             expect(res.status).toBe(200);
         });
 

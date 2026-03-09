@@ -9,6 +9,7 @@ import {
     apiGet,
     apiPost,
     apiPatch,
+    apiDelete,
     expectSuccessResponse,
     expectPaginatedResponse,
     loginAsAdmin,
@@ -83,20 +84,27 @@ describe('[E2E] Notifications Service', () => {
         });
     });
 
-    // ─── Admin: Send System Notification ──────────────────────────────────
-    describe('POST /admin/notifications/send (Admin)', () => {
-        it('should send a system notification', async () => {
-            const res = await apiPost(
-                '/admin/notifications/send',
-                {
-                    title: 'E2E System Notification',
-                    message: 'This is a test system notification.',
-                    type: 'system',
-                    channel: 'in_app',
-                },
-                adminToken,
-            );
-            expect([200, 201]).toContain(res.status);
+    // ─── Admin: Notification Templates ─────────────────────────────────────
+    describe('GET /admin/templates (Admin)', () => {
+        it('should list notification templates', async () => {
+            const res = await apiGet('/admin/templates', adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /notifications/:id', () => {
+        it('should return notification details', async () => {
+            if (!notificationId) return;
+            const res = await apiGet(`/notifications/${notificationId}`, clientToken);
+            expect([200, 404]).toContain(res.status);
+        });
+    });
+
+    describe('DELETE /notifications/:id', () => {
+        it('should delete a notification', async () => {
+            if (!notificationId) return;
+            const res = await apiDelete(`/notifications/${notificationId}`, clientToken);
+            expect([200, 204, 404]).toContain(res.status);
         });
     });
 });

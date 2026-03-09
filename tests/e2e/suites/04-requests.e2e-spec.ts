@@ -8,6 +8,7 @@ import {
     apiGet,
     apiPost,
     apiPatch,
+    apiDelete,
     expectSuccessResponse,
     expectPaginatedResponse,
     expectErrorResponse,
@@ -52,6 +53,27 @@ describe('[E2E] Requests Service', () => {
         });
     });
 
+    describe('GET /requests/stats', () => {
+        it('should return user request statistics', async () => {
+            const res = await apiGet('/requests/stats', clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /requests/:id/status', () => {
+        it('should return request status timeline', async () => {
+            const res = await apiGet(`/requests/${requestId}/status`, clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /requests/:id/quotes', () => {
+        it('should return quotes for the request', async () => {
+            const res = await apiGet(`/requests/${requestId}/quotes`, clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
     describe('PATCH /requests/:id', () => {
         it('should update a draft request', async () => {
             const res = await apiPatch(
@@ -90,6 +112,20 @@ describe('[E2E] Requests Service', () => {
         });
     });
 
+    describe('GET /admin/requests/stats (Admin)', () => {
+        it('should return overall request statistics', async () => {
+            const res = await apiGet('/admin/requests/stats', adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /admin/requests/:id (Admin)', () => {
+        it('should return request admin details', async () => {
+            const res = await apiGet(`/admin/requests/${requestId}`, adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
     describe('PATCH /admin/requests/:id/status (Admin)', () => {
         it('should update request status to under_review', async () => {
             const res = await apiPatch(
@@ -107,6 +143,17 @@ describe('[E2E] Requests Service', () => {
                 adminToken,
             );
             expect([400, 422]).toContain(res.status);
+        });
+    });
+
+    describe('DELETE /requests/:id', () => {
+        it('should delete a draft request', async () => {
+            const createRes = await apiPost('/requests', { ...SAMPLE_REQUEST, title: 'To Delete' }, clientToken);
+            const delId = createRes.data.data?.id;
+            if (delId) {
+                const res = await apiDelete(`/requests/${delId}`, clientToken);
+                expect([200, 204]).toContain(res.status);
+            }
         });
     });
 

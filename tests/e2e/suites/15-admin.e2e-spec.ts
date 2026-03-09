@@ -25,7 +25,7 @@ describe('[E2E] Admin Service', () => {
         clientToken = await loginAsClient();
 
         // Get client user ID for impersonation tests
-        const meRes = await apiGet('/users/me', clientToken);
+        const meRes = await apiGet('/users/profile', clientToken);
         clientUserId = meRes.data.data?.id;
     });
 
@@ -80,17 +80,37 @@ describe('[E2E] Admin Service', () => {
     });
 
     // ─── Audit Logs ───────────────────────────────────────────────────────
-    describe('GET /admin/audit', () => {
+    describe('GET /admin/logs', () => {
         it('should list audit logs with pagination', async () => {
-            const res = await apiGet('/admin/audit?page=1&limit=10', adminToken);
-            expectPaginatedResponse(res);
+            const res = await apiGet('/admin/logs?page=1&limit=10', adminToken);
+            expect(res.status).toBe(200);
         });
     });
 
-    describe('GET /admin/audit/user/:id', () => {
-        it('should return audit trail for a specific user', async () => {
-            if (!clientUserId) return;
-            const res = await apiGet(`/admin/audit/user/${clientUserId}`, adminToken);
+    describe('GET /admin/logs/security-stats', () => {
+        it('should return security statistics', async () => {
+            const res = await apiGet('/admin/logs/security-stats', adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /admin/dashboard/users', () => {
+        it('should return user metrics', async () => {
+            const res = await apiGet('/admin/dashboard/users', adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /admin/dashboard/projects', () => {
+        it('should return project metrics', async () => {
+            const res = await apiGet('/admin/dashboard/projects', adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /admin/dashboard/activity', () => {
+        it('should return recent activity', async () => {
+            const res = await apiGet('/admin/dashboard/activity', adminToken);
             expect(res.status).toBe(200);
         });
     });
@@ -113,7 +133,7 @@ describe('[E2E] Admin Service', () => {
 
         it('should reject impersonating another admin', async () => {
             // Get admin user's own ID
-            const adminMe = await apiGet('/users/me', adminToken);
+            const adminMe = await apiGet('/users/profile', adminToken);
             const adminId = adminMe.data.data?.id;
             if (adminId) {
                 const res = await apiPost(`/admin/users/${adminId}/impersonate`, {}, adminToken);

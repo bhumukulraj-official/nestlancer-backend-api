@@ -188,7 +188,7 @@ describe('[E2E] Cross-Service Flows', () => {
         it('Client sends a message', async () => {
             if (!projectId || !clientToken) return;
             const res = await apiPost(
-                `/messages/projects/${projectId}`,
+                `/projects/${projectId}/messages`,
                 { content: 'Hello from Flow 2!' },
                 clientToken,
             );
@@ -198,7 +198,7 @@ describe('[E2E] Cross-Service Flows', () => {
         it('Admin replies to the message', async () => {
             if (!projectId) return;
             const res = await apiPost(
-                `/messages/projects/${projectId}`,
+                `/projects/${projectId}/messages`,
                 { content: 'Admin reply in Flow 2' },
                 adminToken,
             );

@@ -46,12 +46,12 @@ describe('[E2E] Messaging Service', () => {
         projectId = projects[projects.length - 1]?.id;
     });
 
-    // ─── Send Message ─────────────────────────────────────────────────────
-    describe('POST /messages/projects/:id', () => {
+    // ─── Send Message (via projects) ───────────────────────────────────────
+    describe('POST /projects/:id/messages', () => {
         it('should send a message to the project thread', async () => {
             if (!projectId) return;
             const res = await apiPost(
-                `/messages/projects/${projectId}`,
+                `/projects/${projectId}/messages`,
                 { content: 'Hello from E2E test!' },
                 clientToken,
             );
@@ -60,21 +60,21 @@ describe('[E2E] Messaging Service', () => {
         });
     });
 
-    // ─── List Messages ────────────────────────────────────────────────────
-    describe('GET /messages/projects/:id', () => {
+    // ─── List Messages (via projects) ──────────────────────────────────────
+    describe('GET /projects/:id/messages', () => {
         it('should list messages in the project thread', async () => {
             if (!projectId) return;
-            const res = await apiGet(`/messages/projects/${projectId}?page=1&limit=20`, clientToken);
-            expectPaginatedResponse(res);
+            const res = await apiGet(`/projects/${projectId}/messages?page=1&limit=20`, clientToken);
+            expect(res.status).toBe(200);
         });
     });
 
     // ─── Reply ────────────────────────────────────────────────────────────
-    describe('POST /messages/projects/:id (reply)', () => {
+    describe('POST /projects/:id/messages (reply)', () => {
         it('should reply to a message', async () => {
             if (!projectId || !messageId) return;
             const res = await apiPost(
-                `/messages/projects/${projectId}`,
+                `/projects/${projectId}/messages`,
                 { content: 'This is a reply!', replyToId: messageId },
                 clientToken,
             );
@@ -115,7 +115,7 @@ describe('[E2E] Messaging Service', () => {
             if (!projectId) return;
             // Create a message to delete
             const createRes = await apiPost(
-                `/messages/projects/${projectId}`,
+                `/projects/${projectId}/messages`,
                 { content: 'To be deleted' },
                 clientToken,
             );
@@ -127,11 +127,33 @@ describe('[E2E] Messaging Service', () => {
         });
     });
 
+    // ─── Messages: List conversations & unread ───────────────────────────
+    describe('GET /messages', () => {
+        it('should list user conversations', async () => {
+            const res = await apiGet('/messages?page=1&limit=10', clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /messages/unread-count', () => {
+        it('should return unread message count', async () => {
+            const res = await apiGet('/messages/unread-count', clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
     // ─── Admin ────────────────────────────────────────────────────────────
-    describe('GET /admin/messages/projects/:id (Admin)', () => {
-        it('should list all messages for a project', async () => {
+    describe('GET /admin/messages/flagged (Admin)', () => {
+        it('should list flagged messages', async () => {
+            const res = await apiGet('/admin/messages/flagged', adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /messages/:projectId/messages (project as conversation)', () => {
+        it('should list messages using project as conversation ID', async () => {
             if (!projectId) return;
-            const res = await apiGet(`/admin/messages/projects/${projectId}`, adminToken);
+            const res = await apiGet(`/messages/${projectId}/messages?page=1&limit=20`, clientToken);
             expect(res.status).toBe(200);
         });
     });

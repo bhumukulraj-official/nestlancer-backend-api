@@ -52,6 +52,13 @@ describe('[E2E] Projects Service', () => {
     });
 
     // ─── Client: List & Details ────────────────────────────────────────────
+    describe('GET /projects/stats', () => {
+        it('should return user project stats', async () => {
+            const res = await apiGet('/projects/stats', clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
     describe('GET /projects', () => {
         it('should list user projects with pagination', async () => {
             const res = await apiGet('/projects?page=1&limit=10', clientToken);
@@ -137,6 +144,30 @@ describe('[E2E] Projects Service', () => {
                 adminToken,
             );
             expect(res.status).toBe(201);
+        });
+    });
+
+    describe('GET /projects/:id/progress', () => {
+        it('should return project progress', async () => {
+            if (!projectId) return;
+            const res = await apiGet(`/projects/${projectId}/progress`, clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /projects/:id/deliverables', () => {
+        it('should return project deliverables', async () => {
+            if (!projectId) return;
+            const res = await apiGet(`/projects/${projectId}/deliverables`, clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /projects/:id/team', () => {
+        it('should return project team', async () => {
+            if (!projectId) return;
+            const res = await apiGet(`/projects/${projectId}/team`, clientToken);
+            expect(res.status).toBe(200);
         });
     });
 

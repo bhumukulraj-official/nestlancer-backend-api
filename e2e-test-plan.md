@@ -1,5 +1,7 @@
 # E2E Testing Plan — Nestlancer Backend API
 
+> **AI Prompt & Logs**: See [`docs/ai-prompts/RUN-TESTS.md`](docs/ai-prompts/RUN-TESTS.md) for AI prompts to run tests and instructions to check Docker logs when tests fail.
+
 ## 1. Overview
 
 This document defines the comprehensive End-to-End (E2E) testing strategy for the Nestlancer backend API. Unit and integration tests are already complete. E2E tests will validate **full user-facing workflows** by sending HTTP requests through the **API Gateway** (port `3000`) to downstream microservices, verifying real responses against the API spec.

@@ -87,6 +87,13 @@ describe('[E2E] Quotes Service', () => {
         });
     });
 
+    describe('GET /quotes (list)', () => {
+        it('should list quotes for the user', async () => {
+            const res = await apiGet('/quotes?page=1&limit=10', clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
     // ─── Client: Decline Quote (separate flow) ───────────────────────────
     describe('POST /quotes/:id/decline', () => {
         it('should decline a new quote', async () => {

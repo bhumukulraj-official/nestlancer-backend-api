@@ -143,6 +143,28 @@ describe('[E2E] Payments Service', () => {
         });
     });
 
+    describe('GET /payments/stats', () => {
+        it('should return payment stats', async () => {
+            const res = await apiGet('/payments/stats', clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /payments/projects/:projectId', () => {
+        it('should return payments for a project', async () => {
+            if (!projectId) return;
+            const res = await apiGet(`/payments/projects/${projectId}`, clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /payments/methods', () => {
+        it('should list saved payment methods', async () => {
+            const res = await apiGet('/payments/methods', clientToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
     // ─── Receipt / Invoice ────────────────────────────────────────────────
     describe('GET /payments/:id/receipt', () => {
         it('should attempt to download the receipt', async () => {

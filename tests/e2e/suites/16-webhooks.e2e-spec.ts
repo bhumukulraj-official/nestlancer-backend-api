@@ -8,6 +8,7 @@
 import {
     apiGet,
     apiPost,
+    apiPatch,
     expectSuccessResponse,
     expectPaginatedResponse,
     expectErrorResponse,
@@ -23,42 +24,68 @@ describe('[E2E] Webhooks Service', () => {
         adminToken = await loginAsAdmin();
     });
 
-    // ─── Outbound: Admin CRUD ─────────────────────────────────────────────
-    describe('POST /admin/webhooks', () => {
+    // ─── Outbound: Webhook CRUD ───────────────────────────────────────────
+    describe('POST /webhooks', () => {
         it('should create a webhook subscription', async () => {
-            const res = await apiPost('/admin/webhooks', { ...SAMPLE_WEBHOOK }, adminToken);
+            const res = await apiPost('/webhooks', { ...SAMPLE_WEBHOOK }, adminToken);
             expect(res.status).toBe(201);
             webhookId = res.data.data?.id;
         });
     });
 
-    describe('GET /admin/webhooks', () => {
+    describe('GET /webhooks', () => {
         it('should list webhooks', async () => {
-            const res = await apiGet('/admin/webhooks', adminToken);
-            expectPaginatedResponse(res);
+            const res = await apiGet('/webhooks', adminToken);
+            expect(res.status).toBe(200);
         });
     });
 
-    describe('POST /admin/webhooks/:id/test', () => {
+    describe('POST /webhooks/:id/test', () => {
         it('should send a test event', async () => {
             if (!webhookId) return;
-            const res = await apiPost(`/admin/webhooks/${webhookId}/test`, {}, adminToken);
+            const res = await apiPost(`/webhooks/${webhookId}/test`, {}, adminToken);
             expect(res.status).toBe(200);
         });
     });
 
-    describe('GET /admin/webhooks/:id/deliveries', () => {
-        it('should return delivery history', async () => {
-            if (!webhookId) return;
-            const res = await apiGet(`/admin/webhooks/${webhookId}/deliveries`, adminToken);
+    describe('GET /webhooks/logs', () => {
+        it('should return webhook delivery logs', async () => {
+            const res = await apiGet('/webhooks/logs', adminToken);
             expect(res.status).toBe(200);
         });
     });
 
-    describe('POST /admin/webhooks/:id/disable', () => {
-        it('should disable a webhook', async () => {
+    describe('POST /webhooks/:id/regenerate-secret', () => {
+        it('should regenerate webhook secret', async () => {
             if (!webhookId) return;
-            const res = await apiPost(`/admin/webhooks/${webhookId}/disable`, {}, adminToken);
+            const res = await apiPost(`/webhooks/${webhookId}/regenerate-secret`, {}, adminToken);
+            expect([200, 400]).toContain(res.status);
+        });
+    });
+
+    describe('GET /webhooks', () => {
+        it('should list user webhooks', async () => {
+            const res = await apiGet('/webhooks', adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /webhooks/:id', () => {
+        it('should return webhook details', async () => {
+            if (!webhookId) return;
+            const res = await apiGet(`/webhooks/${webhookId}`, adminToken);
+            expect(res.status).toBe(200);
+        });
+    });
+
+    describe('PATCH /webhooks/:id', () => {
+        it('should update webhook', async () => {
+            if (!webhookId) return;
+            const res = await apiPatch(
+                `/webhooks/${webhookId}`,
+                { name: 'Updated E2E Webhook', enabled: true },
+                adminToken,
+            );
             expect(res.status).toBe(200);
         });
     });

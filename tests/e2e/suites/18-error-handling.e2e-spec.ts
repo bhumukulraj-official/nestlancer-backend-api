@@ -115,12 +115,12 @@ describe('[E2E] Error Handling & Edge Cases', () => {
     // ─── Auth Errors ──────────────────────────────────────────────────────
     describe('Authentication errors', () => {
         it('should return 401 for requests without auth token', async () => {
-            const res = await apiGet('/users/me');
+            const res = await apiGet('/users/profile');
             expect(res.status).toBe(401);
         });
 
         it('should return 401 for invalid bearer token', async () => {
-            const res = await apiGet('/users/me', 'invalid-token-12345');
+            const res = await apiGet('/users/profile', 'invalid-token-12345');
             expect(res.status).toBe(401);
         });
 
@@ -128,7 +128,7 @@ describe('[E2E] Error Handling & Edge Cases', () => {
             // Use an expired JWT (crafted token with past exp)
             const expiredToken =
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNjAwMDAwMDAwfQ.abc';
-            const res = await apiGet('/users/me', expiredToken);
+            const res = await apiGet('/users/profile', expiredToken);
             expect(res.status).toBe(401);
         });
     });
