@@ -28,11 +28,11 @@ export class RegistrationService {
             throw new ResourceConflictException('Email already registered');
         }
 
-        const saltRounds = this.config.get<number>('authService.security.bcryptSaltRounds') || 12;
+        const saltRounds = this.config.getOptional<number>('authService.security.bcryptSaltRounds', 12) ?? 12;
         const passwordHash = await bcrypt.hash(dto.password, saltRounds);
 
         const emailVerificationToken = `verify_${Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)}`;
-        const verificationExpiresAt = new Date(Date.now() + (this.config.get<number>('authService.tokens.emailVerificationExpiresIn') || 86400) * 1000);
+        const verificationExpiresAt = new Date(Date.now() + (this.config.getOptional<number>('authService.tokens.emailVerificationExpiresIn', 86400) ?? 86400) * 1000);
 
         const user = await this.prismaWrite.$transaction(async (tx: any) => {
             const newUser = await tx.user.create({
@@ -72,7 +72,9 @@ export class RegistrationService {
             // Emit domain event for user creation using outbox pattern
             await tx.outbox.create({
                 data: {
-                    eventType: 'USER_REGISTERED',
+                    type: 'USER_REGISTERED',
+                    aggregateType: 'User',
+                    aggregateId: newUser.id,
                     payload: {
                         userId: newUser.id,
                         email: newUser.email,
