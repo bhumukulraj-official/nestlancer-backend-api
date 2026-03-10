@@ -1,22 +1,30 @@
+import './integration.env';
+
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplicationContext } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
 
 describe('AppModule (Integration)', () => {
-    let app: INestApplicationContext;
+    let app: INestApplication;
 
     beforeAll(async () => {
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         })
             .overrideProvider('QUEUE_OPTIONS')
+            .useValue({ url: 'amqp://localhost:5672' })
+            .overrideProvider(QueuePublisherService)
+            .useValue({ publish: jest.fn() })
+            .overrideProvider(QueueConsumerService)
+            .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
+            .overrideProvider(DlqService)
             .useValue({})
             .overrideProvider(PrismaWriteService)
-            .useValue({})
+            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), outboxEvent: { findMany: jest.fn() } })
             .overrideProvider(PrismaReadService)
-            .useValue({})
+            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), outboxEvent: { findMany: jest.fn() } })
             .compile();
 
         app = moduleRef.createNestApplication();
