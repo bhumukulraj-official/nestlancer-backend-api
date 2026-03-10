@@ -1,20 +1,37 @@
-process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
-process.env.REDIS_URL = 'redis://localhost:6379';
-process.env.RABBITMQ_URL = 'amqp://localhost:5672';
+import './integration.env';
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplicationContext } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
+import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { CacheService } from '@nestlancer/cache';
+import { StorageService } from '@nestlancer/storage';
 
 describe('AppModule (Integration)', () => {
-    let app: INestApplicationContext;
+    let app: INestApplication;
 
     beforeAll(async () => {
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
-        }).compile();
+        })
+            .overrideProvider(QueuePublisherService)
+            .useValue({ publish: jest.fn() })
+            .overrideProvider(QueueConsumerService)
+            .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
+            .overrideProvider(DlqService)
+            .useValue({})
+            .overrideProvider(PrismaWriteService)
+            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), analyticsEvent: { createMany: jest.fn() }, analyticsAggregation: { upsert: jest.fn() } })
+            .overrideProvider(PrismaReadService)
+            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), analyticsEvent: { findMany: jest.fn() }, analyticsAggregation: { findMany: jest.fn() } })
+            .overrideProvider(CacheService)
+            .useValue({ getClient: jest.fn().mockReturnValue({ get: jest.fn(), set: jest.fn(), del: jest.fn() }) })
+            .overrideProvider(StorageService)
+            .useValue({ upload: jest.fn(), getSignedUrl: jest.fn(), delete: jest.fn(), exists: jest.fn() })
+            .compile();
 
-        app = moduleRef;
+        app = moduleRef.createNestApplication();
         await app.init();
     });
 
