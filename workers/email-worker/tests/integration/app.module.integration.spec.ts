@@ -1,10 +1,9 @@
-process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
-process.env.JWT_ACCESS_SECRET = 'test-access-secret';
-process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
+import './integration.env';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
+import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
 
 describe('AppModule (Integration)', () => {
     let app: INestApplication;
@@ -12,7 +11,14 @@ describe('AppModule (Integration)', () => {
     beforeAll(async () => {
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
-        }).compile();
+        })
+            .overrideProvider(QueuePublisherService)
+            .useValue({ publish: jest.fn() })
+            .overrideProvider(QueueConsumerService)
+            .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
+            .overrideProvider(DlqService)
+            .useValue({})
+            .compile();
 
         app = moduleRef.createNestApplication();
         await app.init();
