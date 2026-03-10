@@ -35,6 +35,7 @@
         "@nestlancer/queue": "workspace:*",
         "@nestlancer/cache": "workspace:*",
         "@nestlancer/auth-lib": "workspace:*",
+        "@nestlancer/testing": "workspace:*",
         "@nestlancer/turnstile": "workspace:*",
         "@nestjs/jwt": "^10.2.0",
         "@nestjs/swagger": "^7.4.2",
