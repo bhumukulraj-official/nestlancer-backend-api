@@ -10,7 +10,14 @@ import { CacheModule } from '@nestlancer/cache';
 import { AuthLibModule } from '@nestlancer/auth-lib';
 import { StorageModule } from '@nestlancer/storage';
 
-import projectsConfig from './config/projects.config';
+import { ProjectsController } from './controllers/projects.controller';
+import { ProjectsAdminController } from './controllers/projects.admin.controller';
+import { ProjectsPublicController } from './controllers/projects.public.controller';
+import { ProjectsService } from './services/projects.service';
+import { ProjectsAdminService } from './services/projects.admin.service';
+import { ProjectTimelineService } from './services/project-timeline.service';
+import { ProjectDeliverablesService } from './services/project-deliverables.service';
+import { ProjectPaymentsService } from './services/project-payments.service';
 
 @Module({
     imports: [
@@ -25,7 +32,17 @@ import projectsConfig from './config/projects.config';
         AuthLibModule,
         StorageModule.forRoot(),
     ],
-    controllers: [],
-    providers: [],
+    controllers: [
+        ProjectsController,
+        ProjectsAdminController,
+        ProjectsPublicController,
+    ],
+    providers: [
+        ProjectsService,
+        ProjectsAdminService,
+        ProjectTimelineService,
+        ProjectDeliverablesService,
+        ProjectPaymentsService,
+    ],
 })
 export class AppModule { }
