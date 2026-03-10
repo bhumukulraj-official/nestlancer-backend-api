@@ -2,9 +2,9 @@
 # Nestlancer Backend – Developer Makefile
 # ──────────────────────────────────────────────────
 
-.PHONY: install dev build test test-unit test-e2e test-integration lint format \
+.PHONY: install dev build test test-unit test-e2e test-e2e-full test-integration lint format \
         db-migrate db-migrate-deploy db-seed db-reset db-studio \
-        docker-up docker-down docker-up-full docker-test docker-build docker-push clean help
+        docker-up docker-down docker-up-full docker-test docker-test-up docker-test-down docker-build docker-push clean help
 
 # ─── Dependencies ──────────────────────────────────
 
@@ -39,6 +39,9 @@ test-unit: ## Run unit tests only
 
 test-e2e: ## Run end-to-end tests (requires Docker services)
 	pnpm test:e2e
+
+test-e2e-full: ## Run end-to-end tests with full Docker lifecycle (start → test → teardown)
+	bash scripts/test/run-e2e.sh
 
 test-integration: ## Run integration tests (requires Docker services)
 	pnpm test:integration
@@ -94,8 +97,11 @@ docker-up-full: ## Start all services including MinIO and Jaeger
 docker-test: ## Start test infrastructure
 	docker compose -f docker-compose.yml up -d
 
-docker-test-down: ## Stop test infrastructure
-	docker compose -f docker-compose.yml down -v
+docker-test-up: ## Start full E2E test stack (all services + workers)
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.test.yml up -d
+
+docker-test-down: ## Stop E2E test stack and remove volumes
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.test.yml down -v
 
 docker-build: ## Build all Docker images
 	bash scripts/docker/build-all.sh

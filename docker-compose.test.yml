@@ -1,0 +1,174 @@
+# ──────────────────────────────────────────────────
+# Nestlancer – E2E Test Docker Compose
+# Extends docker-compose.yml + docker-compose.dev.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.test.yml up -d
+# ──────────────────────────────────────────────────
+
+services:
+  # ───────────────────────────────────────────────
+  # Meilisearch – Full-text Search (E2E only)
+  # ───────────────────────────────────────────────
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: nestlancer-meilisearch-test
+    ports:
+      - '7700:7700'
+    environment:
+      MEILI_MASTER_KEY: test-meili-master-key
+      MEILI_ENV: development
+      MEILI_NO_ANALYTICS: 'true'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7700/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nestlancer-network
+
+  # ───────────────────────────────────────────────
+  # Override all services to use .env.e2e
+  # ───────────────────────────────────────────────
+  gateway:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/v1/health']
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  ws-gateway:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3100/health']
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  auth-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  users-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  payments-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  webhooks-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  admin-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  requests-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  quotes-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  projects-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  progress-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  messaging-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  notifications-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  media-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  portfolio-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  blog-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  contact-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  health-service:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  # ───────────────────────────────────────────────
+  # Workers – Override env files
+  # ───────────────────────────────────────────────
+  analytics-worker:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  audit-worker:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  cdn-worker:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  email-worker:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  media-worker:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  notification-worker:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  outbox-poller:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
+
+  webhook-worker:
+    env_file: .env.e2e
+    environment:
+      NODE_ENV: test
