@@ -1,22 +1,37 @@
-process.env.JWT_ACCESS_SECRET = 'test-secret-long-enough-16-chars';
-process.env.JWT_REFRESH_SECRET = 'test-secret-long-enough-16-chars';
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/testdb';
-process.env.REDIS_URL = 'redis://localhost:6379';
-process.env.REDIS_CACHE_URL = 'redis://localhost:6379';
-process.env.RABBITMQ_URL = 'amqp://localhost:5672';
+import './integration.env';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
 import { StorageService as LibStorageService } from '@nestlancer/storage';
 import { MediaStorageService } from '../../src/storage/storage.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NestlancerConfigService as ConfigLibService } from '@nestlancer/config';
 
+function loadDevEnv() {
+    const envPath = resolve(__dirname, '../../../../.env.development');
+    if (!existsSync(envPath)) return;
+    const content = readFileSync(envPath, 'utf8');
+    content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+            const [key, ...value] = trimmed.split('=');
+            if (key) {
+                process.env[key.trim()] = value.join('=').trim().replace(/^["']|["']$/g, '');
+            }
+        }
+    });
+}
+
 describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
+        loadDevEnv();
+        process.env.NODE_ENV = 'development';
+
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         })
