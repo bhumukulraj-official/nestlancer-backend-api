@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { ConfigModule } from '@nestlancer/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
@@ -10,11 +11,20 @@ import { CacheModule } from '@nestlancer/cache';
 import { AuthLibModule } from '@nestlancer/auth-lib';
 import { StorageModule } from '@nestlancer/storage';
 
+import { RequestsController } from './controllers/requests.controller';
+import { RequestsAdminController } from './controllers/requests.admin.controller';
+import { RequestsService } from './services/requests.service';
+import { RequestsAdminService } from './services/requests.admin.service';
+import { RequestAttachmentsService } from './services/request-attachments.service';
+import { RequestStatsService } from './services/request-stats.service';
+import { QuotesAdminService } from './services/quotes.admin.service';
+
 import requestsConfig from './config/requests.config';
 
 @Module({
     imports: [
         ConfigModule.forRoot(),
+        NestConfigModule.forFeature(requestsConfig),
         LoggerModule.forRoot(),
         MetricsModule,
         TracingModule.forRoot(),
@@ -25,7 +35,13 @@ import requestsConfig from './config/requests.config';
         AuthLibModule,
         StorageModule.forRoot(),
     ],
-    controllers: [],
-    providers: [],
+    controllers: [RequestsController, RequestsAdminController],
+    providers: [
+        RequestsService,
+        RequestsAdminService,
+        RequestAttachmentsService,
+        RequestStatsService,
+        QuotesAdminService,
+    ],
 })
 export class AppModule { }
