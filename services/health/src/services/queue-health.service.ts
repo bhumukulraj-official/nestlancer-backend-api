@@ -78,34 +78,43 @@ export class QueueHealthService {
         }
     }
 
-    private async getQueueStats(connection: any): Promise<QueueStats> {
+    private async asyncCheckQueue(connection: any, queueName: string): Promise<{ messages: number, consumers: number }> {
         const channel = await connection.createChannel();
+        // Add error listener to prevent unhandled exceptions if channel closes
+        channel.on('error', () => { /* Silently ignore channel closing on 404 */ });
+
+        try {
+            const queueInfo = await channel.checkQueue(queueName);
+            return {
+                messages: queueInfo.messageCount,
+                consumers: queueInfo.consumerCount,
+            };
+        } catch (error) {
+            // Queue doesn't exist or other channel error
+            return { messages: 0, consumers: 0 };
+        } finally {
+            try {
+                await channel.close();
+            } catch (e) {
+                // Ignore errors on closing an already closed channel
+            }
+        }
+    }
+
+    private async getQueueStats(connection: any): Promise<QueueStats> {
         const queues: QueueStats['queues'] = [];
         let totalPendingJobs = 0;
         let totalConsumers = 0;
 
-        try {
-            for (const queueName of this.MONITORED_QUEUES) {
-                try {
-                    const queueInfo = await channel.checkQueue(queueName);
-                    queues.push({
-                        name: queueName,
-                        messages: queueInfo.messageCount,
-                        consumers: queueInfo.consumerCount,
-                    });
-                    totalPendingJobs += queueInfo.messageCount;
-                    totalConsumers += queueInfo.consumerCount;
-                } catch {
-                    // Queue might not exist yet, which is fine
-                    queues.push({
-                        name: queueName,
-                        messages: 0,
-                        consumers: 0,
-                    });
-                }
-            }
-        } finally {
-            await channel.close();
+        for (const queueName of this.MONITORED_QUEUES) {
+            const queueInfo = await this.asyncCheckQueue(connection, queueName);
+            queues.push({
+                name: queueName,
+                messages: queueInfo.messages,
+                consumers: queueInfo.consumers,
+            });
+            totalPendingJobs += queueInfo.messages;
+            totalConsumers += queueInfo.consumers;
         }
 
         return {
