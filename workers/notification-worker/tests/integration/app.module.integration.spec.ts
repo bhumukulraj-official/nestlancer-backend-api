@@ -1,3 +1,5 @@
+import './integration.env';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 import { QueueModule, QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
