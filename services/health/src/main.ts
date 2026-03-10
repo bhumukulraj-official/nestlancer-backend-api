@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
 import { CorrelationIdMiddleware } from '@nestlancer/tracing';
 
@@ -22,6 +23,14 @@ async function bootstrap() {
     });
 
     app.setGlobalPrefix('api/v1/health');
+
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('Nestlancer Health Service')
+        .setDescription('Health checks API')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+    SwaggerModule.setup('docs', app as any, SwaggerModule.createDocument(app as any, swaggerConfig));
 
     app.useGlobalPipes(
         new ValidationPipe({

@@ -28,6 +28,7 @@
         "@nestjs/jwt": "^10.2.0",
         "@nestjs/passport": "^10.0.3",
         "@nestjs/platform-express": "^10.0.0",
+        "@nestjs/swagger": "^7.4.2",
         "@nestlancer/auth-lib": "workspace:*",
         "@nestlancer/cache": "workspace:*",
         "@nestlancer/common": "workspace:*",

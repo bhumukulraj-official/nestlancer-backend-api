@@ -5,7 +5,8 @@ services:
       dockerfile: docker/dev.Dockerfile
     container_name: nestlancer-gateway
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
+      - "${TAILSCALE_IP:-100.89.176.3}:3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
@@ -24,7 +25,8 @@ services:
       dockerfile: docker/dev.Dockerfile
     container_name: nestlancer-ws-gateway
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
+      - "${TAILSCALE_IP:-100.89.176.3}:3100:3100"
     volumes:
       - .:/app
       - /app/node_modules
@@ -40,7 +42,7 @@ services:
   auth-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-auth
-    ports: ["3001:3001"]
+    ports: ["127.0.0.1:3001:3001", "${TAILSCALE_IP:-100.89.176.3}:3001:3001"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/auth-service
     env_file: .env.development
@@ -49,7 +51,7 @@ services:
   users-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-users
-    ports: ["3002:3002"]
+    ports: ["127.0.0.1:3002:3002", "${TAILSCALE_IP:-100.89.176.3}:3002:3002"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/users-service
     env_file: .env.development
@@ -58,7 +60,7 @@ services:
   payments-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-payments
-    ports: ["3003:3003"]
+    ports: ["127.0.0.1:3003:3003", "${TAILSCALE_IP:-100.89.176.3}:3003:3003"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/payments-service
     env_file: .env.development
@@ -67,7 +69,7 @@ services:
   webhooks-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-webhooks
-    ports: ["3004:3004"]
+    ports: ["127.0.0.1:3004:3004", "${TAILSCALE_IP:-100.89.176.3}:3004:3004"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/webhooks-service
     env_file: .env.development
@@ -76,7 +78,7 @@ services:
   admin-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-admin
-    ports: ["3005:3005"]
+    ports: ["127.0.0.1:3005:3005", "${TAILSCALE_IP:-100.89.176.3}:3005:3005"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/admin-service
     env_file: .env.development
@@ -85,7 +87,7 @@ services:
   requests-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-requests
-    ports: ["3006:3006"]
+    ports: ["127.0.0.1:3006:3006", "${TAILSCALE_IP:-100.89.176.3}:3006:3006"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/requests-service
     env_file: .env.development
@@ -94,7 +96,7 @@ services:
   quotes-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-quotes
-    ports: ["3007:3007"]
+    ports: ["127.0.0.1:3007:3007", "${TAILSCALE_IP:-100.89.176.3}:3007:3007"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/quotes-service
     env_file: .env.development
@@ -103,7 +105,7 @@ services:
   projects-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-projects
-    ports: ["3008:3008"]
+    ports: ["127.0.0.1:3008:3008", "${TAILSCALE_IP:-100.89.176.3}:3008:3008"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/projects-service
     env_file: .env.development
@@ -112,7 +114,7 @@ services:
   progress-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-progress
-    ports: ["3009:3009"]
+    ports: ["127.0.0.1:3009:3009", "${TAILSCALE_IP:-100.89.176.3}:3009:3009"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/progress-service
     env_file: .env.development
@@ -121,7 +123,7 @@ services:
   messaging-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-messaging
-    ports: ["3010:3010"]
+    ports: ["127.0.0.1:3010:3010", "${TAILSCALE_IP:-100.89.176.3}:3010:3010"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/messaging-service
     env_file: .env.development
@@ -130,7 +132,7 @@ services:
   notifications-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-notifications
-    ports: ["3011:3011"]
+    ports: ["127.0.0.1:3011:3011", "${TAILSCALE_IP:-100.89.176.3}:3011:3011"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/notifications-service
     env_file: .env.development
@@ -139,7 +141,7 @@ services:
   media-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-media
-    ports: ["3012:3012"]
+    ports: ["127.0.0.1:3012:3012", "${TAILSCALE_IP:-100.89.176.3}:3012:3012"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/media-service
     env_file: .env.development
@@ -148,7 +150,7 @@ services:
   portfolio-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-portfolio
-    ports: ["3013:3013"]
+    ports: ["127.0.0.1:3013:3013", "${TAILSCALE_IP:-100.89.176.3}:3013:3013"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/portfolio-service
     env_file: .env.development
@@ -157,7 +159,7 @@ services:
   blog-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-blog
-    ports: ["3014:3014"]
+    ports: ["127.0.0.1:3014:3014", "${TAILSCALE_IP:-100.89.176.3}:3014:3014"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/blog-service
     env_file: .env.development
@@ -166,7 +168,7 @@ services:
   contact-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-contact
-    ports: ["3015:3015"]
+    ports: ["127.0.0.1:3015:3015", "${TAILSCALE_IP:-100.89.176.3}:3015:3015"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/contact-service
     env_file: .env.development
@@ -175,7 +177,7 @@ services:
   health-service:
     build: { context: ., dockerfile: docker/dev.Dockerfile }
     container_name: nestlancer-health
-    ports: ["3016:3016"]
+    ports: ["127.0.0.1:3016:3016", "${TAILSCALE_IP:-100.89.176.3}:3016:3016"]
     volumes: [".:/app", "/app/node_modules"]
     command: pnpm turbo dev --filter=@nestlancer/health-service
     env_file: .env.development

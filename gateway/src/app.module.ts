@@ -37,6 +37,7 @@ import { ContactModule } from './modules/contact/contact.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { HealthModule } from './modules/health/health.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { SwaggerDocsModule } from './swagger/swagger.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
     AdminModule,
     HealthModule,
     WebhooksModule,
+    SwaggerDocsModule,
   ],
 })
 export class AppModule implements NestModule {

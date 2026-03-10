@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { NestlancerLoggerService } from '@nestlancer/logger';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
 import { CorrelationIdMiddleware } from '@nestlancer/tracing';
 
@@ -25,6 +26,14 @@ async function bootstrap() {
     });
 
     app.setGlobalPrefix('api/v1/webhooks');
+
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('Nestlancer Webhooks Service')
+        .setDescription('Webhook management API')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+    SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, swaggerConfig));
 
     app.useGlobalPipes(
         new ValidationPipe({

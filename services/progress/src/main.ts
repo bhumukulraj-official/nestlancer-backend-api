@@ -38,7 +38,7 @@ async function bootstrap() {
         .addBearerAuth()
         .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app as any, document);
+    SwaggerModule.setup('docs', app as any, document);
 
     await app.listen(port);
     logger.log(`Progress service is running on: http://localhost:${port}`);

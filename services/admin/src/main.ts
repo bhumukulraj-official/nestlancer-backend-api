@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { LoggerService } from '@nestlancer/logger';
 import { AppModule } from './app.module';
 // import removed - ConfigService not exported from '@nestlancer/config';
@@ -19,6 +20,14 @@ async function bootstrap() {
 
     // Global prefix
     app.setGlobalPrefix(API_PREFIX);
+
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('Nestlancer Admin Service')
+        .setDescription('Administration API')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+    SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, swaggerConfig));
 
     // Global pipes
     app.useGlobalPipes(

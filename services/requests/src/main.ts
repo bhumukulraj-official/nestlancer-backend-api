@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
 import { CorrelationIdMiddleware } from '@nestlancer/tracing';
 
@@ -22,6 +23,14 @@ async function bootstrap() {
     });
 
     app.setGlobalPrefix('api/v1');
+
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('Nestlancer Requests Service')
+        .setDescription('Project requests API')
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+    SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, swaggerConfig));
 
     app.useGlobalPipes(
         new ValidationPipe({
