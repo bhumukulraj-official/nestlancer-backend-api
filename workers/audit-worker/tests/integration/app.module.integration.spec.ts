@@ -1,16 +1,29 @@
-process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+import './integration.env';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { AppModule } from '../../src/app.module';
+import { AuditModule } from '../../src/app.module';
+import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
-describe('AppModule (Integration)', () => {
+describe('AuditModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
         const moduleRef: TestingModule = await Test.createTestingModule({
-            imports: [AppModule],
-        }).compile();
+            imports: [AuditModule],
+        })
+            .overrideProvider(QueuePublisherService)
+            .useValue({ publish: jest.fn() })
+            .overrideProvider(QueueConsumerService)
+            .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
+            .overrideProvider(DlqService)
+            .useValue({})
+            .overrideProvider(PrismaWriteService)
+            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), auditLog: { createMany: jest.fn() } })
+            .overrideProvider(PrismaReadService)
+            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), auditLog: { findMany: jest.fn() } })
+            .compile();
 
         app = moduleRef.createNestApplication();
         await app.init();
@@ -22,12 +35,12 @@ describe('AppModule (Integration)', () => {
         }
     });
 
-    it('should initialize the worker application context successfully', () => {
+    it('should initialize the audit worker application context successfully', () => {
         expect(app).toBeDefined();
     });
 
-    it('should resolve AppModule dependencies', () => {
-        const appModule = app.get(AppModule);
-        expect(appModule).toBeDefined();
+    it('should resolve AuditModule dependencies', () => {
+        const auditModule = app.get(AuditModule);
+        expect(auditModule).toBeDefined();
     });
 });
