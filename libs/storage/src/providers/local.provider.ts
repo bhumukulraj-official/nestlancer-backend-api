@@ -20,7 +20,12 @@ export class LocalProvider implements StorageProvider {
     this.logger.log(`LocalProvider initialized (basePath: ${config.basePath})`);
   }
 
-  async upload(bucket: string, key: string, body: Buffer, contentType: string): Promise<UploadResult> {
+  async upload(
+    bucket: string,
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<UploadResult> {
     const filePath = this.resolvePath(bucket, key);
     await fs.mkdir(dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, body);
@@ -29,12 +34,15 @@ export class LocalProvider implements StorageProvider {
 
     // Write metadata alongside the file
     const metaPath = filePath + '.meta.json';
-    await fs.writeFile(metaPath, JSON.stringify({
-      contentType,
-      size: body.length,
-      etag,
-      uploadedAt: new Date().toISOString(),
-    }));
+    await fs.writeFile(
+      metaPath,
+      JSON.stringify({
+        contentType,
+        size: body.length,
+        etag,
+        uploadedAt: new Date().toISOString(),
+      }),
+    );
 
     this.logger.debug(`Uploaded ${key} to ${bucket} (${body.length} bytes)`);
 
@@ -57,8 +65,8 @@ export class LocalProvider implements StorageProvider {
     const filePath = this.resolvePath(bucket, key);
     const metaPath = filePath + '.meta.json';
 
-    await fs.unlink(filePath).catch(() => { });
-    await fs.unlink(metaPath).catch(() => { });
+    await fs.unlink(filePath).catch(() => {});
+    await fs.unlink(metaPath).catch(() => {});
 
     this.logger.debug(`Deleted ${key} from ${bucket}`);
   }

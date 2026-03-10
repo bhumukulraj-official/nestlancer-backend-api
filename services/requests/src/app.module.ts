@@ -22,26 +22,26 @@ import { QuotesAdminService } from './services/quotes.admin.service';
 import requestsConfig from './config/requests.config';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        NestConfigModule.forFeature(requestsConfig),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        QueueModule.forRoot(),
-        OutboxModule.forRoot(),
-        CacheModule.forRoot(),
-        AuthLibModule,
-        StorageModule.forRoot(),
-    ],
-    controllers: [RequestsController, RequestsAdminController],
-    providers: [
-        RequestsService,
-        RequestsAdminService,
-        RequestAttachmentsService,
-        RequestStatsService,
-        QuotesAdminService,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    NestConfigModule.forFeature(requestsConfig),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    QueueModule.forRoot(),
+    OutboxModule.forRoot(),
+    CacheModule.forRoot(),
+    AuthLibModule,
+    StorageModule.forRoot(),
+  ],
+  controllers: [RequestsController, RequestsAdminController],
+  providers: [
+    RequestsService,
+    RequestsAdminService,
+    RequestAttachmentsService,
+    RequestStatsService,
+    QuotesAdminService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

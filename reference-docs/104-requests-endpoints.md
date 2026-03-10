@@ -6,9 +6,11 @@
 **Admin Path**: `/api/v1/admin/requests`
 
 ### 5.1 Overview
+
 Manages project requests from clients. Requests go through a workflow from draft to submission, review, and eventually conversion to quotes/projects.
 
 ### 5.2 Request Status Flow
+
 ```
 DRAFT → SUBMITTED → UNDER_REVIEW → QUOTED → ACCEPTED/REJECTED → CONVERTED_TO_PROJECT
                                       ↓
@@ -17,57 +19,57 @@ DRAFT → SUBMITTED → UNDER_REVIEW → QUOTED → ACCEPTED/REJECTED → CONVER
 
 ### 5.3 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `POST` | `/` | Create request (DRAFT) | 50/hour | No |
-| `GET` | `/` | List own requests | 1000/hour | Yes |
-| `GET` | `/{id}` | Get request details | 1000/hour | Yes |
-| `PATCH` | `/{id}` | Update request (DRAFT only) | 100/hour | No |
-| `POST` | `/{id}/submit` | Submit for review | 20/hour | Yes |
-| `DELETE` | `/{id}` | Delete request (DRAFT only) | 20/hour | Yes (soft) |
-| `GET` | `/{id}/quotes` | Get quotes for request | 500/hour | Yes |
-| `GET` | `/{id}/status` | Get status timeline | 500/hour | Yes |
-| `GET` | `/{id}/attachments` | List attachments | 500/hour | Yes |
-| `POST` | `/{id}/attachments` | Add attachment | 50/hour | No |
-| `DELETE` | `/{id}/attachments/{attachmentId}` | Remove attachment | 50/hour | Yes |
-| `GET` | `/stats` | User request statistics | 100/hour | Yes |
+| Method   | Endpoint                           | Description                        | Rate Limit | Idempotent |
+| -------- | ---------------------------------- | ---------------------------------- | ---------- | ---------- |
+| `GET`    | `/health`                          | Health check (Simplified response) | 1000/hour  | Yes        |
+| `POST`   | `/`                                | Create request (DRAFT)             | 50/hour    | No         |
+| `GET`    | `/`                                | List own requests                  | 1000/hour  | Yes        |
+| `GET`    | `/{id}`                            | Get request details                | 1000/hour  | Yes        |
+| `PATCH`  | `/{id}`                            | Update request (DRAFT only)        | 100/hour   | No         |
+| `POST`   | `/{id}/submit`                     | Submit for review                  | 20/hour    | Yes        |
+| `DELETE` | `/{id}`                            | Delete request (DRAFT only)        | 20/hour    | Yes (soft) |
+| `GET`    | `/{id}/quotes`                     | Get quotes for request             | 500/hour   | Yes        |
+| `GET`    | `/{id}/status`                     | Get status timeline                | 500/hour   | Yes        |
+| `GET`    | `/{id}/attachments`                | List attachments                   | 500/hour   | Yes        |
+| `POST`   | `/{id}/attachments`                | Add attachment                     | 50/hour    | No         |
+| `DELETE` | `/{id}/attachments/{attachmentId}` | Remove attachment                  | 50/hour    | Yes        |
+| `GET`    | `/stats`                           | User request statistics            | 100/hour   | Yes        |
 
 ### 5.4 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `GET` | `/` | List all requests | 2000/hour | Yes |
-| `GET` | `/{id}` | Get request (admin view) | 2000/hour | Yes |
-| `PATCH` | `/{id}` | Update request | 500/hour | No |
-| `PATCH` | `/{id}/status` | Update request status | 500/hour | No |
-| `POST` | `/{id}/quotes` | Create quote for request | 200/hour | No |
-| `POST` | `/{id}/notes` | Add internal note | 500/hour | No |
-| `GET` | `/{id}/notes` | Get internal notes | 1000/hour | Yes |
-| `DELETE` | `/{id}` | Delete request | 200/hour | Yes (soft) |
-| `GET` | `/stats` | Overall request statistics | 500/hour | Yes |
+| Method   | Endpoint       | Description                | Rate Limit | Idempotent |     | Role |
+| -------- | -------------- | -------------------------- | ---------- | ---------- | --- | ---- |
+| `GET`    | `/`            | List all requests          | 2000/hour  | Yes        |
+| `GET`    | `/{id}`        | Get request (admin view)   | 2000/hour  | Yes        |
+| `PATCH`  | `/{id}`        | Update request             | 500/hour   | No         |
+| `PATCH`  | `/{id}/status` | Update request status      | 500/hour   | No         |
+| `POST`   | `/{id}/quotes` | Create quote for request   | 200/hour   | No         |
+| `POST`   | `/{id}/notes`  | Add internal note          | 500/hour   | No         |
+| `GET`    | `/{id}/notes`  | Get internal notes         | 1000/hour  | Yes        |
+| `DELETE` | `/{id}`        | Delete request             | 200/hour   | Yes (soft) |
+| `GET`    | `/stats`       | Overall request statistics | 500/hour   | Yes        |
 
 ### 5.5 Request Categories
 
-| Category | Description |
-|----------|-------------|
+| Category         | Description                           |
+| ---------------- | ------------------------------------- |
 | `webDevelopment` | Website & web application development |
-| `mobileApp` | iOS & Android app development |
-| `ecommerce` | E-commerce solutions |
-| `design` | UI/UX design services |
-| `branding` | Logo & brand identity |
-| `marketing` | Digital marketing services |
-| `seo` | SEO & content optimization |
-| `consulting` | Technical consulting |
-| `maintenance` | Website/app maintenance |
-| `custom` | Custom requirements |
+| `mobileApp`      | iOS & Android app development         |
+| `ecommerce`      | E-commerce solutions                  |
+| `design`         | UI/UX design services                 |
+| `branding`       | Logo & brand identity                 |
+| `marketing`      | Digital marketing services            |
+| `seo`            | SEO & content optimization            |
+| `consulting`     | Technical consulting                  |
+| `maintenance`    | Website/app maintenance               |
+| `custom`         | Custom requirements                   |
 
 ### 5.6 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### POST /
+
 ```json
 // Request
 POST /api/v1/requests
@@ -137,6 +139,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /{id}
+
 ```json
 // Request
 GET /api/v1/requests/reqXyz789
@@ -234,6 +237,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/submit
+
 ```json
 // Request
 POST /api/v1/requests/reqXyz789/submit
@@ -307,6 +311,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### PATCH /{id}/status (Admin)
+
 ```json
 // Request
 PATCH /api/v1/admin/requests/reqXyz789/status
@@ -393,6 +398,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /stats
+
 ```json
 // Request
 GET /api/v1/requests/stats
@@ -434,19 +440,19 @@ X-Request-ID: reqAbc123
 
 ### 5.7 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `REQUEST_001` | 404 | Request not found | No |
-| `REQUEST_002` | 403 | Unauthorized access to request | No |
-| `REQUEST_003` | 400 | Cannot modify submitted request | No |
-| `REQUEST_004` | 400 | Cannot delete non-draft request | No |
-| `REQUEST_005` | 400 | Invalid status transition | No |
-| `REQUEST_006` | 409 | Request already has active quote | No |
-| `REQUEST_007` | 422 | Invalid budget range (min > max) | No |
-| `REQUEST_008` | 422 | Invalid timeline (deadline before start) | No |
-| `REQUEST_009` | 422 | Missing required fields | No |
-| `REQUEST_010` | 422 | Invalid category | No |
-| `REQUEST_011` | 413 | Too many attachments (max 10) | No |
-| `REQUEST_012` | 400 | Attachment not found | No |
+| Code          | HTTP Status | Description                              | Retryable |
+| ------------- | ----------- | ---------------------------------------- | --------- |
+| `REQUEST_001` | 404         | Request not found                        | No        |
+| `REQUEST_002` | 403         | Unauthorized access to request           | No        |
+| `REQUEST_003` | 400         | Cannot modify submitted request          | No        |
+| `REQUEST_004` | 400         | Cannot delete non-draft request          | No        |
+| `REQUEST_005` | 400         | Invalid status transition                | No        |
+| `REQUEST_006` | 409         | Request already has active quote         | No        |
+| `REQUEST_007` | 422         | Invalid budget range (min > max)         | No        |
+| `REQUEST_008` | 422         | Invalid timeline (deadline before start) | No        |
+| `REQUEST_009` | 422         | Missing required fields                  | No        |
+| `REQUEST_010` | 422         | Invalid category                         | No        |
+| `REQUEST_011` | 413         | Too many attachments (max 10)            | No        |
+| `REQUEST_012` | 400         | Attachment not found                     | No        |
 
 ---

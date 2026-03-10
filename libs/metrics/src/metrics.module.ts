@@ -8,21 +8,21 @@ import { CustomMetricsCollector } from './collectors/custom.collector';
 
 @Global()
 @Module({
-    providers: [
-        MetricsService,
-        HttpMetricsCollector,
-        CacheMetricsCollector,
-        DatabaseMetricsCollector,
-        QueueMetricsCollector,
-        CustomMetricsCollector,
-    ],
-    exports: [
-        MetricsService,
-        HttpMetricsCollector,
-        CacheMetricsCollector,
-        DatabaseMetricsCollector,
-        QueueMetricsCollector,
-        CustomMetricsCollector,
-    ],
+  providers: [
+    MetricsService,
+    HttpMetricsCollector,
+    CacheMetricsCollector,
+    DatabaseMetricsCollector,
+    QueueMetricsCollector,
+    CustomMetricsCollector,
+  ],
+  exports: [
+    MetricsService,
+    HttpMetricsCollector,
+    CacheMetricsCollector,
+    DatabaseMetricsCollector,
+    QueueMetricsCollector,
+    CustomMetricsCollector,
+  ],
 })
-export class MetricsModule { }
+export class MetricsModule {}

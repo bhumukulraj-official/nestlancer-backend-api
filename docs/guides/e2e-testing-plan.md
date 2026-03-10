@@ -5,6 +5,7 @@
 This document outlines a comprehensive plan for implementing end-to-end (E2E) tests for the Nestlancer backend monorepo. E2E tests validate complete request lifecycles across the full stack: API Gateway → microservices → database → workers → external systems.
 
 **Current State:**
+
 - Unit and integration tests exist; E2E tests are **not yet implemented**
 - `pnpm test:e2e` and `turbo test:e2e` are configured but no e2e specs exist
 - `jest.e2e.config.ts` is referenced but not present
@@ -12,6 +13,7 @@ This document outlines a comprehensive plan for implementing end-to-end (E2E) te
 - `run-e2e.sh` is documented but not present (only `run-unit.sh` and `run-integration.sh` exist)
 
 **Target State:**
+
 - Full E2E test suite covering critical user journeys
 - Isolated test environment (Docker Compose)
 - CI/CD integration
@@ -33,25 +35,25 @@ Client → API Gateway (3000) → HTTP Proxy → Microservice (3001–3016)
 
 ### 2.2 Components to Test
 
-| Layer | Components | E2E Focus |
-|-------|------------|-----------|
-| **Entry** | API Gateway, WS Gateway | Routing, auth, middleware pipeline |
-| **Services** | 16 NestJS microservices | Full request→response via gateway |
-| **Workers** | 8 RabbitMQ workers | Event consumption, side effects |
-| **Infra** | PostgreSQL, Redis, RabbitMQ, MinIO | Real dependencies in test env |
+| Layer        | Components                         | E2E Focus                          |
+| ------------ | ---------------------------------- | ---------------------------------- |
+| **Entry**    | API Gateway, WS Gateway            | Routing, auth, middleware pipeline |
+| **Services** | 16 NestJS microservices            | Full request→response via gateway  |
+| **Workers**  | 8 RabbitMQ workers                 | Event consumption, side effects    |
+| **Infra**    | PostgreSQL, Redis, RabbitMQ, MinIO | Real dependencies in test env      |
 
 ---
 
 ## 3. E2E vs Integration Test Boundaries
 
-| Aspect | Integration Tests | E2E Tests |
-|--------|-------------------|-----------|
-| **Scope** | Single service/module with real DB/Redis | Full stack: gateway + all services + workers |
-| **Mocks** | May mock HTTP proxy, external APIs | No mocks; real services |
-| **Startup** | `Test.createTestingModule()` in-process | Docker Compose stack running |
-| **Request path** | Direct service call or supertest to single app | HTTP to gateway → proxy → service |
-| **Speed** | ~30s timeout per test | 60–120s timeout; suite can take 10–30 min |
-| **When to run** | Every PR, local dev | Pre-merge, nightly, release |
+| Aspect           | Integration Tests                              | E2E Tests                                    |
+| ---------------- | ---------------------------------------------- | -------------------------------------------- |
+| **Scope**        | Single service/module with real DB/Redis       | Full stack: gateway + all services + workers |
+| **Mocks**        | May mock HTTP proxy, external APIs             | No mocks; real services                      |
+| **Startup**      | `Test.createTestingModule()` in-process        | Docker Compose stack running                 |
+| **Request path** | Direct service call or supertest to single app | HTTP to gateway → proxy → service            |
+| **Speed**        | ~30s timeout per test                          | 60–120s timeout; suite can take 10–30 min    |
+| **When to run**  | Every PR, local dev                            | Pre-merge, nightly, release                  |
 
 ---
 
@@ -62,6 +64,7 @@ Client → API Gateway (3000) → HTTP Proxy → Microservice (3001–3016)
 Create `docker-compose.test.yml` that extends base compose:
 
 **Required services:**
+
 - PostgreSQL (test DB, e.g. `nestlancer_test`)
 - Redis (cache + pub/sub)
 - RabbitMQ
@@ -70,11 +73,13 @@ Create `docker-compose.test.yml` that extends base compose:
 - Meilisearch (optional; can mock for initial phase)
 
 **Application services (all required for full E2E):**
+
 - Gateway, WS Gateway
 - All 16 microservices (auth, users, payments, webhooks, admin, requests, quotes, projects, progress, messaging, notifications, media, portfolio, blog, contact, health)
 - **Critical workers:** outbox-poller, email-worker, notification-worker, webhook-worker, audit-worker, media-worker, analytics-worker, cdn-worker
 
 **Environment:**
+
 - `.env.e2e` or `.env.test` with test-specific values
 - Separate `DATABASE_URL` for test DB
 - Turnstile/Razorpay in test/sandbox mode where possible
@@ -113,6 +118,7 @@ Create `tests/e2e/jest.e2e.config.ts`:
 ### 5.2 E2E Setup File
 
 Create `tests/e2e/setup.e2e.ts`:
+
 - Load `.env.e2e`
 - Verify `GATEWAY_URL` (e.g. `http://localhost:3000`) is reachable
 - Optional: Create test user, obtain JWT for authenticated tests
@@ -149,48 +155,48 @@ tests/
 
 ### Phase 1: Foundation (Weeks 1–2)
 
-| # | Scenario | Description | Priority |
-|---|----------|-------------|----------|
-| 1 | **Health & Readiness** | `GET /api/v1/health`, `/ready`, `/live` return 200 when stack is up | P0 |
-| 2 | **Gateway Routing** | Unauthenticated → 401 on protected routes; public routes (e.g. health) → 200 | P0 |
-| 3 | **Auth: Register → Login** | Register user → verify (or bypass in test) → login → receive JWT | P0 |
-| 4 | **Auth: Token Refresh** | Valid refresh token → new access token | P0 |
-| 5 | **Auth: Protected Route** | Valid JWT → access user profile | P0 |
+| #   | Scenario                   | Description                                                                  | Priority |
+| --- | -------------------------- | ---------------------------------------------------------------------------- | -------- |
+| 1   | **Health & Readiness**     | `GET /api/v1/health`, `/ready`, `/live` return 200 when stack is up          | P0       |
+| 2   | **Gateway Routing**        | Unauthenticated → 401 on protected routes; public routes (e.g. health) → 200 | P0       |
+| 3   | **Auth: Register → Login** | Register user → verify (or bypass in test) → login → receive JWT             | P0       |
+| 4   | **Auth: Token Refresh**    | Valid refresh token → new access token                                       | P0       |
+| 5   | **Auth: Protected Route**  | Valid JWT → access user profile                                              | P0       |
 
 ### Phase 2: Core User Journeys (Weeks 3–4)
 
-| # | Scenario | Description | Priority |
-|---|----------|-------------|----------|
-| 6 | **Request Submission** | Authenticated user creates request → stored in DB | P0 |
-| 7 | **Quote Flow** | Lancer submits quote → client sees quote | P0 |
-| 8 | **Project Creation** | Accept quote → project created | P0 |
-| 9 | **Progress & Milestones** | Add milestone, update progress | P1 |
-| 10 | **Payment Flow** | Create order → Razorpay (sandbox) → webhook → payment captured | P0 |
-| 11 | **Messaging** | Create conversation, send message | P1 |
-| 12 | **Media Upload** | Upload file to MinIO via media service; verify processing (thumbnails) via media-worker | P1 |
+| #   | Scenario                  | Description                                                                             | Priority |
+| --- | ------------------------- | --------------------------------------------------------------------------------------- | -------- |
+| 6   | **Request Submission**    | Authenticated user creates request → stored in DB                                       | P0       |
+| 7   | **Quote Flow**            | Lancer submits quote → client sees quote                                                | P0       |
+| 8   | **Project Creation**      | Accept quote → project created                                                          | P0       |
+| 9   | **Progress & Milestones** | Add milestone, update progress                                                          | P1       |
+| 10  | **Payment Flow**          | Create order → Razorpay (sandbox) → webhook → payment captured                          | P0       |
+| 11  | **Messaging**             | Create conversation, send message                                                       | P1       |
+| 12  | **Media Upload**          | Upload file to MinIO via media service; verify processing (thumbnails) via media-worker | P1       |
 
 ### Phase 3: WebSocket & Workers (Weeks 5–6)
 
-| # | Scenario | Description | Priority |
-|---|----------|-------------|----------|
-| 13 | **WS: Connect with JWT** | Socket.IO client connects with valid token → success | P0 |
-| 14 | **WS: Notifications** | Publish to Redis channel → client receives notification | P1 |
-| 15 | **WS: Messages** | Send message via WS → received in room | P1 |
-| 16 | **Outbox Poller** | Insert outbox event → poller publishes to RabbitMQ → worker consumes | P1 |
-| 17 | **Webhook Receive** | POST to webhooks endpoint (Razorpay payload) → verify signature → process | P0 |
-| 18 | **Search Indexing** | Create entity → verify indexed in Meilisearch → search via API | P1 |
-| 19 | **Audit Logging** | Perform critical action → verify log entry in audit-service | P1 |
+| #   | Scenario                 | Description                                                               | Priority |
+| --- | ------------------------ | ------------------------------------------------------------------------- | -------- |
+| 13  | **WS: Connect with JWT** | Socket.IO client connects with valid token → success                      | P0       |
+| 14  | **WS: Notifications**    | Publish to Redis channel → client receives notification                   | P1       |
+| 15  | **WS: Messages**         | Send message via WS → received in room                                    | P1       |
+| 16  | **Outbox Poller**        | Insert outbox event → poller publishes to RabbitMQ → worker consumes      | P1       |
+| 17  | **Webhook Receive**      | POST to webhooks endpoint (Razorpay payload) → verify signature → process | P0       |
+| 18  | **Search Indexing**      | Create entity → verify indexed in Meilisearch → search via API            | P1       |
+| 19  | **Audit Logging**        | Perform critical action → verify log entry in audit-service               | P1       |
 
 ### Phase 4: Admin & Edge Cases (Weeks 7–8)
 
-| # | Scenario | Description | Priority |
-|---|----------|-------------|----------|
-| 20 | **Admin: Dashboard** | Admin JWT → access admin endpoints | P1 |
-| 21 | **Admin: Impersonation** | Admin impersonates user | P2 |
-| 22 | **Rate Limiting** | Exceed limit → 429 | P2 |
-| 23 | **Maintenance Mode** | When enabled, non-exempt routes return 503 | P2 |
-| 24 | **Correlation ID** | Request includes X-Correlation-Id → propagated in response | P2 |
-| 25 | **Circuit Breaker** | Downstream service failure → gateway returns 503/fallback | P2 |
+| #   | Scenario                 | Description                                                | Priority |
+| --- | ------------------------ | ---------------------------------------------------------- | -------- |
+| 20  | **Admin: Dashboard**     | Admin JWT → access admin endpoints                         | P1       |
+| 21  | **Admin: Impersonation** | Admin impersonates user                                    | P2       |
+| 22  | **Rate Limiting**        | Exceed limit → 429                                         | P2       |
+| 23  | **Maintenance Mode**     | When enabled, non-exempt routes return 503                 | P2       |
+| 24  | **Correlation ID**       | Request includes X-Correlation-Id → propagated in response | P2       |
+| 25  | **Circuit Breaker**      | Downstream service failure → gateway returns 503/fallback  | P2       |
 
 ---
 
@@ -225,13 +231,13 @@ tests/
 
 ### 7.5 External Services
 
-| Service | E2E Strategy |
-|---------|--------------|
-| **Razorpay** | Use test/sandbox keys; mock webhook signatures with known secret |
-| **Turnstile** | Disable or use test key for registration flow |
-| **ZeptoMail/SES** | MailHog captures all emails; assert via MailHog API |
-| **S3/MinIO** | Use MinIO in Docker; real uploads |
-| **Meilisearch** | **Required:** Run in Docker; verify indexing flows |
+| Service           | E2E Strategy                                                     |
+| ----------------- | ---------------------------------------------------------------- |
+| **Razorpay**      | Use test/sandbox keys; mock webhook signatures with known secret |
+| **Turnstile**     | Disable or use test key for registration flow                    |
+| **ZeptoMail/SES** | MailHog captures all emails; assert via MailHog API              |
+| **S3/MinIO**      | Use MinIO in Docker; real uploads                                |
+| **Meilisearch**   | **Required:** Run in Docker; verify indexing flows               |
 
 ---
 
@@ -275,12 +281,12 @@ e2e:
 
 ### 9.1 New Scripts to Create
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/test/run-e2e.sh` | Start stack, run migrations, execute E2E, teardown |
-| `docker-compose.test.yml` | Test-specific overrides (env, ports, health checks) |
-| `tests/e2e/jest.e2e.config.ts` | Jest config for E2E |
-| `tests/e2e/setup.e2e.ts` | Global setup, env loading, health check |
+| Script                         | Purpose                                             |
+| ------------------------------ | --------------------------------------------------- |
+| `scripts/test/run-e2e.sh`      | Start stack, run migrations, execute E2E, teardown  |
+| `docker-compose.test.yml`      | Test-specific overrides (env, ports, health checks) |
+| `tests/e2e/jest.e2e.config.ts` | Jest config for E2E                                 |
+| `tests/e2e/setup.e2e.ts`       | Global setup, env loading, health check             |
 
 ### 9.2 Package.json Updates
 
@@ -297,14 +303,14 @@ e2e:
 
 ## 10. Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| **Flaky tests** | Retries for network-dependent assertions; avoid sleep, use polling |
-| **Slow feedback** | Phase 1 first; run only critical E2E in PR; full suite nightly |
-| **Resource contention** | `maxWorkers: 1`; sufficient CI resources |
-| **Test pollution** | Isolated DB; unique IDs; cleanup in `afterEach`/`afterAll` |
-| **External API limits** | Sandbox/test keys; mock where necessary |
-| **Docker instability** | Health checks; retry startup; document local requirements |
+| Risk                    | Mitigation                                                         |
+| ----------------------- | ------------------------------------------------------------------ |
+| **Flaky tests**         | Retries for network-dependent assertions; avoid sleep, use polling |
+| **Slow feedback**       | Phase 1 first; run only critical E2E in PR; full suite nightly     |
+| **Resource contention** | `maxWorkers: 1`; sufficient CI resources                           |
+| **Test pollution**      | Isolated DB; unique IDs; cleanup in `afterEach`/`afterAll`         |
+| **External API limits** | Sandbox/test keys; mock where necessary                            |
+| **Docker instability**  | Health checks; retry startup; document local requirements          |
 
 ---
 

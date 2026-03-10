@@ -5,4 +5,3 @@ export enum MilestoneStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
-

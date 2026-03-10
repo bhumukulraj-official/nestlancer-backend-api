@@ -4,5 +4,4 @@ import { CreateMilestoneDto } from './create-milestone.dto';
 /**
  * Data Transfer Object for updating an existing project milestone.
  */
-export class UpdateMilestoneDto extends PartialType(CreateMilestoneDto) { }
-
+export class UpdateMilestoneDto extends PartialType(CreateMilestoneDto) {}

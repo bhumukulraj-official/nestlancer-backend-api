@@ -1,91 +1,98 @@
 # Professional Testing Commands for Nestlancer Backend API
 
-This project uses a standardized Jest configuration with the **Projects** feature and **Turbo** integration. Always ensure you are in the root directory unless explicitly mentioned.
+This project uses a standardized Jest configuration with the **Projects** feature and **Turborepo** integration.
+**Always ensure you are in the root directory** when running these commands.
 
-## 1. Using Turbo (Recommended for speed and CI)
+---
 
-Turbo handles dependency graphs and caching automatically.
+## 1. Using Turborepo (Recommended)
 
-### Run All Unit Tests
+Turborepo is the recommended way to run tests. It handles dependency graphs, caching automatically, and properly isolates test executions per workspace to prevent cross-contamination.
+
+### Run All Tests Across Entire Project
+
 ```bash
-pnpm turbo test:unit
+pnpm test          # Runs the build and test scripts
+pnpm test:unit     # Runs all unit tests
+pnpm test:integration # Runs all integration tests
 ```
 
-### Run All Integration Tests
-```bash
-pnpm turbo test:integration
-```
+### Run Tests for a Specific Package / Directory
 
-### Test a Specific Package
+To test a specific module, **always use Turborepo filters**. Do not use `npx jest <directory>` from the root, as Jest will ignore the directory isolation and run all tests in the workspace.
+
+Use the `--filter` flag with the package name (found in its `package.json`).
+
 ```bash
-pnpm turbo test:unit --filter=@nestlancer/common
-pnpm turbo test:unit --filter=@nestlancer/auth-service
+pnpm test:unit --filter=@nestlancer/contact-service
+pnpm test:integration --filter=@nestlancer/auth-service
+pnpm test --filter=@nestlancer/common
 ```
 
 ---
 
-## 2. Using Jest Directly (Recommended for Development/Debugging)
+## 2. Using Jest Directly (For Specific Files)
 
-Direct Jest commands are faster for running specific files or using focus patterns.
-
-### Run All Tests across all Workspaces
-```bash
-npx jest
-```
-
-### Run All Unit Tests
-```bash
-npx jest --testPathPattern=tests/unit
-```
-
-### Run Tests for a Specific Directory (Workspace Aware)
-You can point Jest to any directory, and it will automatically use the correct local configuration.
-```bash
-npx jest libs/common
-npx jest services/auth
-npx jest ws-gateway
-```
+Direct Jest commands should only be used for running individual files or debugging specific test cases.
 
 ### Run a Specific Test File
+
 ```bash
 npx jest libs/common/tests/unit/utils/hash.util.spec.ts
+```
+
+### Run with a Focus Pattern (Debug Specific Test)
+
+```bash
+npx jest -t "should process a refund"
 ```
 
 ---
 
 ## 3. Coverage Reports
 
-Coverage is standardized across all packages.
+Coverage configuration is standardized.
 
-### Generate All Coverage
+### Generate Coverage for Entire Project
+
 ```bash
 pnpm test:cov
 ```
 
-### Generate Coverage for Specific Package
+### Generate Coverage for a Specific Package
+
 ```bash
-npx jest libs/common --coverage
+pnpm test:cov --filter=@nestlancer/contact-service
 ```
 
 ---
 
 ## 4. Key Benefits of this Setup
+
 - **Consistency**: All packages share a `jest.config.base.ts`.
-- **Discovery**: The root `jest.config.ts` uses `projects`, so one command runs everything.
+- **Discovery**: The root `jest.config.ts` uses `projects`, unifying the test environment.
+- **Turborepo Isolation**: Running `test:unit` via Turborepo ensures tests are strictly scoped to their respective workspaces and cached.
 - **Path Mapping**: Imports like `@nestlancer/common` are automatically mapped from `tsconfig.base.json`.
 - **Performance**: `isolatedModules` is enabled for faster, memory-efficient testing.
-- **Flexibility**: You can run tests from the root or within each package directory.
 
 ---
 
 ## 5. Troubleshooting
 
-### Validation Warnings
+### ❌ Running a directory runs tests for the whole project!
+
+If you use `npx jest services/contact` or `npx jest --testPathPattern=tests/unit services/contact`, Jest will ignore the directory parameter due to the root monorepo `projects` configuration.
+**Fix:** Always use Turborepo filters for directory-level testing: `pnpm test:unit --filter=@nestlancer/contact-service`.
+
+### ⚠️ Validation Warnings
+
 If you see "Unknown option" warnings, ensure that global settings (like `verbose`, `detectOpenHandles`) are only defined in the root `jest.config.ts`, not in individual package configs.
 
-### Out of Memory (OOM) Errors
+### 💥 Out of Memory (OOM) Errors
+
 If you hit memory limits when running many tests:
-1. **Use Turbo**: `pnpm turbo test:unit` runs tests in separate processes, which is more memory-efficient.
-2. **Limit Workers**: `npx jest libs/ --maxWorkers=2`
-3. **Increase Node Memory**: `NODE_OPTIONS="--max-old-space-size=4096" npx jest libs/`
-4. **Isolated Modules**: We have enabled `isolatedModules: true` in the base config to speed up tests and reduce memory by skipping type checking during test runs.
+
+1. **Use the NPM Scripts**: Commands like `pnpm test:unit` pass `--max-old-space-size=4096` to Node implicitly.
+2. **Use Turborepo**: Turbo runs tests in separate processes per package, which is much more memory-efficient.
+3. **Limit Workers**: Use `npx jest --maxWorkers=2` for file-specific debugging.
+4. **Isolated Modules**: We have enabled `isolatedModules: true` in the base config to reduce memory usage by skipping type checking during test runs.

@@ -9,4 +9,3 @@ export enum ProjectStatus {
   REVISION_REQUESTED = 'REVISION_REQUESTED',
   ON_HOLD = 'ON_HOLD',
 }
-

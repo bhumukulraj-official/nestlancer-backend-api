@@ -21,7 +21,9 @@ export class HeartbeatService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     this.intervalId = setInterval(() => this.refreshAllPresenceTtl(), HEARTBEAT_INTERVAL_MS);
-    this.logger.log(`Heartbeat started: refreshing presence TTL every ${HEARTBEAT_INTERVAL_MS / 1000}s`);
+    this.logger.log(
+      `Heartbeat started: refreshing presence TTL every ${HEARTBEAT_INTERVAL_MS / 1000}s`,
+    );
   }
 
   onModuleDestroy() {

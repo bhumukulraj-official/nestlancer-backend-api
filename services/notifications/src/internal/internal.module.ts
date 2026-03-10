@@ -5,8 +5,8 @@ import { DatabaseModule } from '@nestlancer/database';
 import { NotificationsAdminService } from '../notifications/notifications-admin.service';
 
 @Module({
-    imports: [NotificationsModule, DatabaseModule],
-    controllers: [InternalController],
-    providers: [NotificationsAdminService],
+  imports: [NotificationsModule, DatabaseModule],
+  controllers: [InternalController],
+  providers: [NotificationsAdminService],
 })
-export class InternalModule { }
+export class InternalModule {}

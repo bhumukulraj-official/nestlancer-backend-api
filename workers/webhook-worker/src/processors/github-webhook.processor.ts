@@ -7,14 +7,14 @@ import { IncomingWebhookJob } from '../interfaces/webhook-job.interface';
 @Processor('github.webhook') // Example additional queue
 @Injectable()
 export class GithubWebhookProcessor {
-    constructor(
-        private readonly logger: LoggerService,
-        private readonly webhookService: WebhookWorkerService,
-    ) { }
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly webhookService: WebhookWorkerService,
+  ) {}
 
-    @Process()
-    async handleGithub(job: IncomingWebhookJob): Promise<void> {
-        this.logger.log(`Processing GitHub event: ${job.eventType}`);
-        await this.webhookService.dispatch('github', job.eventType, job.payload);
-    }
+  @Process()
+  async handleGithub(job: IncomingWebhookJob): Promise<void> {
+    this.logger.log(`Processing GitHub event: ${job.eventType}`);
+    await this.webhookService.dispatch('github', job.eventType, job.payload);
+  }
 }

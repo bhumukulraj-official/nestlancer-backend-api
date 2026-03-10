@@ -13,7 +13,7 @@ import { getServiceConfig, isServiceRegistered } from './service-registry';
 export class HttpProxyService {
   private readonly logger = new Logger(HttpProxyService.name);
 
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService) {}
 
   /**
    * Forward a request to a downstream service
@@ -283,10 +283,7 @@ export class HttpProxyService {
    * Handle proxy errors and convert to appropriate HTTP exceptions
    */
   private handleProxyError(error: AxiosError, serviceName: string): never {
-    this.logger.error(
-      `Proxy error for service '${serviceName}': ${error.message}`,
-      error.stack,
-    );
+    this.logger.error(`Proxy error for service '${serviceName}': ${error.message}`, error.stack);
 
     // Connection refused or timeout
     if (error.code === 'ECONNREFUSED') {

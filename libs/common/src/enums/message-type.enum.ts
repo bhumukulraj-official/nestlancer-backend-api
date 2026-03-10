@@ -4,4 +4,3 @@ export enum MessageType {
   SYSTEM = 'SYSTEM',
   NOTIFICATION = 'NOTIFICATION',
 }
-

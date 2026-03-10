@@ -3,50 +3,44 @@ import { PrismaReadService } from '@nestlancer/database';
 
 @Injectable()
 export class ConversationsService {
-    constructor(private readonly prismaRead: PrismaReadService) { }
+  constructor(private readonly prismaRead: PrismaReadService) {}
 
-    async getConversations(userId: string, query: { page?: number; limit?: number }) {
-        const page = query.page || 1;
-        const limit = query.limit || 20;
-        const skip = (page - 1) * limit;
+  async getConversations(userId: string, query: { page?: number; limit?: number }) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const skip = (page - 1) * limit;
 
-        // A conversation is typically mapped to a project in this domain.
-        // Fetch projects where the user is a client or freelancer
-        const projects = await this.prismaRead.project.findMany({
-            where: {
-                OR: [
-                    { clientId: userId },
-                    { adminId: userId },
-                ],
-            },
-            skip,
-            take: limit,
-            include: {
-                messages: {
-                    orderBy: { createdAt: 'desc' },
-                    take: 1, // Get latest message
-                }
-            }
-        });
+    // A conversation is typically mapped to a project in this domain.
+    // Fetch projects where the user is a client or freelancer
+    const projects = await this.prismaRead.project.findMany({
+      where: {
+        OR: [{ clientId: userId }, { adminId: userId }],
+      },
+      skip,
+      take: limit,
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1, // Get latest message
+        },
+      },
+    });
 
-        const total = await this.prismaRead.project.count({
-            where: {
-                OR: [
-                    { clientId: userId },
-                    { adminId: userId },
-                ],
-            },
-        });
+    const total = await this.prismaRead.project.count({
+      where: {
+        OR: [{ clientId: userId }, { adminId: userId }],
+      },
+    });
 
-        const conversations = projects.map(p => ({
-            projectId: p.id,
-            title: p.title,
-            latestMessage: (p as any).messages?.[0] || null,
-        }));
+    const conversations = projects.map((p) => ({
+      projectId: p.id,
+      title: p.title,
+      latestMessage: (p as any).messages?.[0] || null,
+    }));
 
-        return {
-            items: conversations,
-            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-        };
-    }
+    return {
+      items: conversations,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
 }

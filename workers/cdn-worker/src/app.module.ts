@@ -16,23 +16,23 @@ import { PathInvalidationProcessor } from './processors/path-invalidation.proces
 import { BatchInvalidationProcessor } from './processors/batch-invalidation.processor';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        NestConfigModule.forFeature(cdnConfig),
-        HttpModule,
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        QueueModule.forRoot(),
-    ],
-    providers: [
-        CdnWorkerService,
-        CloudflareInvalidationService,
-        CloudFrontInvalidationService,
-        BatchCollectorService,
-        CdnConsumer,
-        PathInvalidationProcessor,
-        BatchInvalidationProcessor,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    NestConfigModule.forFeature(cdnConfig),
+    HttpModule,
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    QueueModule.forRoot(),
+  ],
+  providers: [
+    CdnWorkerService,
+    CloudflareInvalidationService,
+    CloudFrontInvalidationService,
+    BatchCollectorService,
+    CdnConsumer,
+    PathInvalidationProcessor,
+    BatchInvalidationProcessor,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

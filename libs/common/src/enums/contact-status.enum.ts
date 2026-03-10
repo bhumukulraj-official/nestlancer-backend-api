@@ -5,4 +5,3 @@ export enum ContactStatus {
   ARCHIVED = 'ARCHIVED',
   SPAM = 'SPAM',
 }
-

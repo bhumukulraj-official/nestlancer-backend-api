@@ -27,13 +27,8 @@ export class DocsSpecsController {
   constructor(private readonly httpProxy: HttpProxyService) {}
 
   @Get(':serviceKey')
-  async getSpec(
-    @Param('serviceKey') serviceKey: string,
-    @Res() res: Response,
-  ): Promise<void> {
-    const spec = SWAGGER_SERVICE_SPECS.find(
-      (s) => s.serviceKey === serviceKey,
-    );
+  async getSpec(@Param('serviceKey') serviceKey: string, @Res() res: Response): Promise<void> {
+    const spec = SWAGGER_SERVICE_SPECS.find((s) => s.serviceKey === serviceKey);
 
     if (!spec || !isServiceRegistered(serviceKey)) {
       throw new HttpException(
@@ -43,11 +38,7 @@ export class DocsSpecsController {
     }
 
     try {
-      const data = await this.httpProxy.request(
-        serviceKey,
-        'GET',
-        spec.docsJsonPath,
-      );
+      const data = await this.httpProxy.request(serviceKey, 'GET', spec.docsJsonPath);
 
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');

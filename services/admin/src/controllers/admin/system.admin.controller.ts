@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, SuccessResponse } from '@nestlancer/common';
@@ -22,9 +33,9 @@ import { SendAnnouncementDto } from '../../dto/send-announcement.dto';
 
 /**
  * Controller for system-wide administrative configuration and maintenance.
- * Provides endpoints for managing system settings, feature flags, maintenance mode, 
+ * Provides endpoints for managing system settings, feature flags, maintenance mode,
  * background jobs, cache, and system logs.
- * 
+ *
  * @category Admin
  */
 @ApiTags('Admin - System')
@@ -33,192 +44,234 @@ import { SendAnnouncementDto } from '../../dto/send-announcement.dto';
 @Roles(UserRole.ADMIN)
 @Controller('system')
 export class SystemAdminController {
-    constructor(
-        private readonly configService: SystemConfigService,
-        private readonly featureFlagsService: FeatureFlagsService,
-        private readonly maintenanceService: MaintenanceModeService,
-        private readonly cacheService: CacheManagementService,
-        private readonly jobsService: BackgroundJobsService,
-        private readonly logsService: SystemLogsService,
-        private readonly announcementsService: AnnouncementsService,
-    ) { }
+  constructor(
+    private readonly configService: SystemConfigService,
+    private readonly featureFlagsService: FeatureFlagsService,
+    private readonly maintenanceService: MaintenanceModeService,
+    private readonly cacheService: CacheManagementService,
+    private readonly jobsService: BackgroundJobsService,
+    private readonly logsService: SystemLogsService,
+    private readonly announcementsService: AnnouncementsService,
+  ) {}
 
-    // -- Config --
-    /**
-     * Retrieves the complete system configuration.
-     * 
-     * @returns Object containing all system-level configuration parameters
-     */
-    @Get('config')
-    @ApiOperation({ summary: 'Get system config', description: 'Fetch the current global configuration settings for the entire platform.' })
-    @SuccessResponse('System config retrieved')
-    async getConfig(): Promise<any> {
-        return this.configService.getAll();
-    }
+  // -- Config --
+  /**
+   * Retrieves the complete system configuration.
+   *
+   * @returns Object containing all system-level configuration parameters
+   */
+  @Get('config')
+  @ApiOperation({
+    summary: 'Get system config',
+    description: 'Fetch the current global configuration settings for the entire platform.',
+  })
+  @SuccessResponse('System config retrieved')
+  async getConfig(): Promise<any> {
+    return this.configService.getAll();
+  }
 
-    /**
-     * Updates one or more system configuration parameters.
-     * 
-     * @param dto Object containing keys and values to update
-     * @param req Express request object for auditing
-     * @returns Updated configuration state
-     */
-    @Patch('config')
-    @ApiOperation({ summary: 'Update system config', description: 'Modify global system settings. These changes take effect immediately across the platform.' })
-    @SuccessResponse('System config updated')
-    async updateConfig(@Body() dto: UpdateSystemConfigDto, @Req() req: any): Promise<any> {
-        return this.configService.set(dto, req.user.sub);
-    }
+  /**
+   * Updates one or more system configuration parameters.
+   *
+   * @param dto Object containing keys and values to update
+   * @param req Express request object for auditing
+   * @returns Updated configuration state
+   */
+  @Patch('config')
+  @ApiOperation({
+    summary: 'Update system config',
+    description:
+      'Modify global system settings. These changes take effect immediately across the platform.',
+  })
+  @SuccessResponse('System config updated')
+  async updateConfig(@Body() dto: UpdateSystemConfigDto, @Req() req: any): Promise<any> {
+    return this.configService.set(dto, req.user.sub);
+  }
 
-    // -- Features --
-    /**
-     * Retrieves a list of all feature flags and their current status.
-     * 
-     * @returns Array of active feature flags
-     */
-    @Get('features')
-    @ApiOperation({ summary: 'List feature flags', description: 'Retrieve all feature flags and their current enablement status for the system.' })
-    @SuccessResponse('Feature flags retrieved')
-    async listFeatures(): Promise<any> {
-        return this.featureFlagsService.findAll();
-    }
+  // -- Features --
+  /**
+   * Retrieves a list of all feature flags and their current status.
+   *
+   * @returns Array of active feature flags
+   */
+  @Get('features')
+  @ApiOperation({
+    summary: 'List feature flags',
+    description: 'Retrieve all feature flags and their current enablement status for the system.',
+  })
+  @SuccessResponse('Feature flags retrieved')
+  async listFeatures(): Promise<any> {
+    return this.featureFlagsService.findAll();
+  }
 
-    /**
-     * Enables or disables a specific system feature flag.
-     * 
-     * @param flag The unique key of the feature flag to toggle
-     * @param dto The target state of the feature
-     * @returns Updated feature flag status
-     */
-    @Patch('features/:flag')
-    @ApiOperation({ summary: 'Toggle feature flag', description: 'Enable or disable a specific feature globally based on its unique identifier.' })
-    @SuccessResponse('Feature flag toggled')
-    async toggleFeature(@Param('flag') flag: string, @Body() dto: ToggleFeatureDto): Promise<any> {
-        return this.featureFlagsService.toggleFeature(flag, dto.enabled);
-    }
+  /**
+   * Enables or disables a specific system feature flag.
+   *
+   * @param flag The unique key of the feature flag to toggle
+   * @param dto The target state of the feature
+   * @returns Updated feature flag status
+   */
+  @Patch('features/:flag')
+  @ApiOperation({
+    summary: 'Toggle feature flag',
+    description: 'Enable or disable a specific feature globally based on its unique identifier.',
+  })
+  @SuccessResponse('Feature flag toggled')
+  async toggleFeature(@Param('flag') flag: string, @Body() dto: ToggleFeatureDto): Promise<any> {
+    return this.featureFlagsService.toggleFeature(flag, dto.enabled);
+  }
 
-    // -- Maintenance --
-    /**
-     * Toggles system maintenance mode status.
-     * 
-     * @param dto Activation/deactivation settings and explanatory message
-     * @param req Express request object for auditing
-     * @returns Result of the maintenance mode toggle
-     */
-    @Post('maintenance')
-    @ApiOperation({ summary: 'Toggle maintenance mode', description: 'Put the platform into maintenance mode or bring it back online. Affects public access.' })
-    @SuccessResponse('Maintenance mode toggled')
-    async toggleMaintenance(@Body() dto: ToggleMaintenanceDto, @Req() req: any): Promise<any> {
-        return this.maintenanceService.toggle(dto, req.user.sub);
-    }
+  // -- Maintenance --
+  /**
+   * Toggles system maintenance mode status.
+   *
+   * @param dto Activation/deactivation settings and explanatory message
+   * @param req Express request object for auditing
+   * @returns Result of the maintenance mode toggle
+   */
+  @Post('maintenance')
+  @ApiOperation({
+    summary: 'Toggle maintenance mode',
+    description:
+      'Put the platform into maintenance mode or bring it back online. Affects public access.',
+  })
+  @SuccessResponse('Maintenance mode toggled')
+  async toggleMaintenance(@Body() dto: ToggleMaintenanceDto, @Req() req: any): Promise<any> {
+    return this.maintenanceService.toggle(dto, req.user.sub);
+  }
 
-    // -- Cache --
-    /**
-     * Clears specific cache entries or the entire system cache.
-     * 
-     * @param dto Configuration for cache clearing (key pattern, tags)
-     * @returns Success confirmation
-     */
-    @Post('cache/clear')
-    @ApiOperation({ summary: 'Clear cache', description: 'Purge data from the system cache based on provided patterns or clear the entire object store.' })
-    @SuccessResponse()
-    async clearCache(@Body() dto: ClearCacheDto): Promise<any> {
-        return this.cacheService.clearCache(dto);
-    }
+  // -- Cache --
+  /**
+   * Clears specific cache entries or the entire system cache.
+   *
+   * @param dto Configuration for cache clearing (key pattern, tags)
+   * @returns Success confirmation
+   */
+  @Post('cache/clear')
+  @ApiOperation({
+    summary: 'Clear cache',
+    description:
+      'Purge data from the system cache based on provided patterns or clear the entire object store.',
+  })
+  @SuccessResponse()
+  async clearCache(@Body() dto: ClearCacheDto): Promise<any> {
+    return this.cacheService.clearCache(dto);
+  }
 
-    /**
-     * Clears a specific cache entry by its exact key.
-     * 
-     * @param key The unique identifier of the cache entry to remove
-     * @returns Success confirmation
-     */
-    @Post('cache/clear/:key')
-    @ApiOperation({ summary: 'Clear specific cache key', description: 'Immediately invalidate and remove a specific data entry from the system cache.' })
-    @SuccessResponse()
-    async clearCacheKey(@Param('key') key: string): Promise<any> {
-        return this.cacheService.clearCache({ keyPattern: key });
-    }
+  /**
+   * Clears a specific cache entry by its exact key.
+   *
+   * @param key The unique identifier of the cache entry to remove
+   * @returns Success confirmation
+   */
+  @Post('cache/clear/:key')
+  @ApiOperation({
+    summary: 'Clear specific cache key',
+    description: 'Immediately invalidate and remove a specific data entry from the system cache.',
+  })
+  @SuccessResponse()
+  async clearCacheKey(@Param('key') key: string): Promise<any> {
+    return this.cacheService.clearCache({ keyPattern: key });
+  }
 
+  // -- Jobs --
+  /**
+   * Retrieves a paginated list of background job executions.
+   *
+   * @param query Filters for job status, type, and date range
+   * @returns Paginated list of background jobs
+   */
+  @Get('jobs')
+  @ApiOperation({
+    summary: 'List background jobs',
+    description: 'Retrieve a history and current status of asynchronous background processes.',
+  })
+  @SuccessResponse('Jobs retrieved')
+  async listJobs(@Query() query: QueryJobsDto): Promise<any> {
+    return this.jobsService.findAll(query);
+  }
 
-    // -- Jobs --
-    /**
-     * Retrieves a paginated list of background job executions.
-     * 
-     * @param query Filters for job status, type, and date range
-     * @returns Paginated list of background jobs
-     */
-    @Get('jobs')
-    @ApiOperation({ summary: 'List background jobs', description: 'Retrieve a history and current status of asynchronous background processes.' })
-    @SuccessResponse('Jobs retrieved')
-    async listJobs(@Query() query: QueryJobsDto): Promise<any> {
-        return this.jobsService.findAll(query);
-    }
+  /**
+   * Retries a failed background job execution.
+   *
+   * @param id The unique identifier of the failed job
+   * @returns Result of the retry attempt
+   */
+  @Post('jobs/:id/retry')
+  @ApiOperation({
+    summary: 'Retry failed job',
+    description: 'Manually re-trigger a background job that previously encountered an error.',
+  })
+  @SuccessResponse()
+  async retryJob(@Param('id') id: string): Promise<any> {
+    return this.jobsService.retryJob(id);
+  }
 
-    /**
-     * Retries a failed background job execution.
-     * 
-     * @param id The unique identifier of the failed job
-     * @returns Result of the retry attempt
-     */
-    @Post('jobs/:id/retry')
-    @ApiOperation({ summary: 'Retry failed job', description: 'Manually re-trigger a background job that previously encountered an error.' })
-    @SuccessResponse()
-    async retryJob(@Param('id') id: string): Promise<any> {
-        return this.jobsService.retryJob(id);
-    }
+  /**
+   * Cancels a pending or currently executing background job.
+   *
+   * @param id The unique identifier of the job to cancel
+   * @returns Confirmation of job cancellation
+   */
+  @Delete('jobs/:id')
+  @ApiOperation({
+    summary: 'Cancel job',
+    description: 'Stop a scheduled or running background job and prevent future executions.',
+  })
+  @SuccessResponse()
+  async cancelJob(@Param('id') id: string): Promise<any> {
+    return this.jobsService.cancelJob(id);
+  }
 
-    /**
-     * Cancels a pending or currently executing background job.
-     * 
-     * @param id The unique identifier of the job to cancel
-     * @returns Confirmation of job cancellation
-     */
-    @Delete('jobs/:id')
-    @ApiOperation({ summary: 'Cancel job', description: 'Stop a scheduled or running background job and prevent future executions.' })
-    @SuccessResponse()
-    async cancelJob(@Param('id') id: string): Promise<any> {
-        return this.jobsService.cancelJob(id);
-    }
+  // -- Logs --
+  /**
+   * Queries application and system logs with advanced filtering.
+   *
+   * @param query Filters for log level, service, source, and time
+   * @returns Paginated set of matching log entries
+   */
+  @Get('logs')
+  @ApiOperation({
+    summary: 'View system logs',
+    description:
+      'Access centralized application and infrastructure logs for debugging and auditing.',
+  })
+  @SuccessResponse('Logs retrieved')
+  async getLogs(@Query() query: QueryLogsDto): Promise<any> {
+    return this.logsService.queryLogs(query);
+  }
 
-    // -- Logs --
-    /**
-     * Queries application and system logs with advanced filtering.
-     * 
-     * @param query Filters for log level, service, source, and time
-     * @returns Paginated set of matching log entries
-     */
-    @Get('logs')
-    @ApiOperation({ summary: 'View system logs', description: 'Access centralized application and infrastructure logs for debugging and auditing.' })
-    @SuccessResponse('Logs retrieved')
-    async getLogs(@Query() query: QueryLogsDto): Promise<any> {
-        return this.logsService.queryLogs(query);
-    }
+  /**
+   * Generates a download link for filtered system logs.
+   *
+   * @param query Filters to select logs for export
+   * @returns Object containing the pre-signed download URL
+   */
+  @Get('logs/download')
+  @ApiOperation({
+    summary: 'Download logs',
+    description: 'Generate a downloadable archive of system logs matching specific criteria.',
+  })
+  @SuccessResponse('Log download URL generated')
+  async downloadLogs(@Query() query: QueryLogsDto): Promise<any> {
+    return this.logsService.generateDownloadLink(query);
+  }
 
-    /**
-     * Generates a download link for filtered system logs.
-     * 
-     * @param query Filters to select logs for export
-     * @returns Object containing the pre-signed download URL
-     */
-    @Get('logs/download')
-    @ApiOperation({ summary: 'Download logs', description: 'Generate a downloadable archive of system logs matching specific criteria.' })
-    @SuccessResponse('Log download URL generated')
-    async downloadLogs(@Query() query: QueryLogsDto): Promise<any> {
-        return this.logsService.generateDownloadLink(query);
-    }
-
-    // -- Announcements --
-    /**
-     * Sends a system-wide announcement to all users or specific segments.
-     * 
-     * @param dto Announcement content, target audience, and severity
-     * @param req Express request object for sender identification
-     * @returns The created announcement object
-     */
-    @Post('announcements')
-    @ApiOperation({ summary: 'Send system announcement', description: 'Publish a global notification or announcement to the user dashboard.' })
-    @SuccessResponse('Announcement sent')
-    async sendAnnouncement(@Body() dto: SendAnnouncementDto, @Req() req: any): Promise<any> {
-        return this.announcementsService.send(dto, req.user.sub);
-    }
+  // -- Announcements --
+  /**
+   * Sends a system-wide announcement to all users or specific segments.
+   *
+   * @param dto Announcement content, target audience, and severity
+   * @param req Express request object for sender identification
+   * @returns The created announcement object
+   */
+  @Post('announcements')
+  @ApiOperation({
+    summary: 'Send system announcement',
+    description: 'Publish a global notification or announcement to the user dashboard.',
+  })
+  @SuccessResponse('Announcement sent')
+  async sendAnnouncement(@Body() dto: SendAnnouncementDto, @Req() req: any): Promise<any> {
+    return this.announcementsService.send(dto, req.user.sub);
+  }
 }

@@ -36,17 +36,26 @@ export class CloudflareR2Provider implements StorageProvider {
       });
       this.logger.log(`CloudflareR2Provider initialized (endpoint: ${config.endpoint})`);
     } else {
-      this.logger.warn('CloudflareR2Provider: No endpoint provided, client will not be initialized');
+      this.logger.warn(
+        'CloudflareR2Provider: No endpoint provided, client will not be initialized',
+      );
     }
   }
 
   private checkClient() {
     if (!this.client) {
-      throw new Error('CloudflareR2Provider requires an endpoint and must be properly initialized before use');
+      throw new Error(
+        'CloudflareR2Provider requires an endpoint and must be properly initialized before use',
+      );
     }
   }
 
-  async upload(bucket: string, key: string, body: Buffer, contentType: string): Promise<UploadResult> {
+  async upload(
+    bucket: string,
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<UploadResult> {
     this.checkClient();
     const command = new PutObjectCommand({
       Bucket: bucket,
@@ -97,19 +106,22 @@ export class CloudflareR2Provider implements StorageProvider {
     this.checkClient();
     const expiresIn = options.expiresIn || 3600;
 
-    const command = options.operation === 'put'
-      ? new PutObjectCommand({
-        Bucket: options.bucket,
-        Key: options.key,
-        ContentType: options.contentType,
-      })
-      : new GetObjectCommand({
-        Bucket: options.bucket,
-        Key: options.key,
-      });
+    const command =
+      options.operation === 'put'
+        ? new PutObjectCommand({
+            Bucket: options.bucket,
+            Key: options.key,
+            ContentType: options.contentType,
+          })
+        : new GetObjectCommand({
+            Bucket: options.bucket,
+            Key: options.key,
+          });
 
     const url = await awsGetSignedUrl(this.client, command, { expiresIn });
-    this.logger.debug(`Generated R2 signed URL for ${options.bucket}/${options.key} (expires: ${expiresIn}s)`);
+    this.logger.debug(
+      `Generated R2 signed URL for ${options.bucket}/${options.key} (expires: ${expiresIn}s)`,
+    );
     return url;
   }
 

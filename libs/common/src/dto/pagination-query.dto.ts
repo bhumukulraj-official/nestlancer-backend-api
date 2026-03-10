@@ -1,7 +1,12 @@
 import { IsOptional, IsInt, Min, Max, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT, MIN_LIMIT } from '../constants/pagination.constants';
+import {
+  DEFAULT_PAGE,
+  DEFAULT_LIMIT,
+  MAX_LIMIT,
+  MIN_LIMIT,
+} from '../constants/pagination.constants';
 
 /** Standard pagination query DTO per 100-api-standards */
 export class PaginationQueryDto {

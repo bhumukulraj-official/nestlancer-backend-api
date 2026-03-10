@@ -5,23 +5,23 @@ import { PrismaWriteService } from '@nestlancer/database';
 
 @Injectable()
 export class NotificationBroadcastService {
-    private readonly logger = new Logger(NotificationBroadcastService.name);
+  private readonly logger = new Logger(NotificationBroadcastService.name);
 
-    constructor(
-        private readonly queuePublisher: QueuePublisherService,
-        private readonly prismaWrite: PrismaWriteService,
-    ) { }
+  constructor(
+    private readonly queuePublisher: QueuePublisherService,
+    private readonly prismaWrite: PrismaWriteService,
+  ) {}
 
-    async broadcast(dto: BroadcastNotificationDto) {
-        this.logger.log(`Broadcasting notification: ${dto.title}`);
+  async broadcast(dto: BroadcastNotificationDto) {
+    this.logger.log(`Broadcasting notification: ${dto.title}`);
 
-        // Simplification for the scaffolding: We publish an event and outbox-poller + workers handle the rest.
-        await this.queuePublisher.publish('nestlancer.events', 'notification.broadcast', dto);
+    // Simplification for the scaffolding: We publish an event and outbox-poller + workers handle the rest.
+    await this.queuePublisher.publish('nestlancer.events', 'notification.broadcast', dto);
 
-        return {
-            status: 'scheduled',
-            accepted: true,
-            scheduledFor: dto.scheduledFor,
-        };
-    }
+    return {
+      status: 'scheduled',
+      accepted: true,
+      scheduledFor: dto.scheduledFor,
+    };
+  }
 }

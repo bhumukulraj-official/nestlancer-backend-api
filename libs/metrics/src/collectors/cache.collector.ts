@@ -9,14 +9,12 @@ export class CacheMetricsCollector implements OnModuleInit {
   private cacheOperationDuration!: client.Histogram<string>;
   private cacheSize!: client.Gauge<string>;
 
-  constructor(private readonly metrics: MetricsService) { }
+  constructor(private readonly metrics: MetricsService) {}
 
   onModuleInit(): void {
-    this.cacheHits = this.metrics.createCounter(
-      'cache_hits_total',
-      'Total number of cache hits',
-      ['cache_name'],
-    );
+    this.cacheHits = this.metrics.createCounter('cache_hits_total', 'Total number of cache hits', [
+      'cache_name',
+    ]);
 
     this.cacheMisses = this.metrics.createCounter(
       'cache_misses_total',
@@ -31,11 +29,9 @@ export class CacheMetricsCollector implements OnModuleInit {
       [0.001, 0.005, 0.01, 0.025, 0.05, 0.1],
     );
 
-    this.cacheSize = this.metrics.createGauge(
-      'cache_keys_total',
-      'Total number of keys in cache',
-      ['cache_name'],
-    );
+    this.cacheSize = this.metrics.createGauge('cache_keys_total', 'Total number of keys in cache', [
+      'cache_name',
+    ]);
   }
 
   recordHit(cacheName: string = 'default'): void {
@@ -46,7 +42,11 @@ export class CacheMetricsCollector implements OnModuleInit {
     this.cacheMisses.inc({ cache_name: cacheName });
   }
 
-  recordOperationDuration(operation: string, durationSec: number, cacheName: string = 'default'): void {
+  recordOperationDuration(
+    operation: string,
+    durationSec: number,
+    cacheName: string = 'default',
+  ): void {
     this.cacheOperationDuration.observe({ operation, cache_name: cacheName }, durationSec);
   }
 

@@ -15,22 +15,22 @@ import { NotificationStatsService } from './notification-stats.service';
 import { NotificationsAdminService } from './notifications-admin.service';
 
 @Module({
-    imports: [DatabaseModule.forRoot(), CacheModule.forRoot(), QueueModule.forRoot()],
-    controllers: [
-        NotificationsRootController,
-        NotificationsController,
-        NotificationsAdminController,
-        NotificationTemplatesAdminController,
-    ],
-    providers: [
-        NotificationsService,
-        NotificationDeliveryService,
-        NotificationBroadcastService,
-        NotificationSegmentService,
-        NotificationTemplatesService,
-        NotificationStatsService,
-        NotificationsAdminService,
-    ],
-    exports: [NotificationsService, NotificationDeliveryService],
+  imports: [DatabaseModule.forRoot(), CacheModule.forRoot(), QueueModule.forRoot()],
+  controllers: [
+    NotificationsRootController,
+    NotificationsController,
+    NotificationsAdminController,
+    NotificationTemplatesAdminController,
+  ],
+  providers: [
+    NotificationsService,
+    NotificationDeliveryService,
+    NotificationBroadcastService,
+    NotificationSegmentService,
+    NotificationTemplatesService,
+    NotificationStatsService,
+    NotificationsAdminService,
+  ],
+  exports: [NotificationsService, NotificationDeliveryService],
 })
-export class NotificationsModule { }
+export class NotificationsModule {}

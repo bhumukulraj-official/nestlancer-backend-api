@@ -9,4 +9,3 @@ export enum RequestStatus {
   CHANGES_REQUESTED = 'CHANGES_REQUESTED',
   CANCELLED = 'CANCELLED',
 }
-

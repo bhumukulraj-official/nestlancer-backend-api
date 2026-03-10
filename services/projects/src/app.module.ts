@@ -20,29 +20,25 @@ import { ProjectDeliverablesService } from './services/project-deliverables.serv
 import { ProjectPaymentsService } from './services/project-payments.service';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        QueueModule.forRoot(),
-        OutboxModule.forRoot(),
-        CacheModule.forRoot(),
-        AuthLibModule,
-        StorageModule.forRoot(),
-    ],
-    controllers: [
-        ProjectsController,
-        ProjectsAdminController,
-        ProjectsPublicController,
-    ],
-    providers: [
-        ProjectsService,
-        ProjectsAdminService,
-        ProjectTimelineService,
-        ProjectDeliverablesService,
-        ProjectPaymentsService,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    QueueModule.forRoot(),
+    OutboxModule.forRoot(),
+    CacheModule.forRoot(),
+    AuthLibModule,
+    StorageModule.forRoot(),
+  ],
+  controllers: [ProjectsController, ProjectsAdminController, ProjectsPublicController],
+  providers: [
+    ProjectsService,
+    ProjectsAdminService,
+    ProjectTimelineService,
+    ProjectDeliverablesService,
+    ProjectPaymentsService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

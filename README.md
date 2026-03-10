@@ -46,25 +46,25 @@ For detailed architecture documentation, see [`docs/architecture/`](docs/archite
 
 ## 🧰 Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| **Runtime** | Node.js 20 (LTS) |
-| **Framework** | NestJS 10.x |
-| **Language** | TypeScript 5.x (strict mode) |
-| **ORM** | Prisma 5.x |
-| **Database** | PostgreSQL 16 (primary + read replicas) |
-| **Cache** | Redis 7 (cache + pub/sub) |
-| **Queue** | RabbitMQ 3.13 |
-| **Auth** | JWT (RS256/HS256), bcrypt, TOTP 2FA |
-| **Storage** | S3-compatible (Backblaze B2) |
-| **CDN** | Cloudflare |
-| **Payments** | Razorpay (INR, amounts in paise) |
-| **Email** | ZeptoMail (transactional) + AWS SES (bulk) |
-| **Monorepo** | pnpm workspaces + Turborepo |
-| **Testing** | Jest 29.x + Supertest |
-| **Container** | Docker + Kubernetes |
-| **IaC** | Terraform |
-| **CI/CD** | GitHub Actions |
+| Component     | Technology                                 |
+| ------------- | ------------------------------------------ |
+| **Runtime**   | Node.js 20 (LTS)                           |
+| **Framework** | NestJS 10.x                                |
+| **Language**  | TypeScript 5.x (strict mode)               |
+| **ORM**       | Prisma 5.x                                 |
+| **Database**  | PostgreSQL 16 (primary + read replicas)    |
+| **Cache**     | Redis 7 (cache + pub/sub)                  |
+| **Queue**     | RabbitMQ 3.13                              |
+| **Auth**      | JWT (RS256/HS256), bcrypt, TOTP 2FA        |
+| **Storage**   | S3-compatible (Backblaze B2)               |
+| **CDN**       | Cloudflare                                 |
+| **Payments**  | Razorpay (INR, amounts in paise)           |
+| **Email**     | ZeptoMail (transactional) + AWS SES (bulk) |
+| **Monorepo**  | pnpm workspaces + Turborepo                |
+| **Testing**   | Jest 29.x + Supertest                      |
+| **Container** | Docker + Kubernetes                        |
+| **IaC**       | Terraform                                  |
+| **CI/CD**     | GitHub Actions                             |
 
 ---
 
@@ -151,23 +151,23 @@ open http://localhost:8025
 
 ## 🛠 Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `make install` | Install dependencies + generate Prisma client |
-| `make dev` | Start Docker services + run all apps in dev mode |
-| `make dev-services` | Start only infrastructure services |
-| `make build` | Build all packages |
-| `make test` | Run full test suite |
-| `make test-unit` | Run unit tests only |
-| `make lint` | Run ESLint across all packages |
-| `make format` | Format code with Prettier |
-| `make db-migrate` | Run database migrations |
-| `make db-seed` | Seed the database |
-| `make db-reset` | Reset database (drop + migrate + seed) |
-| `make docker-up` | Start Docker infrastructure |
-| `make docker-down` | Stop Docker infrastructure |
-| `make clean` | Remove build artifacts and node_modules |
-| `make help` | Show all available commands |
+| Command             | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `make install`      | Install dependencies + generate Prisma client    |
+| `make dev`          | Start Docker services + run all apps in dev mode |
+| `make dev-services` | Start only infrastructure services               |
+| `make build`        | Build all packages                               |
+| `make test`         | Run full test suite                              |
+| `make test-unit`    | Run unit tests only                              |
+| `make lint`         | Run ESLint across all packages                   |
+| `make format`       | Format code with Prettier                        |
+| `make db-migrate`   | Run database migrations                          |
+| `make db-seed`      | Seed the database                                |
+| `make db-reset`     | Reset database (drop + migrate + seed)           |
+| `make docker-up`    | Start Docker infrastructure                      |
+| `make docker-down`  | Stop Docker infrastructure                       |
+| `make clean`        | Remove build artifacts and node_modules          |
+| `make help`         | Show all available commands                      |
 
 ---
 

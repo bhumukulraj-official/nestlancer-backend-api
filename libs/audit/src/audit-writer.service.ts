@@ -23,7 +23,9 @@ export class AuditWriterService {
    */
   async write(entry: AuditEntry): Promise<void> {
     this.buffer.push(entry);
-    this.logger.debug(`Audit: ${entry.action} on ${entry.resourceType}:${entry.resourceId} by ${entry.userId}`);
+    this.logger.debug(
+      `Audit: ${entry.action} on ${entry.resourceType}:${entry.resourceId} by ${entry.userId}`,
+    );
 
     if (this.buffer.length >= this.batchSize) {
       await this.flush();

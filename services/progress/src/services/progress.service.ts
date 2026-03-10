@@ -8,121 +8,127 @@ import { OutboxService } from '@nestlancer/outbox';
 
 @Injectable()
 export class ProgressService {
-    constructor(
-        private readonly prismaWrite: PrismaWriteService,
-        private readonly prismaRead: PrismaReadService,
-        private readonly outbox: OutboxService,
-    ) { }
+  constructor(
+    private readonly prismaWrite: PrismaWriteService,
+    private readonly prismaRead: PrismaReadService,
+    private readonly outbox: OutboxService,
+  ) {}
 
-    async createEntry(userId: string, projectId: string, dto: CreateProgressEntryDto) {
-        const entry = await this.prismaWrite.progressEntry.create({
-            data: {
-                projectId,
-                type: dto.type,
-                title: dto.title,
-                description: dto.description,
-                milestoneId: dto.milestoneId,
-                visibility: dto.visibility || Visibility.CLIENT_VISIBLE,
-                actorId: userId,
-                clientNotified: dto.notifyClient ?? true,
-                details: {
-                    deliverableIds: dto.deliverableIds,
-                    attachmentIds: dto.attachmentIds,
-                }
-            },
-        });
+  async createEntry(userId: string, projectId: string, dto: CreateProgressEntryDto) {
+    const entry = await this.prismaWrite.progressEntry.create({
+      data: {
+        projectId,
+        type: dto.type,
+        title: dto.title,
+        description: dto.description,
+        milestoneId: dto.milestoneId,
+        visibility: dto.visibility || Visibility.CLIENT_VISIBLE,
+        actorId: userId,
+        clientNotified: dto.notifyClient ?? true,
+        details: {
+          deliverableIds: dto.deliverableIds,
+          attachmentIds: dto.attachmentIds,
+        },
+      },
+    });
 
-        if (entry.visibility === Visibility.CLIENT_VISIBLE && entry.clientNotified) {
-            await this.outbox.createEvent({
-                aggregateType: 'PROGRESS_ENTRY',
-                aggregateId: entry.id,
-                type: 'PROGRESS_ENTRY_CREATED',
-                payload: {
-                    projectId: entry.projectId,
-                    entryType: entry.type,
-                    title: entry.title,
-                }
-            });
-        }
-
-        return entry;
+    if (entry.visibility === Visibility.CLIENT_VISIBLE && entry.clientNotified) {
+      await this.outbox.createEvent({
+        aggregateType: 'PROGRESS_ENTRY',
+        aggregateId: entry.id,
+        type: 'PROGRESS_ENTRY_CREATED',
+        payload: {
+          projectId: entry.projectId,
+          entryType: entry.type,
+          title: entry.title,
+        },
+      });
     }
 
-    async getProjectProgress(projectId: string, query: QueryProgressDto) {
-        const { page = 1, limit = 20, type } = query;
-        const skip = (page - 1) * limit;
+    return entry;
+  }
 
-        const where: any = { projectId };
-        if (type) {
-            where.type = type;
-        }
+  async getProjectProgress(projectId: string, query: QueryProgressDto) {
+    const { page = 1, limit = 20, type } = query;
+    const skip = (page - 1) * limit;
 
-        const [items, total] = await Promise.all([
-            this.prismaRead.progressEntry.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: { createdAt: 'desc' },
-            }),
-            this.prismaRead.progressEntry.count({ where }),
-        ]);
-
-        return {
-            items,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            }
-        };
+    const where: any = { projectId };
+    if (type) {
+      where.type = type;
     }
 
-    async getEntryById(id: string) {
-        const entry = await this.prismaRead.progressEntry.findUnique({
-            where: { id },
-        });
-        if (!entry) throw new NotFoundException('Progress entry not found');
-        return entry;
+    const [items, total] = await Promise.all([
+      this.prismaRead.progressEntry.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prismaRead.progressEntry.count({ where }),
+    ]);
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getEntryById(id: string) {
+    const entry = await this.prismaRead.progressEntry.findUnique({
+      where: { id },
+    });
+    if (!entry) throw new NotFoundException('Progress entry not found');
+    return entry;
+  }
+
+  async updateEntry(id: string, dto: UpdateProgressEntryDto) {
+    const entry = await this.prismaWrite.progressEntry.update({
+      where: { id },
+      data: {
+        title: dto.title,
+        description: dto.description,
+        visibility: dto.visibility,
+      },
+    });
+    return entry;
+  }
+
+  async deleteEntry(id: string) {
+    await this.prismaWrite.progressEntry.delete({
+      where: { id },
+    });
+    return { success: true };
+  }
+
+  async getStatusSummary(projectId: string) {
+    const milestones = await this.prismaRead.milestone.findMany({
+      where: { projectId },
+    });
+
+    if (milestones.length === 0) {
+      return { percentageComplete: 0, currentPhase: 'Not Started' };
     }
 
-    async updateEntry(id: string, dto: UpdateProgressEntryDto) {
-        const entry = await this.prismaWrite.progressEntry.update({
-            where: { id },
-            data: {
-                title: dto.title,
-                description: dto.description,
-                visibility: dto.visibility,
-            },
-        });
-        return entry;
-    }
+    const completed = milestones.filter(
+      (m) => m.status === 'COMPLETED' || m.status === 'REVIEW',
+    ).length;
+    const percentageComplete = Math.round((completed / milestones.length) * 100);
 
-    async deleteEntry(id: string) {
-        await this.prismaWrite.progressEntry.delete({
-            where: { id },
-        });
-        return { success: true };
-    }
+    const activeMilestone = milestones.find((m) => m.status === 'IN_PROGRESS');
+    const currentPhase = activeMilestone
+      ? activeMilestone.name
+      : percentageComplete === 100
+        ? 'Completed'
+        : 'Pending';
 
-    async getStatusSummary(projectId: string) {
-        const milestones = await this.prismaRead.milestone.findMany({
-            where: { projectId },
-        });
-
-        if (milestones.length === 0) {
-            return { percentageComplete: 0, currentPhase: 'Not Started' };
-        }
-
-        const completed = milestones.filter(m => m.status === 'COMPLETED' || m.status === 'REVIEW').length;
-        const percentageComplete = Math.round((completed / milestones.length) * 100);
-
-        const activeMilestone = milestones.find(m => m.status === 'IN_PROGRESS');
-        const currentPhase = activeMilestone ? activeMilestone.name : (percentageComplete === 100 ? 'Completed' : 'Pending');
-
-        return {
-            percentageComplete,
-            currentPhase,
-        };
-    }
+    return {
+      percentageComplete,
+      currentPhase,
+    };
+  }
 }

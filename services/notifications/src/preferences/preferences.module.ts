@@ -4,9 +4,9 @@ import { PreferencesService } from './preferences.service';
 import { DatabaseModule } from '@nestlancer/database';
 
 @Module({
-    imports: [DatabaseModule],
-    controllers: [PreferencesController],
-    providers: [PreferencesService],
-    exports: [PreferencesService]
+  imports: [DatabaseModule],
+  controllers: [PreferencesController],
+  providers: [PreferencesService],
+  exports: [PreferencesService],
 })
-export class PreferencesModule { }
+export class PreferencesModule {}

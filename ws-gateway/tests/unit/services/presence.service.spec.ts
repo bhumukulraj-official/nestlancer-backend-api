@@ -17,10 +17,7 @@ describe('WsPresenceService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        WsPresenceService,
-        { provide: CacheService, useValue: mockCacheService },
-      ],
+      providers: [WsPresenceService, { provide: CacheService, useValue: mockCacheService }],
     }).compile();
 
     provider = module.get<WsPresenceService>(WsPresenceService);

@@ -3,4 +3,3 @@ export enum UserStatus {
   SUSPENDED = 'SUSPENDED',
   DELETED = 'DELETED',
 }
-

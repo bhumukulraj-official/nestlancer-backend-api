@@ -3,13 +3,16 @@
 ## Step-by-Step
 
 ### 1. Create Service Directory
+
 ```bash
 mkdir -p services/<name>/src
 cd services/<name>
 ```
 
 ### 2. Initialize Package
+
 Create `package.json`:
+
 ```json
 {
   "name": "@nestlancer/<name>",
@@ -33,9 +36,11 @@ Create `package.json`:
 ```
 
 ### 3. Add to Workspace
+
 Verify `services/*` is already in `pnpm-workspace.yaml` (it should be).
 
 ### 4. Create NestJS Scaffold
+
 - `src/main.ts` – Bootstrap with ConfigModule and standard middleware
 - `src/app.module.ts` – Import shared modules
 - `src/<name>.module.ts` – Feature module
@@ -44,7 +49,9 @@ Verify `services/*` is already in `pnpm-workspace.yaml` (it should be).
 - `src/<name>.repository.ts` – Database access
 
 ### 5. Create Dockerfile
+
 Extend `docker/service-base/Dockerfile.base`:
+
 ```dockerfile
 FROM nestlancer/service-base:latest AS builder
 COPY services/<name> ./services/<name>
@@ -52,19 +59,24 @@ RUN pnpm build --filter=@nestlancer/<name>
 ```
 
 ### 6. Add K8s Manifests
+
 ```bash
 mkdir -p deploy/kubernetes/services/<name>
 # Create: deployment.yaml, service.yaml, hpa.yaml, kustomization.yaml
 ```
 
 ### 7. Add Gateway Route
+
 Update `gateway/src/routes.config.ts` to proxy to the new service.
 
 ### 8. Create Prisma Models
+
 Add `prisma/schema/<name>.prisma` with domain models.
 
 ### 9. Add Health Endpoint
+
 Implement `GET /api/v1/health` returning service health status.
 
 ### 10. Update Project Tracker
+
 Add entries to `401-project-tracker.md`.

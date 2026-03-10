@@ -11,29 +11,32 @@ import { NotificationsService } from './notifications.service';
 @ApiTags('Notifications/Root')
 @Controller()
 export class NotificationsRootController {
-    constructor(private readonly notificationsService: NotificationsService) { }
+  constructor(private readonly notificationsService: NotificationsService) {}
 
-    /**
-     * Evaluates the operational readiness of the Notifications service.
-     * 
-     * @returns A promise resolving to the physical health status of the service
-     */
-    @Get('health')
-    @ApiOperation({ summary: 'Service health check', description: 'Confirm that the notifications microservice is reachable and operational.' })
-    async health(): Promise<any> {
-        return { status: 'ok', service: 'notifications' };
-    }
+  /**
+   * Evaluates the operational readiness of the Notifications service.
+   *
+   * @returns A promise resolving to the physical health status of the service
+   */
+  @Get('health')
+  @ApiOperation({
+    summary: 'Service health check',
+    description: 'Confirm that the notifications microservice is reachable and operational.',
+  })
+  async health(): Promise<any> {
+    return { status: 'ok', service: 'notifications' };
+  }
 
-    /**
-     * Sends a test notification to the current user.
-     */
-    @Post('test')
-    @ApiOperation({ summary: 'Send test notification' })
-    @ApiBearerAuth()
-    @UseGuards(JwtAuthGuard)
-    @ApiStandardResponse(Object)
-    async sendTest(@CurrentUser() user: AuthenticatedUser): Promise<any> {
-        await this.notificationsService.sendTestNotification(user.userId);
-        return { sent: true };
-    }
+  /**
+   * Sends a test notification to the current user.
+   */
+  @Post('test')
+  @ApiOperation({ summary: 'Send test notification' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiStandardResponse(Object)
+  async sendTest(@CurrentUser() user: AuthenticatedUser): Promise<any> {
+    await this.notificationsService.sendTestNotification(user.userId);
+    return { sent: true };
+  }
 }

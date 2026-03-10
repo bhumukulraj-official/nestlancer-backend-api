@@ -7,35 +7,35 @@ import { PaymentConfirmationService } from '../../../../src/services/payment-con
 import { ReceiptPdfService, InvoicePdfService } from '../../../../src/services/pdf.service';
 
 describe('PaymentsController', () => {
-    let controller: PaymentsController;
+  let controller: PaymentsController;
 
-    const mockPaymentsService = {};
-    const mockIntentService = {};
-    const mockConfirmationService = {};
-    const mockReceiptService = {};
-    const mockInvoiceService = {};
+  const mockPaymentsService = {};
+  const mockIntentService = {};
+  const mockConfirmationService = {};
+  const mockReceiptService = {};
+  const mockInvoiceService = {};
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [PaymentsController],
-            providers: [
-                { provide: PaymentsService, useValue: mockPaymentsService },
-                { provide: PaymentIntentService, useValue: mockIntentService },
-                { provide: PaymentConfirmationService, useValue: mockConfirmationService },
-                { provide: ReceiptPdfService, useValue: mockReceiptService },
-                { provide: InvoicePdfService, useValue: mockInvoiceService },
-            ],
-        })
-            .overrideGuard(JwtAuthGuard)
-            .useValue({ canActivate: () => true })
-            .overrideGuard(RolesGuard)
-            .useValue({ canActivate: () => true })
-            .compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [PaymentsController],
+      providers: [
+        { provide: PaymentsService, useValue: mockPaymentsService },
+        { provide: PaymentIntentService, useValue: mockIntentService },
+        { provide: PaymentConfirmationService, useValue: mockConfirmationService },
+        { provide: ReceiptPdfService, useValue: mockReceiptService },
+        { provide: InvoicePdfService, useValue: mockInvoiceService },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-        controller = module.get<PaymentsController>(PaymentsController);
-    });
+    controller = module.get<PaymentsController>(PaymentsController);
+  });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
 });

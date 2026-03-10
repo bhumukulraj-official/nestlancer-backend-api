@@ -13,19 +13,19 @@ import { MediaModule } from './media/media.module';
 import { ShareModule } from './share/share.module';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        CacheModule.forRoot(),
-        QueueModule.forRoot(),
-        OutboxModule.forRoot(),
-        AuthLibModule,
-        StorageModule,
-        MediaModule,
-        ShareModule,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    CacheModule.forRoot(),
+    QueueModule.forRoot(),
+    OutboxModule.forRoot(),
+    AuthLibModule,
+    StorageModule,
+    MediaModule,
+    ShareModule,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

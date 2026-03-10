@@ -4,43 +4,43 @@ import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { PaymentMilestonesService } from '../../../../src/services/payment-milestones.service';
 
 describe('PaymentMilestonesAdminController', () => {
-    let controller: PaymentMilestonesAdminController;
-    let milestonesService: jest.Mocked<PaymentMilestonesService>;
+  let controller: PaymentMilestonesAdminController;
+  let milestonesService: jest.Mocked<PaymentMilestonesService>;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [PaymentMilestonesAdminController],
-            providers: [
-                {
-                    provide: PaymentMilestonesService,
-                    useValue: {
-                        getPaymentsByMilestone: jest.fn(),
-                    },
-                },
-            ],
-        })
-            .overrideGuard(JwtAuthGuard)
-            .useValue({ canActivate: () => true })
-            .overrideGuard(RolesGuard)
-            .useValue({ canActivate: () => true })
-            .compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [PaymentMilestonesAdminController],
+      providers: [
+        {
+          provide: PaymentMilestonesService,
+          useValue: {
+            getPaymentsByMilestone: jest.fn(),
+          },
+        },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-        controller = module.get<PaymentMilestonesAdminController>(PaymentMilestonesAdminController);
-        milestonesService = module.get(PaymentMilestonesService);
+    controller = module.get<PaymentMilestonesAdminController>(PaymentMilestonesAdminController);
+    milestonesService = module.get(PaymentMilestonesService);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('getPaymentsByMilestone', () => {
+    it('should list payments for a milestone', async () => {
+      milestonesService.getPaymentsByMilestone.mockResolvedValue([{ id: 'pay1' }] as any);
+
+      const result = await controller.getPaymentsByMilestone('milestone1');
+
+      expect(milestonesService.getPaymentsByMilestone).toHaveBeenCalledWith('milestone1');
+      expect(result).toEqual({ status: 'success', data: [{ id: 'pay1' }] });
     });
-
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
-    });
-
-    describe('getPaymentsByMilestone', () => {
-        it('should list payments for a milestone', async () => {
-            milestonesService.getPaymentsByMilestone.mockResolvedValue([{ id: 'pay1' }] as any);
-
-            const result = await controller.getPaymentsByMilestone('milestone1');
-
-            expect(milestonesService.getPaymentsByMilestone).toHaveBeenCalledWith('milestone1');
-            expect(result).toEqual({ status: 'success', data: [{ id: 'pay1' }] });
-        });
-    });
+  });
 });

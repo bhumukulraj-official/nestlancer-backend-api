@@ -18,7 +18,10 @@ describe('MailModule (Integration)', () => {
     module = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
-        MailModule.forRoot({ provider: 'smtp', smtp: { host: 'localhost', port: 587, secure: false } }),
+        MailModule.forRoot({
+          provider: 'smtp',
+          smtp: { host: 'localhost', port: 587, secure: false },
+        }),
       ],
       providers: [],
     }).compile();

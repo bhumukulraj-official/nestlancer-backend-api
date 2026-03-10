@@ -52,9 +52,7 @@ describe('GithubPushHandler', () => {
 
       await handler.handle(payload);
 
-      expect(logger.log).toHaveBeenCalledWith(
-        'Received GitHub push event for repo: org/repo',
-      );
+      expect(logger.log).toHaveBeenCalledWith('Received GitHub push event for repo: org/repo');
     });
   });
 });

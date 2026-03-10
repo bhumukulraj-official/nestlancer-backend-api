@@ -26,33 +26,33 @@ import { MilestoneApprovalService } from './services/milestone-approval.service'
 import { DeliverableReviewService } from './services/deliverable-review.service';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        AuthLibModule,
-        StorageModule.forRoot(),
-        OutboxModule.forRoot(),
-        QueueModule.forRoot(),
-        CacheModule.forRoot(),
-    ],
-    controllers: [
-        ProgressAdminController,
-        MilestonesAdminController,
-        DeliverablesAdminController,
-        ProgressController,
-        MilestoneApprovalsController,
-        DeliverableReviewsController,
-    ],
-    providers: [
-        ProgressService,
-        ProgressTimelineService,
-        MilestonesService,
-        DeliverablesService,
-        MilestoneApprovalService,
-        DeliverableReviewService,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    AuthLibModule,
+    StorageModule.forRoot(),
+    OutboxModule.forRoot(),
+    QueueModule.forRoot(),
+    CacheModule.forRoot(),
+  ],
+  controllers: [
+    ProgressAdminController,
+    MilestonesAdminController,
+    DeliverablesAdminController,
+    ProgressController,
+    MilestoneApprovalsController,
+    DeliverableReviewsController,
+  ],
+  providers: [
+    ProgressService,
+    ProgressTimelineService,
+    MilestonesService,
+    DeliverablesService,
+    MilestoneApprovalService,
+    DeliverableReviewService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

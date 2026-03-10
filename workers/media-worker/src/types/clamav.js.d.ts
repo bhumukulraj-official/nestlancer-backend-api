@@ -1,4 +1,4 @@
 declare module 'clamav.js' {
-    const clamav: any;
-    export = clamav;
+  const clamav: any;
+  export = clamav;
 }

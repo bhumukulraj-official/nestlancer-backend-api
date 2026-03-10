@@ -11,10 +11,7 @@ describe('AuditModule (Integration)', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
-        AuditModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }), AuditModule],
     })
       .overrideProvider(AuditRepository)
       .useValue({

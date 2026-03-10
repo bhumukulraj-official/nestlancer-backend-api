@@ -87,13 +87,13 @@ tests/e2e/
 
 ## E2E vs Integration Tests
 
-| Aspect | Integration | E2E |
-|--------|-------------|-----|
-| **Scope** | Single service + real DB | Full stack via gateway |
-| **Mocks** | May mock HTTP proxy | No mocks |
+| Aspect      | Integration                  | E2E                       |
+| ----------- | ---------------------------- | ------------------------- |
+| **Scope**   | Single service + real DB     | Full stack via gateway    |
+| **Mocks**   | May mock HTTP proxy          | No mocks                  |
 | **Startup** | `Test.createTestingModule()` | Full Docker Compose stack |
-| **Speed** | ~30s per test | ~60s per test |
-| **When** | Every PR | Pre-merge / nightly |
+| **Speed**   | ~30s per test                | ~60s per test             |
+| **When**    | Every PR                     | Pre-merge / nightly       |
 
 ## Environment
 
@@ -108,12 +108,12 @@ E2E tests use `.env.e2e` which differs from `.env.development`:
 
 ## Key Configuration
 
-| Setting | Value | Reason |
-|---------|-------|--------|
-| `testTimeout` | 60,000ms | Network requests through full stack |
-| `maxWorkers` | 1 | Sequential to avoid resource contention |
-| `forceExit` | true | Clean up open handles (HTTP/WS) |
-| `validateStatus` | `() => true` | Let tests assert status codes |
+| Setting          | Value        | Reason                                  |
+| ---------------- | ------------ | --------------------------------------- |
+| `testTimeout`    | 60,000ms     | Network requests through full stack     |
+| `maxWorkers`     | 1            | Sequential to avoid resource contention |
+| `forceExit`      | true         | Clean up open handles (HTTP/WS)         |
+| `validateStatus` | `() => true` | Let tests assert status codes           |
 
 ## Writing New Tests
 
@@ -128,28 +128,28 @@ import { createHttpClient, E2EHttpClient } from '../helpers/http-client';
 import { createTestAuthHeaders } from '../helpers/auth-helper';
 
 describe('My Feature (E2E)', () => {
-    let client: E2EHttpClient;
+  let client: E2EHttpClient;
 
-    beforeAll(() => {
-        client = createHttpClient();
-    });
+  beforeAll(() => {
+    client = createHttpClient();
+  });
 
-    it('should do something', async () => {
-        const headers = createTestAuthHeaders('test-user');
-        const response = await client.get('/my-endpoint', { headers });
-        expect(response.status).toBe(200);
-    });
+  it('should do something', async () => {
+    const headers = createTestAuthHeaders('test-user');
+    const response = await client.get('/my-endpoint', { headers });
+    expect(response.status).toBe(200);
+  });
 });
 ```
 
 ## Troubleshooting
 
-| Issue | Fix |
-|-------|-----|
-| Gateway not healthy | Check `docker compose logs gateway` |
-| DB migration fails | Ensure `nestlancer_e2e` database exists |
-| Tests timeout | Increase `testTimeout` or check service logs |
-| Port conflicts | Ensure dev stack is stopped before E2E |
+| Issue                 | Fix                                             |
+| --------------------- | ----------------------------------------------- |
+| Gateway not healthy   | Check `docker compose logs gateway`             |
+| DB migration fails    | Ensure `nestlancer_e2e` database exists         |
+| Tests timeout         | Increase `testTimeout` or check service logs    |
+| Port conflicts        | Ensure dev stack is stopped before E2E          |
 | MailHog not receiving | Verify SMTP_HOST points to `nestlancer-mailhog` |
 
 ## Related Docs

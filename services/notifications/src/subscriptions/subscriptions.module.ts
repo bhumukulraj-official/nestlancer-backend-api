@@ -4,9 +4,9 @@ import { SubscriptionsService } from './subscriptions.service';
 import { DatabaseModule } from '@nestlancer/database';
 
 @Module({
-    imports: [DatabaseModule],
-    controllers: [SubscriptionsController],
-    providers: [SubscriptionsService],
-    exports: [SubscriptionsService]
+  imports: [DatabaseModule],
+  controllers: [SubscriptionsController],
+  providers: [SubscriptionsService],
+  exports: [SubscriptionsService],
 })
-export class SubscriptionsModule { }
+export class SubscriptionsModule {}

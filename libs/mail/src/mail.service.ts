@@ -20,7 +20,7 @@ export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
   private transporter!: Transporter;
 
-  constructor(@Inject('MAIL_OPTIONS') private readonly options: MailModuleConfig) { }
+  constructor(@Inject('MAIL_OPTIONS') private readonly options: MailModuleConfig) {}
 
   onModuleInit(): void {
     const provider = this.options.provider || process.env.EMAIL_PROVIDER || 'smtp';
@@ -29,11 +29,15 @@ export class MailService implements OnModuleInit {
       this.transporter = createTransport({
         host: this.options.smtp?.host || process.env.SMTP_HOST || 'localhost',
         port: this.options.smtp?.port || Number(process.env.SMTP_PORT || 587),
-        secure: this.options.smtp?.secure ?? (process.env.SMTP_SECURE === 'true'),
-        auth: this.options.smtp?.auth || (process.env.SMTP_USER ? {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS || '',
-        } : undefined),
+        secure: this.options.smtp?.secure ?? process.env.SMTP_SECURE === 'true',
+        auth:
+          this.options.smtp?.auth ||
+          (process.env.SMTP_USER
+            ? {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS || '',
+              }
+            : undefined),
       });
       this.logger.log('MailService initialized with SMTP transport');
     } else if (provider === 'zeptomail') {
@@ -57,7 +61,8 @@ export class MailService implements OnModuleInit {
   }
 
   async send(mail: MailOptions): Promise<{ messageId: string }> {
-    const from = mail.from || this.options.from || process.env.SES_FROM_EMAIL || 'noreply@nestlancer.com';
+    const from =
+      mail.from || this.options.from || process.env.SES_FROM_EMAIL || 'noreply@nestlancer.com';
 
     this.logger.log(`Sending email to ${mail.to}: ${mail.subject}`);
 
@@ -103,11 +108,15 @@ export class MailService implements OnModuleInit {
   private getTemplateContent(templateName: string): string {
     // Template mapping for common email templates
     const templates: Record<string, string> = {
-      'welcome': '<h1>Welcome to Nestlancer, {{name}}!</h1><p>Your account has been created.</p>',
-      'reset-password': '<h1>Reset Your Password</h1><p>Click <a href="{{resetUrl}}">here</a> to reset your password.</p><p>This link expires in {{expiry}}.</p>',
-      'verify-email': '<h1>Verify Your Email</h1><p>Click <a href="{{verifyUrl}}">here</a> to verify your email address.</p>',
-      'invoice': '<h1>Invoice #{{invoiceNumber}}</h1><p>Amount: {{amount}}</p><p>Due: {{dueDate}}</p>',
-      'payment-receipt': '<h1>Payment Received</h1><p>Amount: {{amount}}</p><p>Transaction: {{transactionId}}</p>',
+      welcome: '<h1>Welcome to Nestlancer, {{name}}!</h1><p>Your account has been created.</p>',
+      'reset-password':
+        '<h1>Reset Your Password</h1><p>Click <a href="{{resetUrl}}">here</a> to reset your password.</p><p>This link expires in {{expiry}}.</p>',
+      'verify-email':
+        '<h1>Verify Your Email</h1><p>Click <a href="{{verifyUrl}}">here</a> to verify your email address.</p>',
+      invoice:
+        '<h1>Invoice #{{invoiceNumber}}</h1><p>Amount: {{amount}}</p><p>Due: {{dueDate}}</p>',
+      'payment-receipt':
+        '<h1>Payment Received</h1><p>Amount: {{amount}}</p><p>Transaction: {{transactionId}}</p>',
       'project-update': '<h1>Project Update: {{projectTitle}}</h1><p>{{message}}</p>',
     };
 

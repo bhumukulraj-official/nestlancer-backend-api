@@ -1,18 +1,23 @@
 # ADR-004: Transactional Outbox Pattern
 
 ## Status
+
 Accepted
 
 ## Date
+
 2025-12-01
 
 ## Context
+
 Services need to publish domain events to RabbitMQ after business operations. Direct publishing creates a dual-write problem: the DB write may succeed but the queue publish may fail (or vice versa), leading to inconsistency.
 
 ## Decision
+
 Use the **transactional outbox pattern**: write events to an `OutboxEvent` table in the same database transaction as the business operation. A separate `outbox-poller` worker polls the table and publishes events to RabbitMQ.
 
 ### Flow
+
 ```
 Service: BEGIN TRANSACTION
   1. INSERT/UPDATE business data
@@ -30,12 +35,14 @@ Cleanup (daily):
 ```
 
 ## Rationale
+
 - **Guarantees at-least-once delivery**: Event is persisted atomically with business data
 - **No dual-write problem**: Single database transaction for both operations
 - **Reliable**: Even if RabbitMQ is temporarily down, events are stored and published when it recovers
 - **Simple**: No distributed transaction coordination (2PC/saga)
 
 ## Consequences
+
 - Slightly higher latency for event delivery (polling interval)
 - Outbox table must be cleaned up regularly
 - Events may be published more than once (consumers must be idempotent)

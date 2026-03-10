@@ -3,59 +3,59 @@ import { QueueConsumerService } from '../../src/queue-consumer.service';
 import * as amqp from 'amqplib';
 
 jest.mock('amqplib', () => ({
-    connect: jest.fn(),
+  connect: jest.fn(),
 }));
 
 describe('QueueConsumerService', () => {
-    let service: QueueConsumerService;
-    let mockConnection: any;
-    let mockChannel: any;
+  let service: QueueConsumerService;
+  let mockConnection: any;
+  let mockChannel: any;
 
-    beforeEach(async () => {
-        mockChannel = {
-            createChannel: jest.fn(),
-            prefetch: jest.fn(),
-            assertQueue: jest.fn(),
-            consume: jest.fn(),
-            ack: jest.fn(),
-            nack: jest.fn(),
-        };
-        mockConnection = {
-            createChannel: jest.fn().mockResolvedValue(mockChannel),
-        };
-        (amqp.connect as jest.Mock).mockResolvedValue(mockConnection);
+  beforeEach(async () => {
+    mockChannel = {
+      createChannel: jest.fn(),
+      prefetch: jest.fn(),
+      assertQueue: jest.fn(),
+      consume: jest.fn(),
+      ack: jest.fn(),
+      nack: jest.fn(),
+    };
+    mockConnection = {
+      createChannel: jest.fn().mockResolvedValue(mockChannel),
+    };
+    (amqp.connect as jest.Mock).mockResolvedValue(mockConnection);
 
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                QueueConsumerService,
-                {
-                    provide: 'QUEUE_OPTIONS',
-                    useValue: { url: 'amqp://localhost:5672' },
-                },
-            ],
-        }).compile();
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        QueueConsumerService,
+        {
+          provide: 'QUEUE_OPTIONS',
+          useValue: { url: 'amqp://localhost:5672' },
+        },
+      ],
+    }).compile();
 
-        service = module.get<QueueConsumerService>(QueueConsumerService);
-        await service.onModuleInit();
-    });
+    service = module.get<QueueConsumerService>(QueueConsumerService);
+    await service.onModuleInit();
+  });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
 
-    it('should consume messages', async () => {
-        const handler = jest.fn().mockResolvedValue(undefined);
-        await service.consume('test-queue', handler);
+  it('should consume messages', async () => {
+    const handler = jest.fn().mockResolvedValue(undefined);
+    await service.consume('test-queue', handler);
 
-        expect(mockChannel.assertQueue).toHaveBeenCalledWith('test-queue', { durable: true });
-        expect(mockChannel.consume).toHaveBeenCalled();
+    expect(mockChannel.assertQueue).toHaveBeenCalledWith('test-queue', { durable: true });
+    expect(mockChannel.consume).toHaveBeenCalled();
 
-        const consumeCallback = mockChannel.consume.mock.calls[0][1];
-        const mockMsg = { content: Buffer.from('test') };
+    const consumeCallback = mockChannel.consume.mock.calls[0][1];
+    const mockMsg = { content: Buffer.from('test') };
 
-        await consumeCallback(mockMsg);
+    await consumeCallback(mockMsg);
 
-        expect(handler).toHaveBeenCalled();
-        expect(mockChannel.ack).toHaveBeenCalledWith(mockMsg);
-    });
+    expect(handler).toHaveBeenCalled();
+    expect(mockChannel.ack).toHaveBeenCalledWith(mockMsg);
+  });
 });

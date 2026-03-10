@@ -17,27 +17,24 @@ import { SpamFilterService } from './services/spam-filter.service';
 import { ContactAdminService } from './services/contact-admin.service';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        CacheModule.forRoot(),
-        QueueModule.forRoot(),
-        AuthLibModule,
-        TurnstileModule.forRoot(),
-    ],
-    controllers: [
-        ContactPublicController,
-        ContactAdminController,
-    ],
-    providers: [
-        ContactService,
-        ContactSubmissionService,
-        ContactResponseService,
-        SpamFilterService,
-        ContactAdminService,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    CacheModule.forRoot(),
+    QueueModule.forRoot(),
+    AuthLibModule,
+    TurnstileModule.forRoot(),
+  ],
+  controllers: [ContactPublicController, ContactAdminController],
+  providers: [
+    ContactService,
+    ContactSubmissionService,
+    ContactResponseService,
+    SpamFilterService,
+    ContactAdminService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

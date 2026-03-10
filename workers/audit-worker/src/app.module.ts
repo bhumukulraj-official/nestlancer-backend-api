@@ -12,19 +12,14 @@ import { AuditBatchInsertProcessor } from './processors/audit-batch-insert.proce
 import { auditConfig } from './config/audit-worker.config';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        QueueModule.forRoot(),
-    ],
-    providers: [
-        AuditConsumer,
-        AuditWorkerService,
-        BatchBufferService,
-        AuditBatchInsertProcessor,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    QueueModule.forRoot(),
+  ],
+  providers: [AuditConsumer, AuditWorkerService, BatchBufferService, AuditBatchInsertProcessor],
 })
-export class AuditModule { }
+export class AuditModule {}

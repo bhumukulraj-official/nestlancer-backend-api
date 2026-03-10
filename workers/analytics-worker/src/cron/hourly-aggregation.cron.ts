@@ -8,20 +8,20 @@ import { Period } from '../interfaces/analytics-job.interface';
 
 @Injectable()
 export class HourlyAggregationCron {
-    constructor(
-        private readonly logger: LoggerService,
-        private readonly portfolioAnalytics: PortfolioAnalyticsProcessor,
-        private readonly blogAnalytics: BlogAnalyticsProcessor,
-        private readonly engagementAnalytics: EngagementAnalyticsProcessor,
-    ) { }
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly portfolioAnalytics: PortfolioAnalyticsProcessor,
+    private readonly blogAnalytics: BlogAnalyticsProcessor,
+    private readonly engagementAnalytics: EngagementAnalyticsProcessor,
+  ) {}
 
-    @Cron('0 * * * *')
-    async handle() {
-        this.logger.log('Running hourly aggregation cron');
-        await Promise.all([
-            this.portfolioAnalytics.process(Period.HOURLY),
-            this.blogAnalytics.process(Period.HOURLY),
-            this.engagementAnalytics.process(Period.HOURLY),
-        ]);
-    }
+  @Cron('0 * * * *')
+  async handle() {
+    this.logger.log('Running hourly aggregation cron');
+    await Promise.all([
+      this.portfolioAnalytics.process(Period.HOURLY),
+      this.blogAnalytics.process(Period.HOURLY),
+      this.engagementAnalytics.process(Period.HOURLY),
+    ]);
+  }
 }

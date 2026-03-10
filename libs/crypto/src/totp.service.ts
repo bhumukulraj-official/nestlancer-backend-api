@@ -30,7 +30,7 @@ export class TotpService {
 
   generateBackupCodes(count: number = 10): string[] {
     return Array.from({ length: count }, () =>
-      randomBytes(4).toString('hex').toUpperCase().match(/.{4}/g)!.join('-')
+      randomBytes(4).toString('hex').toUpperCase().match(/.{4}/g)!.join('-'),
     );
   }
 

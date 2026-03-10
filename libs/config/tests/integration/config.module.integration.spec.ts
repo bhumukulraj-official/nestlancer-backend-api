@@ -16,9 +16,7 @@ describe('ConfigModule (Integration)', () => {
     process.env.JWT_REFRESH_SECRET = 'secret1234567890';
 
     module = await Test.createTestingModule({
-      imports: [
-        NestlancerConfigModule.forRoot(),
-      ],
+      imports: [NestlancerConfigModule.forRoot()],
     }).compile();
 
     service = module.get<NestlancerConfigService>(NestlancerConfigService);

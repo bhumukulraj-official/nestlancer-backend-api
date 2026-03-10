@@ -3,80 +3,80 @@ import { PortfolioLikesService } from '../../../src/services/portfolio-likes.ser
 import { PrismaWriteService } from '@nestlancer/database';
 
 describe('PortfolioLikesService', () => {
-    let service: PortfolioLikesService;
-    let prismaWrite: jest.Mocked<PrismaWriteService>;
+  let service: PortfolioLikesService;
+  let prismaWrite: jest.Mocked<PrismaWriteService>;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                PortfolioLikesService,
-                {
-                    provide: PrismaWriteService,
-                    useValue: {
-                        portfolioLike: { findFirst: jest.fn(), create: jest.fn(), delete: jest.fn() },
-                        portfolioItem: { update: jest.fn() },
-                        $transaction: jest.fn(),
-                    },
-                },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PortfolioLikesService,
+        {
+          provide: PrismaWriteService,
+          useValue: {
+            portfolioLike: { findFirst: jest.fn(), create: jest.fn(), delete: jest.fn() },
+            portfolioItem: { update: jest.fn() },
+            $transaction: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
 
-        service = module.get<PortfolioLikesService>(PortfolioLikesService);
-        prismaWrite = module.get(PrismaWriteService);
+    service = module.get<PortfolioLikesService>(PortfolioLikesService);
+    prismaWrite = module.get(PrismaWriteService);
 
-        prismaWrite.$transaction.mockImplementation(async (cb: any) => {
-            if (Array.isArray(cb)) {
-                return Promise.all(cb);
-            }
-            return cb(prismaWrite);
-        });
+    prismaWrite.$transaction.mockImplementation(async (cb: any) => {
+      if (Array.isArray(cb)) {
+        return Promise.all(cb);
+      }
+      return cb(prismaWrite);
+    });
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('toggleLike', () => {
+    it('should create like and increment count if not liked', async () => {
+      prismaWrite.portfolioLike.findFirst.mockResolvedValue(null);
+
+      const result = await service.toggleLike('item1', 'user1');
+
+      expect(prismaWrite.$transaction).toHaveBeenCalled();
+      // create called with userId
+      expect(prismaWrite.portfolioLike.create).toHaveBeenCalledWith({
+        data: { portfolioItemId: 'item1', userId: 'user1' },
+      });
+      expect(prismaWrite.portfolioItem.update).toHaveBeenCalledWith({
+        where: { id: 'item1' },
+        data: { likeCount: { increment: 1 } },
+      });
+      expect(result).toEqual({ liked: true });
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    it('should delete like and decrement count if already liked (userId)', async () => {
+      prismaWrite.portfolioLike.findFirst.mockResolvedValue({ id: 'like1' } as any);
+
+      const result = await service.toggleLike('item1', 'user1');
+
+      expect(prismaWrite.$transaction).toHaveBeenCalled();
+      expect(prismaWrite.portfolioLike.delete).toHaveBeenCalledWith({ where: { id: 'like1' } });
+      expect(prismaWrite.portfolioItem.update).toHaveBeenCalledWith({
+        where: { id: 'item1' },
+        data: { likeCount: { decrement: 1 } },
+      });
+      expect(result).toEqual({ liked: false });
     });
 
-    describe('toggleLike', () => {
-        it('should create like and increment count if not liked', async () => {
-            prismaWrite.portfolioLike.findFirst.mockResolvedValue(null);
+    it('should handle toggle with ipHash', async () => {
+      prismaWrite.portfolioLike.findFirst.mockResolvedValue(null);
 
-            const result = await service.toggleLike('item1', 'user1');
+      const result = await service.toggleLike('item1', undefined, 'ip123');
 
-            expect(prismaWrite.$transaction).toHaveBeenCalled();
-            // create called with userId
-            expect(prismaWrite.portfolioLike.create).toHaveBeenCalledWith({
-                data: { portfolioItemId: 'item1', userId: 'user1' },
-            });
-            expect(prismaWrite.portfolioItem.update).toHaveBeenCalledWith({
-                where: { id: 'item1' },
-                data: { likeCount: { increment: 1 } },
-            });
-            expect(result).toEqual({ liked: true });
-        });
-
-        it('should delete like and decrement count if already liked (userId)', async () => {
-            prismaWrite.portfolioLike.findFirst.mockResolvedValue({ id: 'like1' } as any);
-
-            const result = await service.toggleLike('item1', 'user1');
-
-            expect(prismaWrite.$transaction).toHaveBeenCalled();
-            expect(prismaWrite.portfolioLike.delete).toHaveBeenCalledWith({ where: { id: 'like1' } });
-            expect(prismaWrite.portfolioItem.update).toHaveBeenCalledWith({
-                where: { id: 'item1' },
-                data: { likeCount: { decrement: 1 } },
-            });
-            expect(result).toEqual({ liked: false });
-        });
-
-        it('should handle toggle with ipHash', async () => {
-            prismaWrite.portfolioLike.findFirst.mockResolvedValue(null);
-
-            const result = await service.toggleLike('item1', undefined, 'ip123');
-
-            expect(prismaWrite.portfolioLike.create).toHaveBeenCalledWith({
-                data: { portfolioItemId: 'item1', ipHash: 'ip123' },
-            });
-            expect(result).toEqual({ liked: true });
-        });
+      expect(prismaWrite.portfolioLike.create).toHaveBeenCalledWith({
+        data: { portfolioItemId: 'item1', ipHash: 'ip123' },
+      });
+      expect(result).toEqual({ liked: true });
     });
+  });
 });

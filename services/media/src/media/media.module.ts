@@ -10,9 +10,9 @@ import { QueueModule } from '@nestlancer/queue';
 import { CacheModule } from '@nestlancer/cache';
 
 @Module({
-    imports: [StorageModule, DatabaseModule, QueueModule, CacheModule],
-    controllers: [MediaRootController, MediaController, MediaAdminController],
-    providers: [MediaService, MediaAdminService],
-    exports: [MediaService]
+  imports: [StorageModule, DatabaseModule, QueueModule, CacheModule],
+  controllers: [MediaRootController, MediaController, MediaAdminController],
+  providers: [MediaService, MediaAdminService],
+  exports: [MediaService],
 })
-export class MediaModule { }
+export class MediaModule {}

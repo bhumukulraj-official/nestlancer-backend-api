@@ -18,10 +18,7 @@ describe('WsConnectionService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        WsConnectionService,
-        { provide: CacheService, useValue: mockCacheService },
-      ],
+      providers: [WsConnectionService, { provide: CacheService, useValue: mockCacheService }],
     }).compile();
 
     provider = module.get<WsConnectionService>(WsConnectionService);

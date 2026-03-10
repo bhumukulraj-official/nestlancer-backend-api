@@ -6,66 +6,67 @@
 **Admin Path**: `/api/v1/admin/progress`
 
 ### 8.1 Overview
+
 Tracks project progress through timeline entries, milestone updates, and deliverable management. Provides transparency to clients on project status.
 
 ### 8.2 Progress Entry Types
 
-| Type | Description | Client Visible |
-|------|-------------|----------------|
-| `statusChange` | Project status updated | Yes |
-| `milestoneStart` | Milestone began | Yes |
-| `milestoneProgress` | Milestone progress update | Yes |
-| `milestoneComplete` | Milestone finished | Yes |
-| `deliverableUpload` | File uploaded | Yes |
-| `deliverableApproved` | Client approved deliverable | Yes |
-| `deliverableRejected` | Client rejected deliverable | Yes |
-| `feedbackRequest` | Feedback requested from client | Yes |
-| `revisionRequest` | Changes requested by client | Yes |
-| `revisionComplete` | Revisions completed | Yes |
-| `note` | General update note | Yes |
-| `internalNote` | Internal admin note | No |
-| `meeting` | Meeting held | Yes |
-| `delay` | Delay notification | Yes |
+| Type                  | Description                    | Client Visible |
+| --------------------- | ------------------------------ | -------------- |
+| `statusChange`        | Project status updated         | Yes            |
+| `milestoneStart`      | Milestone began                | Yes            |
+| `milestoneProgress`   | Milestone progress update      | Yes            |
+| `milestoneComplete`   | Milestone finished             | Yes            |
+| `deliverableUpload`   | File uploaded                  | Yes            |
+| `deliverableApproved` | Client approved deliverable    | Yes            |
+| `deliverableRejected` | Client rejected deliverable    | Yes            |
+| `feedbackRequest`     | Feedback requested from client | Yes            |
+| `revisionRequest`     | Changes requested by client    | Yes            |
+| `revisionComplete`    | Revisions completed            | Yes            |
+| `note`                | General update note            | Yes            |
+| `internalNote`        | Internal admin note            | No             |
+| `meeting`             | Meeting held                   | Yes            |
+| `delay`               | Delay notification             | Yes            |
 
 ### 8.3 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/` | Get progress timeline | 1000/hour | Yes |
-| `GET` | `/{entryId}` | Get progress entry details | 500/hour | Yes |
-| `GET` | `/status` | Get current status summary | 1000/hour | Yes |
-| `GET` | `/milestones` | Get milestone progress | 500/hour | Yes |
-| `POST` | `/request-changes` | Request revisions | 50/hour | No |
-| `POST` | `/milestones/{milestoneId}/approve` | Approve milestone | 20/hour | Yes |
-| `POST` | `/milestones/{milestoneId}/request-revision` | Request milestone revision | 20/hour | No |
-| `POST` | `/deliverables/{deliverableId}/approve` | Approve deliverable | 20/hour | Yes |
-| `POST` | `/deliverables/{deliverableId}/reject` | Reject deliverable | 20/hour | No |
+| Method | Endpoint                                     | Description                        | Rate Limit | Idempotent |
+| ------ | -------------------------------------------- | ---------------------------------- | ---------- | ---------- |
+| `GET`  | `/health`                                    | Health check (Simplified response) | 1000/hour  | Yes        |
+| `GET`  | `/`                                          | Get progress timeline              | 1000/hour  | Yes        |
+| `GET`  | `/{entryId}`                                 | Get progress entry details         | 500/hour   | Yes        |
+| `GET`  | `/status`                                    | Get current status summary         | 1000/hour  | Yes        |
+| `GET`  | `/milestones`                                | Get milestone progress             | 500/hour   | Yes        |
+| `POST` | `/request-changes`                           | Request revisions                  | 50/hour    | No         |
+| `POST` | `/milestones/{milestoneId}/approve`          | Approve milestone                  | 20/hour    | Yes        |
+| `POST` | `/milestones/{milestoneId}/request-revision` | Request milestone revision         | 20/hour    | No         |
+| `POST` | `/deliverables/{deliverableId}/approve`      | Approve deliverable                | 20/hour    | Yes        |
+| `POST` | `/deliverables/{deliverableId}/reject`       | Reject deliverable                 | 20/hour    | No         |
 
 ### 8.4 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `POST` | `/projects/{projectId}/progress` | Create progress entry | 500/hour | No |
-| `GET` | `/projects/{projectId}/progress` | Get all progress (admin) | 2000/hour | Yes |
-| `PATCH` | `/progress/{entryId}` | Update progress entry | 500/hour | No |
-| `DELETE` | `/progress/{entryId}` | Delete progress entry | 200/hour | Yes |
-| `PATCH` | `/projects/{projectId}/status` | Update project status | 500/hour | No |
-| `POST` | `/projects/{projectId}/milestones` | Create milestone | 200/hour | No |
-| `PATCH` | `/milestones/{milestoneId}` | Update milestone | 200/hour | No |
-| `POST` | `/milestones/{milestoneId}/complete` | Mark milestone complete | 200/hour | Yes |
-| `POST` | `/projects/{projectId}/deliverables` | Upload deliverable | 200/hour | No |
-| `GET` | `/projects/{projectId}/deliverables` | Get deliverables | 2000/hour | Yes |
-| `PATCH` | `/deliverables/{deliverableId}` | Update deliverable | 200/hour | No |
-| `DELETE` | `/deliverables/{deliverableId}` | Delete deliverable | 100/hour | Yes |
-| `POST` | `/projects/{projectId}/complete` | Mark project complete | 100/hour | Yes |
+| Method   | Endpoint                             | Description              | Rate Limit | Idempotent |     | Role |
+| -------- | ------------------------------------ | ------------------------ | ---------- | ---------- | --- | ---- |
+| `POST`   | `/projects/{projectId}/progress`     | Create progress entry    | 500/hour   | No         |
+| `GET`    | `/projects/{projectId}/progress`     | Get all progress (admin) | 2000/hour  | Yes        |
+| `PATCH`  | `/progress/{entryId}`                | Update progress entry    | 500/hour   | No         |
+| `DELETE` | `/progress/{entryId}`                | Delete progress entry    | 200/hour   | Yes        |
+| `PATCH`  | `/projects/{projectId}/status`       | Update project status    | 500/hour   | No         |
+| `POST`   | `/projects/{projectId}/milestones`   | Create milestone         | 200/hour   | No         |
+| `PATCH`  | `/milestones/{milestoneId}`          | Update milestone         | 200/hour   | No         |
+| `POST`   | `/milestones/{milestoneId}/complete` | Mark milestone complete  | 200/hour   | Yes        |
+| `POST`   | `/projects/{projectId}/deliverables` | Upload deliverable       | 200/hour   | No         |
+| `GET`    | `/projects/{projectId}/deliverables` | Get deliverables         | 2000/hour  | Yes        |
+| `PATCH`  | `/deliverables/{deliverableId}`      | Update deliverable       | 200/hour   | No         |
+| `DELETE` | `/deliverables/{deliverableId}`      | Delete deliverable       | 100/hour   | Yes        |
+| `POST`   | `/projects/{projectId}/complete`     | Mark project complete    | 100/hour   | Yes        |
 
 ### 8.5 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### POST /projects/{projectId}/progress (Admin)
+
 ```json
 // Request
 POST /api/v1/admin/progress/projects/projAbc123/progress
@@ -134,6 +135,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /
+
 ```json
 // Request
 GET /api/v1/projects/projAbc123/progress?page=1&limit=20
@@ -289,6 +291,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /deliverables/{deliverableId}/approve
+
 ```json
 // Request
 POST /api/v1/projects/projAbc123/progress/deliverables/delWire1/approve
@@ -333,6 +336,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /deliverables/{deliverableId}/reject
+
 ```json
 // Request
 POST /api/v1/projects/projAbc123/progress/deliverables/delDesign2/reject
@@ -385,6 +389,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /status
+
 ```json
 // Request
 GET /api/v1/projects/projAbc123/progress/status
@@ -479,18 +484,18 @@ X-Request-ID: reqAbc123
 
 ### 8.6 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `PROGRESS_001` | 404 | Progress entry not found | No |
-| `PROGRESS_002` | 403 | Unauthorized access | No |
-| `PROGRESS_003` | 422 | Invalid percentage (must be 0-100) | No |
-| `PROGRESS_004` | 400 | Cannot decrease progress | No |
-| `PROGRESS_005` | 404 | Milestone not found | No |
-| `PROGRESS_006` | 409 | Milestone already completed | No |
-| `PROGRESS_007` | 400 | Cannot modify completed milestone | No |
-| `PROGRESS_008` | 404 | Deliverable not found | No |
-| `PROGRESS_009` | 422 | Invalid progress type | No |
-| `PROGRESS_010` | 409 | Deliverable already approved/rejected | No |
-| `PROGRESS_011` | 400 | Cannot approve own deliverable | No |
+| Code           | HTTP Status | Description                           | Retryable |
+| -------------- | ----------- | ------------------------------------- | --------- |
+| `PROGRESS_001` | 404         | Progress entry not found              | No        |
+| `PROGRESS_002` | 403         | Unauthorized access                   | No        |
+| `PROGRESS_003` | 422         | Invalid percentage (must be 0-100)    | No        |
+| `PROGRESS_004` | 400         | Cannot decrease progress              | No        |
+| `PROGRESS_005` | 404         | Milestone not found                   | No        |
+| `PROGRESS_006` | 409         | Milestone already completed           | No        |
+| `PROGRESS_007` | 400         | Cannot modify completed milestone     | No        |
+| `PROGRESS_008` | 404         | Deliverable not found                 | No        |
+| `PROGRESS_009` | 422         | Invalid progress type                 | No        |
+| `PROGRESS_010` | 409         | Deliverable already approved/rejected | No        |
+| `PROGRESS_011` | 400         | Cannot approve own deliverable        | No        |
 
 ---

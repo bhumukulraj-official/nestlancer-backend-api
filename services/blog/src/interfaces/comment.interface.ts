@@ -1,18 +1,18 @@
 export interface PostWithRelations {
-    id: string;
-    title: string;
-    slug: string;
-    content: string;
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
 }
 
 export interface ThreadedComment {
-    id: string;
-    content: string;
-    replies?: ThreadedComment[];
+  id: string;
+  content: string;
+  replies?: ThreadedComment[];
 }
 
 export interface ModerationResult {
-    isApproved: boolean;
-    score: number;
-    reason?: string;
+  isApproved: boolean;
+  score: number;
+  reason?: string;
 }

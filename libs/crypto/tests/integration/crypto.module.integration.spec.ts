@@ -14,10 +14,7 @@ describe('CryptoModule (Integration)', () => {
     process.env.ENCRYPTION_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
     module = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
-        CryptoModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }), CryptoModule],
     }).compile();
 
     hashingService = module.get<HashingService>(HashingService);

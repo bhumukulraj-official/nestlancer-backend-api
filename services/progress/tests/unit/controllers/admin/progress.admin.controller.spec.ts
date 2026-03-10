@@ -8,85 +8,85 @@ import { ProgressEntryType } from '../../../../src/interfaces/progress.interface
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('ProgressAdminController', () => {
-    let controller: ProgressAdminController;
-    let progressService: jest.Mocked<ProgressService>;
+  let controller: ProgressAdminController;
+  let progressService: jest.Mocked<ProgressService>;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [ProgressAdminController],
-            providers: [
-                {
-                    provide: ProgressService,
-                    useValue: {
-                        createEntry: jest.fn(),
-                        getProjectProgress: jest.fn(),
-                        updateEntry: jest.fn(),
-                        deleteEntry: jest.fn(),
-                    },
-                },
-            ],
-        })
-            .overrideGuard(JwtAuthGuard)
-            .useValue({ canActivate: () => true })
-            .overrideGuard(RolesGuard)
-            .useValue({ canActivate: () => true })
-            .compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [ProgressAdminController],
+      providers: [
+        {
+          provide: ProgressService,
+          useValue: {
+            createEntry: jest.fn(),
+            getProjectProgress: jest.fn(),
+            updateEntry: jest.fn(),
+            deleteEntry: jest.fn(),
+          },
+        },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-        controller = module.get<ProgressAdminController>(ProgressAdminController);
-        progressService = module.get(ProgressService);
+    controller = module.get<ProgressAdminController>(ProgressAdminController);
+    progressService = module.get(ProgressService);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('createProgressEntry', () => {
+    it('should create progress entry', async () => {
+      progressService.createEntry.mockResolvedValue({ id: 'e1' } as any);
+      const dto: CreateProgressEntryDto = {
+        type: ProgressEntryType.UPDATE,
+        title: 'Test',
+        description: 'Test Desc',
+      };
+
+      const result = await controller.createProgressEntry('p1', 'admin1', dto);
+
+      expect(progressService.createEntry).toHaveBeenCalledWith('admin1', 'p1', dto);
+      expect(result).toEqual({ status: 'success', data: { id: 'e1' } });
     });
+  });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
+  describe('getProjectProgress', () => {
+    it('should list project progress', async () => {
+      progressService.getProjectProgress.mockResolvedValue({ items: [] } as any);
+
+      const result = await controller.getProjectProgress('p1', { page: 1 });
+
+      expect(progressService.getProjectProgress).toHaveBeenCalledWith('p1', { page: 1 });
+      expect(result).toEqual({ status: 'success', items: [] });
     });
+  });
 
-    describe('createProgressEntry', () => {
-        it('should create progress entry', async () => {
-            progressService.createEntry.mockResolvedValue({ id: 'e1' } as any);
-            const dto: CreateProgressEntryDto = {
-                type: ProgressEntryType.UPDATE,
-                title: 'Test',
-                description: 'Test Desc',
-            };
+  describe('updateProgressEntry', () => {
+    it('should update progress entry', async () => {
+      progressService.updateEntry.mockResolvedValue({ id: 'e1' } as any);
+      const dto = new UpdateProgressEntryDto();
 
-            const result = await controller.createProgressEntry('p1', 'admin1', dto);
+      const result = await controller.updateProgressEntry('e1', dto);
 
-            expect(progressService.createEntry).toHaveBeenCalledWith('admin1', 'p1', dto);
-            expect(result).toEqual({ status: 'success', data: { id: 'e1' } });
-        });
+      expect(progressService.updateEntry).toHaveBeenCalledWith('e1', dto);
+      expect(result).toEqual({ status: 'success', data: { id: 'e1' } });
     });
+  });
 
-    describe('getProjectProgress', () => {
-        it('should list project progress', async () => {
-            progressService.getProjectProgress.mockResolvedValue({ items: [] } as any);
+  describe('deleteProgressEntry', () => {
+    it('should delete progress entry', async () => {
+      progressService.deleteEntry.mockResolvedValue({ success: true });
 
-            const result = await controller.getProjectProgress('p1', { page: 1 });
+      const result = await controller.deleteProgressEntry('e1');
 
-            expect(progressService.getProjectProgress).toHaveBeenCalledWith('p1', { page: 1 });
-            expect(result).toEqual({ status: 'success', items: [] });
-        });
+      expect(progressService.deleteEntry).toHaveBeenCalledWith('e1');
+      expect(result).toEqual({ status: 'success' });
     });
-
-    describe('updateProgressEntry', () => {
-        it('should update progress entry', async () => {
-            progressService.updateEntry.mockResolvedValue({ id: 'e1' } as any);
-            const dto = new UpdateProgressEntryDto();
-
-            const result = await controller.updateProgressEntry('e1', dto);
-
-            expect(progressService.updateEntry).toHaveBeenCalledWith('e1', dto);
-            expect(result).toEqual({ status: 'success', data: { id: 'e1' } });
-        });
-    });
-
-    describe('deleteProgressEntry', () => {
-        it('should delete progress entry', async () => {
-            progressService.deleteEntry.mockResolvedValue({ success: true });
-
-            const result = await controller.deleteProgressEntry('e1');
-
-            expect(progressService.deleteEntry).toHaveBeenCalledWith('e1');
-            expect(result).toEqual({ status: 'success' });
-        });
-    });
+  });
 });

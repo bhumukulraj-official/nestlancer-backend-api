@@ -52,9 +52,7 @@ describe('GithubPullRequestHandler', () => {
 
       await handler.handle(payload);
 
-      expect(logger.log).toHaveBeenCalledWith(
-        'Received GitHub PR event: opened on Fix bug #42',
-      );
+      expect(logger.log).toHaveBeenCalledWith('Received GitHub PR event: opened on Fix bug #42');
     });
   });
 });

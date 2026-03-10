@@ -3,6 +3,7 @@
 ## Diagnosis
 
 ### Check queue depths
+
 ```bash
 # Via management API
 curl -u admin:password http://rabbitmq:15672/api/queues/nestlancer | jq '.[] | {name, messages, consumers}'
@@ -14,6 +15,7 @@ kubectl exec -it rabbitmq-0 -- rabbitmqctl list_queues name messages consumers
 ## Recovery Procedures
 
 ### Consumers Down
+
 ```bash
 # Restart worker deployments
 kubectl rollout restart deployment -l tier=worker
@@ -23,6 +25,7 @@ kubectl exec -it rabbitmq-0 -- rabbitmqctl list_consumers
 ```
 
 ### Queue Backed Up
+
 ```bash
 # Scale workers horizontally
 kubectl scale deployment/email-worker --replicas=5
@@ -33,6 +36,7 @@ watch -n 5 'kubectl exec -it rabbitmq-0 -- rabbitmqctl list_queues name messages
 ```
 
 ### RabbitMQ Node Down
+
 ```bash
 # Check node status
 kubectl exec -it rabbitmq-0 -- rabbitmqctl cluster_status
@@ -45,8 +49,11 @@ kubectl delete pod rabbitmq-0
 ```
 
 ### Verify No Messages Lost
+
 Check outbox table for unpublished events:
+
 ```sql
 SELECT COUNT(*) FROM outbox_events WHERE status = 'PENDING' AND created_at < NOW() - INTERVAL '5 minutes';
 ```
+
 If count > 0, the outbox poller will automatically publish them when RabbitMQ recovers.

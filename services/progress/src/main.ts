@@ -6,42 +6,42 @@ import { LoggerService } from '@nestlancer/logger';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
-    const logger = app.get(LoggerService);
-    app.useLogger(logger);
+  const logger = app.get(LoggerService);
+  app.useLogger(logger);
 
-    app.enableCors();
+  app.enableCors();
 
-    app.enableVersioning({
-        type: VersioningType.URI,
-        defaultVersion: '1',
-    });
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
 
-    app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api');
 
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            transform: true,
-            forbidNonWhitelisted: true,
-        }),
-    );
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
-    const configService = app.get(ConfigService);
-    const port = configService.get<number>('PROGRESS_SERVICE_PORT', 3009);
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PROGRESS_SERVICE_PORT', 3009);
 
-    const config = new DocumentBuilder()
-        .setTitle('Progress Service API')
-        .setDescription('API documentation for the Progress service')
-        .setVersion('1.0')
-        .addBearerAuth()
-        .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app as any, document);
+  const config = new DocumentBuilder()
+    .setTitle('Progress Service API')
+    .setDescription('API documentation for the Progress service')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app as any, document);
 
-    await app.listen(port);
-    logger.log(`Progress service is running on: http://localhost:${port}`);
+  await app.listen(port);
+  logger.log(`Progress service is running on: http://localhost:${port}`);
 }
 
 bootstrap();

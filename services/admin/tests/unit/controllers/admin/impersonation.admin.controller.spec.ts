@@ -11,12 +11,22 @@ describe('ImpersonationAdminController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ImpersonationAdminController],
       providers: [
-        { provide: ImpersonationService, useValue: { startImpersonation: jest.fn(), endImpersonation: jest.fn(), getActiveSessions: jest.fn() } },
+        {
+          provide: ImpersonationService,
+          useValue: {
+            startImpersonation: jest.fn(),
+            endImpersonation: jest.fn(),
+            getActiveSessions: jest.fn(),
+          },
+        },
       ],
     })
-      .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-      .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard).useValue({ canActivate: () => true })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(SuperAdminGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<ImpersonationAdminController>(ImpersonationAdminController);

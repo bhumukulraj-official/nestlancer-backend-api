@@ -1,4 +1,8 @@
-import { ValidationPipe as NestValidationPipe, ValidationError, BadRequestException } from '@nestjs/common';
+import {
+  ValidationPipe as NestValidationPipe,
+  ValidationError,
+  BadRequestException,
+} from '@nestjs/common';
 import { ERROR_CODES } from '../constants/error-codes.constants';
 
 /**

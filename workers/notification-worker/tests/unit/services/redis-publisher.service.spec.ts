@@ -52,11 +52,11 @@ describe('RedisPublisherService', () => {
 
       expect(mockRedis.publish).toHaveBeenCalledWith(
         'ws:user:1',
-        expect.stringContaining('"event":"test.event"')
+        expect.stringContaining('"event":"test.event"'),
       );
       expect(mockRedis.publish).toHaveBeenCalledWith(
         'ws:user:1',
-        expect.stringContaining('"data":{"foo":"bar"}')
+        expect.stringContaining('"data":{"foo":"bar"}'),
       );
     });
   });

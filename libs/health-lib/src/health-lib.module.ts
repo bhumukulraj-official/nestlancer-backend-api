@@ -8,7 +8,21 @@ import { DiskHealthIndicator } from './indicators/disk.indicator';
 
 @Global()
 @Module({
-  providers: [DatabaseHealthIndicator, RedisHealthIndicator, RabbitmqHealthIndicator, StorageHealthIndicator, MemoryHealthIndicator, DiskHealthIndicator],
-  exports: [DatabaseHealthIndicator, RedisHealthIndicator, RabbitmqHealthIndicator, StorageHealthIndicator, MemoryHealthIndicator, DiskHealthIndicator],
+  providers: [
+    DatabaseHealthIndicator,
+    RedisHealthIndicator,
+    RabbitmqHealthIndicator,
+    StorageHealthIndicator,
+    MemoryHealthIndicator,
+    DiskHealthIndicator,
+  ],
+  exports: [
+    DatabaseHealthIndicator,
+    RedisHealthIndicator,
+    RabbitmqHealthIndicator,
+    StorageHealthIndicator,
+    MemoryHealthIndicator,
+    DiskHealthIndicator,
+  ],
 })
-export class HealthLibModule { }
+export class HealthLibModule {}

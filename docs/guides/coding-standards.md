@@ -2,18 +2,19 @@
 
 ## Naming Conventions
 
-| Type | Convention | Example |
-|------|-----------|---------|
-| Files | `kebab-case.type.ts` | `create-request.dto.ts`, `auth.service.ts` |
-| Classes | `PascalCase` | `AuthService`, `CreateRequestDto` |
-| Methods | `camelCase` | `findById`, `createPaymentIntent` |
-| Constants | `UPPER_SNAKE_CASE` | `DEFAULT_PAGINATION_LIMIT` |
-| Enums | `PascalCase` name, `UPPER_SNAKE_CASE` values | `UserRole.ADMIN` |
-| Interfaces | `PascalCase` (prefix `I` optional) | `AuthenticatedUser` |
+| Type       | Convention                                   | Example                                    |
+| ---------- | -------------------------------------------- | ------------------------------------------ |
+| Files      | `kebab-case.type.ts`                         | `create-request.dto.ts`, `auth.service.ts` |
+| Classes    | `PascalCase`                                 | `AuthService`, `CreateRequestDto`          |
+| Methods    | `camelCase`                                  | `findById`, `createPaymentIntent`          |
+| Constants  | `UPPER_SNAKE_CASE`                           | `DEFAULT_PAGINATION_LIMIT`                 |
+| Enums      | `PascalCase` name, `UPPER_SNAKE_CASE` values | `UserRole.ADMIN`                           |
+| Interfaces | `PascalCase` (prefix `I` optional)           | `AuthenticatedUser`                        |
 
 ## File Organization
 
 Every module follows this structure:
+
 ```
 <service>/src/
 ├── <feature>.module.ts
@@ -32,6 +33,7 @@ Every module follows this structure:
 ## Error Handling
 
 Always throw custom exceptions from `@nestlancer/common/exceptions`:
+
 ```typescript
 // ✅ Good
 throw new ResourceNotFoundException('User', userId);
@@ -45,6 +47,7 @@ throw new HttpException('Bad request', 400);
 ## Response Format
 
 All endpoints use the standard envelope via `TransformResponseInterceptor`:
+
 ```typescript
 // Returned automatically - just return the data
 return { user, tokens };
@@ -54,6 +57,7 @@ return { user, tokens };
 ## DTO Validation
 
 All inputs validated with `class-validator` decorators:
+
 ```typescript
 export class CreateRequestDto {
   @IsString()

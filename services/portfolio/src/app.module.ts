@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { } from '@nestlancer/common';
+import {} from '@nestlancer/common';
 import { DatabaseModule } from '@nestlancer/database';
 import { AuthLibModule } from '@nestlancer/auth-lib';
 import { LoggerModule } from '@nestlancer/logger';
@@ -20,31 +20,31 @@ import { PortfolioLikesService } from './services/portfolio-likes.service';
 import { PortfolioAdminService } from './services/portfolio-admin.service';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            load: [portfolioConfig],
-        }),
-        DatabaseModule.forRoot(),
-        AuthLibModule,
-        LoggerModule.forRoot(),
-        MetricsModule,
-        CacheModule.forRoot(),
-        SearchModule.forRoot(),
-    ],
-    controllers: [
-        PortfolioPublicController,
-        PortfolioAdminController,
-        PortfolioCategoriesAdminController,
-    ],
-    providers: [
-        PortfolioService,
-        PortfolioCategoriesService,
-        PortfolioSearchService,
-        PortfolioAnalyticsService,
-        PortfolioOrderingService,
-        PortfolioLikesService,
-        PortfolioAdminService,
-    ],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [portfolioConfig],
+    }),
+    DatabaseModule.forRoot(),
+    AuthLibModule,
+    LoggerModule.forRoot(),
+    MetricsModule,
+    CacheModule.forRoot(),
+    SearchModule.forRoot(),
+  ],
+  controllers: [
+    PortfolioPublicController,
+    PortfolioAdminController,
+    PortfolioCategoriesAdminController,
+  ],
+  providers: [
+    PortfolioService,
+    PortfolioCategoriesService,
+    PortfolioSearchService,
+    PortfolioAnalyticsService,
+    PortfolioOrderingService,
+    PortfolioLikesService,
+    PortfolioAdminService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

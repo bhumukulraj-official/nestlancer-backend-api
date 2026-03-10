@@ -7,66 +7,71 @@
 **WebSocket**: `wss://api.yourdomain.com/ws/messages`
 
 ### 10.1 Overview
+
 Real-time messaging system for project communication between clients and admin. Supports text messages, file attachments, message threading, and real-time notifications via WebSocket.
 
 ### 10.2 Message Types
 
-| Type | Description | Attachments |
-|------|-------------|-------------|
-| `text` | Plain text message | Optional |
-| `file` | File-only message | Required |
-| `system` | System-generated message | No |
-| `notification` | Auto-notification | No |
+| Type           | Description              | Attachments |
+| -------------- | ------------------------ | ----------- |
+| `text`         | Plain text message       | Optional    |
+| `file`         | File-only message        | Required    |
+| `system`       | System-generated message | No          |
+| `notification` | Auto-notification        | No          |
 
 ### 10.3 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/conversations` | List all conversations | 1000/hour | Yes |
-| `GET` | `/projects/{projectId}` | Get project messages | 1000/hour | Yes |
-| `POST` | `/projects/{projectId}` | Send message | 500/hour | No |
-| `PATCH` | `/{messageId}` | Edit message (15 min window) | 200/hour | No |
-| `DELETE` | `/{messageId}` | Delete message | 200/hour | Yes (soft) |
-| `POST` | `/{messageId}/read` | Mark as read | 2000/hour | Yes |
-| `POST` | `/projects/{projectId}/read-all` | Mark all as read | 100/hour | Yes |
-| `POST` | `/{messageId}/react` | Add reaction | 500/hour | Yes |
-| `DELETE` | `/{messageId}/react` | Remove reaction | 500/hour | Yes |
-| `GET` | `/search` | Search messages | 500/hour | Yes |
-| `GET` | `/unread-count` | Get unread message count | 2000/hour | Yes |
-| `GET` | `/{messageId}/thread` | Get message thread | 500/hour | Yes |
-| `POST` | `/{messageId}/thread` | Reply in thread | 500/hour | No |
-| `POST` | `/{messageId}/pin` | Pin a message in project chat | 200/hour | No |
-| `POST` | `/{messageId}/unpin` | Unpin a message | 200/hour | No |
-| `GET` | `/projects/{projectId}/attachments` | List all shared files in a project chat | 500/hour | Yes |
+| Method   | Endpoint                            | Description                             | Rate Limit | Idempotent |
+| -------- | ----------------------------------- | --------------------------------------- | ---------- | ---------- |
+| `GET`    | `/health`                           | Health check (Simplified response)      | 1000/hour  | Yes        |
+| `GET`    | `/conversations`                    | List all conversations                  | 1000/hour  | Yes        |
+| `GET`    | `/projects/{projectId}`             | Get project messages                    | 1000/hour  | Yes        |
+| `POST`   | `/projects/{projectId}`             | Send message                            | 500/hour   | No         |
+| `PATCH`  | `/{messageId}`                      | Edit message (15 min window)            | 200/hour   | No         |
+| `DELETE` | `/{messageId}`                      | Delete message                          | 200/hour   | Yes (soft) |
+| `POST`   | `/{messageId}/read`                 | Mark as read                            | 2000/hour  | Yes        |
+| `POST`   | `/projects/{projectId}/read-all`    | Mark all as read                        | 100/hour   | Yes        |
+| `POST`   | `/{messageId}/react`                | Add reaction                            | 500/hour   | Yes        |
+| `DELETE` | `/{messageId}/react`                | Remove reaction                         | 500/hour   | Yes        |
+| `GET`    | `/search`                           | Search messages                         | 500/hour   | Yes        |
+| `GET`    | `/unread-count`                     | Get unread message count                | 2000/hour  | Yes        |
+| `GET`    | `/{messageId}/thread`               | Get message thread                      | 500/hour   | Yes        |
+| `POST`   | `/{messageId}/thread`               | Reply in thread                         | 500/hour   | No         |
+| `POST`   | `/{messageId}/pin`                  | Pin a message in project chat           | 200/hour   | No         |
+| `POST`   | `/{messageId}/unpin`                | Unpin a message                         | 200/hour   | No         |
+| `GET`    | `/projects/{projectId}/attachments` | List all shared files in a project chat | 500/hour   | Yes        |
 
 ### 10.4 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `GET` | `/conversations` | All project conversations | 2000/hour | Yes |
-| `GET` | `/analytics` | Messaging analytics | 1000/hour | Yes |
-| `POST` | `/projects/{projectId}/system` | Send system message | 500/hour | No |
-| `DELETE` | `/{messageId}` | Delete any message | 500/hour | Yes |
-| `GET` | `/flagged` | Get flagged messages | 1000/hour | Yes |
-| `POST` | `/{messageId}/flag` | Flag message | 200/hour | No |
+| Method   | Endpoint                       | Description               | Rate Limit | Idempotent |     | Role |
+| -------- | ------------------------------ | ------------------------- | ---------- | ---------- | --- | ---- |
+| `GET`    | `/conversations`               | All project conversations | 2000/hour  | Yes        |
+| `GET`    | `/analytics`                   | Messaging analytics       | 1000/hour  | Yes        |
+| `POST`   | `/projects/{projectId}/system` | Send system message       | 500/hour   | No         |
+| `DELETE` | `/{messageId}`                 | Delete any message        | 500/hour   | Yes        |
+| `GET`    | `/flagged`                     | Get flagged messages      | 1000/hour  | Yes        |
+| `POST`   | `/{messageId}/flag`            | Flag message              | 200/hour   | No         |
 
 ### 10.5 WebSocket Connection
 
 #### Connection
+
 ```javascript
 const ws = new WebSocket('wss://api.yourdomain.com/ws/messages');
 
 // Authenticate
-ws.send(JSON.stringify({
-  event: 'authenticate',
-  data: {
-    token: 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'
-  }
-}));
+ws.send(
+  JSON.stringify({
+    event: 'authenticate',
+    data: {
+      token: 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...',
+    },
+  }),
+);
 ```
 
 #### Server Response
+
 ```json
 {
   "event": "authenticated",
@@ -81,35 +86,38 @@ ws.send(JSON.stringify({
 #### WebSocket Events
 
 ##### Client → Server Events
-| Event | Description | Data |
-|-------|-------------|------|
-| `authenticate` | Authenticate connection | `{ token: string }` |
-| `joinConversation` | Join project chat | `{ projectId: string }` |
-| `leaveConversation` | Leave project chat | `{ projectId: string }` |
-| `sendMessage` | Send message | `{ projectId, content, attachments?, replyTo? }` |
-| `typingStart` | Start typing indicator | `{ projectId: string }` |
-| `typingStop` | Stop typing indicator | `{ projectId: string }` |
-| `markRead` | Mark message as read | `{ messageId: string }` |
+
+| Event               | Description             | Data                                             |
+| ------------------- | ----------------------- | ------------------------------------------------ |
+| `authenticate`      | Authenticate connection | `{ token: string }`                              |
+| `joinConversation`  | Join project chat       | `{ projectId: string }`                          |
+| `leaveConversation` | Leave project chat      | `{ projectId: string }`                          |
+| `sendMessage`       | Send message            | `{ projectId, content, attachments?, replyTo? }` |
+| `typingStart`       | Start typing indicator  | `{ projectId: string }`                          |
+| `typingStop`        | Stop typing indicator   | `{ projectId: string }`                          |
+| `markRead`          | Mark message as read    | `{ messageId: string }`                          |
 
 ##### Server → Client Events
-| Event | Description | Data |
-|-------|-------------|------|
-| `authenticated` | Authentication success | `{ userId, sessionId, expiresAt }` |
-| `authError` | Authentication failed | `{ code, message }` |
-| `message.new` | New message received | `{ message: Message }` |
-| `message.updated` | Message edited | `{ message: Message }` |
-| `message.deleted` | Message deleted | `{ messageId: string }` |
-| `message.read` | Message read receipt | `{ messageId, readBy }` |
-| `user.typing` | User typing indicator | `{ userId, projectId }` |
-| `user.online` | User came online | `{ userId }` |
-| `user.offline` | User went offline | `{ userId }` |
-| `conversation.joined` | User joined conversation | `{ userId, projectId }` |
-| `conversation.left` | User left conversation | `{ userId, projectId }` |
-| `error` | Error occurred | `{ code, message }` |
+
+| Event                 | Description              | Data                               |
+| --------------------- | ------------------------ | ---------------------------------- |
+| `authenticated`       | Authentication success   | `{ userId, sessionId, expiresAt }` |
+| `authError`           | Authentication failed    | `{ code, message }`                |
+| `message.new`         | New message received     | `{ message: Message }`             |
+| `message.updated`     | Message edited           | `{ message: Message }`             |
+| `message.deleted`     | Message deleted          | `{ messageId: string }`            |
+| `message.read`        | Message read receipt     | `{ messageId, readBy }`            |
+| `user.typing`         | User typing indicator    | `{ userId, projectId }`            |
+| `user.online`         | User came online         | `{ userId }`                       |
+| `user.offline`        | User went offline        | `{ userId }`                       |
+| `conversation.joined` | User joined conversation | `{ userId, projectId }`            |
+| `conversation.left`   | User left conversation   | `{ userId, projectId }`            |
+| `error`               | Error occurred           | `{ code, message }`                |
 
 #### WebSocket Examples
 
 ##### Send Message
+
 ```javascript
 // Client sends
 ws.send(JSON.stringify({
@@ -148,6 +156,7 @@ ws.send(JSON.stringify({
 ```
 
 ##### Typing Indicator
+
 ```javascript
 // Client starts typing
 ws.send(JSON.stringify({
@@ -178,10 +187,10 @@ ws.send(JSON.stringify({
 
 ### 10.6 REST API Request/Response Examples
 
-
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### POST /projects/{projectId}
+
 ```json
 // Request
 POST /api/v1/messages/projects/projAbc123
@@ -259,6 +268,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /projects/{projectId}
+
 ```json
 // Request
 GET /api/v1/messages/projects/projAbc123?page=1&limit=50&before=msgXyz789
@@ -377,6 +387,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### PATCH /{messageId}
+
 ```json
 // Request
 PATCH /api/v1/messages/msgAbc123
@@ -443,6 +454,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{messageId}/react
+
 ```json
 // Request
 POST /api/v1/messages/msgAbc123/react
@@ -489,6 +501,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{messageId}/pin
+
 ```json
 // Request
 POST /api/v1/messages/msgAbc123/pin
@@ -518,6 +531,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{messageId}/unpin
+
 ```json
 // Request
 POST /api/v1/messages/msgAbc123/unpin
@@ -547,6 +561,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /projects/{projectId}/attachments
+
 ```json
 // Request
 GET /api/v1/messages/projects/projAbc123/attachments?page=1&limit=20&type=all
@@ -609,6 +624,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /search
+
 ```json
 // Request
 GET /api/v1/messages/search?q=design&projectId=projAbc123&from=2024-02-01&to=2024-02-16
@@ -673,18 +689,18 @@ X-Request-ID: reqAbc123
 
 ### 10.7 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `MESSAGE_001` | 404 | Message not found | No |
-| `MESSAGE_002` | 403 | Unauthorized access to message | No |
-| `MESSAGE_003` | 400 | Edit time limit exceeded (15 min) | No |
-| `MESSAGE_004` | 403 | Cannot delete message | No |
-| `MESSAGE_005` | 422 | Invalid message content | No |
-| `MESSAGE_006` | 404 | Attachment not found | No |
-| `MESSAGE_007` | 404 | Conversation not found | No |
-| `MESSAGE_008` | 403 | Not a conversation participant | No |
-| `MESSAGE_009` | 413 | Message content too long (max 5000 chars) | No |
-| `MESSAGE_010` | 400 | Cannot edit system messages | No |
-| `MESSAGE_011` | 429 | Too many messages sent | Yes (wait) |
+| Code          | HTTP Status | Description                               | Retryable  |
+| ------------- | ----------- | ----------------------------------------- | ---------- |
+| `MESSAGE_001` | 404         | Message not found                         | No         |
+| `MESSAGE_002` | 403         | Unauthorized access to message            | No         |
+| `MESSAGE_003` | 400         | Edit time limit exceeded (15 min)         | No         |
+| `MESSAGE_004` | 403         | Cannot delete message                     | No         |
+| `MESSAGE_005` | 422         | Invalid message content                   | No         |
+| `MESSAGE_006` | 404         | Attachment not found                      | No         |
+| `MESSAGE_007` | 404         | Conversation not found                    | No         |
+| `MESSAGE_008` | 403         | Not a conversation participant            | No         |
+| `MESSAGE_009` | 413         | Message content too long (max 5000 chars) | No         |
+| `MESSAGE_010` | 400         | Cannot edit system messages               | No         |
+| `MESSAGE_011` | 429         | Too many messages sent                    | Yes (wait) |
 
 ---

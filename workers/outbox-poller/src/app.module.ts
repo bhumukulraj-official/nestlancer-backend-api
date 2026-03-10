@@ -14,26 +14,26 @@ import { LeaderElectionService } from './services/leader-election.service';
 import { StaleEventMonitorService } from './services/stale-event-monitor.service';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        NestConfigModule.forFeature(outboxConfig),
-        ScheduleModule.forRoot(),
-        DatabaseModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        QueueModule.forRootAsync({
-            useFactory: (configService: ConfigService) => ({
-                url: configService.get<string>('RABBITMQ_URL'),
-            }),
-            inject: [ConfigService],
-        }),
-    ],
-    providers: [
-        OutboxPollerService,
-        OutboxPublisherService,
-        LeaderElectionService,
-        StaleEventMonitorService,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    NestConfigModule.forFeature(outboxConfig),
+    ScheduleModule.forRoot(),
+    DatabaseModule.forRoot(),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    QueueModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        url: configService.get<string>('RABBITMQ_URL'),
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  providers: [
+    OutboxPollerService,
+    OutboxPublisherService,
+    LeaderElectionService,
+    StaleEventMonitorService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

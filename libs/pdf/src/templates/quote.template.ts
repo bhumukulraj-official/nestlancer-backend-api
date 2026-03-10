@@ -10,14 +10,18 @@ export function getQuoteTemplate(data: Record<string, unknown>): string {
 
   const formatMoney = (paise: number) => `${currency} ${(paise / 100).toFixed(2)}`;
 
-  const itemRows = items.map((item) => `
+  const itemRows = items
+    .map(
+      (item) => `
     <tr>
       <td>${item.description || ''}</td>
       <td style="text-align:center">${item.quantity || 1}</td>
       <td style="text-align:right">${formatMoney(Number(item.unitPricePaise || 0))}</td>
       <td style="text-align:right">${formatMoney(Number(item.totalPaise || 0))}</td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join('');
 
   return `<!DOCTYPE html>
 <html>

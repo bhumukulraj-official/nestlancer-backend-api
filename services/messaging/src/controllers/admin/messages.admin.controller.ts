@@ -7,7 +7,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 /**
  * Administrative controller for global messaging oversight.
  * Provides endpoints for monitoring, moderation, and system-wide messaging analytics.
- * 
+ *
  * @category Messaging
  */
 @ApiTags('Messaging - Admin')
@@ -15,215 +15,259 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 @Auth('ADMIN')
 @Controller('admin/messages')
 export class MessagesAdminController {
-    constructor(
-        private readonly prismaRead: PrismaReadService,
-        private readonly prismaWrite: PrismaWriteService,
-    ) { }
+  constructor(
+    private readonly prismaRead: PrismaReadService,
+    private readonly prismaWrite: PrismaWriteService,
+  ) {}
 
-    /**
-     * Retrieves a paginated list of all messages sent across the entire platform.
-     * 
-     * @param query Pagination and filtering parameters
-     * @returns Paginated list of all platform messages
-     */
-    @Get()
-    @ApiOperation({ summary: 'List all platform messages', description: 'Administrative view of every message sent between users.' })
-    async getAllMessages(@Query() query: any): Promise<any> {
-        const page = Number(query.page) || 1;
-        const limit = Number(query.limit) || 50;
-        const skip = (page - 1) * limit;
+  /**
+   * Retrieves a paginated list of all messages sent across the entire platform.
+   *
+   * @param query Pagination and filtering parameters
+   * @returns Paginated list of all platform messages
+   */
+  @Get()
+  @ApiOperation({
+    summary: 'List all platform messages',
+    description: 'Administrative view of every message sent between users.',
+  })
+  async getAllMessages(@Query() query: any): Promise<any> {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 50;
+    const skip = (page - 1) * limit;
 
-        const [items, total] = await Promise.all([
-            this.prismaRead.message.findMany({
-                skip, take: limit, orderBy: { createdAt: 'desc' },
-                include: { sender: { select: { id: true, firstName: true, lastName: true, avatar: true } } }
-            }),
-            this.prismaRead.message.count(),
-        ]);
+    const [items, total] = await Promise.all([
+      this.prismaRead.message.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          sender: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        },
+      }),
+      this.prismaRead.message.count(),
+    ]);
 
-        return { status: 'success', items, meta: { total, page, limit } };
+    return { status: 'success', items, meta: { total, page, limit } };
+  }
+
+  /**
+   * Forcefully deletes a message from the system for moderation purposes.
+   *
+   * @param id The ID of the message to delete
+   * @returns Confirmation of deletion
+   */
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Force delete message',
+    description: 'Permanently remove a message regardless of authorship.',
+  })
+  async deleteMessage(@Param('id') id: string): Promise<any> {
+    await this.prismaWrite.message.delete({ where: { id } });
+    return { status: 'success' };
+  }
+
+  /**
+   * Retrieves high-level statistics about messaging activity.
+   *
+   * @returns Messaging activity statistics
+   */
+  @Get('stats')
+  @ApiOperation({
+    summary: 'Get global messaging stats',
+    description: 'Retrieve platform-wide counts of messages and active conversations.',
+  })
+  async getMessageStats(): Promise<any> {
+    const [totalMessages, chatGroups] = await Promise.all([
+      this.prismaRead.message.count(),
+      this.prismaRead.message.groupBy({ by: ['projectId'] }),
+    ]);
+    return { status: 'success', totalMessages, activeChats: chatGroups.length };
+  }
+
+  /**
+   * Detailed analytics on messaging trends and user engagement.
+   *
+   * @returns Messaging analytics data
+   */
+  @Get('analytics')
+  @ApiOperation({
+    summary: 'Get messaging analytics',
+    description: 'Fetch time-series data and engagement metrics for messaging.',
+  })
+  async getMessagingAnalytics(): Promise<any> {
+    return this.getMessageStats();
+  }
+
+  /**
+   * Lists all active project conversations for administrative review.
+   * Each conversation is a project with at least one message; returns latest message per project.
+   *
+   * @param query Filtering and pagination parameters (page, limit)
+   * @returns List of project conversations
+   */
+  @Get('conversations')
+  @ApiOperation({
+    summary: 'List all conversations',
+    description: 'Administrative view of all active chat threads in the system.',
+  })
+  async getAdminConversations(@Query() query: any): Promise<any> {
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const projectIds = await this.prismaRead.message
+      .findMany({
+        where: { deletedAt: null },
+        distinct: ['projectId'],
+        select: { projectId: true },
+        orderBy: { createdAt: 'desc' },
+      })
+      .then((rows) => rows.map((r) => r.projectId));
+    const uniqueProjectIds = [...new Set(projectIds)];
+    const total = uniqueProjectIds.length;
+    const paginatedIds = uniqueProjectIds.slice(skip, skip + limit);
+
+    if (paginatedIds.length === 0) {
+      return { status: 'success', data: [], pagination: { page, limit, total } };
     }
 
-    /**
-     * Forcefully deletes a message from the system for moderation purposes.
-     * 
-     * @param id The ID of the message to delete
-     * @returns Confirmation of deletion
-     */
-    @Delete(':id')
-    @ApiOperation({ summary: 'Force delete message', description: 'Permanently remove a message regardless of authorship.' })
-    async deleteMessage(@Param('id') id: string): Promise<any> {
-        await this.prismaWrite.message.delete({ where: { id } });
-        return { status: 'success' };
-    }
+    const projectsWithLatest = await this.prismaRead.project.findMany({
+      where: { id: { in: paginatedIds } },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        clientId: true,
+        adminId: true,
+        messages: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          include: { sender: { select: { id: true, firstName: true, lastName: true } } },
+        },
+      },
+    });
 
-    /**
-     * Retrieves high-level statistics about messaging activity.
-     * 
-     * @returns Messaging activity statistics
-     */
-    @Get('stats')
-    @ApiOperation({ summary: 'Get global messaging stats', description: 'Retrieve platform-wide counts of messages and active conversations.' })
-    async getMessageStats(): Promise<any> {
-        const [totalMessages, chatGroups] = await Promise.all([
-            this.prismaRead.message.count(),
-            this.prismaRead.message.groupBy({ by: ['projectId'] })
-        ]);
-        return { status: 'success', totalMessages, activeChats: chatGroups.length };
-    }
+    const data = projectsWithLatest.map((p) => ({
+      projectId: p.id,
+      title: p.title,
+      status: p.status,
+      clientId: p.clientId,
+      adminId: p.adminId,
+      latestMessage: (p as any).messages?.[0] ?? null,
+    }));
 
-    /**
-     * Detailed analytics on messaging trends and user engagement.
-     * 
-     * @returns Messaging analytics data
-     */
-    @Get('analytics')
-    @ApiOperation({ summary: 'Get messaging analytics', description: 'Fetch time-series data and engagement metrics for messaging.' })
-    async getMessagingAnalytics(): Promise<any> {
-        return this.getMessageStats();
-    }
+    return { status: 'success', data, pagination: { page, limit, total } };
+  }
 
-    /**
-     * Lists all active project conversations for administrative review.
-     * Each conversation is a project with at least one message; returns latest message per project.
-     * 
-     * @param query Filtering and pagination parameters (page, limit)
-     * @returns List of project conversations
-     */
-    @Get('conversations')
-    @ApiOperation({ summary: 'List all conversations', description: 'Administrative view of all active chat threads in the system.' })
-    async getAdminConversations(@Query() query: any): Promise<any> {
-        const page = Math.max(1, Number(query.page) || 1);
-        const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
-        const skip = (page - 1) * limit;
+  /**
+   * Retrieves all messages exchanged within a specific project.
+   *
+   * @param projectId The project ID to audit
+   * @returns List of messages for the project
+   */
+  @Get('project/:projectId')
+  @ApiOperation({
+    summary: 'Get project messages',
+    description: 'Fetch the entire chat history for a specific project.',
+  })
+  async adminGetMessages(@Param('projectId') projectId: string): Promise<any> {
+    const messages = await this.prismaRead.message.findMany({
+      where: { projectId },
+      orderBy: { createdAt: 'desc' },
+      include: { sender: { select: { id: true, firstName: true, lastName: true, email: true } } },
+    });
+    return { status: 'success', projectId, messages };
+  }
 
-        const projectIds = await this.prismaRead.message.findMany({
-            where: { deletedAt: null },
-            distinct: ['projectId'],
-            select: { projectId: true },
-            orderBy: { createdAt: 'desc' },
-        }).then((rows) => rows.map((r) => r.projectId));
-        const uniqueProjectIds = [...new Set(projectIds)];
-        const total = uniqueProjectIds.length;
-        const paginatedIds = uniqueProjectIds.slice(skip, skip + limit);
+  /**
+   * Flags a specific message for manual moderation.
+   *
+   * @param id The message ID to flag
+   * @returns Confirmation of flagging
+   */
+  @Post(':id/flag')
+  @ApiOperation({
+    summary: 'Flag message',
+    description: 'Mark a message as potentially violating terms for internal review.',
+  })
+  async flagMessage(@Param('id') id: string): Promise<any> {
+    const message = await this.prismaRead.message.findUnique({ where: { id } });
+    if (!message) throw new Error('Message not found');
 
-        if (paginatedIds.length === 0) {
-            return { status: 'success', data: [], pagination: { page, limit, total } };
-        }
+    const reactions = (message.reactions || {}) as any;
+    reactions.flagged = true;
 
-        const projectsWithLatest = await this.prismaRead.project.findMany({
-            where: { id: { in: paginatedIds } },
-            select: {
-                id: true,
-                title: true,
-                status: true,
-                clientId: true,
-                adminId: true,
-                messages: {
-                    where: { deletedAt: null },
-                    orderBy: { createdAt: 'desc' },
-                    take: 1,
-                    include: { sender: { select: { id: true, firstName: true, lastName: true } } },
-                },
-            },
-        });
+    await this.prismaWrite.message.update({
+      where: { id },
+      data: { reactions },
+    });
+    return { status: 'success', id, flagged: true };
+  }
 
-        const data = projectsWithLatest.map((p) => ({
-            projectId: p.id,
-            title: p.title,
-            status: p.status,
-            clientId: p.clientId,
-            adminId: p.adminId,
-            latestMessage: (p as any).messages?.[0] ?? null,
-        }));
+  /**
+   * Sends a system-generated broadcast message to a project's chat.
+   *
+   * @param projectId Destination project ID
+   * @param body Message content (content: string, senderId: string for admin)
+   * @returns Confirmation of broadcast
+   */
+  @Post('projects/:projectId/system')
+  @ApiOperation({
+    summary: 'Broadcast system message',
+    description: 'Inject an automated system notification into a project chat stream.',
+  })
+  async broadcastSystemMessage(
+    @Param('projectId') projectId: string,
+    @Body() body: { content: string; senderId?: string },
+  ): Promise<any> {
+    const project = await this.prismaRead.project.findUnique({
+      where: { id: projectId },
+      select: { id: true },
+    });
+    if (!project) throw new Error('Project not found');
+    const senderId =
+      body.senderId ??
+      (await this.prismaRead.user.findFirst({ where: { role: 'ADMIN' }, select: { id: true } }))
+        ?.id;
+    if (!senderId) throw new Error('No sender available for system message');
+    const message = await this.prismaWrite.message.create({
+      data: {
+        projectId,
+        senderId,
+        content: body.content ?? 'System notification',
+        type: 'SYSTEM',
+      },
+    });
+    return { status: 'success', data: { projectId, messageId: message.id, sent: true } };
+  }
 
-        return { status: 'success', data, pagination: { page, limit, total } };
-    }
-
-    /**
-     * Retrieves all messages exchanged within a specific project.
-     * 
-     * @param projectId The project ID to audit
-     * @returns List of messages for the project
-     */
-    @Get('project/:projectId')
-    @ApiOperation({ summary: 'Get project messages', description: 'Fetch the entire chat history for a specific project.' })
-    async adminGetMessages(@Param('projectId') projectId: string): Promise<any> {
-        const messages = await this.prismaRead.message.findMany({
-            where: { projectId },
-            orderBy: { createdAt: 'desc' },
-            include: { sender: { select: { id: true, firstName: true, lastName: true, email: true } } }
-        });
-        return { status: 'success', projectId, messages };
-    }
-
-    /**
-     * Flags a specific message for manual moderation.
-     * 
-     * @param id The message ID to flag
-     * @returns Confirmation of flagging
-     */
-    @Post(':id/flag')
-    @ApiOperation({ summary: 'Flag message', description: 'Mark a message as potentially violating terms for internal review.' })
-    async flagMessage(@Param('id') id: string): Promise<any> {
-        const message = await this.prismaRead.message.findUnique({ where: { id } });
-        if (!message) throw new Error('Message not found');
-
-        const reactions = (message.reactions || {}) as any;
-        reactions.flagged = true;
-
-        await this.prismaWrite.message.update({
-            where: { id },
-            data: { reactions }
-        });
-        return { status: 'success', id, flagged: true };
-    }
-
-    /**
-     * Sends a system-generated broadcast message to a project's chat.
-     * 
-     * @param projectId Destination project ID
-     * @param body Message content (content: string, senderId: string for admin)
-     * @returns Confirmation of broadcast
-     */
-    @Post('projects/:projectId/system')
-    @ApiOperation({ summary: 'Broadcast system message', description: 'Inject an automated system notification into a project chat stream.' })
-    async broadcastSystemMessage(
-        @Param('projectId') projectId: string,
-        @Body() body: { content: string; senderId?: string },
-    ): Promise<any> {
-        const project = await this.prismaRead.project.findUnique({ where: { id: projectId }, select: { id: true } });
-        if (!project) throw new Error('Project not found');
-        const senderId = body.senderId ?? (await this.prismaRead.user.findFirst({ where: { role: 'ADMIN' }, select: { id: true } }))?.id;
-        if (!senderId) throw new Error('No sender available for system message');
-        const message = await this.prismaWrite.message.create({
-            data: {
-                projectId,
-                senderId,
-                content: body.content ?? 'System notification',
-                type: 'SYSTEM',
-            },
-        });
-        return { status: 'success', data: { projectId, messageId: message.id, sent: true } };
-    }
-
-    /**
-     * Retrieves a chronological log of system-flagged messages awaiting moderation.
-     * Messages are flagged via POST :id/flag (reactions.flagged = true).
-     * 
-     * @returns A promise resolving to a collection of messages requiring administrative attention
-     */
-    @Get('flagged')
-    @ApiOperation({ summary: 'List flagged messages', description: 'Retrieve a priority queue of messages that have been identified as potentially violating community standards.' })
-    async getFlagged(): Promise<any> {
-        const candidates = await this.prismaRead.message.findMany({
-            where: { deletedAt: null, reactions: { not: Prisma.DbNull } },
-            orderBy: { createdAt: 'desc' },
-            take: 500,
-            include: { sender: { select: { id: true, firstName: true, lastName: true, email: true } }, project: { select: { id: true, title: true } } },
-        });
-        const data = candidates.filter((m) => (m.reactions as Record<string, unknown>)?.flagged === true);
-        return { status: 'success', data };
-    }
+  /**
+   * Retrieves a chronological log of system-flagged messages awaiting moderation.
+   * Messages are flagged via POST :id/flag (reactions.flagged = true).
+   *
+   * @returns A promise resolving to a collection of messages requiring administrative attention
+   */
+  @Get('flagged')
+  @ApiOperation({
+    summary: 'List flagged messages',
+    description:
+      'Retrieve a priority queue of messages that have been identified as potentially violating community standards.',
+  })
+  async getFlagged(): Promise<any> {
+    const candidates = await this.prismaRead.message.findMany({
+      where: { deletedAt: null, reactions: { not: Prisma.DbNull } },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+      include: {
+        sender: { select: { id: true, firstName: true, lastName: true, email: true } },
+        project: { select: { id: true, title: true } },
+      },
+    });
+    const data = candidates.filter(
+      (m) => (m.reactions as Record<string, unknown>)?.flagged === true,
+    );
+    return { status: 'success', data };
+  }
 }
-

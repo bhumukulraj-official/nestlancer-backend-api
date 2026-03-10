@@ -9,44 +9,61 @@ import { CacheService } from '@nestlancer/cache';
 import { StorageService } from '@nestlancer/storage';
 
 describe('AppModule (Integration)', () => {
-    let app: INestApplication;
+  let app: INestApplication;
 
-    beforeAll(async () => {
-        const moduleRef: TestingModule = await Test.createTestingModule({
-            imports: [AppModule],
-        })
-            .overrideProvider(QueuePublisherService)
-            .useValue({ publish: jest.fn() })
-            .overrideProvider(QueueConsumerService)
-            .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
-            .overrideProvider(DlqService)
-            .useValue({})
-            .overrideProvider(PrismaWriteService)
-            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), analyticsEvent: { createMany: jest.fn() }, analyticsAggregation: { upsert: jest.fn() } })
-            .overrideProvider(PrismaReadService)
-            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), analyticsEvent: { findMany: jest.fn() }, analyticsAggregation: { findMany: jest.fn() } })
-            .overrideProvider(CacheService)
-            .useValue({ getClient: jest.fn().mockReturnValue({ get: jest.fn(), set: jest.fn(), del: jest.fn() }) })
-            .overrideProvider(StorageService)
-            .useValue({ upload: jest.fn(), getSignedUrl: jest.fn(), delete: jest.fn(), exists: jest.fn() })
-            .compile();
+  beforeAll(async () => {
+    const moduleRef: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(QueuePublisherService)
+      .useValue({ publish: jest.fn() })
+      .overrideProvider(QueueConsumerService)
+      .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
+      .overrideProvider(DlqService)
+      .useValue({})
+      .overrideProvider(PrismaWriteService)
+      .useValue({
+        $connect: jest.fn(),
+        $disconnect: jest.fn(),
+        analyticsEvent: { createMany: jest.fn() },
+        analyticsAggregation: { upsert: jest.fn() },
+      })
+      .overrideProvider(PrismaReadService)
+      .useValue({
+        $connect: jest.fn(),
+        $disconnect: jest.fn(),
+        analyticsEvent: { findMany: jest.fn() },
+        analyticsAggregation: { findMany: jest.fn() },
+      })
+      .overrideProvider(CacheService)
+      .useValue({
+        getClient: jest.fn().mockReturnValue({ get: jest.fn(), set: jest.fn(), del: jest.fn() }),
+      })
+      .overrideProvider(StorageService)
+      .useValue({
+        upload: jest.fn(),
+        getSignedUrl: jest.fn(),
+        delete: jest.fn(),
+        exists: jest.fn(),
+      })
+      .compile();
 
-        app = moduleRef.createNestApplication();
-        await app.init();
-    });
+    app = moduleRef.createNestApplication();
+    await app.init();
+  });
 
-    afterAll(async () => {
-        if (app) {
-            await app.close();
-        }
-    });
+  afterAll(async () => {
+    if (app) {
+      await app.close();
+    }
+  });
 
-    it('should initialize the worker application context successfully', () => {
-        expect(app).toBeDefined();
-    });
+  it('should initialize the worker application context successfully', () => {
+    expect(app).toBeDefined();
+  });
 
-    it('should resolve AppModule dependencies', () => {
-        const appModule = app.get(AppModule);
-        expect(appModule).toBeDefined();
-    });
+  it('should resolve AppModule dependencies', () => {
+    const appModule = app.get(AppModule);
+    expect(appModule).toBeDefined();
+  });
 });

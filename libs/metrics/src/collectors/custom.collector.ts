@@ -1,14 +1,13 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { MetricsService } from '../metrics.service';
 
-
 /**
  * Custom metrics collector for registering application-specific business metrics.
  * Provides factory methods to create metrics on demand.
  */
 @Injectable()
 export class CustomMetricsCollector implements OnModuleInit {
-  constructor(private readonly metrics: MetricsService) { }
+  constructor(private readonly metrics: MetricsService) {}
 
   onModuleInit(): void {
     // Register common business metrics
@@ -18,11 +17,10 @@ export class CustomMetricsCollector implements OnModuleInit {
       ['event_type', 'service'],
     );
 
-    this.metrics.createCounter(
-      'payments_processed_total',
-      'Total number of payments processed',
-      ['status', 'currency'],
-    );
+    this.metrics.createCounter('payments_processed_total', 'Total number of payments processed', [
+      'status',
+      'currency',
+    ]);
 
     this.metrics.createHistogram(
       'payment_amount_paise',
@@ -31,16 +29,11 @@ export class CustomMetricsCollector implements OnModuleInit {
       [100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000],
     );
 
-    this.metrics.createGauge(
-      'active_projects_total',
-      'Total number of currently active projects',
-    );
+    this.metrics.createGauge('active_projects_total', 'Total number of currently active projects');
 
-    this.metrics.createGauge(
-      'registered_users_total',
-      'Total number of registered users',
-      ['role'],
-    );
+    this.metrics.createGauge('registered_users_total', 'Total number of registered users', [
+      'role',
+    ]);
   }
 
   recordBusinessEvent(eventType: string, service: string): void {

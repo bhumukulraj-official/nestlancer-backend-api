@@ -10,174 +10,229 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 /**
  * Controller for managing comments on specific blog posts.
  * Allows users to list, create, and interact with post-specific comment threads.
- * 
+ *
  * @category Blog
  */
 @ApiTags('Blog - Post Comments')
 @ApiBearerAuth()
 @Controller('posts/:slug/comments')
 export class CommentsController {
-    constructor(
-        private readonly commentsService: CommentsService,
-        private readonly prismaRead: PrismaReadService,
-    ) { }
+  constructor(
+    private readonly commentsService: CommentsService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
-    /**
-     * Retrieves a paginated list of comments for a specific blog post.
-     * 
-     * @param slug The unique URL-friendly identifier of the post
-     * @param page Target page number for results
-     * @param limit Maximum number of comments per page
-     * @returns A promise resolving to a paginated list of comments
-     */
-    @Get()
-    @Auth()
-    @ApiOperation({ summary: 'List comments for post', description: 'Retrieve the publicly accessible comment thread for a specific blog post.' })
-    async listPostComments(@Param('slug') slug: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
-        const pageNum = parseInt(page, 10);
-        const limitNum = parseInt(limit, 10);
-        const skip = (pageNum - 1) * limitNum;
+  /**
+   * Retrieves a paginated list of comments for a specific blog post.
+   *
+   * @param slug The unique URL-friendly identifier of the post
+   * @param page Target page number for results
+   * @param limit Maximum number of comments per page
+   * @returns A promise resolving to a paginated list of comments
+   */
+  @Get()
+  @Auth()
+  @ApiOperation({
+    summary: 'List comments for post',
+    description: 'Retrieve the publicly accessible comment thread for a specific blog post.',
+  })
+  async listPostComments(
+    @Param('slug') slug: string,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+  ): Promise<any> {
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
 
-        const post = await this.prismaRead.blogPost.findUnique({ where: { slug }, select: { id: true } });
-        if (!post) return { data: [], pagination: { page: pageNum, limit: limitNum, total: 0, totalPages: 0 } };
+    const post = await this.prismaRead.blogPost.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    if (!post)
+      return { data: [], pagination: { page: pageNum, limit: limitNum, total: 0, totalPages: 0 } };
 
-        const [comments, total] = await Promise.all([
-            this.prismaRead.blogComment.findMany({
-                where: { postId: post.id, status: 'APPROVED' },
-                skip,
-                take: limitNum,
-                orderBy: { createdAt: 'desc' },
-                include: { author: { select: { id: true, firstName: true, lastName: true, avatar: true } } }
-            }),
-            this.prismaRead.blogComment.count({ where: { postId: post.id, status: 'APPROVED' } })
-        ]);
+    const [comments, total] = await Promise.all([
+      this.prismaRead.blogComment.findMany({
+        where: { postId: post.id, status: 'APPROVED' },
+        skip,
+        take: limitNum,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        },
+      }),
+      this.prismaRead.blogComment.count({ where: { postId: post.id, status: 'APPROVED' } }),
+    ]);
 
-        return {
-            data: comments,
-            pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) }
-        };
-    }
+    return {
+      data: comments,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    };
+  }
 
-    /**
-     * Creates a new top-level comment on a specified post.
-     * 
-     * @param slug The unique identifier of the post
-     * @param dto Comment creation parameters
-     * @param req The incoming request for author context
-     * @returns A promise resolving to the created comment record
-     */
-    @Post()
-    @Auth()
-    @ApiOperation({ summary: 'Post a comment', description: 'Submit a new root-level comment to a specified blog post.' })
-    async create(@Param('slug') slug: string, @Body() dto: CreateCommentDto, @Req() req: any): Promise<any> {
-        return this.commentsService.create(slug, req.user.id, dto);
-    }
+  /**
+   * Creates a new top-level comment on a specified post.
+   *
+   * @param slug The unique identifier of the post
+   * @param dto Comment creation parameters
+   * @param req The incoming request for author context
+   * @returns A promise resolving to the created comment record
+   */
+  @Post()
+  @Auth()
+  @ApiOperation({
+    summary: 'Post a comment',
+    description: 'Submit a new root-level comment to a specified blog post.',
+  })
+  async create(
+    @Param('slug') slug: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req: any,
+  ): Promise<any> {
+    return this.commentsService.create(slug, req.user.id, dto);
+  }
 
-    /**
-     * Submits a reply to an existing comment.
-     * 
-     * @param slug The unique identifier of the post
-     * @param commentId Unique identifier of the target parent comment
-     * @param dto Reply content data
-     * @param req The incoming request for author context
-     * @returns A promise resolving to the created reply comment
-     */
-    @Post(':commentId/reply')
-    @Auth()
-    @ApiOperation({ summary: 'Reply to comment', description: 'Submit nested feedback as a reply to an existing comment.' })
-    async replyToComment(@Param('slug') slug: string, @Param('commentId') commentId: string, @Body() dto: CreateCommentDto, @Req() req: any): Promise<any> {
-        // Adding parentId to CreateCommentDto type dynamically since the dto type might not have it
-        return this.commentsService.create(slug, req.user.id, { ...dto, parentId: commentId } as any);
-    }
+  /**
+   * Submits a reply to an existing comment.
+   *
+   * @param slug The unique identifier of the post
+   * @param commentId Unique identifier of the target parent comment
+   * @param dto Reply content data
+   * @param req The incoming request for author context
+   * @returns A promise resolving to the created reply comment
+   */
+  @Post(':commentId/reply')
+  @Auth()
+  @ApiOperation({
+    summary: 'Reply to comment',
+    description: 'Submit nested feedback as a reply to an existing comment.',
+  })
+  async replyToComment(
+    @Param('slug') slug: string,
+    @Param('commentId') commentId: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req: any,
+  ): Promise<any> {
+    // Adding parentId to CreateCommentDto type dynamically since the dto type might not have it
+    return this.commentsService.create(slug, req.user.id, { ...dto, parentId: commentId } as any);
+  }
 
-    /**
-     * Modifies the text content of a previously posted comment.
-     * 
-     * @param commentId Unique identifier of the target comment
-     * @param dto The new content to apply
-     * @param req The incoming request for ownership verification
-     * @returns A promise resolving to the updated comment record
-     */
-    @Put(':commentId')
-    @Patch(':commentId')
-    @Auth()
-    @ApiOperation({ summary: 'Update comment', description: 'Modify the textual body of a comment previously authored by the user.' })
-    async update(@Param('commentId') commentId: string, @Body() dto: UpdateCommentDto, @Req() req: any): Promise<any> {
-        return this.commentsService.update(commentId, req.user.id, dto);
-    }
+  /**
+   * Modifies the text content of a previously posted comment.
+   *
+   * @param commentId Unique identifier of the target comment
+   * @param dto The new content to apply
+   * @param req The incoming request for ownership verification
+   * @returns A promise resolving to the updated comment record
+   */
+  @Put(':commentId')
+  @Patch(':commentId')
+  @Auth()
+  @ApiOperation({
+    summary: 'Update comment',
+    description: 'Modify the textual body of a comment previously authored by the user.',
+  })
+  async update(
+    @Param('commentId') commentId: string,
+    @Body() dto: UpdateCommentDto,
+    @Req() req: any,
+  ): Promise<any> {
+    return this.commentsService.update(commentId, req.user.id, dto);
+  }
 
-    /**
-     * Performs a soft-deletion of a comment authored by the current user.
-     * 
-     * @param commentId Unique identifier of the target comment
-     * @param req The incoming request for ownership verification
-     * @returns A promise resolving to a deletion confirmation
-     */
-    @Delete(':commentId')
-    @Auth()
-    @ApiOperation({ summary: 'Delete comment', description: 'Mark a specific comment as deleted by its author.' })
-    async remove(@Param('commentId') commentId: string, @Req() req: any): Promise<any> {
-        return this.commentsService.softDelete(commentId, req.user.id);
-    }
+  /**
+   * Performs a soft-deletion of a comment authored by the current user.
+   *
+   * @param commentId Unique identifier of the target comment
+   * @param req The incoming request for ownership verification
+   * @returns A promise resolving to a deletion confirmation
+   */
+  @Delete(':commentId')
+  @Auth()
+  @ApiOperation({
+    summary: 'Delete comment',
+    description: 'Mark a specific comment as deleted by its author.',
+  })
+  async remove(@Param('commentId') commentId: string, @Req() req: any): Promise<any> {
+    return this.commentsService.softDelete(commentId, req.user.id);
+  }
 
-    /**
-     * Retrieves all nested replies associated with a specific comment.
-     * 
-     * @param slug The post identifier
-     * @param commentId The parent comment identifier
-     * @returns A promise resolving to the child comment thread
-     */
-    @Get(':commentId/replies')
-    @Auth()
-    @ApiOperation({ summary: 'Get comment replies', description: 'Retrieve all nested responses for a specific parent comment.' })
-    async getReplies(@Param('slug') slug: string, @Param('commentId') commentId: string): Promise<any> {
-        const post = await this.prismaRead.blogPost.findUnique({ where: { slug }, select: { id: true } });
-        if (!post) return { data: [] };
-        const data = await this.commentsService.getReplies(commentId, post.id);
-        return { data };
-    }
+  /**
+   * Retrieves all nested replies associated with a specific comment.
+   *
+   * @param slug The post identifier
+   * @param commentId The parent comment identifier
+   * @returns A promise resolving to the child comment thread
+   */
+  @Get(':commentId/replies')
+  @Auth()
+  @ApiOperation({
+    summary: 'Get comment replies',
+    description: 'Retrieve all nested responses for a specific parent comment.',
+  })
+  async getReplies(
+    @Param('slug') slug: string,
+    @Param('commentId') commentId: string,
+  ): Promise<any> {
+    const post = await this.prismaRead.blogPost.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    if (!post) return { data: [] };
+    const data = await this.commentsService.getReplies(commentId, post.id);
+    return { data };
+  }
 
-    /**
-     * Submits a report flagging a comment for administrative moderation.
-     * 
-     * @param slug The post identifier
-     * @param commentId The comment identifier reported
-     * @param body Optional reason
-     * @param req User context
-     * @returns A promise resolving to a report confirmation
-     */
-    @Post(':commentId/report')
-    @Auth()
-    @ApiOperation({ summary: 'Report comment', description: 'Flag a specific comment for review due to community guideline violations.' })
-    async reportComment(
-        @Param('slug') slug: string,
-        @Param('commentId') commentId: string,
-        @Body() body: { reason?: string },
-        @Req() req: any,
-    ): Promise<any> {
-        await this.commentsService.reportComment(commentId, req.user.id, body?.reason);
-        return { reported: true };
-    }
+  /**
+   * Submits a report flagging a comment for administrative moderation.
+   *
+   * @param slug The post identifier
+   * @param commentId The comment identifier reported
+   * @param body Optional reason
+   * @param req User context
+   * @returns A promise resolving to a report confirmation
+   */
+  @Post(':commentId/report')
+  @Auth()
+  @ApiOperation({
+    summary: 'Report comment',
+    description: 'Flag a specific comment for review due to community guideline violations.',
+  })
+  async reportComment(
+    @Param('slug') slug: string,
+    @Param('commentId') commentId: string,
+    @Body() body: { reason?: string },
+    @Req() req: any,
+  ): Promise<any> {
+    await this.commentsService.reportComment(commentId, req.user.id, body?.reason);
+    return { reported: true };
+  }
 
-    /**
-     * Adds a like to a comment (increments like count).
-     * 
-     * @param slug The post identifier
-     * @param commentId The unique identifier of the comment to like
-     * @param req The incoming request for user context
-     * @returns A promise resolving to the updated interaction state
-     */
-    @Post(':commentId/like')
-    @Auth()
-    @ApiOperation({ summary: 'Like comment', description: 'Add a like to a blog post comment.' })
-    async likePostComment(
-        @Param('slug') slug: string,
-        @Param('commentId') commentId: string,
-        @Req() req: any,
-    ): Promise<any> {
-        const result = await this.commentsService.likeComment(commentId, req.user.id);
-        return { status: 'success', data: result };
-    }
+  /**
+   * Adds a like to a comment (increments like count).
+   *
+   * @param slug The post identifier
+   * @param commentId The unique identifier of the comment to like
+   * @param req The incoming request for user context
+   * @returns A promise resolving to the updated interaction state
+   */
+  @Post(':commentId/like')
+  @Auth()
+  @ApiOperation({ summary: 'Like comment', description: 'Add a like to a blog post comment.' })
+  async likePostComment(
+    @Param('slug') slug: string,
+    @Param('commentId') commentId: string,
+    @Req() req: any,
+  ): Promise<any> {
+    const result = await this.commentsService.likeComment(commentId, req.user.id);
+    return { status: 'success', data: result };
+  }
 }
 
 /**
@@ -188,128 +243,149 @@ export class CommentsController {
 @Controller()
 @Auth()
 export class StandaloneCommentsController {
-    constructor(
-        private readonly commentsService: CommentsService,
-        private readonly prismaRead: PrismaReadService,
-    ) { }
+  constructor(
+    private readonly commentsService: CommentsService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
-    /**
-     * Fetches details for a single comment using its primary identifier.
-     * 
-     * @param commentId Unique identifier of the comment
-     * @returns A promise resolving to the comment object
-     */
-    @Get('comments/:commentId')
-    @ApiOperation({ summary: 'Get comment by ID', description: 'Retrieve detailed record for a single comment entry.' })
-    async getCommentById(@Param('commentId') commentId: string): Promise<any> {
-        const comment = await this.prismaRead.blogComment.findUnique({
-            where: { id: commentId, status: 'APPROVED' },
-            include: { author: { select: { id: true, firstName: true, lastName: true, avatar: true } }, post: { select: { id: true, title: true, slug: true } } },
-        });
-        if (!comment) return { status: 'success', data: null };
-        return { status: 'success', data: comment };
-    }
+  /**
+   * Fetches details for a single comment using its primary identifier.
+   *
+   * @param commentId Unique identifier of the comment
+   * @returns A promise resolving to the comment object
+   */
+  @Get('comments/:commentId')
+  @ApiOperation({
+    summary: 'Get comment by ID',
+    description: 'Retrieve detailed record for a single comment entry.',
+  })
+  async getCommentById(@Param('commentId') commentId: string): Promise<any> {
+    const comment = await this.prismaRead.blogComment.findUnique({
+      where: { id: commentId, status: 'APPROVED' },
+      include: {
+        author: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        post: { select: { id: true, title: true, slug: true } },
+      },
+    });
+    if (!comment) return { status: 'success', data: null };
+    return { status: 'success', data: comment };
+  }
 
-    /**
-     * Fetches all child replies for a specific parent comment.
-     * 
-     * @param commentId Unique identifier of the parent
-     * @returns A promise resolving to the list of replies
-     */
-    @Get('comments/:commentId/replies')
-    @ApiOperation({ summary: 'Get standalone replies', description: 'Fetch all hierarchical replies for a specific comment ID.' })
-    async getCommentReplies(@Param('commentId') commentId: string): Promise<any> {
-        const data = await this.commentsService.getReplies(commentId);
-        return { status: 'success', data };
-    }
+  /**
+   * Fetches all child replies for a specific parent comment.
+   *
+   * @param commentId Unique identifier of the parent
+   * @returns A promise resolving to the list of replies
+   */
+  @Get('comments/:commentId/replies')
+  @ApiOperation({
+    summary: 'Get standalone replies',
+    description: 'Fetch all hierarchical replies for a specific comment ID.',
+  })
+  async getCommentReplies(@Param('commentId') commentId: string): Promise<any> {
+    const data = await this.commentsService.getReplies(commentId);
+    return { status: 'success', data };
+  }
 
-    /**
-     * Submits a reply to a comment using its ID directly.
-     * 
-     * @param commentId Unique identifier of the target for the reply
-     * @param body Reply content
-     * @param req User context
-     * @returns A promise resolving to the created reply record
-     */
-    @Post('comments/:commentId/reply')
-    @ApiOperation({ summary: 'Reply standalone', description: 'Submit a response to a comment without post context.' })
-    async replyToCommentStandalone(
-        @Param('commentId') commentId: string,
-        @Body() body: { content: string },
-        @Req() req: any,
-    ): Promise<any> {
-        const result = await this.commentsService.createReplyByParentId(commentId, req.user.id, body.content);
-        return { status: 'success', data: result };
-    }
+  /**
+   * Submits a reply to a comment using its ID directly.
+   *
+   * @param commentId Unique identifier of the target for the reply
+   * @param body Reply content
+   * @param req User context
+   * @returns A promise resolving to the created reply record
+   */
+  @Post('comments/:commentId/reply')
+  @ApiOperation({
+    summary: 'Reply standalone',
+    description: 'Submit a response to a comment without post context.',
+  })
+  async replyToCommentStandalone(
+    @Param('commentId') commentId: string,
+    @Body() body: { content: string },
+    @Req() req: any,
+  ): Promise<any> {
+    const result = await this.commentsService.createReplyByParentId(
+      commentId,
+      req.user.id,
+      body.content,
+    );
+    return { status: 'success', data: result };
+  }
 
-    /**
-     * Moderates or updates a comment record directly by ID.
-     * 
-     * @param commentId Unique identifier of the comment
-     * @param body New content or status
-     * @param req User context
-     * @returns A promise resolving to the updated record
-     */
-    @Patch('comments/:commentId')
-    @ApiOperation({ summary: 'Patch comment', description: 'Directly modify attributes of a comment record.' })
-    async editComment(
-        @Param('commentId') commentId: string,
-        @Body() body: any,
-        @Req() req: any,
-    ): Promise<any> {
-        return { status: 'success', data: { id: commentId, content: body.content } };
-    }
+  /**
+   * Moderates or updates a comment record directly by ID.
+   *
+   * @param commentId Unique identifier of the comment
+   * @param body New content or status
+   * @param req User context
+   * @returns A promise resolving to the updated record
+   */
+  @Patch('comments/:commentId')
+  @ApiOperation({
+    summary: 'Patch comment',
+    description: 'Directly modify attributes of a comment record.',
+  })
+  async editComment(
+    @Param('commentId') commentId: string,
+    @Body() body: any,
+    @Req() req: any,
+  ): Promise<any> {
+    return { status: 'success', data: { id: commentId, content: body.content } };
+  }
 
-    /**
-     * Removes a comment record by its identifier.
-     * 
-     * @param commentId Unique identifier of the record to delete
-     * @param req User context
-     * @returns A promise resolving to confirmation
-     */
-    @Delete('comments/:commentId')
-    @ApiOperation({ summary: 'Delete standalone comment', description: 'Directly remove a comment record from the system.' })
-    async deleteComment(
-        @Param('commentId') commentId: string,
-        @Req() req: any,
-    ): Promise<any> {
-        return { status: 'success', message: 'Comment deleted' };
-    }
+  /**
+   * Removes a comment record by its identifier.
+   *
+   * @param commentId Unique identifier of the record to delete
+   * @param req User context
+   * @returns A promise resolving to confirmation
+   */
+  @Delete('comments/:commentId')
+  @ApiOperation({
+    summary: 'Delete standalone comment',
+    description: 'Directly remove a comment record from the system.',
+  })
+  async deleteComment(@Param('commentId') commentId: string, @Req() req: any): Promise<any> {
+    return { status: 'success', message: 'Comment deleted' };
+  }
 
-    /**
-     * Reports a comment for moderation using its direct identifier.
-     * 
-     * @param commentId Unique identifier of the flagged comment
-     * @param body Report reason
-     * @param req User context
-     * @returns A promise resolving to confirmation
-     */
-    @Post('comments/:commentId/report')
-    @ApiOperation({ summary: 'Report standalone comment', description: 'Flag a specific comment record for administrative review.' })
-    async reportCommentStandalone(
-        @Param('commentId') commentId: string,
-        @Body() body: { reason?: string },
-        @Req() req: any,
-    ): Promise<any> {
-        await this.commentsService.reportComment(commentId, req.user.id, body?.reason);
-        return { status: 'success', message: 'Comment reported' };
-    }
+  /**
+   * Reports a comment for moderation using its direct identifier.
+   *
+   * @param commentId Unique identifier of the flagged comment
+   * @param body Report reason
+   * @param req User context
+   * @returns A promise resolving to confirmation
+   */
+  @Post('comments/:commentId/report')
+  @ApiOperation({
+    summary: 'Report standalone comment',
+    description: 'Flag a specific comment record for administrative review.',
+  })
+  async reportCommentStandalone(
+    @Param('commentId') commentId: string,
+    @Body() body: { reason?: string },
+    @Req() req: any,
+  ): Promise<any> {
+    await this.commentsService.reportComment(commentId, req.user.id, body?.reason);
+    return { status: 'success', message: 'Comment reported' };
+  }
 
-    /**
-     * Records a like for a comment using its ID.
-     * 
-     * @param commentId Unique identifier of the comment
-     * @param req User context
-     * @returns A promise resolving to the interaction state
-     */
-    @Post('comments/:commentId/like')
-    @ApiOperation({ summary: 'Like standalone comment', description: 'Add a like to a specific comment record.' })
-    async likeComment(
-        @Param('commentId') commentId: string,
-        @Req() req: any,
-    ): Promise<any> {
-        const result = await this.commentsService.likeComment(commentId, req.user.id);
-        return { status: 'success', data: result };
-    }
+  /**
+   * Records a like for a comment using its ID.
+   *
+   * @param commentId Unique identifier of the comment
+   * @param req User context
+   * @returns A promise resolving to the interaction state
+   */
+  @Post('comments/:commentId/like')
+  @ApiOperation({
+    summary: 'Like standalone comment',
+    description: 'Add a like to a specific comment record.',
+  })
+  async likeComment(@Param('commentId') commentId: string, @Req() req: any): Promise<any> {
+    const result = await this.commentsService.likeComment(commentId, req.user.id);
+    return { status: 'success', data: result };
+  }
 }
-

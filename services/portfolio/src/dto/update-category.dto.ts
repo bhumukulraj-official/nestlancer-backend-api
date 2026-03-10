@@ -6,6 +6,4 @@ import * as common from '@nestjs/common';
 /**
  * Data Transfer Object for updating an existing category.
  */
-export class UpdateCategoryDto extends PartialType(CreateCategoryDto) { }
-
-
+export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}

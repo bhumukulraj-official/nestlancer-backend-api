@@ -10,7 +10,8 @@ export class TurnstileModule {
       module: TurnstileModule,
       providers: [
         { provide: 'TURNSTILE_OPTIONS', useValue: options || {} },
-        TurnstileService, TurnstileGuard,
+        TurnstileService,
+        TurnstileGuard,
       ],
       exports: [TurnstileService, TurnstileGuard],
     };

@@ -42,7 +42,10 @@ describe('EmailConsumer', () => {
   describe('onModuleInit', () => {
     it('should start consuming from the configured queue', async () => {
       await consumer.onModuleInit();
-      expect(queueConsumerService.consume).toHaveBeenCalledWith('email.queue', expect.any(Function));
+      expect(queueConsumerService.consume).toHaveBeenCalledWith(
+        'email.queue',
+        expect.any(Function),
+      );
     });
 
     it('should process messages correctly', async () => {
@@ -59,7 +62,10 @@ describe('EmailConsumer', () => {
 
       await messageHandler(mockMsg);
 
-      expect(emailWorkerService.processEmail).toHaveBeenCalledWith({ to: 'test@example.com', subject: 'Test' });
+      expect(emailWorkerService.processEmail).toHaveBeenCalledWith({
+        to: 'test@example.com',
+        subject: 'Test',
+      });
     });
   });
 });

@@ -20,10 +20,14 @@ export class RedisSubscriberService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     const redisUrl = this.configService.redisPubSubUrl;
     this.subscriber = new Redis(redisUrl);
-    this.subscriber.on('error', (err) => this.logger.error(`Redis subscriber error: ${err.message}`));
+    this.subscriber.on('error', (err) =>
+      this.logger.error(`Redis subscriber error: ${err.message}`),
+    );
 
     this.subscriber.psubscribe(REDIS_PATTERN);
-    this.subscriber.on('pmessage', (pattern, channel, message) => this.handleMessage(channel, message));
+    this.subscriber.on('pmessage', (pattern, channel, message) =>
+      this.handleMessage(channel, message),
+    );
     this.logger.log(`Subscribed to Redis pattern ${REDIS_PATTERN}`);
   }
 

@@ -34,11 +34,17 @@ describe('CircuitBreakerModule (Integration)', () => {
     const failingFn = () => Promise.reject(new Error('Persistent failure'));
 
     // Threshold failure 1
-    await expect(service.execute(name, failingFn, { failureThreshold })).rejects.toThrow('Persistent failure');
+    await expect(service.execute(name, failingFn, { failureThreshold })).rejects.toThrow(
+      'Persistent failure',
+    );
     // Threshold failure 2 -> should open
-    await expect(service.execute(name, failingFn, { failureThreshold })).rejects.toThrow('Persistent failure');
+    await expect(service.execute(name, failingFn, { failureThreshold })).rejects.toThrow(
+      'Persistent failure',
+    );
 
     // 3rd call should throw "is OPEN" error
-    await expect(service.execute(name, failingFn, { failureThreshold })).rejects.toThrow(`Circuit breaker '${name}' is OPEN`);
+    await expect(service.execute(name, failingFn, { failureThreshold })).rejects.toThrow(
+      `Circuit breaker '${name}' is OPEN`,
+    );
   });
 });

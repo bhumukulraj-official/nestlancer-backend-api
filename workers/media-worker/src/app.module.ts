@@ -17,27 +17,27 @@ import { MetadataExtractorProcessor } from './processors/metadata-extractor.proc
 import { mediaWorkerConfig } from './config/media-worker.config';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot({
-            load: [mediaWorkerConfig],
-            isGlobal: true,
-        }),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        StorageModule.forRoot(),
-        QueueModule.forRoot(),
-    ],
-    providers: [
-        MediaConsumer,
-        MediaWorkerService,
-        ImageProcessingService,
-        VideoProcessingService,
-        VirusScanProcessor,
-        ImageResizeProcessor,
-        ThumbnailGeneratorProcessor,
-        MetadataExtractorProcessor,
-    ],
+  imports: [
+    ConfigModule.forRoot({
+      load: [mediaWorkerConfig],
+      isGlobal: true,
+    }),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    StorageModule.forRoot(),
+    QueueModule.forRoot(),
+  ],
+  providers: [
+    MediaConsumer,
+    MediaWorkerService,
+    ImageProcessingService,
+    VideoProcessingService,
+    VirusScanProcessor,
+    ImageResizeProcessor,
+    ThumbnailGeneratorProcessor,
+    MetadataExtractorProcessor,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

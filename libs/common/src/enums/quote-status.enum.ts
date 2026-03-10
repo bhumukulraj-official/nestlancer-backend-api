@@ -9,4 +9,3 @@ export enum QuoteStatus {
   CHANGES_REQUESTED = 'CHANGES_REQUESTED',
   REVISED = 'REVISED',
 }
-

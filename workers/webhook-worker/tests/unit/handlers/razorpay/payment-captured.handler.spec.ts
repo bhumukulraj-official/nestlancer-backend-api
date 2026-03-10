@@ -70,9 +70,7 @@ describe('PaymentCapturedHandler', () => {
 
       await handler.handle(payload);
 
-      expect(logger.error).toHaveBeenCalledWith(
-        'Payment not found for external ID: pay_123',
-      );
+      expect(logger.error).toHaveBeenCalledWith('Payment not found for external ID: pay_123');
       expect(prismaWrite.$transaction).not.toHaveBeenCalled();
     });
 
@@ -86,9 +84,7 @@ describe('PaymentCapturedHandler', () => {
 
       await handler.handle(payload);
 
-      expect(logger.warn).toHaveBeenCalledWith(
-        'Payment payment-1 already captured, skipping.',
-      );
+      expect(logger.warn).toHaveBeenCalledWith('Payment payment-1 already captured, skipping.');
       expect(prismaWrite.$transaction).not.toHaveBeenCalled();
     });
 
@@ -105,19 +101,13 @@ describe('PaymentCapturedHandler', () => {
 
       await handler.handle(payload);
 
-      expect(logger.log).toHaveBeenCalledWith(
-        'Handling payment.captured for Razorpay ID: pay_123',
-      );
+      expect(logger.log).toHaveBeenCalledWith('Handling payment.captured for Razorpay ID: pay_123');
       expect(prismaWrite.$transaction).toHaveBeenCalled();
-      expect(queue.publish).toHaveBeenCalledWith(
-        'events',
-        'notification.payment.completed',
-        {
-          type: 'payment.completed',
-          userId: 'user-1',
-          payload: { paymentId: 'payment-1', amount: 1000 },
-        },
-      );
+      expect(queue.publish).toHaveBeenCalledWith('events', 'notification.payment.completed', {
+        type: 'payment.completed',
+        userId: 'user-1',
+        payload: { paymentId: 'payment-1', amount: 1000 },
+      });
     });
   });
 });

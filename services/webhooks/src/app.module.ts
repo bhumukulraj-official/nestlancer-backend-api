@@ -17,22 +17,22 @@ import { CloudflareProvider } from './providers/cloudflare.provider';
 import { webhooksConfig } from './config/webhooks.config';
 
 @Module({
-    imports: [
-        ConfigModule,
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        CacheModule.forRoot(),
-        QueueModule.forRoot({ url: process.env.RABBITMQ_URL || 'amqp://localhost:5672' }),
-        AuthLibModule,
-    ],
-    controllers: [WebhooksHealthController, WebhookReceiverController],
-    providers: [
-        WebhookIngestionService,
-        WebhookDispatcherService,
-        RazorpayProvider,
-        CloudflareProvider,
-    ],
+  imports: [
+    ConfigModule,
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    CacheModule.forRoot(),
+    QueueModule.forRoot({ url: process.env.RABBITMQ_URL || 'amqp://localhost:5672' }),
+    AuthLibModule,
+  ],
+  controllers: [WebhooksHealthController, WebhookReceiverController],
+  providers: [
+    WebhookIngestionService,
+    WebhookDispatcherService,
+    RazorpayProvider,
+    CloudflareProvider,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,6 +1,7 @@
 # Admin Service
 
 The Admin Service for the Nestlancer platform, responsible for:
+
 - System Configuration (key/value store)
 - Dashboard Metrics and Aggregations
 - User Impersonation Sessions

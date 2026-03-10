@@ -3,14 +3,16 @@
 ## Connection
 
 ### Endpoints
-| Path | Description |
-|------|-------------|
-| `wss://api.nestlancer.com/ws/messages` | Real-time messaging |
+
+| Path                                        | Description             |
+| ------------------------------------------- | ----------------------- |
+| `wss://api.nestlancer.com/ws/messages`      | Real-time messaging     |
 | `wss://api.nestlancer.com/ws/notifications` | Real-time notifications |
 
 ### Authentication
 
 JWT token provided via:
+
 1. **Query parameter**: `wss://api.nestlancer.com/ws/messages?token=<JWT>`
 2. **First message**: `{ type: "auth", token: "<JWT>" }`
 
@@ -39,10 +41,10 @@ Client                              WS Gateway
 
 Rooms are scoped by project for messaging isolation:
 
-| Room | Format | Description |
-|------|--------|-------------|
-| User Room | `user:<userId>` | Private notifications for user |
-| Project Room | `project:<projectId>` | Project-specific messaging |
+| Room         | Format                | Description                    |
+| ------------ | --------------------- | ------------------------------ |
+| User Room    | `user:<userId>`       | Private notifications for user |
+| Project Room | `project:<projectId>` | Project-specific messaging     |
 
 Users are auto-joined to project rooms based on their project participation.
 
@@ -50,35 +52,35 @@ Users are auto-joined to project rooms based on their project participation.
 
 ### Messaging Events
 
-| Event | Direction | Payload |
-|-------|-----------|---------|
-| `message:send` | Client → Server | `{ conversationId, content, type, replyToId? }` |
-| `message:new` | Server → Client | `{ id, conversationId, senderId, content, type, createdAt }` |
-| `message:edited` | Server → Client | `{ id, conversationId, content, editedAt }` |
-| `message:deleted` | Server → Client | `{ id, conversationId, deletedAt }` |
+| Event             | Direction       | Payload                                                      |
+| ----------------- | --------------- | ------------------------------------------------------------ |
+| `message:send`    | Client → Server | `{ conversationId, content, type, replyToId? }`              |
+| `message:new`     | Server → Client | `{ id, conversationId, senderId, content, type, createdAt }` |
+| `message:edited`  | Server → Client | `{ id, conversationId, content, editedAt }`                  |
+| `message:deleted` | Server → Client | `{ id, conversationId, deletedAt }`                          |
 
 ### Typing Events
 
-| Event | Direction | Payload |
-|-------|-----------|---------|
-| `typing:start` | Client → Server | `{ conversationId }` |
-| `typing:stop` | Client → Server | `{ conversationId }` |
+| Event          | Direction       | Payload                                 |
+| -------------- | --------------- | --------------------------------------- |
+| `typing:start` | Client → Server | `{ conversationId }`                    |
+| `typing:stop`  | Client → Server | `{ conversationId }`                    |
 | `typing:start` | Server → Client | `{ conversationId, userId, firstName }` |
-| `typing:stop` | Server → Client | `{ conversationId, userId }` |
+| `typing:stop`  | Server → Client | `{ conversationId, userId }`            |
 
 ### Presence Events
 
-| Event | Direction | Payload |
-|-------|-----------|---------|
-| `presence:online` | Server → Client | `{ userId, onlineAt }` |
+| Event              | Direction       | Payload                 |
+| ------------------ | --------------- | ----------------------- |
+| `presence:online`  | Server → Client | `{ userId, onlineAt }`  |
 | `presence:offline` | Server → Client | `{ userId, offlineAt }` |
 
 ### Notification Events
 
-| Event | Direction | Payload |
-|-------|-----------|---------|
-| `notification:new` | Server → Client | `{ id, type, category, title, message, data }` |
-| `notification:read` | Client → Server | `{ notificationId }` |
+| Event               | Direction       | Payload                                        |
+| ------------------- | --------------- | ---------------------------------------------- |
+| `notification:new`  | Server → Client | `{ id, type, category, title, message, data }` |
+| `notification:read` | Client → Server | `{ notificationId }`                           |
 
 ## Heartbeat
 
@@ -116,17 +118,17 @@ Messages published to Redis Pub/Sub are received by all WS Gateway instances, en
 
 ## Error Codes
 
-| Close Code | Description |
-|-----------|-------------|
-| `4401` | Authentication failed |
-| `4403` | Forbidden (not a project participant) |
-| `4429` | Rate limited |
-| `4500` | Internal server error |
+| Close Code | Description                           |
+| ---------- | ------------------------------------- |
+| `4401`     | Authentication failed                 |
+| `4403`     | Forbidden (not a project participant) |
+| `4429`     | Rate limited                          |
+| `4500`     | Internal server error                 |
 
 ## Rate Limiting
 
-| Action | Limit |
-|--------|-------|
-| Messages sent | 30 per minute per user |
-| Typing events | 5 per 10 seconds per user |
-| Connection attempts | 5 per minute per IP |
+| Action              | Limit                     |
+| ------------------- | ------------------------- |
+| Messages sent       | 30 per minute per user    |
+| Typing events       | 5 per 10 seconds per user |
+| Connection attempts | 5 per minute per IP       |

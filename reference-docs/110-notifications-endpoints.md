@@ -7,125 +7,132 @@
 **WebSocket**: `wss://api.yourdomain.com/ws/notifications`
 
 ### 11.1 Overview
+
 Manages user notifications across multiple channels (in-app, email, push). Supports real-time delivery via WebSocket, customizable preferences, and notification grouping.
 
 ### 11.2 Notification Types
 
-| Type | Description | Channels | Priority |
-|------|-------------|----------|----------|
-| `project.created` | New project created | in-app, email | normal |
-| `project.statusChanged` | Project status updated | in-app, email, push | normal |
-| `project.completed` | Project completed | in-app, email, push | high |
-| `quote.received` | New quote available | in-app, email, push | high |
-| `quote.expiring` | Quote expiring soon (24h) | in-app, email, push | high |
-| `quote.expired` | Quote has expired | in-app, email | normal |
-| `payment.received` | Payment confirmed | in-app, email | high |
-| `payment.due` | Payment reminder | in-app, email, push | high |
-| `payment.failed` | Payment failed | in-app, email, push | critical |
-| `payment.refunded` | Refund processed | in-app, email | normal |
-| `message.new` | New message received | in-app, push | normal |
-| `message.mention` | Mentioned in message | in-app, push | high |
-| `milestone.started` | Milestone work began | in-app, email | normal |
-| `milestone.completed` | Milestone finished | in-app, email, push | high |
-| `milestone.paymentDue` | Milestone payment due | in-app, email, push | high |
-| `deliverable.ready` | New deliverable ready | in-app, email, push | high |
-| `deliverable.approved` | Deliverable approved | in-app, email | normal |
-| `revision.requested` | Revision requested | in-app, email, push | high |
-| `revision.completed` | Revision completed | in-app, email | normal |
-| `system.announcement` | System announcement | in-app, email | varies |
-| `system.maintenance` | Scheduled maintenance | in-app, email, push | high |
-| `security.login` | New login detected | in-app, email, push | high |
-| `security.passwordChanged` | Password changed | in-app, email | high |
-| `security.2faEnabled` | 2FA enabled | in-app, email | normal |
+| Type                       | Description               | Channels            | Priority |
+| -------------------------- | ------------------------- | ------------------- | -------- |
+| `project.created`          | New project created       | in-app, email       | normal   |
+| `project.statusChanged`    | Project status updated    | in-app, email, push | normal   |
+| `project.completed`        | Project completed         | in-app, email, push | high     |
+| `quote.received`           | New quote available       | in-app, email, push | high     |
+| `quote.expiring`           | Quote expiring soon (24h) | in-app, email, push | high     |
+| `quote.expired`            | Quote has expired         | in-app, email       | normal   |
+| `payment.received`         | Payment confirmed         | in-app, email       | high     |
+| `payment.due`              | Payment reminder          | in-app, email, push | high     |
+| `payment.failed`           | Payment failed            | in-app, email, push | critical |
+| `payment.refunded`         | Refund processed          | in-app, email       | normal   |
+| `message.new`              | New message received      | in-app, push        | normal   |
+| `message.mention`          | Mentioned in message      | in-app, push        | high     |
+| `milestone.started`        | Milestone work began      | in-app, email       | normal   |
+| `milestone.completed`      | Milestone finished        | in-app, email, push | high     |
+| `milestone.paymentDue`     | Milestone payment due     | in-app, email, push | high     |
+| `deliverable.ready`        | New deliverable ready     | in-app, email, push | high     |
+| `deliverable.approved`     | Deliverable approved      | in-app, email       | normal   |
+| `revision.requested`       | Revision requested        | in-app, email, push | high     |
+| `revision.completed`       | Revision completed        | in-app, email       | normal   |
+| `system.announcement`      | System announcement       | in-app, email       | varies   |
+| `system.maintenance`       | Scheduled maintenance     | in-app, email, push | high     |
+| `security.login`           | New login detected        | in-app, email, push | high     |
+| `security.passwordChanged` | Password changed          | in-app, email       | high     |
+| `security.2faEnabled`      | 2FA enabled               | in-app, email       | normal   |
 
 ### 11.3 Notification Priority Levels
 
-| Priority | Description | Delivery | Retention |
-|----------|-------------|----------|-----------|
-| `critical` | Urgent, requires immediate action | All channels, immediate | 90 days |
-| `high` | Important, time-sensitive | All enabled channels | 60 days |
-| `normal` | Standard notifications | Based on preferences | 30 days |
-| `low` | Informational | In-app only | 14 days |
+| Priority   | Description                       | Delivery                | Retention |
+| ---------- | --------------------------------- | ----------------------- | --------- |
+| `critical` | Urgent, requires immediate action | All channels, immediate | 90 days   |
+| `high`     | Important, time-sensitive         | All enabled channels    | 60 days   |
+| `normal`   | Standard notifications            | Based on preferences    | 30 days   |
+| `low`      | Informational                     | In-app only             | 14 days   |
 
 ### 11.4 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/` | List notifications | 1000/hour | Yes |
-| `GET` | `/{id}` | Get notification details | 1000/hour | Yes |
-| `PATCH` | `/{id}/read` | Mark as read | 2000/hour | Yes |
-| `PATCH` | `/{id}/unread` | Mark as unread | 500/hour | Yes |
-| `POST` | `/read-all` | Mark all as read | 100/hour | Yes |
-| `POST` | `/read-selected` | Mark selected as read | 200/hour | Yes |
-| `GET` | `/unread-count` | Get unread count | 5000/hour | Yes |
-| `DELETE` | `/{id}` | Delete notification | 500/hour | Yes |
-| `DELETE` | `/clear-read` | Delete all read | 50/hour | Yes |
-| `GET` | `/preferences` | Get notification preferences | 500/hour | Yes |
-| `PATCH` | `/preferences` | Update preferences | 100/hour | No |
-| `GET` | `/channels` | List notification channels | 200/hour | Yes |
-| `POST` | `/push-subscription` | Register push subscription | 100/hour | No |
-| `DELETE` | `/push-subscription` | Remove push subscription | 100/hour | Yes |
-| `POST` | `/push/register` | Register push notification device | 100/hour | No |
-| `DELETE` | `/push/unregister/{deviceId}` | Unregister push device | 100/hour | Yes |
-| `POST` | `/test` | Send test notification | 10/hour | No |
-| `GET` | `/history` | Get notification history | 200/hour | Yes |
+| Method   | Endpoint                      | Description                        | Rate Limit | Idempotent |
+| -------- | ----------------------------- | ---------------------------------- | ---------- | ---------- |
+| `GET`    | `/health`                     | Health check (Simplified response) | 1000/hour  | Yes        |
+| `GET`    | `/`                           | List notifications                 | 1000/hour  | Yes        |
+| `GET`    | `/{id}`                       | Get notification details           | 1000/hour  | Yes        |
+| `PATCH`  | `/{id}/read`                  | Mark as read                       | 2000/hour  | Yes        |
+| `PATCH`  | `/{id}/unread`                | Mark as unread                     | 500/hour   | Yes        |
+| `POST`   | `/read-all`                   | Mark all as read                   | 100/hour   | Yes        |
+| `POST`   | `/read-selected`              | Mark selected as read              | 200/hour   | Yes        |
+| `GET`    | `/unread-count`               | Get unread count                   | 5000/hour  | Yes        |
+| `DELETE` | `/{id}`                       | Delete notification                | 500/hour   | Yes        |
+| `DELETE` | `/clear-read`                 | Delete all read                    | 50/hour    | Yes        |
+| `GET`    | `/preferences`                | Get notification preferences       | 500/hour   | Yes        |
+| `PATCH`  | `/preferences`                | Update preferences                 | 100/hour   | No         |
+| `GET`    | `/channels`                   | List notification channels         | 200/hour   | Yes        |
+| `POST`   | `/push-subscription`          | Register push subscription         | 100/hour   | No         |
+| `DELETE` | `/push-subscription`          | Remove push subscription           | 100/hour   | Yes        |
+| `POST`   | `/push/register`              | Register push notification device  | 100/hour   | No         |
+| `DELETE` | `/push/unregister/{deviceId}` | Unregister push device             | 100/hour   | Yes        |
+| `POST`   | `/test`                       | Send test notification             | 10/hour    | No         |
+| `GET`    | `/history`                    | Get notification history           | 200/hour   | Yes        |
 
 ### 11.5 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `GET` | `/` | List all notifications | 2000/hour | Yes |
-| `POST` | `/send` | Send to specific user(s) | 500/hour | No |
-| `POST` | `/broadcast` | Send to all users | 50/hour | No |
-| `POST` | `/segment` | Send to user segment | 100/hour | No |
-| `GET` | `/stats` | Notification analytics | 1000/hour | Yes |
-| `GET` | `/delivery-report` | Delivery statistics | 500/hour | Yes |
-| `DELETE` | `/user/{userId}` | Delete user's notifications | 100/hour | Yes |
-| `GET` | `/templates` | List notification templates | 200/hour | Yes |
-| `POST` | `/templates` | Create template | 50/hour | No |
-| `PATCH` | `/templates/{id}` | Update template | 100/hour | No |
-| `DELETE` | `/templates/{id}` | Delete template | 50/hour | Yes |
-| `POST` | `/{id}/resend` | Resend a failed notification | 100/hour | No |
+| Method   | Endpoint           | Description                  | Rate Limit | Idempotent |     | Role |
+| -------- | ------------------ | ---------------------------- | ---------- | ---------- | --- | ---- |
+| `GET`    | `/`                | List all notifications       | 2000/hour  | Yes        |
+| `POST`   | `/send`            | Send to specific user(s)     | 500/hour   | No         |
+| `POST`   | `/broadcast`       | Send to all users            | 50/hour    | No         |
+| `POST`   | `/segment`         | Send to user segment         | 100/hour   | No         |
+| `GET`    | `/stats`           | Notification analytics       | 1000/hour  | Yes        |
+| `GET`    | `/delivery-report` | Delivery statistics          | 500/hour   | Yes        |
+| `DELETE` | `/user/{userId}`   | Delete user's notifications  | 100/hour   | Yes        |
+| `GET`    | `/templates`       | List notification templates  | 200/hour   | Yes        |
+| `POST`   | `/templates`       | Create template              | 50/hour    | No         |
+| `PATCH`  | `/templates/{id}`  | Update template              | 100/hour   | No         |
+| `DELETE` | `/templates/{id}`  | Delete template              | 50/hour    | Yes        |
+| `POST`   | `/{id}/resend`     | Resend a failed notification | 100/hour   | No         |
 
 ### 11.6 WebSocket Connection
 
 #### Connection
+
 ```javascript
 const ws = new WebSocket('wss://api.yourdomain.com/ws/notifications');
 
 // Authenticate
-ws.send(JSON.stringify({
-  event: 'authenticate',
-  data: {
-    token: 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'
-  }
-}));
+ws.send(
+  JSON.stringify({
+    event: 'authenticate',
+    data: {
+      token: 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...',
+    },
+  }),
+);
 ```
 
 #### WebSocket Events
 
 ##### Server → Client Events
-| Event | Description | Data |
-|-------|-------------|------|
-| `authenticated` | Auth successful | `{ userId, sessionId }` |
-| `authError` | Auth failed | `{ code, message }` |
-| `notification.new` | New notification | `{ notification: Notification }` |
-| `notification.read` | Notification marked read | `{ notificationId }` |
-| `notification.deleted` | Notification deleted | `{ notificationId }` |
-| `unreadCount.updated` | Unread count changed | `{ count, byType }` |
-| `preferences.updated` | Preferences changed | `{ preferences }` |
+
+| Event                  | Description              | Data                             |
+| ---------------------- | ------------------------ | -------------------------------- |
+| `authenticated`        | Auth successful          | `{ userId, sessionId }`          |
+| `authError`            | Auth failed              | `{ code, message }`              |
+| `notification.new`     | New notification         | `{ notification: Notification }` |
+| `notification.read`    | Notification marked read | `{ notificationId }`             |
+| `notification.deleted` | Notification deleted     | `{ notificationId }`             |
+| `unreadCount.updated`  | Unread count changed     | `{ count, byType }`              |
+| `preferences.updated`  | Preferences changed      | `{ preferences }`                |
 
 ##### Client → Server Events
-| Event | Description | Data |
-|-------|-------------|------|
-| `authenticate` | Send auth token | `{ token: string }` |
-| `markRead` | Mark as read | `{ notificationId: string }` |
-| `markAllRead` | Mark all as read | `{}` |
-| `subscribe` | Subscribe to types | `{ types: string[] }` |
-| `unsubscribe` | Unsubscribe from types | `{ types: string[] }` |
+
+| Event          | Description            | Data                         |
+| -------------- | ---------------------- | ---------------------------- |
+| `authenticate` | Send auth token        | `{ token: string }`          |
+| `markRead`     | Mark as read           | `{ notificationId: string }` |
+| `markAllRead`  | Mark all as read       | `{}`                         |
+| `subscribe`    | Subscribe to types     | `{ types: string[] }`        |
+| `unsubscribe`  | Unsubscribe from types | `{ types: string[] }`        |
 
 #### WebSocket Example
+
 ```javascript
 // Server sends new notification
 {
@@ -166,10 +173,10 @@ ws.send(JSON.stringify({
 
 ### 11.7 Request/Response Examples
 
-
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### GET /
+
 ```json
 // Request
 GET /api/v1/notifications?page=1&limit=20&type=quote,payment&unreadOnly=true
@@ -262,6 +269,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /unread-count
+
 ```json
 // Request
 GET /api/v1/notifications/unread-count
@@ -303,6 +311,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### PATCH /preferences
+
 ```json
 // Request
 PATCH /api/v1/notifications/preferences
@@ -419,6 +428,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /push-subscription
+
 ```json
 // Request
 POST /api/v1/notifications/push-subscription
@@ -468,6 +478,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /send (Admin)
+
 ```json
 // Request
 POST /api/v1/admin/notifications/send
@@ -526,6 +537,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /broadcast (Admin)
+
 ```json
 // Request
 POST /api/v1/admin/notifications/broadcast
@@ -579,18 +591,18 @@ X-Request-ID: reqAbc123
 
 ### 11.8 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `NOTIFICATION_001` | 404 | Notification not found | No |
-| `NOTIFICATION_002` | 403 | Unauthorized access | No |
-| `NOTIFICATION_003` | 422 | Invalid notification type | No |
-| `NOTIFICATION_004` | 422 | Invalid priority level | No |
-| `NOTIFICATION_005` | 404 | Recipient not found | No |
-| `NOTIFICATION_006` | 502 | Email delivery failed | Yes |
-| `NOTIFICATION_007` | 502 | Push delivery failed | Yes |
-| `NOTIFICATION_008` | 400 | Invalid push subscription | No |
-| `NOTIFICATION_009` | 422 | Invalid preferences structure | No |
-| `NOTIFICATION_010` | 409 | Notification already read | No |
-| `NOTIFICATION_011` | 429 | Broadcast rate limit exceeded | Yes (wait) |
+| Code               | HTTP Status | Description                   | Retryable  |
+| ------------------ | ----------- | ----------------------------- | ---------- |
+| `NOTIFICATION_001` | 404         | Notification not found        | No         |
+| `NOTIFICATION_002` | 403         | Unauthorized access           | No         |
+| `NOTIFICATION_003` | 422         | Invalid notification type     | No         |
+| `NOTIFICATION_004` | 422         | Invalid priority level        | No         |
+| `NOTIFICATION_005` | 404         | Recipient not found           | No         |
+| `NOTIFICATION_006` | 502         | Email delivery failed         | Yes        |
+| `NOTIFICATION_007` | 502         | Push delivery failed          | Yes        |
+| `NOTIFICATION_008` | 400         | Invalid push subscription     | No         |
+| `NOTIFICATION_009` | 422         | Invalid preferences structure | No         |
+| `NOTIFICATION_010` | 409         | Notification already read     | No         |
+| `NOTIFICATION_011` | 429         | Broadcast rate limit exceeded | Yes (wait) |
 
 ---

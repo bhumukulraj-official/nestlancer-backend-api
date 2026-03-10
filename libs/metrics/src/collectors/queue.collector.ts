@@ -11,7 +11,7 @@ export class QueueMetricsCollector implements OnModuleInit {
   private queueDepth!: client.Gauge<string>;
   private dlqDepth!: client.Gauge<string>;
 
-  constructor(private readonly metrics: MetricsService) { }
+  constructor(private readonly metrics: MetricsService) {}
 
   onModuleInit(): void {
     this.messagesPublished = this.metrics.createCounter(

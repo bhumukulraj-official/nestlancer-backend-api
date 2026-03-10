@@ -33,6 +33,7 @@
 ## Rollback Triggers
 
 Roll back immediately if:
+
 - Error rate > 5% for 5 minutes
 - Health check failures
 - Payment processing errors

@@ -9,10 +9,7 @@ describe('MetricsModule (Integration)', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
-        MetricsModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }), MetricsModule],
     }).compile();
 
     service = module.get<MetricsService>(MetricsService);

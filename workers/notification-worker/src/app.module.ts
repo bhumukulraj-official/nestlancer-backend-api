@@ -15,28 +15,28 @@ import { InAppNotificationProcessor } from './processors/in-app-notification.pro
 import { NotificationConsumer } from './consumers/notification.consumer';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        NestConfigModule.forFeature(notificationWorkerConfig),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        CacheModule.forRoot(),
-        QueueModule.forRootAsync({
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (config: ConfigService) => ({
-                url: config.get('notificationWorker.rabbitmq.url'),
-            }),
-        }),
-    ],
-    providers: [
-        NotificationWorkerService,
-        RedisPublisherService,
-        PushProviderService,
-        InAppNotificationProcessor,
-        NotificationConsumer,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    NestConfigModule.forFeature(notificationWorkerConfig),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    CacheModule.forRoot(),
+    QueueModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        url: config.get('notificationWorker.rabbitmq.url'),
+      }),
+    }),
+  ],
+  providers: [
+    NotificationWorkerService,
+    RedisPublisherService,
+    PushProviderService,
+    InAppNotificationProcessor,
+    NotificationConsumer,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

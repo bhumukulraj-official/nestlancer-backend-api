@@ -9,7 +9,10 @@ export class WsThrottleGuard implements CanActivate {
     const key = client.id;
     const now = Date.now();
     const record = this.limits.get(key);
-    if (!record || now > record.resetAt) { this.limits.set(key, { count: 1, resetAt: now + 60000 }); return true; }
+    if (!record || now > record.resetAt) {
+      this.limits.set(key, { count: 1, resetAt: now + 60000 });
+      return true;
+    }
     if (record.count >= 60) return false;
     record.count++;
     return true;

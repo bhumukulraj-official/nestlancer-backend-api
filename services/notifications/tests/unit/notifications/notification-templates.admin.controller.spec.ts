@@ -7,80 +7,84 @@ import { UpdateNotificationTemplateDto } from '../../../src/dto/update-notificat
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 
 describe('NotificationTemplatesAdminController', () => {
-    let controller: NotificationTemplatesAdminController;
-    let templatesService: jest.Mocked<NotificationTemplatesService>;
+  let controller: NotificationTemplatesAdminController;
+  let templatesService: jest.Mocked<NotificationTemplatesService>;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [NotificationTemplatesAdminController],
-            providers: [
-                { provide: Reflector, useValue: { get: jest.fn(), getAllAndOverride: jest.fn() } },
-                {
-                    provide: NotificationTemplatesService,
-                    useValue: {
-                        findAll: jest.fn(),
-                        create: jest.fn(),
-                        update: jest.fn(),
-                        delete: jest.fn(),
-                    },
-                },
-            ],
-        })
-            .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-            .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
-            .compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [NotificationTemplatesAdminController],
+      providers: [
+        { provide: Reflector, useValue: { get: jest.fn(), getAllAndOverride: jest.fn() } },
+        {
+          provide: NotificationTemplatesService,
+          useValue: {
+            findAll: jest.fn(),
+            create: jest.fn(),
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-        controller = module.get<NotificationTemplatesAdminController>(NotificationTemplatesAdminController);
-        templatesService = module.get(NotificationTemplatesService);
+    controller = module.get<NotificationTemplatesAdminController>(
+      NotificationTemplatesAdminController,
+    );
+    templatesService = module.get(NotificationTemplatesService);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('getTemplates', () => {
+    it('should call templatesService.findAll', async () => {
+      templatesService.findAll.mockResolvedValue([] as any);
+
+      const result = await controller.getTemplates();
+
+      expect(templatesService.findAll).toHaveBeenCalled();
+      expect(result).toEqual([]);
     });
+  });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
+  describe('createTemplate', () => {
+    it('should call templatesService.create', async () => {
+      templatesService.create.mockResolvedValue({ id: '1' } as any);
+      const dto = new CreateNotificationTemplateDto();
+
+      const result = await controller.createTemplate(dto);
+
+      expect(templatesService.create).toHaveBeenCalledWith(dto);
+      expect(result).toEqual({ id: '1' });
     });
+  });
 
-    describe('getTemplates', () => {
-        it('should call templatesService.findAll', async () => {
-            templatesService.findAll.mockResolvedValue([] as any);
+  describe('updateTemplate', () => {
+    it('should call templatesService.update', async () => {
+      templatesService.update.mockResolvedValue({ id: '1' } as any);
+      const dto = new UpdateNotificationTemplateDto();
 
-            const result = await controller.getTemplates();
+      const result = await controller.updateTemplate('1', dto);
 
-            expect(templatesService.findAll).toHaveBeenCalled();
-            expect(result).toEqual([]);
-        });
+      expect(templatesService.update).toHaveBeenCalledWith('1', dto);
+      expect(result).toEqual({ id: '1' });
     });
+  });
 
-    describe('createTemplate', () => {
-        it('should call templatesService.create', async () => {
-            templatesService.create.mockResolvedValue({ id: '1' } as any);
-            const dto = new CreateNotificationTemplateDto();
+  describe('deleteTemplate', () => {
+    it('should call templatesService.delete', async () => {
+      templatesService.delete.mockResolvedValue({ deleted: true } as any);
 
-            const result = await controller.createTemplate(dto);
+      const result = await controller.deleteTemplate('1');
 
-            expect(templatesService.create).toHaveBeenCalledWith(dto);
-            expect(result).toEqual({ id: '1' });
-        });
+      expect(templatesService.delete).toHaveBeenCalledWith('1');
+      expect(result).toEqual({ deleted: true });
     });
-
-    describe('updateTemplate', () => {
-        it('should call templatesService.update', async () => {
-            templatesService.update.mockResolvedValue({ id: '1' } as any);
-            const dto = new UpdateNotificationTemplateDto();
-
-            const result = await controller.updateTemplate('1', dto);
-
-            expect(templatesService.update).toHaveBeenCalledWith('1', dto);
-            expect(result).toEqual({ id: '1' });
-        });
-    });
-
-    describe('deleteTemplate', () => {
-        it('should call templatesService.delete', async () => {
-            templatesService.delete.mockResolvedValue({ deleted: true } as any);
-
-            const result = await controller.deleteTemplate('1');
-
-            expect(templatesService.delete).toHaveBeenCalledWith('1');
-            expect(result).toEqual({ deleted: true });
-        });
-    });
+  });
 });

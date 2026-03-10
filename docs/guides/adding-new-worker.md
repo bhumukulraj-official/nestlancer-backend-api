@@ -3,11 +3,13 @@
 ## Step-by-Step
 
 ### 1. Create Worker Directory
+
 ```bash
 mkdir -p workers/<name>-worker/src
 ```
 
 ### 2. Initialize Package
+
 ```json
 {
   "name": "@nestlancer/<name>-worker",
@@ -24,6 +26,7 @@ mkdir -p workers/<name>-worker/src
 ```
 
 ### 3. Implement Consumer
+
 ```typescript
 import { QueueConsumerService } from '@nestlancer/queue';
 
@@ -42,9 +45,11 @@ export class MyConsumer {
 ```
 
 ### 4. Create Dockerfile
+
 Extend `docker/worker-base/Dockerfile.base`.
 
 ### 5. Add K8s Manifests
+
 ```bash
 mkdir -p deploy/kubernetes/workers/<name>-worker
 # Create: deployment.yaml, hpa.yaml, kustomization.yaml
@@ -52,9 +57,11 @@ mkdir -p deploy/kubernetes/workers/<name>-worker
 ```
 
 ### 6. Add Routing Keys
+
 Create `libs/queue/src/routing-keys/<name>.routing-keys.ts`.
 
 ### 7. Test
+
 ```typescript
 it('should process message', async () => {
   const message = createMockMessage({ type: 'my.event' });

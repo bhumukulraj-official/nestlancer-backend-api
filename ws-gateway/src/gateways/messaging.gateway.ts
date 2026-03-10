@@ -1,4 +1,13 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, WsException } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  WsException,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { WsAuthGuard } from '@nestlancer/websocket';
@@ -14,7 +23,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
   constructor(
     private readonly connectionService: WsConnectionService,
     private readonly presenceService: WsPresenceService,
-  ) { }
+  ) {}
 
   async handleConnection(client: Socket) {
     try {
@@ -59,7 +68,10 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   @SubscribeMessage('message:send')
-  handleMessage(@MessageBody() data: { projectId: string; content: string; type?: string }, @ConnectedSocket() client: Socket) {
+  handleMessage(
+    @MessageBody() data: { projectId: string; content: string; type?: string },
+    @ConnectedSocket() client: Socket,
+  ) {
     try {
       if (!data?.projectId || !data?.content) throw new WsException('Invalid message payload');
       const senderId = client.data?.user?.userId;

@@ -12,36 +12,42 @@ import { SystemLogsService } from '../../src/services/system-logs.service';
 import { AnnouncementsService } from '../../src/services/announcements.service';
 
 describe('SystemAdminController', () => {
-    let controller: SystemAdminController;
+  let controller: SystemAdminController;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [SystemAdminController],
-            providers: [
-                { provide: SystemConfigService, useValue: { getAll: jest.fn().mockResolvedValue({}) } },
-                { provide: FeatureFlagsService, useValue: { findAll: jest.fn().mockResolvedValue([]) } },
-                { provide: MaintenanceModeService, useValue: { getStatus: jest.fn().mockResolvedValue({ enabled: false }) } },
-                { provide: CacheManagementService, useValue: {} },
-                { provide: BackgroundJobsService, useValue: {} },
-                { provide: SystemLogsService, useValue: {} },
-                { provide: AnnouncementsService, useValue: {} },
-                { provide: Reflector, useValue: { getAllAndOverride: jest.fn() } },
-            ],
-        })
-            .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-            .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
-            .overrideGuard(SuperAdminGuard).useValue({ canActivate: () => true })
-            .compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SystemAdminController],
+      providers: [
+        { provide: SystemConfigService, useValue: { getAll: jest.fn().mockResolvedValue({}) } },
+        { provide: FeatureFlagsService, useValue: { findAll: jest.fn().mockResolvedValue([]) } },
+        {
+          provide: MaintenanceModeService,
+          useValue: { getStatus: jest.fn().mockResolvedValue({ enabled: false }) },
+        },
+        { provide: CacheManagementService, useValue: {} },
+        { provide: BackgroundJobsService, useValue: {} },
+        { provide: SystemLogsService, useValue: {} },
+        { provide: AnnouncementsService, useValue: {} },
+        { provide: Reflector, useValue: { getAllAndOverride: jest.fn() } },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(SuperAdminGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-        controller = module.get<SystemAdminController>(SystemAdminController);
-    });
+    controller = module.get<SystemAdminController>(SystemAdminController);
+  });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
 
-    it('should return system config', async () => {
-        const config = await controller.getConfig();
-        expect(config).toBeDefined();
-    });
+  it('should return system config', async () => {
+    const config = await controller.getConfig();
+    expect(config).toBeDefined();
+  });
 });

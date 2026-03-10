@@ -3,13 +3,18 @@ import { StorageService } from './storage.service';
 import { S3Provider } from './providers/s3.provider';
 import { LocalProvider } from './providers/local.provider';
 import { CloudflareR2Provider } from './providers/cloudflare-r2.provider';
-import { StorageModuleOptions, S3StorageConfig, LocalStorageConfig } from './interfaces/storage.interface';
+import {
+  StorageModuleOptions,
+  S3StorageConfig,
+  LocalStorageConfig,
+} from './interfaces/storage.interface';
 
 @Global()
 @Module({})
 export class StorageModule {
   static forRoot(options?: Partial<StorageModuleOptions>): DynamicModule {
-    const provider = options?.provider || (process.env.STORAGE_PROVIDER as 's3' | 'b2' | 'local') || 'local';
+    const provider =
+      options?.provider || (process.env.STORAGE_PROVIDER as 's3' | 'b2' | 'local') || 'local';
 
     const s3Config: S3StorageConfig = options?.s3 || {
       accessKeyId: process.env.B2_KEY_ID || '',

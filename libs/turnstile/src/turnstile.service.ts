@@ -15,9 +15,13 @@ export class TurnstileService {
       const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ secret: secretKey || '', response: token, ...(remoteIp ? { remoteip: remoteIp } : {}) }),
+        body: new URLSearchParams({
+          secret: secretKey || '',
+          response: token,
+          ...(remoteIp ? { remoteip: remoteIp } : {}),
+        }),
       });
-      return await response.json() as TurnstileResult;
+      return (await response.json()) as TurnstileResult;
     } catch (error) {
       this.logger.error('Turnstile verification failed:', error);
       return { success: false, errorCodes: ['VERIFICATION_FAILED'] };

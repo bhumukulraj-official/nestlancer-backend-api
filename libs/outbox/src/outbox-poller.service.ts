@@ -14,7 +14,7 @@ export class OutboxPollerService implements OnModuleInit, OnModuleDestroy {
   // Queue publisher injected by the consuming module
   private queuePublisher: any;
 
-  constructor(private readonly outboxRepository: OutboxRepository) { }
+  constructor(private readonly outboxRepository: OutboxRepository) {}
 
   setQueuePublisher(publisher: any): void {
     this.queuePublisher = publisher;
@@ -53,17 +53,13 @@ export class OutboxPollerService implements OnModuleInit, OnModuleDestroy {
         try {
           if (this.queuePublisher) {
             const exchange = process.env.OUTBOX_EXCHANGE || 'events';
-            await this.queuePublisher.publish(
-              exchange,
-              event.type,
-              {
-                type: event.type,
-                aggregateId: event.aggregateId,
-                aggregateType: event.aggregateType,
-                payload: event.payload,
-                timestamp: new Date().toISOString(),
-              },
-            );
+            await this.queuePublisher.publish(exchange, event.type, {
+              type: event.type,
+              aggregateId: event.aggregateId,
+              aggregateType: event.aggregateType,
+              payload: event.payload,
+              timestamp: new Date().toISOString(),
+            });
           }
 
           await this.outboxRepository.markPublished(event.id);
@@ -74,7 +70,10 @@ export class OutboxPollerService implements OnModuleInit, OnModuleDestroy {
         }
       }
     } catch (error) {
-      this.logger.error('Outbox poller error', error instanceof Error ? error.stack : String(error));
+      this.logger.error(
+        'Outbox poller error',
+        error instanceof Error ? error.stack : String(error),
+      );
     } finally {
       this.isProcessing = false;
     }

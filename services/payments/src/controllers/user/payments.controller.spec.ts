@@ -6,37 +6,37 @@ import { PaymentConfirmationService } from '../../services/payment-confirmation.
 import { ReceiptPdfService, InvoicePdfService } from '../../services/pdf.service';
 
 describe('PaymentsController', () => {
-    let controller: PaymentsController;
+  let controller: PaymentsController;
 
-    const mockPaymentsService = {
-        getMyPayments: jest.fn(),
-    };
+  const mockPaymentsService = {
+    getMyPayments: jest.fn(),
+  };
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [PaymentsController],
-            providers: [
-                { provide: PaymentsService, useValue: mockPaymentsService },
-                { provide: PaymentIntentService, useValue: {} },
-                { provide: PaymentConfirmationService, useValue: {} },
-                { provide: ReceiptPdfService, useValue: {} },
-                { provide: InvoicePdfService, useValue: {} },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [PaymentsController],
+      providers: [
+        { provide: PaymentsService, useValue: mockPaymentsService },
+        { provide: PaymentIntentService, useValue: {} },
+        { provide: PaymentConfirmationService, useValue: {} },
+        { provide: ReceiptPdfService, useValue: {} },
+        { provide: InvoicePdfService, useValue: {} },
+      ],
+    }).compile();
 
-        controller = module.get<PaymentsController>(PaymentsController);
+    controller = module.get<PaymentsController>(PaymentsController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('getMyPayments', () => {
+    it('should return paginated payments', async () => {
+      mockPaymentsService.getMyPayments.mockResolvedValue({ items: [], meta: { total: 0 } });
+      const result = await controller.getMyPayments('u1', {});
+      expect(result).toHaveProperty('status', 'success');
+      expect(result).toHaveProperty('items');
     });
-
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
-    });
-
-    describe('getMyPayments', () => {
-        it('should return paginated payments', async () => {
-            mockPaymentsService.getMyPayments.mockResolvedValue({ items: [], meta: { total: 0 } });
-            const result = await controller.getMyPayments('u1', {});
-            expect(result).toHaveProperty('status', 'success');
-            expect(result).toHaveProperty('items');
-        });
-    });
+  });
 });

@@ -17,40 +17,40 @@ import { GithubDeploymentHandler } from '../handlers/github/deployment.handler';
  */
 @Injectable()
 export class WebhookWorkerService implements OnModuleInit {
-    private handlers: WebhookHandler[] = [];
+  private handlers: WebhookHandler[] = [];
 
-    constructor(private readonly moduleRef: ModuleRef) { }
+  constructor(private readonly moduleRef: ModuleRef) {}
 
-    /**
-     * Initializes the service by collecting all registered webhook handlers.
-     */
-    onModuleInit(): void {
-        this.handlers = [
-            this.moduleRef.get(PaymentCapturedHandler),
-            this.moduleRef.get(PaymentFailedHandler),
-            this.moduleRef.get(RefundProcessedHandler),
-            this.moduleRef.get(DisputeCreatedHandler),
-            this.moduleRef.get(GithubPushHandler),
-            this.moduleRef.get(GithubPullRequestHandler),
-            this.moduleRef.get(GithubDeploymentHandler),
-        ];
+  /**
+   * Initializes the service by collecting all registered webhook handlers.
+   */
+  onModuleInit(): void {
+    this.handlers = [
+      this.moduleRef.get(PaymentCapturedHandler),
+      this.moduleRef.get(PaymentFailedHandler),
+      this.moduleRef.get(RefundProcessedHandler),
+      this.moduleRef.get(DisputeCreatedHandler),
+      this.moduleRef.get(GithubPushHandler),
+      this.moduleRef.get(GithubPullRequestHandler),
+      this.moduleRef.get(GithubDeploymentHandler),
+    ];
+  }
+
+  /**
+   * Dispatches an incoming webhook to the matching handler.
+   *
+   * @param provider - The source of the webhook (e.g. 'razorpay', 'github')
+   * @param eventType - The specific event name from the provider
+   * @param payload - The raw data payload from the provider
+   * @returns A promise that resolves when the handler completes its logic
+   * @throws ResourceNotFoundException if no handler is registered for the provider:eventType pair
+   */
+  async dispatch(provider: string, eventType: string, payload: any): Promise<void> {
+    const handler = this.handlers.find((h) => h.canHandle(provider, eventType));
+    if (handler) {
+      await handler.handle(payload);
+    } else {
+      throw new ResourceNotFoundException('WebhookHandler', `${provider}:${eventType}`);
     }
-
-    /**
-     * Dispatches an incoming webhook to the matching handler.
-     * 
-     * @param provider - The source of the webhook (e.g. 'razorpay', 'github')
-     * @param eventType - The specific event name from the provider
-     * @param payload - The raw data payload from the provider
-     * @returns A promise that resolves when the handler completes its logic
-     * @throws ResourceNotFoundException if no handler is registered for the provider:eventType pair
-     */
-    async dispatch(provider: string, eventType: string, payload: any): Promise<void> {
-        const handler = this.handlers.find(h => h.canHandle(provider, eventType));
-        if (handler) {
-            await handler.handle(payload);
-        } else {
-            throw new ResourceNotFoundException('WebhookHandler', `${provider}:${eventType}`);
-        }
-    }
+  }
 }

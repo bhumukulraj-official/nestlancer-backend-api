@@ -12,16 +12,16 @@ export class QuotePdfService {
   constructor(
     private readonly prismaRead: PrismaReadService,
     private readonly config: ConfigService,
-  ) { }
+  ) {}
 
   async generatePdf(userId: string, quoteId: string) {
-    const quote = await this.prismaRead.quote.findFirst({
+    const quote = (await this.prismaRead.quote.findFirst({
       where: { id: quoteId, userId },
       include: {
         request: { select: { title: true } },
-        user: { select: { firstName: true, lastName: true, email: true } }
-      }
-    }) as any;
+        user: { select: { firstName: true, lastName: true, email: true } },
+      },
+    })) as any;
 
     if (!quote) throw new BusinessLogicException('Quote not found', 'QUOTE_001');
 
@@ -57,7 +57,7 @@ export class QuotePdfService {
     try {
       browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       await page.setContent(html);

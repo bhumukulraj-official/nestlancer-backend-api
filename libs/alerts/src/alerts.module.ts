@@ -6,7 +6,7 @@ import { EmailAlertChannel } from './channels/email-alert.channel';
 
 @Global()
 @Module({
-    providers: [AlertsService, SlackChannel, PagerdutyChannel, EmailAlertChannel],
-    exports: [AlertsService, SlackChannel, PagerdutyChannel, EmailAlertChannel],
+  providers: [AlertsService, SlackChannel, PagerdutyChannel, EmailAlertChannel],
+  exports: [AlertsService, SlackChannel, PagerdutyChannel, EmailAlertChannel],
 })
-export class AlertsModule { }
+export class AlertsModule {}

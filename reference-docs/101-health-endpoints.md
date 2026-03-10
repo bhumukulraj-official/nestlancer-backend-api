@@ -5,75 +5,77 @@
 **Base Path**: `/api/v1/health`
 
 ### 2.1 Overview
+
 Comprehensive health check endpoints for monitoring system status, service availability, and infrastructure health.
 
 ### 2.2 Endpoints
 
 #### System Health Endpoints
 
-| Method | Endpoint | Description | Auth | Rate Limit |
-|--------|----------|-------------|------|------------|
-| `GET` | `/` | Aggregated system health | None | 60/min |
-| `GET` | `/ready` | Kubernetes readiness probe | None | 100/min |
-| `GET` | `/live` | Kubernetes liveness probe | None | 100/min |
-| `HEAD` | `/ping` | Lightweight availability check | None | 200/min |
+| Method | Endpoint | Description                    | Auth | Rate Limit |
+| ------ | -------- | ------------------------------ | ---- | ---------- |
+| `GET`  | `/`      | Aggregated system health       | None | 60/min     |
+| `GET`  | `/ready` | Kubernetes readiness probe     | None | 100/min    |
+| `GET`  | `/live`  | Kubernetes liveness probe      | None | 100/min    |
+| `HEAD` | `/ping`  | Lightweight availability check | None | 200/min    |
 
 #### Infrastructure Health
 
-| Method | Endpoint | Description | Auth | Rate Limit |
-|--------|----------|-------------|------|------------|
-| `GET` | `/database` | PostgreSQL connection & performance | None | 60/min |
-| `GET` | `/cache` | Redis connection & performance | None | 60/min |
-| `GET` | `/queue` | RabbitMQ connection & queue status | None | 60/min |
-| `GET` | `/storage` | S3/Cloudinary connectivity | None | 60/min |
+| Method | Endpoint    | Description                         | Auth | Rate Limit |
+| ------ | ----------- | ----------------------------------- | ---- | ---------- |
+| `GET`  | `/database` | PostgreSQL connection & performance | None | 60/min     |
+| `GET`  | `/cache`    | Redis connection & performance      | None | 60/min     |
+| `GET`  | `/queue`    | RabbitMQ connection & queue status  | None | 60/min     |
+| `GET`  | `/storage`  | S3/Cloudinary connectivity          | None | 60/min     |
 
 #### Service Health
 
-| Method | Endpoint | Description | Auth | Rate Limit |
-|--------|----------|-------------|------|------------|
-| `GET` | `/microservices` | All microservices status | None | 60/min |
-| `GET` | `/external` | Third-party services (Razorpay, etc.) | None | 60/min |
-| `GET` | `/workers` | Background worker status | None | 60/min |
-| `GET` | `/websocket` | WebSocket server connectivity | None | 60/min |
+| Method | Endpoint         | Description                           | Auth | Rate Limit |
+| ------ | ---------------- | ------------------------------------- | ---- | ---------- |
+| `GET`  | `/microservices` | All microservices status              | None | 60/min     |
+| `GET`  | `/external`      | Third-party services (Razorpay, etc.) | None | 60/min     |
+| `GET`  | `/workers`       | Background worker status              | None | 60/min     |
+| `GET`  | `/websocket`     | WebSocket server connectivity         | None | 60/min     |
 
 #### System Metrics
 
-| Method | Endpoint | Description | Auth | Rate Limit |
-|--------|----------|-------------|------|------------|
-| `GET` | `/system` | CPU, memory, disk usage | None | 60/min |
-| `GET` | `/features` | Feature flags status | None | 60/min |
-| `GET` | `/registry` | Service discovery registry | None | 60/min |
+| Method | Endpoint    | Description                | Auth | Rate Limit |
+| ------ | ----------- | -------------------------- | ---- | ---------- |
+| `GET`  | `/system`   | CPU, memory, disk usage    | None | 60/min     |
+| `GET`  | `/features` | Feature flags status       | None | 60/min     |
+| `GET`  | `/registry` | Service discovery registry | None | 60/min     |
 
 #### Debug (Admin Only)
 
-| Method | Endpoint | Description | Auth | Rate Limit |
-|--------|----------|-------------|------|------------|
-| `GET` | `/debug` | Detailed diagnostic information | Admin JWT | 10/min |
+| Method | Endpoint | Description                     | Auth      | Rate Limit |
+| ------ | -------- | ------------------------------- | --------- | ---------- |
+| `GET`  | `/debug` | Detailed diagnostic information | Admin JWT | 10/min     |
 
 ### 2.3 Service-Specific Health Endpoints
 
 Each microservice exposes its own health endpoint:
 
-| Service | Endpoint | Response Time SLA |
-|---------|----------|-------------------|
-| Auth | `GET /api/v1/auth/health` | < 50ms |
-| Users | `GET /api/v1/users/health` | < 50ms |
-| Projects | `GET /api/v1/projects/health` | < 100ms |
-| Payments | `GET /api/v1/payments/health` | < 100ms |
-| Requests | `GET /api/v1/requests/health` | < 50ms |
-| Quotes | `GET /api/v1/quotes/health` | < 50ms |
-| Portfolio | `GET /api/v1/portfolio/health` | < 50ms |
-| Media | `GET /api/v1/media/health` | < 100ms |
-| Messaging | `GET /api/v1/messages/health` | < 50ms |
-| Notifications | `GET /api/v1/notifications/health` | < 50ms |
-| Blog | `GET /api/v1/blog/health` | < 50ms |
-| Contact | `GET /api/v1/contact/health` | < 50ms |
-| Progress | `GET /api/v1/progress/health` | < 50ms |
-| Admin | `GET /api/v1/admin/health` | < 50ms |
+| Service       | Endpoint                           | Response Time SLA |
+| ------------- | ---------------------------------- | ----------------- |
+| Auth          | `GET /api/v1/auth/health`          | < 50ms            |
+| Users         | `GET /api/v1/users/health`         | < 50ms            |
+| Projects      | `GET /api/v1/projects/health`      | < 100ms           |
+| Payments      | `GET /api/v1/payments/health`      | < 100ms           |
+| Requests      | `GET /api/v1/requests/health`      | < 50ms            |
+| Quotes        | `GET /api/v1/quotes/health`        | < 50ms            |
+| Portfolio     | `GET /api/v1/portfolio/health`     | < 50ms            |
+| Media         | `GET /api/v1/media/health`         | < 100ms           |
+| Messaging     | `GET /api/v1/messages/health`      | < 50ms            |
+| Notifications | `GET /api/v1/notifications/health` | < 50ms            |
+| Blog          | `GET /api/v1/blog/health`          | < 50ms            |
+| Contact       | `GET /api/v1/contact/health`       | < 50ms            |
+| Progress      | `GET /api/v1/progress/health`      | < 50ms            |
+| Admin         | `GET /api/v1/admin/health`         | < 50ms            |
 
 ### 2.4 Response Examples
 
 #### GET /health
+
 ```json
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -133,6 +135,7 @@ Content-Type: application/json
 ```
 
 #### GET /ready (Kubernetes Readiness)
+
 ```json
 HTTP/1.1 200 OK
 
@@ -147,6 +150,7 @@ HTTP/1.1 200 OK
 ```
 
 #### GET /live (Kubernetes Liveness)
+
 ```json
 HTTP/1.1 200 OK
 
@@ -157,6 +161,7 @@ HTTP/1.1 200 OK
 ```
 
 #### GET /database
+
 ```json
 HTTP/1.1 200 OK
 
@@ -180,6 +185,7 @@ HTTP/1.1 200 OK
 ```
 
 #### GET /debug (Admin Only)
+
 ```json
 HTTP/1.1 200 OK
 
@@ -246,19 +252,19 @@ HTTP/1.1 200 OK
 
 ### 2.5 Health Status Codes
 
-| HTTP Code | Status | Description |
-|-----------|--------|-------------|
-| `200` | Healthy | All services operational |
-| `206` | Degraded | Some non-critical services down |
-| `503` | Unhealthy | Critical services unavailable |
+| HTTP Code | Status    | Description                     |
+| --------- | --------- | ------------------------------- |
+| `200`     | Healthy   | All services operational        |
+| `206`     | Degraded  | Some non-critical services down |
+| `503`     | Unhealthy | Critical services unavailable   |
 
 ### 2.6 Health Status Values
 
-| Status | Description | Action Required |
-|--------|-------------|-----------------|
-| `healthy` | All checks passing | None |
-| `degraded` | Some checks failing (non-critical) | Monitor closely |
-| `unhealthy` | Critical checks failing | Immediate action |
-| `unknown` | Unable to determine status | Investigate |
+| Status      | Description                        | Action Required  |
+| ----------- | ---------------------------------- | ---------------- |
+| `healthy`   | All checks passing                 | None             |
+| `degraded`  | Some checks failing (non-critical) | Monitor closely  |
+| `unhealthy` | Critical checks failing            | Immediate action |
+| `unknown`   | Unable to determine status         | Investigate      |
 
 ---

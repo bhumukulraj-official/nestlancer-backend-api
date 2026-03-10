@@ -99,9 +99,7 @@ describe('DisputeCreatedHandler', () => {
         }),
       ]);
 
-      expect(logger.warn).toHaveBeenCalledWith(
-        'Dispute created for payment: pay_789',
-      );
+      expect(logger.warn).toHaveBeenCalledWith('Dispute created for payment: pay_789');
     });
   });
 });

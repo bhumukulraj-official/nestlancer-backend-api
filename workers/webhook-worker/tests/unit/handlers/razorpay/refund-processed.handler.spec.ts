@@ -89,9 +89,7 @@ describe('RefundProcessedHandler', () => {
       await handler.handle(payload);
 
       expect(prismaWrite.$transaction).toHaveBeenCalled();
-      expect(logger.log).toHaveBeenCalledWith(
-        'Processed refund for payment: pay_789',
-      );
+      expect(logger.log).toHaveBeenCalledWith('Processed refund for payment: pay_789');
     });
   });
 });

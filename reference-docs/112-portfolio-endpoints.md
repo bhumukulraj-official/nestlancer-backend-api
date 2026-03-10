@@ -6,61 +6,62 @@
 **Admin Path**: `/api/v1/admin/portfolio`
 
 ### 13.1 Overview
+
 Manages public portfolio items showcasing completed projects. Supports categories, tags, featured items, and client testimonials.
 
 > **Architecture Note (Media Visibility):** Portfolio items use media from private projects. When an item enters `published` status, the backend triggers the `Portfolio Sync Worker`, which securely copies the referenced private media files into the public CDN bucket (`nestlancer-public`), returning highly optimized, public CDN URLs for the frontend.
 
 ### 13.2 Portfolio Status
 
-| Status | Description | Visible |
-|--------|-------------|---------|
-| `draft` | Work in progress | Admin only |
-| `published` | Live and visible | Public |
-| `archived` | Hidden from public | Admin only |
+| Status      | Description        | Visible    |
+| ----------- | ------------------ | ---------- |
+| `draft`     | Work in progress   | Admin only |
+| `published` | Live and visible   | Public     |
+| `archived`  | Hidden from public | Admin only |
 
 ### 13.3 Public Endpoints (No Auth)
 
-| Method | Endpoint | Description | Rate Limit | Cache |
-|--------|----------|-------------|------------|-------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/` | List published items | 1000/hour/IP | 1 hour |
-| `GET` | `/{idOrSlug}` | Get item details | 2000/hour/IP | 1 hour |
-| `GET` | `/featured` | Get featured items | 2000/hour/IP | 1 hour |
-| `GET` | `/categories` | List categories | 2000/hour/IP | 24 hours |
-| `GET` | `/tags` | List tags with counts | 2000/hour/IP | 1 hour |
-| `GET` | `/search` | Search portfolio | 500/hour/IP | 15 min |
-| `POST` | `/{id}/like` | Like item (anonymous) | 100/hour/IP | N/A |
+| Method | Endpoint      | Description                        | Rate Limit   | Cache    |
+| ------ | ------------- | ---------------------------------- | ------------ | -------- |
+| `GET`  | `/health`     | Health check (Simplified response) | 1000/hour    | Yes      |
+| `GET`  | `/`           | List published items               | 1000/hour/IP | 1 hour   |
+| `GET`  | `/{idOrSlug}` | Get item details                   | 2000/hour/IP | 1 hour   |
+| `GET`  | `/featured`   | Get featured items                 | 2000/hour/IP | 1 hour   |
+| `GET`  | `/categories` | List categories                    | 2000/hour/IP | 24 hours |
+| `GET`  | `/tags`       | List tags with counts              | 2000/hour/IP | 1 hour   |
+| `GET`  | `/search`     | Search portfolio                   | 500/hour/IP  | 15 min   |
+| `POST` | `/{id}/like`  | Like item (anonymous)              | 100/hour/IP  | N/A      |
 
 ### 13.4 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `GET` | `/` | List all items (incl. drafts) | 2000/hour | Yes |
-| `POST` | `/` | Create portfolio item | 100/hour | No |
-| `GET` | `/{id}` | Get item (admin view) | 2000/hour | Yes |
-| `PATCH` | `/{id}` | Update item | 200/hour | No |
-| `DELETE` | `/{id}` | Delete item | 100/hour | Yes (soft) |
-| `POST` | `/{id}/publish` | Publish draft | 200/hour | Yes |
-| `POST` | `/{id}/unpublish` | Unpublish item | 200/hour | Yes |
-| `POST` | `/{id}/archive` | Archive item | 200/hour | Yes |
-| `POST` | `/{id}/toggle-featured` | Toggle featured status | 200/hour | No |
-| `PATCH` | `/{id}/privacy` | Update privacy settings | 200/hour | No |
-| `POST` | `/{id}/duplicate` | Duplicate item | 100/hour | No |
-| `POST` | `/reorder` | Reorder items | 50/hour | No |
-| `GET` | `/analytics` | Portfolio analytics | 1000/hour | Yes |
-| `GET` | `/analytics/{id}` | Item analytics | 1000/hour | Yes |
-| `POST` | `/bulk-update` | Bulk operations | 50/hour | No |
-| `GET` | `/categories` | List categories (admin) | 500/hour | Yes |
-| `POST` | `/categories` | Create category | 50/hour | No |
-| `PATCH` | `/categories/{id}` | Update category | 100/hour | No |
-| `DELETE` | `/categories/{id}` | Delete category | 50/hour | Yes |
+| Method   | Endpoint                | Description                   | Rate Limit | Idempotent |     | Role |
+| -------- | ----------------------- | ----------------------------- | ---------- | ---------- | --- | ---- |
+| `GET`    | `/`                     | List all items (incl. drafts) | 2000/hour  | Yes        |
+| `POST`   | `/`                     | Create portfolio item         | 100/hour   | No         |
+| `GET`    | `/{id}`                 | Get item (admin view)         | 2000/hour  | Yes        |
+| `PATCH`  | `/{id}`                 | Update item                   | 200/hour   | No         |
+| `DELETE` | `/{id}`                 | Delete item                   | 100/hour   | Yes (soft) |
+| `POST`   | `/{id}/publish`         | Publish draft                 | 200/hour   | Yes        |
+| `POST`   | `/{id}/unpublish`       | Unpublish item                | 200/hour   | Yes        |
+| `POST`   | `/{id}/archive`         | Archive item                  | 200/hour   | Yes        |
+| `POST`   | `/{id}/toggle-featured` | Toggle featured status        | 200/hour   | No         |
+| `PATCH`  | `/{id}/privacy`         | Update privacy settings       | 200/hour   | No         |
+| `POST`   | `/{id}/duplicate`       | Duplicate item                | 100/hour   | No         |
+| `POST`   | `/reorder`              | Reorder items                 | 50/hour    | No         |
+| `GET`    | `/analytics`            | Portfolio analytics           | 1000/hour  | Yes        |
+| `GET`    | `/analytics/{id}`       | Item analytics                | 1000/hour  | Yes        |
+| `POST`   | `/bulk-update`          | Bulk operations               | 50/hour    | No         |
+| `GET`    | `/categories`           | List categories (admin)       | 500/hour   | Yes        |
+| `POST`   | `/categories`           | Create category               | 50/hour    | No         |
+| `PATCH`  | `/categories/{id}`      | Update category               | 100/hour   | No         |
+| `DELETE` | `/categories/{id}`      | Delete category               | 50/hour    | Yes        |
 
 ### 13.5 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### GET / (Public)
+
 ```json
 // Request
 GET /api/v1/portfolio?page=1&limit=12&category=webDevelopment&featured=true
@@ -157,6 +158,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /{idOrSlug} (Public)
+
 ```json
 // Request
 GET /api/v1/portfolio/ecommerce-platform-acme
@@ -309,6 +311,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST / (Admin - Create Item)
+
 ```json
 // Request
 POST /api/v1/admin/portfolio
@@ -414,6 +417,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/publish (Admin)
+
 ```json
 // Request
 POST /api/v1/admin/portfolio/portNew789/publish
@@ -488,6 +492,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /analytics (Admin)
+
 ```json
 // Request
 GET /api/v1/admin/portfolio/analytics?period=30d
@@ -578,17 +583,17 @@ X-Request-ID: reqAbc123
 
 ### 13.6 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `PORTFOLIO_001` | 404 | Item not found | No |
-| `PORTFOLIO_002` | 403 | Unauthorized access | No |
-| `PORTFOLIO_003` | 422 | Invalid category | No |
-| `PORTFOLIO_004` | 409 | Slug already exists | No |
-| `PORTFOLIO_005` | 400 | Cannot publish without thumbnail | No |
-| `PORTFOLIO_006` | 400 | Cannot publish without images | No |
-| `PORTFOLIO_007` | 400 | Invalid status transition | No |
-| `PORTFOLIO_008` | 400 | Cannot delete published item | No |
-| `PORTFOLIO_009` | 404 | Category not found | No |
-| `PORTFOLIO_010` | 400 | Cannot delete category with items | No |
+| Code            | HTTP Status | Description                       | Retryable |
+| --------------- | ----------- | --------------------------------- | --------- |
+| `PORTFOLIO_001` | 404         | Item not found                    | No        |
+| `PORTFOLIO_002` | 403         | Unauthorized access               | No        |
+| `PORTFOLIO_003` | 422         | Invalid category                  | No        |
+| `PORTFOLIO_004` | 409         | Slug already exists               | No        |
+| `PORTFOLIO_005` | 400         | Cannot publish without thumbnail  | No        |
+| `PORTFOLIO_006` | 400         | Cannot publish without images     | No        |
+| `PORTFOLIO_007` | 400         | Invalid status transition         | No        |
+| `PORTFOLIO_008` | 400         | Cannot delete published item      | No        |
+| `PORTFOLIO_009` | 404         | Category not found                | No        |
+| `PORTFOLIO_010` | 400         | Cannot delete category with items | No        |
 
 ---

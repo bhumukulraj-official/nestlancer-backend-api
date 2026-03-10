@@ -2,7 +2,11 @@ import { PaginatedResult, PaginationOptions } from '../interfaces/pagination.int
 import { PaginationMeta } from '../types/paginated-response.type';
 
 /** Creates a paginated result from total and options */
-export function paginate<T>(data: T[], total: number, options: PaginationOptions): PaginatedResult<T> {
+export function paginate<T>(
+  data: T[],
+  total: number,
+  options: PaginationOptions,
+): PaginatedResult<T> {
   const totalPages = Math.ceil(total / options.limit);
   return {
     data,
@@ -48,5 +52,3 @@ export function createPaginationMeta(totalItems: number, page: number, limit: nu
     hasPreviousPage: page > 1,
   };
 }
-
-

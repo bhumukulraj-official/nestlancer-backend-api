@@ -9,10 +9,7 @@ describe('PdfModule (Integration)', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
-        PdfModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }), PdfModule],
     }).compile();
 
     service = module.get<PdfService>(PdfService);
@@ -41,9 +38,11 @@ describe('PdfModule (Integration)', () => {
   });
 
   it('should throw error for unknown template', async () => {
-    await expect(service.generate({
-      template: 'non-existent' as any,
-      data: {},
-    })).rejects.toThrow('Unknown template: non-existent');
+    await expect(
+      service.generate({
+        template: 'non-existent' as any,
+        data: {},
+      }),
+    ).rejects.toThrow('Unknown template: non-existent');
   });
 });

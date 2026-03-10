@@ -13,14 +13,26 @@ describe('WebhooksAdminController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [WebhooksAdminController],
       providers: [
-        { provide: WebhooksManagementService, useValue: { findAll: jest.fn(), create: jest.fn(), findOne: jest.fn(), update: jest.fn(), remove: jest.fn() } },
+        {
+          provide: WebhooksManagementService,
+          useValue: {
+            findAll: jest.fn(),
+            create: jest.fn(),
+            findOne: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+          },
+        },
         { provide: WebhookDeliveriesService, useValue: { findAll: jest.fn() } },
         { provide: WebhookTestingService, useValue: { testDelivery: jest.fn() } },
       ],
     })
-      .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-      .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard).useValue({ canActivate: () => true })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(SuperAdminGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<WebhooksAdminController>(WebhooksAdminController);

@@ -4,64 +4,76 @@ import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { BusinessLogicException } from '@nestlancer/common';
 
 describe('ProfileService', () => {
-    let service: ProfileService;
-    let prismaRead: PrismaReadService;
-    let prismaWrite: PrismaWriteService;
+  let service: ProfileService;
+  let prismaRead: PrismaReadService;
+  let prismaWrite: PrismaWriteService;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                ProfileService,
-                {
-                    provide: PrismaReadService,
-                    useValue: {
-                        user: { findUnique: jest.fn() },
-                        projectRequest: { count: jest.fn().mockResolvedValue(5), groupBy: jest.fn().mockResolvedValue([]) },
-                        project: { count: jest.fn().mockResolvedValue(2), groupBy: jest.fn().mockResolvedValue([]) },
-                        quote: { count: jest.fn().mockResolvedValue(3), groupBy: jest.fn().mockResolvedValue([]) },
-                        review: { aggregate: jest.fn().mockResolvedValue({ _avg: { rating: 4.8 } }), groupBy: jest.fn().mockResolvedValue([]) },
-                        payment: { aggregate: jest.fn().mockResolvedValue({ _sum: { amount: 100 } }) },
-                    },
-                },
-                {
-                    provide: PrismaWriteService,
-                    useValue: {
-                        user: { update: jest.fn() },
-                        outbox: { create: jest.fn() },
-                    },
-                },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ProfileService,
+        {
+          provide: PrismaReadService,
+          useValue: {
+            user: { findUnique: jest.fn() },
+            projectRequest: {
+              count: jest.fn().mockResolvedValue(5),
+              groupBy: jest.fn().mockResolvedValue([]),
+            },
+            project: {
+              count: jest.fn().mockResolvedValue(2),
+              groupBy: jest.fn().mockResolvedValue([]),
+            },
+            quote: {
+              count: jest.fn().mockResolvedValue(3),
+              groupBy: jest.fn().mockResolvedValue([]),
+            },
+            review: {
+              aggregate: jest.fn().mockResolvedValue({ _avg: { rating: 4.8 } }),
+              groupBy: jest.fn().mockResolvedValue([]),
+            },
+            payment: { aggregate: jest.fn().mockResolvedValue({ _sum: { amount: 100 } }) },
+          },
+        },
+        {
+          provide: PrismaWriteService,
+          useValue: {
+            user: { update: jest.fn() },
+            outbox: { create: jest.fn() },
+          },
+        },
+      ],
+    }).compile();
 
-        service = module.get<ProfileService>(ProfileService);
-        prismaRead = module.get<PrismaReadService>(PrismaReadService);
-        prismaWrite = module.get<PrismaWriteService>(PrismaWriteService);
+    service = module.get<ProfileService>(ProfileService);
+    prismaRead = module.get<PrismaReadService>(PrismaReadService);
+    prismaWrite = module.get<PrismaWriteService>(PrismaWriteService);
+  });
+
+  describe('getProfile', () => {
+    it('should return formatted profile', async () => {
+      const mockUser = {
+        id: 'usr1',
+        email: 'test@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'USER',
+        emailVerified: true,
+        preferences: { timezone: 'UTC', language: 'en', country: 'US' },
+        authConfig: { twoFactorEnabled: false },
+      };
+
+      jest.spyOn(prismaRead.user, 'findUnique').mockResolvedValue(mockUser as any);
+
+      const result = await service.getProfile('usr1');
+      expect(result.id).toEqual('usr1');
+      expect(result.timezone).toEqual('UTC');
     });
 
-    describe('getProfile', () => {
-        it('should return formatted profile', async () => {
-            const mockUser = {
-                id: 'usr1',
-                email: 'test@example.com',
-                firstName: 'John',
-                lastName: 'Doe',
-                role: 'USER',
-                emailVerified: true,
-                preferences: { timezone: 'UTC', language: 'en', country: 'US' },
-                authConfig: { twoFactorEnabled: false }
-            };
+    it('should throw exception if user not found', async () => {
+      jest.spyOn(prismaRead.user, 'findUnique').mockResolvedValue(null);
 
-            jest.spyOn(prismaRead.user, 'findUnique').mockResolvedValue(mockUser as any);
-
-            const result = await service.getProfile('usr1');
-            expect(result.id).toEqual('usr1');
-            expect(result.timezone).toEqual('UTC');
-        });
-
-        it('should throw exception if user not found', async () => {
-            jest.spyOn(prismaRead.user, 'findUnique').mockResolvedValue(null);
-
-            await expect(service.getProfile('usr1')).rejects.toThrow();
-        });
+      await expect(service.getProfile('usr1')).rejects.toThrow();
     });
+  });
 });

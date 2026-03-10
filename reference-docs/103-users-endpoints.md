@@ -6,82 +6,84 @@
 **Admin Path**: `/api/v1/admin/users`
 
 ### 4.1 Overview
+
 Manages user profiles, preferences, sessions, two-factor authentication, and account settings.
 
 ### 4.2 User Endpoints (JWT Required)
 
 #### Profile Management
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/profile` | Get own profile | 1000/hour | Yes |
-| `PATCH` | `/profile` | Update profile | 100/hour | No |
-| `POST` | `/change-password` | Change password | 20/hour | No |
-| `POST` | `/avatar` | Upload avatar | 20/hour | No |
-| `DELETE` | `/avatar` | Remove avatar | 20/hour | Yes |
-| `GET` | `/preferences` | Get preferences | 500/hour | Yes |
-| `PATCH` | `/preferences` | Update preferences | 100/hour | No |
+| Method   | Endpoint           | Description                        | Rate Limit | Idempotent |
+| -------- | ------------------ | ---------------------------------- | ---------- | ---------- |
+| `GET`    | `/health`          | Health check (Simplified response) | 1000/hour  | Yes        |
+| `GET`    | `/profile`         | Get own profile                    | 1000/hour  | Yes        |
+| `PATCH`  | `/profile`         | Update profile                     | 100/hour   | No         |
+| `POST`   | `/change-password` | Change password                    | 20/hour    | No         |
+| `POST`   | `/avatar`          | Upload avatar                      | 20/hour    | No         |
+| `DELETE` | `/avatar`          | Remove avatar                      | 20/hour    | Yes        |
+| `GET`    | `/preferences`     | Get preferences                    | 500/hour   | Yes        |
+| `PATCH`  | `/preferences`     | Update preferences                 | 100/hour   | No         |
 
 #### Two-Factor Authentication
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `POST` | `/2fa/enable` | Start 2FA setup | 20/hour | No |
-| `POST` | `/2fa/verify` | Complete 2FA setup | 20/hour | No |
-| `POST` | `/2fa/disable` | Disable 2FA | 20/hour | No |
-| `GET` | `/2fa/backup-codes` | Get backup codes | 20/hour | Yes |
-| `POST` | `/2fa/regenerate-codes` | Regenerate backup codes | 10/hour | No |
-| `GET` | `/2fa/status` | Check 2FA enrollment status | 100/hour | Yes |
+| Method | Endpoint                | Description                 | Rate Limit | Idempotent |
+| ------ | ----------------------- | --------------------------- | ---------- | ---------- |
+| `POST` | `/2fa/enable`           | Start 2FA setup             | 20/hour    | No         |
+| `POST` | `/2fa/verify`           | Complete 2FA setup          | 20/hour    | No         |
+| `POST` | `/2fa/disable`          | Disable 2FA                 | 20/hour    | No         |
+| `GET`  | `/2fa/backup-codes`     | Get backup codes            | 20/hour    | Yes        |
+| `POST` | `/2fa/regenerate-codes` | Regenerate backup codes     | 10/hour    | No         |
+| `GET`  | `/2fa/status`           | Check 2FA enrollment status | 100/hour   | Yes        |
 
 #### Session Management
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/sessions` | List active sessions | 100/hour | Yes |
-| `GET` | `/sessions/{sessionId}` | Get session details | 100/hour | Yes |
-| `DELETE` | `/sessions/{sessionId}` | Terminate specific session | 100/hour | Yes |
-| `POST` | `/sessions/terminate-others` | Logout all other sessions | 20/hour | No |
-| `POST` | `/logout` | Logout current session | 100/hour | No |
+| Method   | Endpoint                     | Description                | Rate Limit | Idempotent |
+| -------- | ---------------------------- | -------------------------- | ---------- | ---------- |
+| `GET`    | `/sessions`                  | List active sessions       | 100/hour   | Yes        |
+| `GET`    | `/sessions/{sessionId}`      | Get session details        | 100/hour   | Yes        |
+| `DELETE` | `/sessions/{sessionId}`      | Terminate specific session | 100/hour   | Yes        |
+| `POST`   | `/sessions/terminate-others` | Logout all other sessions  | 20/hour    | No         |
+| `POST`   | `/logout`                    | Logout current session     | 100/hour   | No         |
 
 #### Account Management
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `POST` | `/delete-account` | Request account deletion | 5/hour | No |
-| `POST` | `/cancel-deletion` | Cancel deletion request | 10/hour | No |
-| `GET` | `/activity` | View activity history | 100/hour | Yes |
-| `GET` | `/data-export` | Request GDPR data export | 5/day | No |
-| `GET` | `/export/{id}` | Download a specific data export | 20/hour | Yes |
+| Method | Endpoint           | Description                     | Rate Limit | Idempotent |
+| ------ | ------------------ | ------------------------------- | ---------- | ---------- |
+| `POST` | `/delete-account`  | Request account deletion        | 5/hour     | No         |
+| `POST` | `/cancel-deletion` | Cancel deletion request         | 10/hour    | No         |
+| `GET`  | `/activity`        | View activity history           | 100/hour   | Yes        |
+| `GET`  | `/data-export`     | Request GDPR data export        | 5/day      | No         |
+| `GET`  | `/export/{id}`     | Download a specific data export | 20/hour    | Yes        |
 
 ### 4.3 Admin User Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Soft Delete | | Role |
-|--------|----------|-------------|------------|-------------|------|
-| `GET` | `/` | List all users | 2000/hour | N/A |
-| `GET` | `/search` | Search users | 1000/hour | N/A |
-| `GET` | `/{userId}` | Get user details | 2000/hour | N/A |
-| `PATCH` | `/{userId}` | Update user | 1000/hour | N/A |
-| `PATCH` | `/{userId}/role` | Change user role | 500/hour | N/A |
-| `PATCH` | `/{userId}/status` | Change account status | 500/hour | N/A |
-| `POST` | `/{userId}/force-password-reset` | Force password reset | 200/hour | N/A |
-| `POST` | `/{userId}/reset-password` | Admin sets password | 200/hour | N/A |
-| `GET` | `/{userId}/sessions` | View user sessions | 1000/hour | N/A |
-| `DELETE` | `/sessions/{sessionId}` | Terminate any session | 500/hour | N/A |
-| `POST` | `/{userId}/terminate-all-sessions` | End all user sessions | 200/hour | N/A |
-| `GET` | `/{userId}/activity` | View user activity | 1000/hour | N/A |
-| `GET` | `/logs` | Auth audit logs | 1000/hour | N/A |
-| `GET` | `/security-stats` | Security metrics | 500/hour | N/A |
-| `POST` | `/{userId}/export` | Export user data (GDPR) | 100/hour | N/A |
-| `DELETE` | `/{userId}` | Delete user account | 200/hour | Yes (30 days) |
-| `POST` | `/{userId}/restore` | Restore deleted user | 100/hour | N/A |
-| `POST` | `/bulk` | Bulk operations | 50/hour | N/A |
+| Method   | Endpoint                           | Description             | Rate Limit | Soft Delete   |     | Role |
+| -------- | ---------------------------------- | ----------------------- | ---------- | ------------- | --- | ---- |
+| `GET`    | `/`                                | List all users          | 2000/hour  | N/A           |
+| `GET`    | `/search`                          | Search users            | 1000/hour  | N/A           |
+| `GET`    | `/{userId}`                        | Get user details        | 2000/hour  | N/A           |
+| `PATCH`  | `/{userId}`                        | Update user             | 1000/hour  | N/A           |
+| `PATCH`  | `/{userId}/role`                   | Change user role        | 500/hour   | N/A           |
+| `PATCH`  | `/{userId}/status`                 | Change account status   | 500/hour   | N/A           |
+| `POST`   | `/{userId}/force-password-reset`   | Force password reset    | 200/hour   | N/A           |
+| `POST`   | `/{userId}/reset-password`         | Admin sets password     | 200/hour   | N/A           |
+| `GET`    | `/{userId}/sessions`               | View user sessions      | 1000/hour  | N/A           |
+| `DELETE` | `/sessions/{sessionId}`            | Terminate any session   | 500/hour   | N/A           |
+| `POST`   | `/{userId}/terminate-all-sessions` | End all user sessions   | 200/hour   | N/A           |
+| `GET`    | `/{userId}/activity`               | View user activity      | 1000/hour  | N/A           |
+| `GET`    | `/logs`                            | Auth audit logs         | 1000/hour  | N/A           |
+| `GET`    | `/security-stats`                  | Security metrics        | 500/hour   | N/A           |
+| `POST`   | `/{userId}/export`                 | Export user data (GDPR) | 100/hour   | N/A           |
+| `DELETE` | `/{userId}`                        | Delete user account     | 200/hour   | Yes (30 days) |
+| `POST`   | `/{userId}/restore`                | Restore deleted user    | 100/hour   | N/A           |
+| `POST`   | `/bulk`                            | Bulk operations         | 50/hour    | N/A           |
 
 ### 4.4 Request/Response Examples
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### GET /profile
+
 ```json
 // Request
 GET /api/v1/users/profile
@@ -136,6 +138,7 @@ X-RateLimit-Reset: 1705323000
 ```
 
 #### PATCH /profile
+
 ```json
 // Request
 PATCH /api/v1/users/profile
@@ -209,6 +212,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /change-password
+
 ```json
 // Request
 POST /api/v1/users/change-password
@@ -272,6 +276,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /2fa/enable
+
 ```json
 // Request
 POST /api/v1/users/2fa/enable
@@ -341,6 +346,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /2fa/verify
+
 ```json
 // Request
 POST /api/v1/users/2fa/verify
@@ -402,6 +408,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /2fa/status
+
 ```json
 // Request
 GET /api/v1/users/2fa/status
@@ -432,6 +439,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /sessions
+
 ```json
 // Request
 GET /api/v1/users/sessions
@@ -495,6 +503,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### DELETE /sessions/{sessionId}
+
 ```json
 // Request
 DELETE /api/v1/users/sessions/sessDef456
@@ -552,6 +561,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /delete-account
+
 ```json
 // Request
 POST /api/v1/users/delete-account
@@ -591,6 +601,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /export/{id}
+
 ```json
 // Request
 GET /api/v1/users/export/expAbc123
@@ -621,6 +632,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### PATCH /preferences
+
 ```json
 // Request
 PATCH /api/v1/users/preferences
@@ -690,6 +702,7 @@ X-Request-ID: reqAbc123
 ### 4.5 Admin Examples
 
 #### GET /admin/users
+
 ```json
 // Request
 GET /api/v1/admin/users?page=1&limit=20&status=active&sortBy=createdAt&order=desc
@@ -741,6 +754,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### DELETE /admin/users/{userId}
+
 ```json
 // Request
 DELETE /api/v1/admin/users/usrAbc123?reason=spamAccount
@@ -767,22 +781,22 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 4.6 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `USER_001` | 404 | User not found | No |
-| `USER_002` | 400 | Profile update failed | Yes |
-| `USER_003` | 404 | Session not found | No |
-| `USER_004` | 403 | Cannot delete active session | No |
-| `USER_005` | 401 | Invalid current password | No |
-| `USER_006` | 422 | Password requirements not met | No |
-| `USER_007` | 422 | Invalid phone number format | No |
-| `USER_008` | 400 | Email change requires verification | No |
-| `USER_009` | 409 | 2FA already enabled | No |
-| `USER_010` | 400 | 2FA not enabled | No |
-| `USER_011` | 400 | Invalid 2FA code | Yes (limited) |
-| `USER_012` | 400 | All backup codes used | No |
-| `USER_013` | 400 | Invalid preference value | No |
-| `USER_014` | 413 | Avatar file too large | No |
-| `USER_015` | 415 | Unsupported avatar format | No |
+| Code       | HTTP Status | Description                        | Retryable     |
+| ---------- | ----------- | ---------------------------------- | ------------- |
+| `USER_001` | 404         | User not found                     | No            |
+| `USER_002` | 400         | Profile update failed              | Yes           |
+| `USER_003` | 404         | Session not found                  | No            |
+| `USER_004` | 403         | Cannot delete active session       | No            |
+| `USER_005` | 401         | Invalid current password           | No            |
+| `USER_006` | 422         | Password requirements not met      | No            |
+| `USER_007` | 422         | Invalid phone number format        | No            |
+| `USER_008` | 400         | Email change requires verification | No            |
+| `USER_009` | 409         | 2FA already enabled                | No            |
+| `USER_010` | 400         | 2FA not enabled                    | No            |
+| `USER_011` | 400         | Invalid 2FA code                   | Yes (limited) |
+| `USER_012` | 400         | All backup codes used              | No            |
+| `USER_013` | 400         | Invalid preference value           | No            |
+| `USER_014` | 413         | Avatar file too large              | No            |
+| `USER_015` | 415         | Unsupported avatar format          | No            |
 
 ---

@@ -9,7 +9,14 @@ import { ProjectPaymentsService } from '../services/project-payments.service';
 import { ApproveProjectDto } from '../dto/approve-project.dto';
 import { RequestProjectRevisionDto } from '../dto/request-project-revision.dto';
 import { SendMessageDto } from '../dto/send-message.dto';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 /**
  * Controller for managing user-specific projects and related activities.
@@ -19,251 +26,302 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse }
 @UseGuards(JwtAuthGuard)
 @Controller('projects')
 export class ProjectsController {
-    constructor(
-        private readonly projectsService: ProjectsService,
-        private readonly timelineService: ProjectTimelineService,
-        private readonly deliverablesService: ProjectDeliverablesService,
-        private readonly paymentsService: ProjectPaymentsService,
-        private readonly prismaWrite: PrismaWriteService,
-        private readonly prismaRead: PrismaReadService,
-    ) { }
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly timelineService: ProjectTimelineService,
+    private readonly deliverablesService: ProjectDeliverablesService,
+    private readonly paymentsService: ProjectPaymentsService,
+    private readonly prismaWrite: PrismaWriteService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
-    /**
-     * Evaluates the operational status of the Projects service.
-     * 
-     * @returns A promise resolving to the physical health status of the service
-     */
-    @Public()
-    @Get('health')
-    @ApiOperation({ summary: 'Service health check', description: 'Confirm that the projects microservice is currently reachable and functioning.' })
-    @ApiStandardResponse()
-    async healthCheck(): Promise<any> {
-        return { status: 'ok', service: 'projects' };
-    }
+  /**
+   * Evaluates the operational status of the Projects service.
+   *
+   * @returns A promise resolving to the physical health status of the service
+   */
+  @Public()
+  @Get('health')
+  @ApiOperation({
+    summary: 'Service health check',
+    description: 'Confirm that the projects microservice is currently reachable and functioning.',
+  })
+  @ApiStandardResponse()
+  async healthCheck(): Promise<any> {
+    return { status: 'ok', service: 'projects' };
+  }
 
-    /**
-     * Retrieves aggregated project metrics and KPIs for the authenticated user.
-     * Includes counts for active, pending, and completed projects.
-     * 
-     * @param userId The unique identifier of the active user
-     * @returns A promise resolving to project performance statistics
-     */
-    @Get('stats')
-    @ApiOperation({ summary: 'Get user project statistics', description: 'Fetch high-level statistical data regarding projects associated with the account.' })
-    @ApiStandardResponse()
-    async getStats(@ActiveUser('sub') userId: string): Promise<any> {
-        return this.projectsService.getUserStats(userId);
-    }
+  /**
+   * Retrieves aggregated project metrics and KPIs for the authenticated user.
+   * Includes counts for active, pending, and completed projects.
+   *
+   * @param userId The unique identifier of the active user
+   * @returns A promise resolving to project performance statistics
+   */
+  @Get('stats')
+  @ApiOperation({
+    summary: 'Get user project statistics',
+    description:
+      'Fetch high-level statistical data regarding projects associated with the account.',
+  })
+  @ApiStandardResponse()
+  async getStats(@ActiveUser('sub') userId: string): Promise<any> {
+    return this.projectsService.getUserStats(userId);
+  }
 
-    /**
-     * Retrieves a curated registry of standardized project templates.
-     * 
-     * @returns A promise resolving to a collection of project templates
-     */
-    @Get('templates')
-    @ApiOperation({ summary: 'List project templates', description: 'Access a library of pre-defined project structures and configurations.' })
-    @ApiStandardResponse()
-    async getTemplates(): Promise<any> {
-        return { templates: [] };
-    }
+  /**
+   * Retrieves a curated registry of standardized project templates.
+   *
+   * @returns A promise resolving to a collection of project templates
+   */
+  @Get('templates')
+  @ApiOperation({
+    summary: 'List project templates',
+    description: 'Access a library of pre-defined project structures and configurations.',
+  })
+  @ApiStandardResponse()
+  async getTemplates(): Promise<any> {
+    return { templates: [] };
+  }
 
-    /**
-     * Initializes and saves a new custom project template for reuse.
-     * 
-     * @param userId The unique identifier of the template author
-     * @param body Configuration and structure of the project template
-     * @returns A promise resolving to the newly created template record
-     */
-    @Post('templates')
-    @ApiOperation({ summary: 'Create a project template', description: 'Define and persist a new reusable project blueprint.' })
-    @ApiStandardResponse({ message: 'Template created' })
-    async createTemplate(@ActiveUser('sub') userId: string, @Body() body: any): Promise<any> {
-        return { id: `tpl_${Date.now()}`, ...body };
-    }
+  /**
+   * Initializes and saves a new custom project template for reuse.
+   *
+   * @param userId The unique identifier of the template author
+   * @param body Configuration and structure of the project template
+   * @returns A promise resolving to the newly created template record
+   */
+  @Post('templates')
+  @ApiOperation({
+    summary: 'Create a project template',
+    description: 'Define and persist a new reusable project blueprint.',
+  })
+  @ApiStandardResponse({ message: 'Template created' })
+  async createTemplate(@ActiveUser('sub') userId: string, @Body() body: any): Promise<any> {
+    return { id: `tpl_${Date.now()}`, ...body };
+  }
 
-    /**
-     * Lists all projects associated with the current user.
-     */
-    @Get()
-    @ApiOperation({ summary: 'List my projects' })
-    @ApiStandardResponse()
-    async listProjects(@ActiveUser('sub') userId: string): Promise<any> {
-        return this.projectsService.getMyProjects(userId);
-    }
+  /**
+   * Lists all projects associated with the current user.
+   */
+  @Get()
+  @ApiOperation({ summary: 'List my projects' })
+  @ApiStandardResponse()
+  async listProjects(@ActiveUser('sub') userId: string): Promise<any> {
+    return this.projectsService.getMyProjects(userId);
+  }
 
-    /**
-     * Retrieves detailed information for a specific project.
-     */
-    @Get(':id')
-    @ApiOperation({ summary: 'Get project details' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse()
-    async getProjectDetails(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        return this.projectsService.getProjectDetails(userId, id);
-    }
+  /**
+   * Retrieves detailed information for a specific project.
+   */
+  @Get(':id')
+  @ApiOperation({ summary: 'Get project details' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse()
+  async getProjectDetails(
+    @ActiveUser('sub') userId: string,
+    @Param('id') id: string,
+  ): Promise<any> {
+    return this.projectsService.getProjectDetails(userId, id);
+  }
 
-    /**
-     * Retrieves the historical timeline of events for a specific project.
-     */
-    @Get(':id/timeline')
-    @ApiOperation({ summary: 'Get project timeline' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse()
-    async getTimeline(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        return this.timelineService.getTimeline(userId, id);
-    }
+  /**
+   * Retrieves the historical timeline of events for a specific project.
+   */
+  @Get(':id/timeline')
+  @ApiOperation({ summary: 'Get project timeline' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse()
+  async getTimeline(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
+    return this.timelineService.getTimeline(userId, id);
+  }
 
-    /**
-     * Retrieves all deliverables associated with a specific project.
-     */
-    @Get(':id/deliverables')
-    @ApiOperation({ summary: 'Get project deliverables' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse()
-    async getDeliverables(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        return this.deliverablesService.getDeliverables(userId, id);
-    }
+  /**
+   * Retrieves all deliverables associated with a specific project.
+   */
+  @Get(':id/deliverables')
+  @ApiOperation({ summary: 'Get project deliverables' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse()
+  async getDeliverables(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
+    return this.deliverablesService.getDeliverables(userId, id);
+  }
 
-    /**
-     * Retrieves all payment records related to a specific project.
-     */
-    @Get(':id/payments')
-    @ApiOperation({ summary: 'Get project payments' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse()
-    async getPayments(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        return this.paymentsService.getPayments(userId, id);
-    }
+  /**
+   * Retrieves all payment records related to a specific project.
+   */
+  @Get(':id/payments')
+  @ApiOperation({ summary: 'Get project payments' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse()
+  async getPayments(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
+    return this.paymentsService.getPayments(userId, id);
+  }
 
-    /**
-     * Approves a project and optionally provides feedback/testimonial.
-     */
-    @Post(':id/approve')
-    @ApiOperation({ summary: 'Approve project' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse({ message: 'Project approved successfully. Thank you for your feedback!' })
-    async approveProject(@ActiveUser('sub') userId: string, @Param('id') id: string, @Body() dto: ApproveProjectDto): Promise<any> {
-        return this.projectsService.approveProject(userId, id, dto);
-    }
+  /**
+   * Approves a project and optionally provides feedback/testimonial.
+   */
+  @Post(':id/approve')
+  @ApiOperation({ summary: 'Approve project' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse({ message: 'Project approved successfully. Thank you for your feedback!' })
+  async approveProject(
+    @ActiveUser('sub') userId: string,
+    @Param('id') id: string,
+    @Body() dto: ApproveProjectDto,
+  ): Promise<any> {
+    return this.projectsService.approveProject(userId, id, dto);
+  }
 
-    /**
-     * Requests revisions for an active project.
-     */
-    @Post(':id/request-revision')
-    @ApiOperation({ summary: 'Request project revision' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse({ message: 'Revision request submitted successfully' })
-    async requestRevision(@ActiveUser('sub') userId: string, @Param('id') id: string, @Body() dto: RequestProjectRevisionDto): Promise<any> {
-        return this.projectsService.requestRevision(userId, id, dto);
-    }
+  /**
+   * Requests revisions for an active project.
+   */
+  @Post(':id/request-revision')
+  @ApiOperation({ summary: 'Request project revision' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse({ message: 'Revision request submitted successfully' })
+  async requestRevision(
+    @ActiveUser('sub') userId: string,
+    @Param('id') id: string,
+    @Body() dto: RequestProjectRevisionDto,
+  ): Promise<any> {
+    return this.projectsService.requestRevision(userId, id, dto);
+  }
 
-    /**
-     * Retrieves high-level progress tracking for a specific project.
-     */
-    @Get(':id/progress')
-    @ApiOperation({ summary: 'Get project progress tracking' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse()
-    async getProgress(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        const [project, milestones, recentUpdates] = await Promise.all([
-            this.prismaRead.project.findUnique({ where: { id, clientId: userId }, select: { overallProgress: true } }),
-            this.prismaRead.milestone.findMany({ where: { projectId: id }, orderBy: { order: 'asc' } }),
-            this.prismaRead.progressEntry.findMany({ where: { projectId: id }, orderBy: { createdAt: 'desc' }, take: 5 })
-        ]);
-        if (!project) throw new Error('Project not found or unauthorized');
+  /**
+   * Retrieves high-level progress tracking for a specific project.
+   */
+  @Get(':id/progress')
+  @ApiOperation({ summary: 'Get project progress tracking' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse()
+  async getProgress(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
+    const [project, milestones, recentUpdates] = await Promise.all([
+      this.prismaRead.project.findUnique({
+        where: { id, clientId: userId },
+        select: { overallProgress: true },
+      }),
+      this.prismaRead.milestone.findMany({ where: { projectId: id }, orderBy: { order: 'asc' } }),
+      this.prismaRead.progressEntry.findMany({
+        where: { projectId: id },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+    ]);
+    if (!project) throw new Error('Project not found or unauthorized');
 
-        return { projectId: id, overallProgress: project.overallProgress, milestones, recentUpdates };
-    }
+    return { projectId: id, overallProgress: project.overallProgress, milestones, recentUpdates };
+  }
 
-    /**
-     * Retrieves all milestones defined for a specific project.
-     */
-    @Get(':id/milestones')
-    @ApiOperation({ summary: 'Get project milestones' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse()
-    async getMilestones(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        const milestones = await this.prismaRead.milestone.findMany({ where: { projectId: id }, orderBy: { order: 'asc' } });
-        return { projectId: id, milestones };
-    }
+  /**
+   * Retrieves all milestones defined for a specific project.
+   */
+  @Get(':id/milestones')
+  @ApiOperation({ summary: 'Get project milestones' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse()
+  async getMilestones(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
+    const milestones = await this.prismaRead.milestone.findMany({
+      where: { projectId: id },
+      orderBy: { order: 'asc' },
+    });
+    return { projectId: id, milestones };
+  }
 
-    /**
-     * Retrieves a paginated list of project-related internal messages.
-     */
-    @Get(':id/messages')
-    @ApiOperation({ summary: 'Get project messages' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse()
-    @ApiQuery({ name: 'page', required: false, example: '1' })
-    @ApiQuery({ name: 'limit', required: false, example: '20' })
-    async getMessages(@ActiveUser('sub') userId: string, @Param('id') id: string, @Query('page') page: string = '1', @Query('limit') limit: string = '20'): Promise<any> {
-        const pageNum = parseInt(page, 10);
-        const limitNum = parseInt(limit, 10);
-        const skip = (pageNum - 1) * limitNum;
+  /**
+   * Retrieves a paginated list of project-related internal messages.
+   */
+  @Get(':id/messages')
+  @ApiOperation({ summary: 'Get project messages' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse()
+  @ApiQuery({ name: 'page', required: false, example: '1' })
+  @ApiQuery({ name: 'limit', required: false, example: '20' })
+  async getMessages(
+    @ActiveUser('sub') userId: string,
+    @Param('id') id: string,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+  ): Promise<any> {
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
 
-        const [messages, total] = await Promise.all([
-            this.prismaRead.message.findMany({
-                where: { projectId: id },
-                skip,
-                take: limitNum,
-                orderBy: { createdAt: 'desc' },
-                include: { sender: { select: { id: true, firstName: true, lastName: true } } }
-            }),
-            this.prismaRead.message.count({ where: { projectId: id } })
-        ]);
+    const [messages, total] = await Promise.all([
+      this.prismaRead.message.findMany({
+        where: { projectId: id },
+        skip,
+        take: limitNum,
+        orderBy: { createdAt: 'desc' },
+        include: { sender: { select: { id: true, firstName: true, lastName: true } } },
+      }),
+      this.prismaRead.message.count({ where: { projectId: id } }),
+    ]);
 
-        return {
-            projectId: id,
-            messages,
-            pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) }
-        };
-    }
+    return {
+      projectId: id,
+      messages,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    };
+  }
 
-    /**
-     * Sends a new message within the specific project context.
-     */
-    @Post(':id/messages')
-    @ApiOperation({ summary: 'Send message to project' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse({ message: 'Message sent successfully' })
-    async sendMessage(@ActiveUser('sub') userId: string, @Param('id') id: string, @Body() dto: SendMessageDto): Promise<any> {
-        return { projectId: id, messageId: `msg_${Date.now()}`, sent: true };
-    }
+  /**
+   * Sends a new message within the specific project context.
+   */
+  @Post(':id/messages')
+  @ApiOperation({ summary: 'Send message to project' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse({ message: 'Message sent successfully' })
+  async sendMessage(
+    @ActiveUser('sub') userId: string,
+    @Param('id') id: string,
+    @Body() dto: SendMessageDto,
+  ): Promise<any> {
+    return { projectId: id, messageId: `msg_${Date.now()}`, sent: true };
+  }
 
-    /**
-     * Submits qualitative feedback for a specific project.
-     */
-    @Post(':id/feedback')
-    @ApiOperation({ summary: 'Submit project feedback' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse({ message: 'Feedback submitted successfully' })
-    async submitFeedback(@ActiveUser('sub') userId: string, @Param('id') id: string, @Body() body: any): Promise<any> {
-        const entry = await this.prismaWrite.progressEntry.create({
-            data: {
-                projectId: id,
-                type: 'FEEDBACK',
-                title: body.title || 'Client Feedback',
-                description: body.feedback,
-                actorId: userId,
-                details: body.details || {}
-            }
-        });
-        return { projectId: id, feedbackId: entry.id, submitted: true };
-    }
+  /**
+   * Submits qualitative feedback for a specific project.
+   */
+  @Post(':id/feedback')
+  @ApiOperation({ summary: 'Submit project feedback' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse({ message: 'Feedback submitted successfully' })
+  async submitFeedback(
+    @ActiveUser('sub') userId: string,
+    @Param('id') id: string,
+    @Body() body: any,
+  ): Promise<any> {
+    const entry = await this.prismaWrite.progressEntry.create({
+      data: {
+        projectId: id,
+        type: 'FEEDBACK',
+        title: body.title || 'Client Feedback',
+        description: body.feedback,
+        actorId: userId,
+        details: body.details || {},
+      },
+    });
+    return { projectId: id, feedbackId: entry.id, submitted: true };
+  }
 
-    /**
-     * Retrieves all submitted feedback for a specific project.
-     */
-    @Get(':id/feedback')
-    @ApiOperation({ summary: 'Get project feedback' })
-    @ApiParam({ name: 'id', description: 'Project UUID' })
-    @ApiStandardResponse()
-    async getFeedback(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
-        const feedback = await this.prismaRead.progressEntry.findMany({
-            where: { projectId: id, type: 'FEEDBACK' },
-            orderBy: { createdAt: 'desc' }
-        });
-        return { projectId: id, feedback };
-    }
+  /**
+   * Retrieves all submitted feedback for a specific project.
+   */
+  @Get(':id/feedback')
+  @ApiOperation({ summary: 'Get project feedback' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiStandardResponse()
+  async getFeedback(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
+    const feedback = await this.prismaRead.progressEntry.findMany({
+      where: { projectId: id, type: 'FEEDBACK' },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { projectId: id, feedback };
+  }
 }
-

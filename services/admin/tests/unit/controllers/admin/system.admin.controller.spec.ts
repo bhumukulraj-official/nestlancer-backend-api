@@ -18,17 +18,29 @@ describe('SystemAdminController', () => {
       controllers: [SystemAdminController],
       providers: [
         { provide: SystemConfigService, useValue: { getAll: jest.fn(), set: jest.fn() } },
-        { provide: FeatureFlagsService, useValue: { findAll: jest.fn(), toggleFeature: jest.fn() } },
+        {
+          provide: FeatureFlagsService,
+          useValue: { findAll: jest.fn(), toggleFeature: jest.fn() },
+        },
         { provide: MaintenanceModeService, useValue: { toggle: jest.fn() } },
         { provide: CacheManagementService, useValue: { clearCache: jest.fn() } },
-        { provide: BackgroundJobsService, useValue: { findAll: jest.fn(), retryJob: jest.fn(), cancelJob: jest.fn() } },
-        { provide: SystemLogsService, useValue: { queryLogs: jest.fn(), generateDownloadLink: jest.fn() } },
+        {
+          provide: BackgroundJobsService,
+          useValue: { findAll: jest.fn(), retryJob: jest.fn(), cancelJob: jest.fn() },
+        },
+        {
+          provide: SystemLogsService,
+          useValue: { queryLogs: jest.fn(), generateDownloadLink: jest.fn() },
+        },
         { provide: AnnouncementsService, useValue: { send: jest.fn() } },
       ],
     })
-      .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-      .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard).useValue({ canActivate: () => true })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(SuperAdminGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<SystemAdminController>(SystemAdminController);

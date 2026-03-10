@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TurnstileModule } from '../../src/turnstile.module';
 import { TurnstileService } from '../../src/turnstile.service';
 import { ConfigModule } from '@nestjs/config';
+import { Reflector } from '@nestjs/core';
 
 describe('TurnstileModule (Integration)', () => {
   let module: TestingModule;
@@ -13,7 +14,7 @@ describe('TurnstileModule (Integration)', () => {
         ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
         TurnstileModule.forRoot({ secretKey: 'test-secret' }),
       ],
-      providers: [],
+      providers: [Reflector],
     }).compile();
 
     service = module.get<TurnstileService>(TurnstileService);
@@ -35,14 +36,13 @@ describe('TurnstileModule (Integration)', () => {
   });
 
   it('should call fetch when not in test env', async () => {
-    // Force NODE_ENV to something else temporarily
     const oldEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
 
     const fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(() =>
       Promise.resolve({
         json: () => Promise.resolve({ success: true }),
-      } as any)
+      } as any),
     );
 
     await service.verify('test-token', '127.0.0.1');

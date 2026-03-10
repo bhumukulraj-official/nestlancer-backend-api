@@ -1,26 +1,46 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
 import { ContactAdminController } from '../../src/controllers/admin/contact.admin.controller';
 import { ContactService } from '../../src/services/contact.service';
 import { ContactResponseService } from '../../src/services/contact-response.service';
 import { ContactAdminService } from '../../src/services/contact-admin.service';
 
 describe('ContactAdminController', () => {
-    let controller: ContactAdminController;
+  let controller: ContactAdminController;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [ContactAdminController],
-            providers: [
-                { provide: ContactService, useValue: { findAll: jest.fn().mockResolvedValue({ items: [], totalItems: 0 }), findById: jest.fn() } },
-                { provide: ContactResponseService, useValue: { respond: jest.fn() } },
-                { provide: ContactAdminService, useValue: { getStatistics: jest.fn().mockResolvedValue({ total: 0 }), markAsSpam: jest.fn() } },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [ContactAdminController],
+      providers: [
+        {
+          provide: ContactService,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue({ items: [], totalItems: 0 }),
+            findById: jest.fn(),
+          },
+        },
+        { provide: ContactResponseService, useValue: { respond: jest.fn() } },
+        {
+          provide: ContactAdminService,
+          useValue: {
+            getStatistics: jest.fn().mockResolvedValue({ total: 0 }),
+            markAsSpam: jest.fn(),
+          },
+        },
+        {
+          provide: Reflector,
+          useValue: {
+            get: jest.fn(),
+            getAllAndOverride: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
 
-        controller = module.get<ContactAdminController>(ContactAdminController);
-    });
+    controller = module.get<ContactAdminController>(ContactAdminController);
+  });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
 });

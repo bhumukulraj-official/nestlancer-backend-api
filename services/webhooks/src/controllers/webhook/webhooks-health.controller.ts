@@ -8,17 +8,20 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 @ApiTags('Webhooks')
 @Controller('webhooks')
 export class WebhooksHealthController {
-    /**
-     * Evaluates the operational status of the inbound Webhooks ingestion service.
-     * 
-     * @returns A promise resolving to the physical health status of the service
-     */
-    @Public()
-    @Get('health')
-    @ApiOperation({ summary: 'Service health check', description: 'Confirm that the inbound webhook ingestion microservice is reachable and operational.' })
-    @ApiStandardResponse()
-    async health(): Promise<any> {
-        return { status: 'ok', service: 'webhooks-inbound' };
-    }
+  /**
+   * Evaluates the operational status of the inbound Webhooks ingestion service.
+   *
+   * @returns A promise resolving to the physical health status of the service
+   */
+  @Public()
+  @Get('health')
+  @ApiOperation({
+    summary: 'Service health check',
+    description:
+      'Confirm that the inbound webhook ingestion microservice is reachable and operational.',
+  })
+  @ApiStandardResponse()
+  async health(): Promise<any> {
+    return { status: 'ok', service: 'webhooks-inbound' };
+  }
 }
-

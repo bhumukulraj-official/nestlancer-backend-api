@@ -16,9 +16,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const exResponse = exception.getResponse();
     const correlationId = (request.headers['x-correlation-id'] as string) || 'unknown';
 
-    const message = typeof exResponse === 'string'
-      ? exResponse
-      : (exResponse as Record<string, unknown>).message || exception.message;
+    const message =
+      typeof exResponse === 'string'
+        ? exResponse
+        : (exResponse as Record<string, unknown>).message || exception.message;
 
     this.logger.warn(`HTTP ${status} on ${request.method} ${request.url}: ${message}`);
 

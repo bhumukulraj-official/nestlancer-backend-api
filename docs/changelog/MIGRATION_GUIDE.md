@@ -34,6 +34,7 @@ pnpm prisma migrate status
 ## Rollback Procedure
 
 If a migration causes issues:
+
 ```bash
 # Revert to previous version
 scripts/deploy/rollback.sh --service=all

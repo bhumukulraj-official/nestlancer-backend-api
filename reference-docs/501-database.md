@@ -1,9 +1,11 @@
 # Database Blueprint
 
 ## 1. Overview
+
 This document defines the database architecture for the Nestlancer project. It translates the endpoint requirements, architectural patterns, and business domains into a highly scalable, robust PostgreSQL schema using the Prisma ORM.
 
 ### Design Philosophy
+
 - **Scalability & Performance**: Extensive use of indexes on foreign keys, status fields, and lookup tokens (slugs, idempotency keys).
 - **Security & Auditing**: Immutable `AuditLog` for admin actions and `deletedAt` for soft-deletion of critical entities (Users, Projects).
 - **Reliability Architectures**: Implementation of the Transactional Outbox pattern (`OutboxEvent`), Inbound Webhook Ingestion (`WebhookLog`), and Idempotency key tracking (`IdempotencyKey`).
@@ -454,7 +456,7 @@ model Refund {
   updatedAt       DateTime      @updatedAt
 
   payment         Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  
+
   @@index([paymentId])
 }
 
@@ -823,15 +825,17 @@ model IdempotencyKey {
 ```
 
 ## 3. Key Relationships
+
 - **Users, Requests, Quotes, and Projects**: A user initiates a `ProjectRequest`. Once approved, a `Quote` is sent. When the quote is accepted, it is converted into a `Project`, establishing a strict pipeline (`User 1:N Request 1:1 Quote 1:1 Project`).
 - **Project Structure**: Projects branch out into `Milestone`s and `Deliverable`s (1:N), allowing granular tracking. `Payment`s are strongly tied to projects and optionally specific milestones.
 - **Media and Multi-Contexts**: The `Media` model uses `contextType` and `contextId` for flexible connections to messages, deliverables, and blog posts without rigid foreign keys, easing the public/private bucket architecture sync processes.
 - **Blog Architecture**: A `BlogPost` links deeply with a `BlogCategory`, multiple `BlogTag`s (via M:N relation implicitly handled by Prisma as `_BlogPostTags`), and an author `User`. Hierarchical threaded `BlogComment`s are modeled using a self-referencing relationship (`parentId`).
 
 ## 4. Indexes & Performance
+
 - **Lookup Hotpaths**: High-traffic lookups (e.g., `email`, `token`, `slug`, `key`) are uniquely indexed to ensure rapid login checks, token validations, and idempotency lock acquisition.
 - **Filtering & List Views**: State-tracking fields (`status`) and relational groupings (`userId`, `projectId`, `categoryId`) are indexed to optimize dashboard table lists and admin filters.
-- **Asynchronous Integrity**: 
+- **Asynchronous Integrity**:
   - `OutboxEvent` has an index on `[status]` for the Poller Worker to quickly fetch un-published events.
   - `WebhookLog` has an index on `[status]` to optimize the Ingestion Worker queue.
   - `AuditLog` leverages `[createdAt]` and `[resourceType, resourceId]` for fast historical tracking and security timeline generation.

@@ -7,7 +7,7 @@ export class BusinessLogicException extends BaseAppException {
   constructor(
     message: string,
     code: string = ERROR_CODES.BUSINESS_LOGIC_ERROR,
-    details?: Record<string, unknown>
+    details?: Record<string, unknown>,
   ) {
     super(code, message, HttpStatus.UNPROCESSABLE_ENTITY, details ? [details] : undefined);
   }

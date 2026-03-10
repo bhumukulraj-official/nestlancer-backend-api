@@ -7,7 +7,7 @@ export class QueuePublisherService implements OnModuleInit, OnModuleDestroy {
   private connection!: any;
   private channel!: amqp.Channel;
 
-  constructor(@Inject('QUEUE_OPTIONS') private readonly options: { url?: string }) { }
+  constructor(@Inject('QUEUE_OPTIONS') private readonly options: { url?: string }) {}
 
   async onModuleInit(): Promise<void> {
     const url = this.options.url || process.env.RABBITMQ_URL || 'amqp://localhost:5672';
@@ -21,7 +21,12 @@ export class QueuePublisherService implements OnModuleInit, OnModuleDestroy {
     await this.connection?.close();
   }
 
-  async publish(exchange: string, routingKey: string, payload: unknown, options?: amqp.Options.Publish): Promise<void> {
+  async publish(
+    exchange: string,
+    routingKey: string,
+    payload: unknown,
+    options?: amqp.Options.Publish,
+  ): Promise<void> {
     const message = Buffer.from(JSON.stringify(payload));
     this.channel.publish(exchange, routingKey, message, {
       persistent: true,
@@ -31,8 +36,16 @@ export class QueuePublisherService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async sendToQueue(queue: string, payload: unknown, options?: amqp.Options.Publish): Promise<void> {
+  async sendToQueue(
+    queue: string,
+    payload: unknown,
+    options?: amqp.Options.Publish,
+  ): Promise<void> {
     const message = Buffer.from(JSON.stringify(payload));
-    this.channel.sendToQueue(queue, message, { persistent: true, contentType: 'application/json', ...options });
+    this.channel.sendToQueue(queue, message, {
+      persistent: true,
+      contentType: 'application/json',
+      ...options,
+    });
   }
 }

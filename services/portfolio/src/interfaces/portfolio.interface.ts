@@ -4,17 +4,17 @@ import { PortfolioTag } from '../entities/portfolio-tag.entity';
 import { PortfolioImage } from '../entities/portfolio-image.entity';
 
 export interface PortfolioItemWithRelations extends PortfolioItem {
-    category?: PortfolioCategory;
-    tags?: PortfolioTag[];
-    images?: PortfolioImage[];
+  category?: PortfolioCategory;
+  tags?: PortfolioTag[];
+  images?: PortfolioImage[];
 }
 
 export interface PortfolioSearchResult {
-    id: string;
-    title: string;
-    slug: string;
-    shortDescription: string;
-    thumbnailId?: string;
-    rank: number;
-    highlights?: any;
+  id: string;
+  title: string;
+  slug: string;
+  shortDescription: string;
+  thumbnailId?: string;
+  rank: number;
+  highlights?: any;
 }

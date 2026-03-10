@@ -60,8 +60,10 @@ describe('PortfolioAdminController', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
-      .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
       .compile();
 
     controller = module.get<PortfolioAdminController>(PortfolioAdminController);

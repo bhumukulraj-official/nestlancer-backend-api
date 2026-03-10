@@ -11,12 +11,24 @@ describe('EmailTemplatesAdminController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EmailTemplatesAdminController],
       providers: [
-        { provide: EmailTemplatesService, useValue: { findAll: jest.fn(), findOne: jest.fn(), update: jest.fn(), preview: jest.fn(), test: jest.fn() } },
+        {
+          provide: EmailTemplatesService,
+          useValue: {
+            findAll: jest.fn(),
+            findOne: jest.fn(),
+            update: jest.fn(),
+            preview: jest.fn(),
+            test: jest.fn(),
+          },
+        },
       ],
     })
-      .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-      .overrideGuard(RolesGuard).useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard).useValue({ canActivate: () => true })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(SuperAdminGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<EmailTemplatesAdminController>(EmailTemplatesAdminController);

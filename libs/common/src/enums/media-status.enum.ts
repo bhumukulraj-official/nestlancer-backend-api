@@ -5,4 +5,3 @@ export enum MediaStatus {
   FAILED = 'FAILED',
   DELETED = 'DELETED',
 }
-

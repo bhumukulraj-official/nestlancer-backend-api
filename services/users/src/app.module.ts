@@ -25,32 +25,29 @@ import { UsersAdminService } from './services/users.admin.service';
 import usersConfig from './config/users.config';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        NestConfigModule.forFeature(usersConfig),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        QueueModule.forRoot(),
-        OutboxModule.forRoot(),
-        CacheModule.forRoot(),
-        AuthLibModule,
-        StorageModule.forRoot(),
-    ],
-    controllers: [
-        UsersController,
-        UsersAdminController,
-    ],
-    providers: [
-        ProfileService,
-        PreferencesService,
-        AvatarService,
-        SessionsService,
-        AccountService,
-        TwoFactorService,
-        ActivityService,
-        UsersAdminService,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    NestConfigModule.forFeature(usersConfig),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    QueueModule.forRoot(),
+    OutboxModule.forRoot(),
+    CacheModule.forRoot(),
+    AuthLibModule,
+    StorageModule.forRoot(),
+  ],
+  controllers: [UsersController, UsersAdminController],
+  providers: [
+    ProfileService,
+    PreferencesService,
+    AvatarService,
+    SessionsService,
+    AccountService,
+    TwoFactorService,
+    ActivityService,
+    UsersAdminService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

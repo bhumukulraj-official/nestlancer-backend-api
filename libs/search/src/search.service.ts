@@ -31,7 +31,7 @@ export class SearchService implements OnModuleInit {
       const filterParts: string[] = [];
       for (const [key, value] of Object.entries(options.filters)) {
         if (Array.isArray(value)) {
-          filterParts.push(`${key} IN [${value.map(v => `"${v}"`).join(', ')}]`);
+          filterParts.push(`${key} IN [${value.map((v) => `"${v}"`).join(', ')}]`);
         } else if (typeof value === 'string') {
           filterParts.push(`${key} = "${value}"`);
         } else {
@@ -66,7 +66,11 @@ export class SearchService implements OnModuleInit {
   async createIndex(
     indexName: string,
     primaryKey?: string,
-    config?: { searchableAttributes?: string[]; filterableAttributes?: string[]; sortableAttributes?: string[] },
+    config?: {
+      searchableAttributes?: string[];
+      filterableAttributes?: string[];
+      sortableAttributes?: string[];
+    },
   ): Promise<void> {
     await this.client.createIndex(indexName, { primaryKey });
     this.logger.log(`Created search index: ${indexName}`);

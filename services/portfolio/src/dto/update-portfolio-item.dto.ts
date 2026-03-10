@@ -6,5 +6,4 @@ import * as common from '@nestjs/common';
 /**
  * Data Transfer Object for updating an existing portfolio item.
  */
-export class UpdatePortfolioItemDto extends PartialType(CreatePortfolioItemDto) { }
-
+export class UpdatePortfolioItemDto extends PartialType(CreatePortfolioItemDto) {}

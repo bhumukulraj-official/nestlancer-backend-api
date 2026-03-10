@@ -10,7 +10,7 @@ export class DatabaseMetricsCollector implements OnModuleInit {
   private poolIdleConnections!: client.Gauge<string>;
   private queryErrors!: client.Counter<string>;
 
-  constructor(private readonly metrics: MetricsService) { }
+  constructor(private readonly metrics: MetricsService) {}
 
   onModuleInit(): void {
     this.queriesTotal = this.metrics.createCounter(

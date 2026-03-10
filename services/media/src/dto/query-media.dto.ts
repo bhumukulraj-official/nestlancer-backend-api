@@ -8,13 +8,13 @@ import { PaginationQueryDto } from '@nestlancer/common';
  * Data Transfer Object for querying and filtering user media.
  */
 export class QueryMediaDto extends PaginationQueryDto {
-    @ApiPropertyOptional({ enum: FileType, description: 'Filter by file category' })
-    @IsOptional()
-    @IsEnum(FileType)
-    fileType?: FileType;
+  @ApiPropertyOptional({ enum: FileType, description: 'Filter by file category' })
+  @IsOptional()
+  @IsEnum(FileType)
+  fileType?: FileType;
 
-    @ApiPropertyOptional({ enum: MediaStatus, description: 'Filter by processing status' })
-    @IsOptional()
-    @IsEnum(MediaStatus)
-    status?: MediaStatus;
+  @ApiPropertyOptional({ enum: MediaStatus, description: 'Filter by processing status' })
+  @IsOptional()
+  @IsEnum(MediaStatus)
+  status?: MediaStatus;
 }

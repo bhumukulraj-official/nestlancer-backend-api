@@ -63,7 +63,7 @@ describe('NotificationConsumer', () => {
         userId: 'user-1',
         type: 'ORDER_UPDATE',
         channels: [NotificationChannel.IN_APP],
-        notification: { title: 'Test', message: 'Body' }
+        notification: { title: 'Test', message: 'Body' },
       };
       const mockMsg = { content: Buffer.from(JSON.stringify(mockJob)) };
 

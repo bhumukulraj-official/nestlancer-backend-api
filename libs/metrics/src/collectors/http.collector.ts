@@ -10,7 +10,7 @@ export class HttpMetricsCollector implements OnModuleInit {
   private responseSizeBytes!: client.Histogram<string>;
   private activeRequests!: client.Gauge<string>;
 
-  constructor(private readonly metrics: MetricsService) { }
+  constructor(private readonly metrics: MetricsService) {}
 
   onModuleInit(): void {
     this.requestsTotal = this.metrics.createCounter(
@@ -47,7 +47,14 @@ export class HttpMetricsCollector implements OnModuleInit {
     );
   }
 
-  recordRequest(method: string, route: string, statusCode: number, durationSec: number, requestSize: number, responseSize: number): void {
+  recordRequest(
+    method: string,
+    route: string,
+    statusCode: number,
+    durationSec: number,
+    requestSize: number,
+    responseSize: number,
+  ): void {
     const labels = { method, route, status_code: String(statusCode) };
     this.requestsTotal.inc(labels);
     this.requestDuration.observe(labels, durationSec);

@@ -13,20 +13,15 @@ import { EmailRetryService } from './services/email-retry.service';
 import { EmailConsumer } from './consumers/email.consumer';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        NestConfigModule.forFeature(emailWorkerConfig),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        QueueModule.forRoot(),
-        MailModule.forRoot(),
-    ],
-    providers: [
-        EmailWorkerService,
-        EmailRendererService,
-        EmailRetryService,
-        EmailConsumer,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    NestConfigModule.forFeature(emailWorkerConfig),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    QueueModule.forRoot(),
+    MailModule.forRoot(),
+  ],
+  providers: [EmailWorkerService, EmailRendererService, EmailRetryService, EmailConsumer],
 })
-export class AppModule { }
+export class AppModule {}

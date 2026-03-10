@@ -10,7 +10,11 @@ export interface MailModuleAsyncOptions {
 @Module({})
 export class MailModule {
   static forRoot(options?: { provider?: string }): DynamicModule {
-    return { module: MailModule, providers: [{ provide: 'MAIL_OPTIONS', useValue: options || {} }, MailService], exports: [MailService] };
+    return {
+      module: MailModule,
+      providers: [{ provide: 'MAIL_OPTIONS', useValue: options || {} }, MailService],
+      exports: [MailService],
+    };
   }
 
   static forRootAsync(options: MailModuleAsyncOptions): DynamicModule {

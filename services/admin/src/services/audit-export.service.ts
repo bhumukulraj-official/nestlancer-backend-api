@@ -5,20 +5,20 @@ import { AuditExportResult } from '../interfaces/audit.interface';
 
 @Injectable()
 export class AuditExportService {
-    constructor(private readonly queueService: QueuePublisherService) { }
+  constructor(private readonly queueService: QueuePublisherService) {}
 
-    async triggerExport(dto: ExportAuditDto): Promise<AuditExportResult> {
-        const jobId = `export_${Date.now()}`;
+  async triggerExport(dto: ExportAuditDto): Promise<AuditExportResult> {
+    const jobId = `export_${Date.now()}`;
 
-        // Publish export task to background worker
-        await this.queueService.publish('admin', 'AUDIT_EXPORT', {
-            jobId,
-            filters: dto,
-        });
+    // Publish export task to background worker
+    await this.queueService.publish('admin', 'AUDIT_EXPORT', {
+      jobId,
+      filters: dto,
+    });
 
-        return {
-            jobId,
-            status: 'QUEUED',
-        };
-    }
+    return {
+      jobId,
+      status: 'QUEUED',
+    };
+  }
 }

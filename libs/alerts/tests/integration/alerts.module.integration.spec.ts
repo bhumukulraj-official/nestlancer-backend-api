@@ -13,10 +13,7 @@ describe('AlertsModule (Integration)', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
-        AlertsModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }), AlertsModule],
     })
       .overrideProvider(SlackChannel)
       .useValue({ send: jest.fn().mockResolvedValue(undefined) })

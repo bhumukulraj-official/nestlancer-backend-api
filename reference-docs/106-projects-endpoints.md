@@ -6,9 +6,11 @@
 **Admin Path**: `/api/v1/admin/projects`
 
 ### 7.1 Overview
+
 Manages active projects from initiation through completion. Projects are created when quotes are accepted and contain milestones, deliverables, and payment tracking.
 
 ### 7.2 Project Status Flow
+
 ```
 CREATED → PENDING_PAYMENT → IN_PROGRESS → REVIEW → COMPLETED → ARCHIVED
              ↓                    ↓            ↓
@@ -19,52 +21,52 @@ CREATED → PENDING_PAYMENT → IN_PROGRESS → REVIEW → COMPLETED → ARCHIVE
 
 ### 7.3 Public Endpoints (No Auth)
 
-| Method | Endpoint | Description | Rate Limit | Cache |
-|--------|----------|-------------|------------|-------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/public` | List public projects (portfolio) | 500/hour/IP | 1 hour |
-| `GET` | `/public/{id}` | View public project details | 500/hour/IP | 1 hour |
+| Method | Endpoint       | Description                        | Rate Limit  | Cache  |
+| ------ | -------------- | ---------------------------------- | ----------- | ------ |
+| `GET`  | `/health`      | Health check (Simplified response) | 1000/hour   | Yes    |
+| `GET`  | `/public`      | List public projects (portfolio)   | 500/hour/IP | 1 hour |
+| `GET`  | `/public/{id}` | View public project details        | 500/hour/IP | 1 hour |
 
 ### 7.4 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/` | List own projects | 1000/hour | Yes |
-| `GET` | `/{id}` | Get project details | 1000/hour | Yes |
-| `GET` | `/{id}/timeline` | Get project timeline | 500/hour | Yes |
-| `GET` | `/{id}/milestones` | Get project milestones | 500/hour | Yes |
-| `GET` | `/{id}/deliverables` | Get deliverables | 500/hour | Yes |
-| `GET` | `/{id}/payments` | Get payment history | 500/hour | Yes |
-| `POST` | `/{id}/approve` | Approve completed project | 20/hour | Yes |
-| `POST` | `/{id}/request-revision` | Request changes | 20/hour | No |
-| `POST` | `/{id}/feedback` | Submit project feedback | 20/hour | No |
-| `GET` | `/{id}/messages` | Get project messages | 1000/hour | Yes |
-| `POST` | `/{id}/messages` | Send message | 200/hour | No |
-| `GET` | `/stats` | User project statistics | 100/hour | Yes |
+| Method | Endpoint                 | Description               | Rate Limit | Idempotent |
+| ------ | ------------------------ | ------------------------- | ---------- | ---------- |
+| `GET`  | `/`                      | List own projects         | 1000/hour  | Yes        |
+| `GET`  | `/{id}`                  | Get project details       | 1000/hour  | Yes        |
+| `GET`  | `/{id}/timeline`         | Get project timeline      | 500/hour   | Yes        |
+| `GET`  | `/{id}/milestones`       | Get project milestones    | 500/hour   | Yes        |
+| `GET`  | `/{id}/deliverables`     | Get deliverables          | 500/hour   | Yes        |
+| `GET`  | `/{id}/payments`         | Get payment history       | 500/hour   | Yes        |
+| `POST` | `/{id}/approve`          | Approve completed project | 20/hour    | Yes        |
+| `POST` | `/{id}/request-revision` | Request changes           | 20/hour    | No         |
+| `POST` | `/{id}/feedback`         | Submit project feedback   | 20/hour    | No         |
+| `GET`  | `/{id}/messages`         | Get project messages      | 1000/hour  | Yes        |
+| `POST` | `/{id}/messages`         | Send message              | 200/hour   | No         |
+| `GET`  | `/stats`                 | User project statistics   | 100/hour   | Yes        |
 
 ### 7.5 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Soft Delete | | Role |
-|--------|----------|-------------|------------|-------------|------|
-| `GET` | `/` | List all projects | 2000/hour | N/A |
-| `GET` | `/{id}` | Get project (admin view) | 2000/hour | N/A |
-| `PATCH` | `/{id}` | Update project | 500/hour | N/A |
-| `PATCH` | `/{id}/status` | Update project status | 500/hour | N/A |
-| `POST` | `/{id}/archive` | Archive project | 200/hour | No |
-| `POST` | `/{id}/unarchive` | Unarchive project | 200/hour | N/A |
-| `GET` | `/{id}/analytics` | Project analytics | 1000/hour | N/A |
-| `POST` | `/{id}/duplicate` | Duplicate as template | 50/hour | N/A |
-| `POST` | `/{id}/export` | Export project data | 100/hour | N/A |
-| `GET` | `/stats` | Overall project statistics | 500/hour | N/A |
-| `GET` | `/templates` | List project templates | 200/hour | N/A |
-| `POST` | `/templates` | Create template | 50/hour | N/A |
+| Method  | Endpoint          | Description                | Rate Limit | Soft Delete |     | Role |
+| ------- | ----------------- | -------------------------- | ---------- | ----------- | --- | ---- |
+| `GET`   | `/`               | List all projects          | 2000/hour  | N/A         |
+| `GET`   | `/{id}`           | Get project (admin view)   | 2000/hour  | N/A         |
+| `PATCH` | `/{id}`           | Update project             | 500/hour   | N/A         |
+| `PATCH` | `/{id}/status`    | Update project status      | 500/hour   | N/A         |
+| `POST`  | `/{id}/archive`   | Archive project            | 200/hour   | No          |
+| `POST`  | `/{id}/unarchive` | Unarchive project          | 200/hour   | N/A         |
+| `GET`   | `/{id}/analytics` | Project analytics          | 1000/hour  | N/A         |
+| `POST`  | `/{id}/duplicate` | Duplicate as template      | 50/hour    | N/A         |
+| `POST`  | `/{id}/export`    | Export project data        | 100/hour   | N/A         |
+| `GET`   | `/stats`          | Overall project statistics | 500/hour   | N/A         |
+| `GET`   | `/templates`      | List project templates     | 200/hour   | N/A         |
+| `POST`  | `/templates`      | Create template            | 50/hour    | N/A         |
 
 ### 7.6 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### GET /{id}
+
 ```json
 // Request
 GET /api/v1/projects/projAbc123
@@ -212,6 +214,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /{id}/timeline
+
 ```json
 // Request
 GET /api/v1/projects/projAbc123/timeline
@@ -336,6 +339,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/approve
+
 ```json
 // Request
 POST /api/v1/projects/projAbc123/approve
@@ -421,6 +425,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/request-revision
+
 ```json
 // Request
 POST /api/v1/projects/projAbc123/request-revision
@@ -469,6 +474,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### PATCH /{id}/status (Admin)
+
 ```json
 // Request
 PATCH /api/v1/admin/projects/projAbc123/status
@@ -513,19 +519,19 @@ X-Request-ID: reqAbc123
 
 ### 7.7 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `PROJECT_001` | 404 | Project not found | No |
-| `PROJECT_002` | 403 | Unauthorized access to project | No |
-| `PROJECT_003` | 400 | Invalid status transition | No |
-| `PROJECT_004` | 402 | Payment required to proceed | No |
-| `PROJECT_005` | 400 | Cannot modify completed project | No |
-| `PROJECT_006` | 410 | Project already archived | No |
-| `PROJECT_007` | 404 | Milestone not found | No |
-| `PROJECT_008` | 400 | Cannot approve incomplete project | No |
-| `PROJECT_009` | 409 | Feedback already submitted | No |
-| `PROJECT_010` | 400 | Invalid rating value (1-5) | No |
-| `PROJECT_011` | 400 | Deliverable not found | No |
-| `PROJECT_012` | 400 | Cannot request revision on completed project | No |
+| Code          | HTTP Status | Description                                  | Retryable |
+| ------------- | ----------- | -------------------------------------------- | --------- |
+| `PROJECT_001` | 404         | Project not found                            | No        |
+| `PROJECT_002` | 403         | Unauthorized access to project               | No        |
+| `PROJECT_003` | 400         | Invalid status transition                    | No        |
+| `PROJECT_004` | 402         | Payment required to proceed                  | No        |
+| `PROJECT_005` | 400         | Cannot modify completed project              | No        |
+| `PROJECT_006` | 410         | Project already archived                     | No        |
+| `PROJECT_007` | 404         | Milestone not found                          | No        |
+| `PROJECT_008` | 400         | Cannot approve incomplete project            | No        |
+| `PROJECT_009` | 409         | Feedback already submitted                   | No        |
+| `PROJECT_010` | 400         | Invalid rating value (1-5)                   | No        |
+| `PROJECT_011` | 400         | Deliverable not found                        | No        |
+| `PROJECT_012` | 400         | Cannot request revision on completed project | No        |
 
 ---

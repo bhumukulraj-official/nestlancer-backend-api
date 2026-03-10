@@ -7,7 +7,7 @@ export class QueueConsumerService implements OnModuleInit {
   private connection!: any;
   private channel!: amqp.Channel;
 
-  constructor(@Inject('QUEUE_OPTIONS') private readonly options: { url?: string }) { }
+  constructor(@Inject('QUEUE_OPTIONS') private readonly options: { url?: string }) {}
 
   async onModuleInit(): Promise<void> {
     const url = this.options.url || process.env.RABBITMQ_URL || 'amqp://localhost:5672';
@@ -17,7 +17,10 @@ export class QueueConsumerService implements OnModuleInit {
     this.logger.log('Queue consumer connected');
   }
 
-  async consume(queue: string, handler: (msg: amqp.ConsumeMessage) => Promise<void>): Promise<void> {
+  async consume(
+    queue: string,
+    handler: (msg: amqp.ConsumeMessage) => Promise<void>,
+  ): Promise<void> {
     await this.channel.assertQueue(queue, { durable: true });
     await this.channel.consume(queue, async (msg) => {
       if (!msg) return;
@@ -31,5 +34,7 @@ export class QueueConsumerService implements OnModuleInit {
     });
   }
 
-  getChannel(): amqp.Channel { return this.channel; }
+  getChannel(): amqp.Channel {
+    return this.channel;
+  }
 }

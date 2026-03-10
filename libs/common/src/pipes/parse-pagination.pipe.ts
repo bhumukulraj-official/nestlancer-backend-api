@@ -1,6 +1,11 @@
 import { PipeTransform, Injectable } from '@nestjs/common';
 import { PaginationQueryDto } from '../dto/pagination-query.dto';
-import { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT, MIN_LIMIT } from '../constants/pagination.constants';
+import {
+  DEFAULT_PAGE,
+  DEFAULT_LIMIT,
+  MAX_LIMIT,
+  MIN_LIMIT,
+} from '../constants/pagination.constants';
 
 /**
  * Ensures pagination values are within allowed bounds.

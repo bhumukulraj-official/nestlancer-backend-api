@@ -27,31 +27,31 @@ import { StorageModule } from '@nestlancer/storage';
 import healthConfig from './config/health.config';
 
 @Module({
-    imports: [
-        ConfigModule,
-        LoggerModule.forRoot(),
-        DatabaseModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        TerminusModule,
-        HealthLibModule,
-        CacheModule.forRoot(),
-        StorageModule.forRoot(),
-        AuthLibModule,
-    ],
-    controllers: [HealthPublicController, HealthDebugAdminController],
-    providers: [
-        HealthService,
-        DatabaseHealthService,
-        CacheHealthService,
-        QueueHealthService,
-        StorageHealthService,
-        ExternalServicesHealthService,
-        WorkersHealthService,
-        WebsocketHealthService,
-        SystemMetricsService,
-        FeatureFlagsHealthService,
-        ServiceRegistryHealthService,
-    ],
+  imports: [
+    ConfigModule,
+    LoggerModule.forRoot(),
+    DatabaseModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    TerminusModule,
+    HealthLibModule,
+    CacheModule.forRoot(),
+    StorageModule.forRoot(),
+    AuthLibModule,
+  ],
+  controllers: [HealthPublicController, HealthDebugAdminController],
+  providers: [
+    HealthService,
+    DatabaseHealthService,
+    CacheHealthService,
+    QueueHealthService,
+    StorageHealthService,
+    ExternalServicesHealthService,
+    WorkersHealthService,
+    WebsocketHealthService,
+    SystemMetricsService,
+    FeatureFlagsHealthService,
+    ServiceRegistryHealthService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

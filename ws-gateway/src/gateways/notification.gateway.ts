@@ -1,4 +1,10 @@
-import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, WsException } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  WsException,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { WsAuthGuard } from '@nestlancer/websocket';
@@ -10,7 +16,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   @WebSocketServer() server!: Server;
   private readonly logger = new Logger(NotificationGateway.name);
 
-  constructor(private readonly connectionService: WsConnectionService) { }
+  constructor(private readonly connectionService: WsConnectionService) {}
 
   async handleConnection(client: Socket) {
     try {
@@ -18,7 +24,9 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       if (userId) {
         client.join(`user:${userId}`);
         await this.connectionService.addConnection(userId, client.id);
-        this.server.to(`user:${userId}`).emit('presence:online', { userId, onlineAt: new Date().toISOString() });
+        this.server
+          .to(`user:${userId}`)
+          .emit('presence:online', { userId, onlineAt: new Date().toISOString() });
       }
       this.logger.log(`Notification client connected: ${client.id}`);
     } catch (error: any) {
@@ -30,7 +38,9 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     try {
       const userId = client.data?.user?.userId;
       if (userId) {
-        this.server.to(`user:${userId}`).emit('presence:offline', { userId, offlineAt: new Date().toISOString() });
+        this.server
+          .to(`user:${userId}`)
+          .emit('presence:offline', { userId, offlineAt: new Date().toISOString() });
         await this.connectionService.removeConnection(userId, client.id);
       }
       this.logger.log(`Notification client disconnected: ${client.id}`);

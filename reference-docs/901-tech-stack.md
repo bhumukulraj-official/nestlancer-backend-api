@@ -1,33 +1,40 @@
 # Project Tech Stack
 
 ## 🧰 Monorepo Management
+
 - **pnpm** `[Free]` – Fast, disk-space-efficient package manager with workspace support.
 - **Turborepo** `[Free]` – High-performance build system for monorepos (caching, parallel execution).
 
 ## 💻 Programming Language
+
 - **TypeScript** `[Free]` – Strictly typed JavaScript, used across all services and libraries.
 
 ## 🏗️ Backend Frameworks
+
 - **NestJS** `[Free]` – Progressive Node.js framework for building efficient and scalable server-side applications (used for all services, gateways, and workers).
 - **Express** `[Free]` (underlying) – NestJS uses Express by default (optional Fastify).
 
 ## 🗄️ Databases & ORM
+
 - **PostgreSQL** `[Free]` – Primary relational database.
   - Self-hosted primary instance for writes, with read replicas for read-heavy operations.
   - **Patroni** `[Free]` – High availability and auto-failover (self-hosted instead of RDS).
 - **Prisma** `[Free]` – Type-safe ORM with migrations, used for database access and schema management.
 
 ## 🚦 Message Queue & Streaming
+
 - **RabbitMQ** `[Free]` – Message broker with exchanges, queues, DLQ, and per-queue TTL.
   - Exchanges: `events`, `webhooks`
   - Dead Letter Queue (DLQ) for failed messages.
 
 ## ⚡ Caching
+
 - **Redis** `[Free]` – Self-hosted, two dedicated instances:
   - **Redis Cache** `[Free]` – General caching, rate limiting, idempotency store (fast check).
   - **Redis Pub/Sub** `[Free]` – Real-time message fan-out for WebSocket instances.
 
 ## 📦 Storage & CDN
+
 - **Object Storage (Backblaze B2)** `[Freemium]` – S3-compatible, high-performance object storage.
   - **Storage Architecture (Dual Bucket)**:
     - `nestlancer-private`: Used for secure, client-facing project deliverables. Strictly private, accessed via temporary presigned URLs only.
@@ -40,11 +47,13 @@
   - **Features**: Global CDN, DDoS protection, Bandwidth Alliance (Free egress from B2).
 
 ## 🌐 API Gateway & Entry Layer
+
 - **Load Balancer (Nginx)** `[Free]` – For TLS termination, sticky sessions for WebSockets.
 - **Custom API Gateway** `[Free]` – NestJS-based gateway handling routing, versioning, throttling, and Swagger/OpenAPI exposure.
 - **WebSocket Gateway** `[Free]` – Separate NestJS gateway for real-time connections (JWT auth, rooms, presence).
 
 ## 🔐 Authentication & Security
+
 - **JWT** `[Free]` – For stateless authentication (access & refresh tokens).
 - **RBAC** `[Free]` – Role-based access control with permission guards.
 - **API Keys** `[Free]` – For machine-to-machine communication.
@@ -55,6 +64,7 @@
 - **Secrets Management** `[Freemium]` – **Infisical** `[Freemium]` (Centralized secret management, replaces `.env` files).
 
 ## 💳 Payment & Third-Party Integrations
+
 - **Razorpay** `[Paid]` – Payment gateway.
   - **Domestic**: 2% per successful transaction.
   - **International**: 3% per successful transaction.
@@ -67,6 +77,7 @@
 - **Object Storage Providers** `[Freemium]` – Backblaze B2 (pluggable via storage library, S3-compatible).
 
 ## 📊 Observability & Monitoring
+
 - **Logging** `[Free]` – Structured JSON logs with correlation IDs.
 - **Metrics (Prometheus)** `[Free]` – Custom metrics (HTTP, queue, DB, cache).
 - **Tracing (Jaeger)** `[Free]` – OpenTelemetry for distributed tracing.
@@ -74,7 +85,9 @@
 - **Alerting** `[Freemium]` – Discord/Telegram `[Free]`, UptimeRobot `[Freemium]`, or Grafana OnCall `[Freemium]`.
 
 ## ⚙️ Workers (Async Processing)
+
 All workers are NestJS applications consuming from RabbitMQ:
+
 - **Email Worker** – Sends emails with retries, backoff, circuit breaker.
 - **Notification Worker** – Delivers in-app, push, and real-time notifications via Redis Pub/Sub.
 - **Audit Worker** – Batch inserts audit logs.
@@ -85,7 +98,9 @@ All workers are NestJS applications consuming from RabbitMQ:
 - **Outbox Poller** – Polls transactional outbox table and publishes events to RabbitMQ.
 
 ## 🧩 Shared Libraries (Internal)
+
 All located in `libs/` and published within the monorepo:
+
 - `common` – Constants, enums, types, DTOs, exceptions, interceptors, pipes, utils.
 - `config` – Environment and secrets loading with validation (Zod schemas).
 - `database` – Prisma service with read/write separation, repositories, transactional decorators.
@@ -112,18 +127,21 @@ All located in `libs/` and published within the monorepo:
 - `testing` – Factories, mocks, helpers for unit and e2e tests.
 
 ## 🧪 Testing
+
 - **Jest** `[Free]` – Unit and integration tests.
 - **Supertest** `[Free]` – E2E tests for HTTP endpoints.
 - **Custom test factories** `[Free]` – For creating test data.
 - **Mocks** `[Free]` – For external services (Prisma, Redis, RabbitMQ, etc.).
 
 ## 🐳 Deployment & Infrastructure
+
 - **Containerization (Docker)** `[Free]` – Multi-stage builds, base images.
 - **Orchestration (K8s/K3s)** `[Free]` – Deployed on **Private VPS** with high-performance resources (AMD EPYC/Ryzen, NVMe storage).
 - **Infrastructure as Code (Terraform)** `[Free]` – Modules for VPS provisioning.
 - **CI/CD (GitHub Actions)** `[Freemium]` – For CI, CD, and security scanning.
 
 ## 🔧 Development Tools
+
 - **ESLint & Prettier** `[Free]` – Linting and formatting.
 - **Husky & lint-staged** `[Free]` – Git hooks and staged linting.
 - **commitlint** `[Free]` – Enforce conventional commits.
@@ -131,6 +149,7 @@ All located in `libs/` and published within the monorepo:
 - **Makefile** `[Free]` – Common development tasks.
 
 ## 📚 Documentation
+
 - **OpenAPI / Swagger** `[Free]` – API specification (served via gateway).
 - **Postman** `[Freemium]` – For API exploration.
 - **Architecture Decision Records (ADRs)** `[Free]` – Document key technical decisions.

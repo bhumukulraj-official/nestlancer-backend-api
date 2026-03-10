@@ -4,4 +4,3 @@ export enum CommentStatus {
   REJECTED = 'REJECTED',
   SPAM = 'SPAM',
 }
-

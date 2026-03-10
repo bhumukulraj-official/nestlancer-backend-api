@@ -5,49 +5,50 @@
 **Base Path**: `/api/v1/admin`
 
 ### 16.1 Overview
+
 Administrative dashboard, system configuration, audit logging, webhook management, and user impersonation for debugging.
 
 ### 16.2 Admin Roles
 
-| Role | Description | Permissions |
-|------|-------------|-------------|
+| Role    | Description  | Permissions                                                                                 |
+| ------- | ------------ | ------------------------------------------------------------------------------------------- |
 | `admin` | System Admin | Full access to manage users, content, projects, system configuration, and support requests. |
 
 ### 16.3 Dashboard Endpoints
 
-| Method | Endpoint | Description | Rate Limit | Role |
-|--------|----------|-------------|------------|------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/dashboard/overview` | Dashboard metrics | 2000/hour | admin |
-| `GET` | `/dashboard/revenue` | Revenue analytics | 2000/hour | admin |
-| `GET` | `/dashboard/users` | User metrics | 2000/hour | admin |
-| `GET` | `/dashboard/projects` | Project metrics | 2000/hour | admin |
-| `GET` | `/dashboard/performance` | System performance | 2000/hour | admin |
-| `GET` | `/dashboard/activity` | Recent activity | 2000/hour | admin |
-| `GET` | `/dashboard/alerts` | System alerts | 2000/hour | admin |
+| Method | Endpoint                 | Description                        | Rate Limit | Role  |
+| ------ | ------------------------ | ---------------------------------- | ---------- | ----- |
+| `GET`  | `/health`                | Health check (Simplified response) | 1000/hour  | Yes   |
+| `GET`  | `/dashboard/overview`    | Dashboard metrics                  | 2000/hour  | admin |
+| `GET`  | `/dashboard/revenue`     | Revenue analytics                  | 2000/hour  | admin |
+| `GET`  | `/dashboard/users`       | User metrics                       | 2000/hour  | admin |
+| `GET`  | `/dashboard/projects`    | Project metrics                    | 2000/hour  | admin |
+| `GET`  | `/dashboard/performance` | System performance                 | 2000/hour  | admin |
+| `GET`  | `/dashboard/activity`    | Recent activity                    | 2000/hour  | admin |
+| `GET`  | `/dashboard/alerts`      | System alerts                      | 2000/hour  | admin |
 
 ### 16.4 System Management Endpoints
 
-| Method | Endpoint | Description | Rate Limit | Role |
-|--------|----------|-------------|------------|------|
-| `GET` | `/system/config` | Get system config | 500/hour | admin |
-| `PATCH` | `/system/config` | Update config | 50/hour | admin |
-| `GET` | `/system/email-templates` | List email templates | 500/hour | admin |
-| `GET` | `/system/email-templates/{id}` | Get template | 500/hour | admin |
-| `PATCH` | `/system/email-templates/{id}` | Update template | 200/hour | admin |
-| `GET` | `/system/email-templates/{id}/preview` | Preview template | 200/hour | admin |
-| `POST` | `/system/email-templates/{id}/test` | Send test email | 50/hour | admin |
-| `POST` | `/system/announcements` | Send announcement | 50/hour | admin |
-| `POST` | `/system/maintenance` | Toggle maintenance mode | 20/hour | admin |
-| `GET` | `/system/features` | List feature flags | 500/hour | admin |
-| `PATCH` | `/system/features/{flag}` | Toggle feature | 100/hour | admin |
-| `POST` | `/system/cache/clear` | Clear cache | 20/hour | admin |
-| `POST` | `/system/cache/clear/{key}` | Clear specific cache | 50/hour | admin |
-| `GET` | `/system/jobs` | List background jobs | 1000/hour | admin |
-| `POST` | `/system/jobs/{id}/retry` | Retry failed job | 100/hour | admin |
-| `DELETE` | `/system/jobs/{id}` | Cancel job | 100/hour | admin |
-| `GET` | `/system/logs` | View system logs | 1000/hour | admin |
-| `GET` | `/system/logs/download` | Download logs | 50/hour | admin |
+| Method   | Endpoint                               | Description             | Rate Limit | Role  |
+| -------- | -------------------------------------- | ----------------------- | ---------- | ----- |
+| `GET`    | `/system/config`                       | Get system config       | 500/hour   | admin |
+| `PATCH`  | `/system/config`                       | Update config           | 50/hour    | admin |
+| `GET`    | `/system/email-templates`              | List email templates    | 500/hour   | admin |
+| `GET`    | `/system/email-templates/{id}`         | Get template            | 500/hour   | admin |
+| `PATCH`  | `/system/email-templates/{id}`         | Update template         | 200/hour   | admin |
+| `GET`    | `/system/email-templates/{id}/preview` | Preview template        | 200/hour   | admin |
+| `POST`   | `/system/email-templates/{id}/test`    | Send test email         | 50/hour    | admin |
+| `POST`   | `/system/announcements`                | Send announcement       | 50/hour    | admin |
+| `POST`   | `/system/maintenance`                  | Toggle maintenance mode | 20/hour    | admin |
+| `GET`    | `/system/features`                     | List feature flags      | 500/hour   | admin |
+| `PATCH`  | `/system/features/{flag}`              | Toggle feature          | 100/hour   | admin |
+| `POST`   | `/system/cache/clear`                  | Clear cache             | 20/hour    | admin |
+| `POST`   | `/system/cache/clear/{key}`            | Clear specific cache    | 50/hour    | admin |
+| `GET`    | `/system/jobs`                         | List background jobs    | 1000/hour  | admin |
+| `POST`   | `/system/jobs/{id}/retry`              | Retry failed job        | 100/hour   | admin |
+| `DELETE` | `/system/jobs/{id}`                    | Cancel job              | 100/hour   | admin |
+| `GET`    | `/system/logs`                         | View system logs        | 1000/hour  | admin |
+| `GET`    | `/system/logs/download`                | Download logs           | 50/hour    | admin |
 
 > **Note:** Feature flags are managed via `GET /system/features` (list) and `PATCH /system/features/{flag}` (toggle).
 > Feature flags are seeded via database migrations (`08-feature-flags.seed.ts`) and should not be created or deleted
@@ -55,42 +56,42 @@ Administrative dashboard, system configuration, audit logging, webhook managemen
 
 ### 16.5 Audit Endpoints
 
-| Method | Endpoint | Description | Rate Limit | Role |
-|--------|----------|-------------|------------|------|
-| `GET` | `/audit` | List audit logs | 2000/hour | admin |
-| `GET` | `/audit/{id}` | Get audit entry | 2000/hour | admin |
-| `GET` | `/audit/user/{userId}` | User audit trail | 1000/hour | admin |
-| `GET` | `/audit/resource/{type}/{id}` | Resource audit trail | 1000/hour | admin |
-| `POST` | `/audit/export` | Export audit logs | 20/hour | admin |
-| `GET` | `/audit/stats` | Audit statistics | 1000/hour | admin |
+| Method | Endpoint                      | Description          | Rate Limit | Role  |
+| ------ | ----------------------------- | -------------------- | ---------- | ----- |
+| `GET`  | `/audit`                      | List audit logs      | 2000/hour  | admin |
+| `GET`  | `/audit/{id}`                 | Get audit entry      | 2000/hour  | admin |
+| `GET`  | `/audit/user/{userId}`        | User audit trail     | 1000/hour  | admin |
+| `GET`  | `/audit/resource/{type}/{id}` | Resource audit trail | 1000/hour  | admin |
+| `POST` | `/audit/export`               | Export audit logs    | 20/hour    | admin |
+| `GET`  | `/audit/stats`                | Audit statistics     | 1000/hour  | admin |
 
 ### 16.6 User Impersonation Endpoints (Debug)
 
-| Method | Endpoint | Description | Rate Limit | Role |
-|--------|----------|-------------|------------|------|
-| `POST` | `/users/{userId}/impersonate` | Start impersonation | 20/hour | admin |
-| `POST` | `/impersonate/end` | End impersonation | 100/hour | admin |
-| `GET` | `/impersonate/sessions` | List impersonation sessions | 100/hour | admin |
+| Method | Endpoint                      | Description                 | Rate Limit | Role  |
+| ------ | ----------------------------- | --------------------------- | ---------- | ----- |
+| `POST` | `/users/{userId}/impersonate` | Start impersonation         | 20/hour    | admin |
+| `POST` | `/impersonate/end`            | End impersonation           | 100/hour   | admin |
+| `GET`  | `/impersonate/sessions`       | List impersonation sessions | 100/hour   | admin |
 
 ### 16.7 Backup Management Endpoints
 
-| Method | Endpoint | Description | Rate Limit | Role |
-|--------|----------|-------------|------------|------|
-| `GET` | `/backups` | List backups | 100/hour | admin |
-| `POST` | `/backups` | Trigger backup | 5/hour | admin |
-| `GET` | `/backups/{id}` | Get backup details | 100/hour | admin |
-| `GET` | `/backups/{id}/download` | Download backup | 10/hour | admin |
-| `POST` | `/backups/{id}/restore` | Restore backup | 2/hour | admin |
-| `DELETE` | `/backups/{id}` | Delete backup | 20/hour | admin |
-| `GET` | `/backups/schedule` | Get backup schedule | 100/hour | admin |
-| `PATCH` | `/backups/schedule` | Update schedule | 20/hour | admin |
+| Method   | Endpoint                 | Description         | Rate Limit | Role  |
+| -------- | ------------------------ | ------------------- | ---------- | ----- |
+| `GET`    | `/backups`               | List backups        | 100/hour   | admin |
+| `POST`   | `/backups`               | Trigger backup      | 5/hour     | admin |
+| `GET`    | `/backups/{id}`          | Get backup details  | 100/hour   | admin |
+| `GET`    | `/backups/{id}/download` | Download backup     | 10/hour    | admin |
+| `POST`   | `/backups/{id}/restore`  | Restore backup      | 2/hour     | admin |
+| `DELETE` | `/backups/{id}`          | Delete backup       | 20/hour    | admin |
+| `GET`    | `/backups/schedule`      | Get backup schedule | 100/hour   | admin |
+| `PATCH`  | `/backups/schedule`      | Update schedule     | 20/hour    | admin |
 
 ### 16.8 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### GET /dashboard/overview
+
 ```json
 // Request
 GET /api/v1/admin/dashboard/overview?period=30d
@@ -252,6 +253,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /users/{userId}/impersonate
+
 ```json
 // Request
 POST /api/v1/admin/users/usrAbc123/impersonate
@@ -332,6 +334,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /audit
+
 ```json
 // Request
 GET /api/v1/admin/audit?page=1&limit=50&userId=usrAbc123&action=login&from=2024-02-01&to=2024-02-18
@@ -426,19 +429,19 @@ X-Request-ID: reqAbc123
 
 ### 16.9 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `ADMIN_001` | 403 | Admin access required | No |
-| `ADMIN_002` | 403 | Admin access required (Removed SuperAdmin check) | No |
-| `ADMIN_003` | 422 | Invalid configuration value | No |
-| `ADMIN_004` | 404 | Audit log not found | No |
-| `ADMIN_008` | 403 | Cannot impersonate admin users | No |
-| `ADMIN_009` | 429 | Admin rate limit exceeded | Yes (wait) |
-| `ADMIN_010` | 422 | Invalid announcement format | No |
-| `ADMIN_011` | 500 | Backup creation failed | Yes |
-| `ADMIN_012` | 500 | Backup restore failed | No |
-| `ADMIN_013` | 404 | Email template not found | No |
-| `ADMIN_014` | 404 | Feature flag not found | No |
-| `ADMIN_015` | 400 | Maintenance mode already active | No |
+| Code        | HTTP Status | Description                                      | Retryable  |
+| ----------- | ----------- | ------------------------------------------------ | ---------- |
+| `ADMIN_001` | 403         | Admin access required                            | No         |
+| `ADMIN_002` | 403         | Admin access required (Removed SuperAdmin check) | No         |
+| `ADMIN_003` | 422         | Invalid configuration value                      | No         |
+| `ADMIN_004` | 404         | Audit log not found                              | No         |
+| `ADMIN_008` | 403         | Cannot impersonate admin users                   | No         |
+| `ADMIN_009` | 429         | Admin rate limit exceeded                        | Yes (wait) |
+| `ADMIN_010` | 422         | Invalid announcement format                      | No         |
+| `ADMIN_011` | 500         | Backup creation failed                           | Yes        |
+| `ADMIN_012` | 500         | Backup restore failed                            | No         |
+| `ADMIN_013` | 404         | Email template not found                         | No         |
+| `ADMIN_014` | 404         | Feature flag not found                           | No         |
+| `ADMIN_015` | 400         | Maintenance mode already active                  | No         |
 
 ---

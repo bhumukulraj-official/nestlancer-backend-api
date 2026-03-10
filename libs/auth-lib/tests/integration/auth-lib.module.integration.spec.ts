@@ -16,10 +16,7 @@ describe('AuthLibModule (Integration)', () => {
     process.env.JWT_REFRESH_SECRET = 'secret1234567890';
 
     module = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
-        AuthLibModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }), AuthLibModule],
     }).compile();
   });
 

@@ -47,14 +47,16 @@ export class OutboxRepository {
   /**
    * Find pending outbox events that haven't been published yet.
    */
-  async findPending(limit: number): Promise<Array<{
-    id: string;
-    type: string;
-    aggregateId: string;
-    aggregateType: string;
-    payload: unknown;
-    retries: number;
-  }>> {
+  async findPending(limit: number): Promise<
+    Array<{
+      id: string;
+      type: string;
+      aggregateId: string;
+      aggregateType: string;
+      payload: unknown;
+      retries: number;
+    }>
+  > {
     if (!this.prisma) return [];
 
     return this.prisma.outboxEvent.findMany({

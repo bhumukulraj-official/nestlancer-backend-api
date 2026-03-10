@@ -7,68 +7,68 @@ import { Response } from 'express';
 import { JwtAuthGuard } from '@nestlancer/auth-lib';
 
 describe('RequestsController', () => {
-    let controller: RequestsController;
-    let requestsService: RequestsService;
+  let controller: RequestsController;
+  let requestsService: RequestsService;
 
-    const mockResponse = () => {
-        const res: Partial<Response> = {};
-        res.status = jest.fn().mockReturnValue(res);
-        res.json = jest.fn().mockReturnValue(res);
-        return res as Response;
-    };
+  const mockResponse = () => {
+    const res: Partial<Response> = {};
+    res.status = jest.fn().mockReturnValue(res);
+    res.json = jest.fn().mockReturnValue(res);
+    return res as Response;
+  };
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [RequestsController],
-            providers: [
-                {
-                    provide: RequestsService,
-                    useValue: {
-                        createRequest: jest.fn(),
-                        getMyRequests: jest.fn(),
-                        getRequestDetails: jest.fn(),
-                        updateRequest: jest.fn(),
-                        submitRequest: jest.fn(),
-                        deleteRequest: jest.fn(),
-                    },
-                },
-                { provide: RequestAttachmentsService, useValue: {} },
-                { provide: RequestStatsService, useValue: {} },
-            ],
-        })
-            .overrideGuard(JwtAuthGuard)
-            .useValue({ canActivate: () => true })
-            .compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [RequestsController],
+      providers: [
+        {
+          provide: RequestsService,
+          useValue: {
+            createRequest: jest.fn(),
+            getMyRequests: jest.fn(),
+            getRequestDetails: jest.fn(),
+            updateRequest: jest.fn(),
+            submitRequest: jest.fn(),
+            deleteRequest: jest.fn(),
+          },
+        },
+        { provide: RequestAttachmentsService, useValue: {} },
+        { provide: RequestStatsService, useValue: {} },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-        controller = module.get<RequestsController>(RequestsController);
-        requestsService = module.get<RequestsService>(RequestsService);
+    controller = module.get<RequestsController>(RequestsController);
+    requestsService = module.get<RequestsService>(RequestsService);
+  });
+
+  describe('createRequest', () => {
+    it('should call service and return created response', async () => {
+      const mockResult = { id: 'req1', status: 'draft' };
+      jest.spyOn(requestsService, 'createRequest').mockResolvedValue(mockResult as any);
+
+      const res = mockResponse();
+      const dto: any = { title: 'Test', timeline: {}, budget: {} };
+
+      const result = await controller.createRequest('user1', dto, res);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(result).toEqual(mockResult);
+      expect(requestsService.createRequest).toHaveBeenCalledWith('user1', dto);
     });
+  });
 
-    describe('createRequest', () => {
-        it('should call service and return created response', async () => {
-            const mockResult = { id: 'req1', status: 'draft' };
-            jest.spyOn(requestsService, 'createRequest').mockResolvedValue(mockResult as any);
+  describe('submitRequest', () => {
+    it('should call service submit', async () => {
+      const mockResult = { id: 'req1', status: 'submitted' };
+      jest.spyOn(requestsService, 'submitRequest').mockResolvedValue(mockResult as any);
 
-            const res = mockResponse();
-            const dto: any = { title: 'Test', timeline: {}, budget: {} };
+      const result = await controller.submitRequest('user1', 'req1');
 
-            const result = await controller.createRequest('user1', dto, res);
-
-            expect(res.status).toHaveBeenCalledWith(201);
-            expect(result).toEqual(mockResult);
-            expect(requestsService.createRequest).toHaveBeenCalledWith('user1', dto);
-        });
+      expect(result).toEqual(mockResult);
+      expect(requestsService.submitRequest).toHaveBeenCalledWith('user1', 'req1');
     });
-
-    describe('submitRequest', () => {
-        it('should call service submit', async () => {
-            const mockResult = { id: 'req1', status: 'submitted' };
-            jest.spyOn(requestsService, 'submitRequest').mockResolvedValue(mockResult as any);
-
-            const result = await controller.submitRequest('user1', 'req1');
-
-            expect(result).toEqual(mockResult);
-            expect(requestsService.submitRequest).toHaveBeenCalledWith('user1', 'req1');
-        });
-    });
+  });
 });

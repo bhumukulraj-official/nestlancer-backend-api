@@ -13,16 +13,17 @@ export class AlertsService {
     private readonly slackChannel: SlackChannel,
     private readonly pagerdutyChannel: PagerdutyChannel,
     private readonly emailChannel: EmailAlertChannel,
-  ) { }
+  ) {}
 
   async sendAlert(alert: AlertPayload): Promise<void> {
     this.logger.warn(`ALERT [${alert.severity}]: ${alert.title} - ${alert.message}`);
 
-    // Find rules that match the alert (e.g., by title/source if needed, 
+    // Find rules that match the alert (e.g., by title/source if needed,
     // but for now let's use a simple mapping based on severity or specific names)
-    const matchingRules = ALERT_RULES.filter((rule) =>
-      alert.title.toLowerCase().includes(rule.name.toLowerCase().replace(/_/g, ' ')) ||
-      alert.severity === rule.severity
+    const matchingRules = ALERT_RULES.filter(
+      (rule) =>
+        alert.title.toLowerCase().includes(rule.name.toLowerCase().replace(/_/g, ' ')) ||
+        alert.severity === rule.severity,
     );
 
     const channelsToNotify = new Set<string>();

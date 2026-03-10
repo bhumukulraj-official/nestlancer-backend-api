@@ -1,5 +1,10 @@
 import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common';
-import { UploadResult, SignedUrlOptions, StorageProvider, StorageModuleOptions } from './interfaces/storage.interface';
+import {
+  UploadResult,
+  SignedUrlOptions,
+  StorageProvider,
+  StorageModuleOptions,
+} from './interfaces/storage.interface';
 import { S3Provider } from './providers/s3.provider';
 import { LocalProvider } from './providers/local.provider';
 import { CloudflareR2Provider } from './providers/cloudflare-r2.provider';
@@ -13,7 +18,7 @@ export class StorageService implements OnModuleInit {
     @Inject('STORAGE_OPTIONS') private readonly options: StorageModuleOptions,
     @Inject('S3_CONFIG') private readonly s3Config: any,
     @Inject('LOCAL_STORAGE_CONFIG') private readonly localConfig: any,
-  ) { }
+  ) {}
 
   onModuleInit(): void {
     switch (this.options.provider) {
@@ -33,7 +38,12 @@ export class StorageService implements OnModuleInit {
     this.logger.log(`StorageService initialized with provider: ${this.options.provider}`);
   }
 
-  async upload(bucket: string, key: string, body: Buffer, contentType: string): Promise<UploadResult> {
+  async upload(
+    bucket: string,
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<UploadResult> {
     return this.provider.upload(bucket, key, body, contentType);
   }
 

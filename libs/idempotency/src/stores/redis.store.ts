@@ -35,12 +35,7 @@ export class RedisIdempotencyStore {
     response: { responseCode: number; responseBody: unknown },
     ttlSeconds: number = 86400,
   ): Promise<void> {
-    await this.redis.set(
-      this.keyPrefix(key),
-      JSON.stringify(response),
-      'EX',
-      ttlSeconds,
-    );
+    await this.redis.set(this.keyPrefix(key), JSON.stringify(response), 'EX', ttlSeconds);
   }
 
   async lock(key: string, ttlSeconds: number = 30): Promise<boolean> {

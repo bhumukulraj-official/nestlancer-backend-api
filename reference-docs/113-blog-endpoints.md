@@ -6,113 +6,114 @@
 **Admin Path**: `/api/v1/admin/blog`
 
 ### 14.1 Overview
+
 Full-featured blog system with posts, categories, tags, comments, and SEO optimization. Supports markdown content, scheduled publishing, and comment moderation.
 
 > **Architecture Note (Media Visibility):** Blog posts often utilize media uploaded to the system. Similar to Portfolios, when a blog post transitions to `published` status, the backend triggers the `Media Worker` to securely synchronize associated private media files into the public CDN bucket (`nestlancer-public`). This returns highly optimized, cacheable CDN URLs.
 
 ### 14.2 Post Status
 
-| Status | Description | Visible |
-|--------|-------------|---------|
-| `draft` | Work in progress | Admin only |
+| Status      | Description               | Visible    |
+| ----------- | ------------------------- | ---------- |
+| `draft`     | Work in progress          | Admin only |
 | `scheduled` | Scheduled for publication | Admin only |
-| `published` | Live and visible | Public |
-| `archived` | Hidden from public | Admin only |
+| `published` | Live and visible          | Public     |
+| `archived`  | Hidden from public        | Admin only |
 
 ### 14.3 Comment Status
 
-| Status | Description |
-|--------|-------------|
-| `pending` | Awaiting moderation |
-| `approved` | Visible to public |
+| Status     | Description                   |
+| ---------- | ----------------------------- |
+| `pending`  | Awaiting moderation           |
+| `approved` | Visible to public             |
 | `rejected` | Not visible, kept for records |
-| `spam` | Flagged as spam |
+| `spam`     | Flagged as spam               |
 
 ### 14.4 Public Endpoints (No Auth)
 
-| Method | Endpoint | Description | Rate Limit | Cache |
-|--------|----------|-------------|------------|-------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/posts` | List published posts | 2000/hour | 15 min |
-| `GET` | `/posts/{slug}` | Get post details | 2000/hour | 15 min |
-| `GET` | `/posts/{slug}/related` | Get related posts | 1000/hour | 1 hour |
-| `GET` | `/categories` | List categories | 2000/hour | 24 hours |
-| `GET` | `/categories/{slug}` | Get category with posts | 1000/hour | 1 hour |
-| `GET` | `/tags` | List tags with counts | 2000/hour | 1 hour |
-| `GET` | `/tags/{slug}` | Get tag with posts | 1000/hour | 1 hour |
-| `GET` | `/authors` | List authors | 1000/hour | 1 hour |
-| `GET` | `/authors/{id}` | Get author with posts | 1000/hour | 1 hour |
-| `GET` | `/search` | Search posts | 500/hour | 15 min |
-| `GET` | `/feed/rss` | RSS feed | 500/hour | 1 hour |
-| `GET` | `/feed/atom` | Atom feed | 500/hour | 1 hour |
-| `POST` | `/posts/{slug}/view` | Track view | 5000/hour/IP | N/A |
+| Method | Endpoint                | Description                        | Rate Limit   | Cache    |
+| ------ | ----------------------- | ---------------------------------- | ------------ | -------- |
+| `GET`  | `/health`               | Health check (Simplified response) | 1000/hour    | Yes      |
+| `GET`  | `/posts`                | List published posts               | 2000/hour    | 15 min   |
+| `GET`  | `/posts/{slug}`         | Get post details                   | 2000/hour    | 15 min   |
+| `GET`  | `/posts/{slug}/related` | Get related posts                  | 1000/hour    | 1 hour   |
+| `GET`  | `/categories`           | List categories                    | 2000/hour    | 24 hours |
+| `GET`  | `/categories/{slug}`    | Get category with posts            | 1000/hour    | 1 hour   |
+| `GET`  | `/tags`                 | List tags with counts              | 2000/hour    | 1 hour   |
+| `GET`  | `/tags/{slug}`          | Get tag with posts                 | 1000/hour    | 1 hour   |
+| `GET`  | `/authors`              | List authors                       | 1000/hour    | 1 hour   |
+| `GET`  | `/authors/{id}`         | Get author with posts              | 1000/hour    | 1 hour   |
+| `GET`  | `/search`               | Search posts                       | 500/hour     | 15 min   |
+| `GET`  | `/feed/rss`             | RSS feed                           | 500/hour     | 1 hour   |
+| `GET`  | `/feed/atom`            | Atom feed                          | 500/hour     | 1 hour   |
+| `POST` | `/posts/{slug}/view`    | Track view                         | 5000/hour/IP | N/A      |
 
 ### 14.5 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `POST` | `/posts/{slug}/like` | Like/unlike post | 500/hour | Yes |
-| `GET` | `/posts/{slug}/comments` | Get comments | 1000/hour | Yes |
-| `POST` | `/posts/{slug}/comments` | Add comment | 100/hour | No |
-| `GET` | `/comments/{commentId}` | Get comment details | 500/hour | Yes |
-| `GET` | `/comments/{commentId}/replies` | Get replies | 500/hour | Yes |
-| `POST` | `/comments/{commentId}/reply` | Reply to comment | 100/hour | No |
-| `PATCH` | `/comments/{commentId}` | Edit comment (15 min) | 100/hour | No |
-| `DELETE` | `/comments/{commentId}` | Delete own comment | 100/hour | Yes |
-| `POST` | `/comments/{commentId}/like` | Like comment | 500/hour | Yes |
-| `POST` | `/comments/{commentId}/report` | Report comment | 50/hour | No |
-| `GET` | `/bookmarks` | Get bookmarked posts | 500/hour | Yes |
-| `POST` | `/posts/{slug}/bookmark` | Bookmark post | 200/hour | Yes |
-| `DELETE` | `/posts/{slug}/bookmark` | Remove bookmark | 200/hour | Yes |
+| Method   | Endpoint                        | Description           | Rate Limit | Idempotent |
+| -------- | ------------------------------- | --------------------- | ---------- | ---------- |
+| `POST`   | `/posts/{slug}/like`            | Like/unlike post      | 500/hour   | Yes        |
+| `GET`    | `/posts/{slug}/comments`        | Get comments          | 1000/hour  | Yes        |
+| `POST`   | `/posts/{slug}/comments`        | Add comment           | 100/hour   | No         |
+| `GET`    | `/comments/{commentId}`         | Get comment details   | 500/hour   | Yes        |
+| `GET`    | `/comments/{commentId}/replies` | Get replies           | 500/hour   | Yes        |
+| `POST`   | `/comments/{commentId}/reply`   | Reply to comment      | 100/hour   | No         |
+| `PATCH`  | `/comments/{commentId}`         | Edit comment (15 min) | 100/hour   | No         |
+| `DELETE` | `/comments/{commentId}`         | Delete own comment    | 100/hour   | Yes        |
+| `POST`   | `/comments/{commentId}/like`    | Like comment          | 500/hour   | Yes        |
+| `POST`   | `/comments/{commentId}/report`  | Report comment        | 50/hour    | No         |
+| `GET`    | `/bookmarks`                    | Get bookmarked posts  | 500/hour   | Yes        |
+| `POST`   | `/posts/{slug}/bookmark`        | Bookmark post         | 200/hour   | Yes        |
+| `DELETE` | `/posts/{slug}/bookmark`        | Remove bookmark       | 200/hour   | Yes        |
 
 ### 14.6 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `POST` | `/posts` | Create post | 200/hour | No |
-| `GET` | `/posts` | List all posts (incl. drafts) | 1000/hour | Yes |
-| `GET` | `/posts/{id}` | Get post (admin view) | 1000/hour | Yes |
-| `PATCH` | `/posts/{id}` | Update post | 200/hour | No |
-| `DELETE` | `/posts/{id}` | Delete post | 100/hour | Yes (soft) |
-| `POST` | `/posts/{id}/publish` | Publish post | 200/hour | Yes |
-| `POST` | `/posts/{id}/schedule` | Schedule publication | 200/hour | No |
-| `POST` | `/posts/{id}/unpublish` | Unpublish post | 200/hour | Yes |
-| `POST` | `/posts/{id}/archive` | Archive post | 200/hour | Yes |
-| `POST` | `/posts/{id}/duplicate` | Duplicate post | 100/hour | No |
-| `GET` | `/posts/{id}/revisions` | Get revision history | 500/hour | Yes |
-| `POST` | `/posts/{id}/revisions/{revisionId}/restore` | Restore revision | 50/hour | No |
-| `POST` | `/posts/{id}/feature` | Mark post as featured | 200/hour | Yes |
-| `POST` | `/posts/{id}/unfeature` | Remove featured flag | 200/hour | Yes |
-| `POST` | `/posts/{id}/pin` | Pin post to top of feed | 200/hour | Yes |
-| `POST` | `/posts/{id}/unpin` | Unpin post | 200/hour | Yes |
-| `POST` | `/posts/import` | Bulk import posts from external source | 50/hour | No |
-| `POST` | `/posts/export` | Export blog posts | 50/hour | No |
-| `PATCH` | `/posts/settings` | Update blog-wide settings | 100/hour | No |
-| `GET` | `/comments` | List all comments | 1000/hour | Yes |
-| `GET` | `/comments/pending` | List pending comments | 500/hour | Yes |
-| `GET` | `/comments/reported` | List reported comments | 500/hour | Yes |
-| `POST` | `/comments/{commentId}/approve` | Approve comment | 500/hour | Yes |
-| `POST` | `/comments/{commentId}/reject` | Reject comment | 500/hour | Yes |
-| `POST` | `/comments/{commentId}/spam` | Mark as spam | 500/hour | Yes |
-| `DELETE` | `/comments/{commentId}` | Delete any comment | 500/hour | Yes |
-| `POST` | `/comments/{commentId}/pin` | Pin comment | 200/hour | Yes |
-| `POST` | `/comments/{commentId}/unpin` | Unpin comment | 200/hour | Yes |
-| `POST` | `/categories` | Create category | 100/hour | No |
-| `PATCH` | `/categories/{id}` | Update category | 100/hour | No |
-| `DELETE` | `/categories/{id}` | Delete category | 50/hour | Yes |
-| `POST` | `/tags` | Create tag | 100/hour | No |
-| `PATCH` | `/tags/{id}` | Update tag | 100/hour | No |
-| `DELETE` | `/tags/{id}` | Delete tag | 100/hour | Yes |
-| `POST` | `/tags/merge` | Merge tags | 50/hour | No |
-| `GET` | `/analytics` | Blog analytics | 500/hour | Yes |
-| `GET` | `/analytics/posts/{id}` | Post analytics | 500/hour | Yes |
+| Method   | Endpoint                                     | Description                            | Rate Limit | Idempotent |     | Role |
+| -------- | -------------------------------------------- | -------------------------------------- | ---------- | ---------- | --- | ---- |
+| `POST`   | `/posts`                                     | Create post                            | 200/hour   | No         |
+| `GET`    | `/posts`                                     | List all posts (incl. drafts)          | 1000/hour  | Yes        |
+| `GET`    | `/posts/{id}`                                | Get post (admin view)                  | 1000/hour  | Yes        |
+| `PATCH`  | `/posts/{id}`                                | Update post                            | 200/hour   | No         |
+| `DELETE` | `/posts/{id}`                                | Delete post                            | 100/hour   | Yes (soft) |
+| `POST`   | `/posts/{id}/publish`                        | Publish post                           | 200/hour   | Yes        |
+| `POST`   | `/posts/{id}/schedule`                       | Schedule publication                   | 200/hour   | No         |
+| `POST`   | `/posts/{id}/unpublish`                      | Unpublish post                         | 200/hour   | Yes        |
+| `POST`   | `/posts/{id}/archive`                        | Archive post                           | 200/hour   | Yes        |
+| `POST`   | `/posts/{id}/duplicate`                      | Duplicate post                         | 100/hour   | No         |
+| `GET`    | `/posts/{id}/revisions`                      | Get revision history                   | 500/hour   | Yes        |
+| `POST`   | `/posts/{id}/revisions/{revisionId}/restore` | Restore revision                       | 50/hour    | No         |
+| `POST`   | `/posts/{id}/feature`                        | Mark post as featured                  | 200/hour   | Yes        |
+| `POST`   | `/posts/{id}/unfeature`                      | Remove featured flag                   | 200/hour   | Yes        |
+| `POST`   | `/posts/{id}/pin`                            | Pin post to top of feed                | 200/hour   | Yes        |
+| `POST`   | `/posts/{id}/unpin`                          | Unpin post                             | 200/hour   | Yes        |
+| `POST`   | `/posts/import`                              | Bulk import posts from external source | 50/hour    | No         |
+| `POST`   | `/posts/export`                              | Export blog posts                      | 50/hour    | No         |
+| `PATCH`  | `/posts/settings`                            | Update blog-wide settings              | 100/hour   | No         |
+| `GET`    | `/comments`                                  | List all comments                      | 1000/hour  | Yes        |
+| `GET`    | `/comments/pending`                          | List pending comments                  | 500/hour   | Yes        |
+| `GET`    | `/comments/reported`                         | List reported comments                 | 500/hour   | Yes        |
+| `POST`   | `/comments/{commentId}/approve`              | Approve comment                        | 500/hour   | Yes        |
+| `POST`   | `/comments/{commentId}/reject`               | Reject comment                         | 500/hour   | Yes        |
+| `POST`   | `/comments/{commentId}/spam`                 | Mark as spam                           | 500/hour   | Yes        |
+| `DELETE` | `/comments/{commentId}`                      | Delete any comment                     | 500/hour   | Yes        |
+| `POST`   | `/comments/{commentId}/pin`                  | Pin comment                            | 200/hour   | Yes        |
+| `POST`   | `/comments/{commentId}/unpin`                | Unpin comment                          | 200/hour   | Yes        |
+| `POST`   | `/categories`                                | Create category                        | 100/hour   | No         |
+| `PATCH`  | `/categories/{id}`                           | Update category                        | 100/hour   | No         |
+| `DELETE` | `/categories/{id}`                           | Delete category                        | 50/hour    | Yes        |
+| `POST`   | `/tags`                                      | Create tag                             | 100/hour   | No         |
+| `PATCH`  | `/tags/{id}`                                 | Update tag                             | 100/hour   | No         |
+| `DELETE` | `/tags/{id}`                                 | Delete tag                             | 100/hour   | Yes        |
+| `POST`   | `/tags/merge`                                | Merge tags                             | 50/hour    | No         |
+| `GET`    | `/analytics`                                 | Blog analytics                         | 500/hour   | Yes        |
+| `GET`    | `/analytics/posts/{id}`                      | Post analytics                         | 500/hour   | Yes        |
 
 ### 14.7 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### GET /posts (Public)
+
 ```json
 // Request
 GET /api/v1/blog/posts?page=1&limit=10&category=tutorials
@@ -214,7 +215,8 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /posts/{slug} (Public)
-```json
+
+````json
 // Request
 GET /api/v1/blog/posts/building-scalable-apis-nodejs
 Accept: application/json
@@ -349,9 +351,10 @@ X-Request-ID: reqAbc123
     "cached": true
   }
 }
-```
+````
 
 #### POST /posts (Admin - Create Post)
+
 ```json
 // Request
 POST /api/v1/admin/blog/posts
@@ -411,6 +414,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /posts/{slug}/comments (User)
+
 ```json
 // Request
 POST /api/v1/blog/posts/building-scalable-apis-nodejs/comments
@@ -458,6 +462,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /posts/{slug}/comments
+
 ```json
 // Request
 GET /api/v1/blog/posts/building-scalable-apis-nodejs/comments?page=1&limit=20&sortBy=best
@@ -543,21 +548,21 @@ X-Request-ID: reqAbc123
 
 ### 14.8 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `BLOG_001` | 404 | Post not found | No |
-| `BLOG_002` | 409 | Slug already exists | No |
-| `BLOG_003` | 404 | Comment not found | No |
-| `BLOG_004` | 400 | Edit time limit exceeded (15 min) | No |
-| `BLOG_005` | 400 | Cannot comment on archived post | No |
-| `BLOG_006` | 404 | Category not found | No |
-| `BLOG_007` | 400 | Cannot delete category with posts | No |
-| `BLOG_008` | 422 | Invalid content format | No |
-| `BLOG_009` | 202 | Comment pending moderation | No |
-| `BLOG_010` | 409 | Already liked | No |
-| `BLOG_011` | 400 | Cannot publish without featured image | No |
-| `BLOG_012` | 400 | Comments disabled for this post | No |
-| `BLOG_013` | 404 | Tag not found | No |
-| `BLOG_014` | 400 | Invalid scheduled date | No |
+| Code       | HTTP Status | Description                           | Retryable |
+| ---------- | ----------- | ------------------------------------- | --------- |
+| `BLOG_001` | 404         | Post not found                        | No        |
+| `BLOG_002` | 409         | Slug already exists                   | No        |
+| `BLOG_003` | 404         | Comment not found                     | No        |
+| `BLOG_004` | 400         | Edit time limit exceeded (15 min)     | No        |
+| `BLOG_005` | 400         | Cannot comment on archived post       | No        |
+| `BLOG_006` | 404         | Category not found                    | No        |
+| `BLOG_007` | 400         | Cannot delete category with posts     | No        |
+| `BLOG_008` | 422         | Invalid content format                | No        |
+| `BLOG_009` | 202         | Comment pending moderation            | No        |
+| `BLOG_010` | 409         | Already liked                         | No        |
+| `BLOG_011` | 400         | Cannot publish without featured image | No        |
+| `BLOG_012` | 400         | Comments disabled for this post       | No        |
+| `BLOG_013` | 404         | Tag not found                         | No        |
+| `BLOG_014` | 400         | Invalid scheduled date                | No        |
 
 ---

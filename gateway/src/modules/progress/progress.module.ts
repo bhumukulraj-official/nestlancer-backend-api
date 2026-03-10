@@ -4,9 +4,9 @@ import { ProgressService } from './progress.service';
 import { ProxyModule } from '../../proxy/proxy.module';
 
 @Module({
-    imports: [ProxyModule],
-    controllers: [ProgressController],
-    providers: [ProgressService],
-    exports: [ProgressService],
+  imports: [ProxyModule],
+  controllers: [ProgressController],
+  providers: [ProgressService],
+  exports: [ProgressService],
 })
-export class ProgressModule { }
+export class ProgressModule {}

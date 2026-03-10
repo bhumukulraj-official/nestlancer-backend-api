@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 
 @Injectable()
 export class ThrottleGuard implements CanActivate {
@@ -19,7 +25,14 @@ export class ThrottleGuard implements CanActivate {
 
     if (record.count >= this.max) {
       const retryAfter = Math.ceil((record.resetAt - now) / 1000);
-      throw new HttpException({ code: 'RATE_LIMIT_EXCEEDED', message: `Rate limit exceeded. Retry after ${retryAfter}s`, retryAfter }, HttpStatus.TOO_MANY_REQUESTS);
+      throw new HttpException(
+        {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: `Rate limit exceeded. Retry after ${retryAfter}s`,
+          retryAfter,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     record.count++;

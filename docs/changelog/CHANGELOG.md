@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial project infrastructure setup
 - GitHub CI/CD workflows
 - Documentation (architecture, ADRs, guides, runbooks)

@@ -14,83 +14,83 @@ import { ServiceRegistryHealthService } from '../../../src/services/service-regi
 import { Response } from 'express';
 
 describe('HealthPublicController', () => {
-    let controller: HealthPublicController;
-    let healthService: HealthService;
+  let controller: HealthPublicController;
+  let healthService: HealthService;
 
-    const mockResponse = () => {
-        const res: Partial<Response> = {};
-        res.status = jest.fn().mockReturnValue(res);
-        res.json = jest.fn().mockReturnValue(res);
-        return res as Response;
-    };
+  const mockResponse = () => {
+    const res: Partial<Response> = {};
+    res.status = jest.fn().mockReturnValue(res);
+    res.json = jest.fn().mockReturnValue(res);
+    return res as Response;
+  };
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [HealthPublicController],
-            providers: [
-                {
-                    provide: HealthService,
-                    useValue: {
-                        getAggregatedHealth: jest.fn(),
-                        getReadiness: jest.fn(),
-                        getLiveness: jest.fn(),
-                    },
-                },
-                { provide: DatabaseHealthService, useValue: { check: jest.fn() } },
-                { provide: CacheHealthService, useValue: { check: jest.fn() } },
-                { provide: QueueHealthService, useValue: { check: jest.fn() } },
-                { provide: StorageHealthService, useValue: { check: jest.fn() } },
-                { provide: ExternalServicesHealthService, useValue: { check: jest.fn() } },
-                { provide: WorkersHealthService, useValue: { check: jest.fn() } },
-                { provide: WebsocketHealthService, useValue: { check: jest.fn() } },
-                { provide: SystemMetricsService, useValue: { getMetrics: jest.fn() } },
-                { provide: FeatureFlagsHealthService, useValue: { check: jest.fn() } },
-                { provide: ServiceRegistryHealthService, useValue: { check: jest.fn() } },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [HealthPublicController],
+      providers: [
+        {
+          provide: HealthService,
+          useValue: {
+            getAggregatedHealth: jest.fn(),
+            getReadiness: jest.fn(),
+            getLiveness: jest.fn(),
+          },
+        },
+        { provide: DatabaseHealthService, useValue: { check: jest.fn() } },
+        { provide: CacheHealthService, useValue: { check: jest.fn() } },
+        { provide: QueueHealthService, useValue: { check: jest.fn() } },
+        { provide: StorageHealthService, useValue: { check: jest.fn() } },
+        { provide: ExternalServicesHealthService, useValue: { check: jest.fn() } },
+        { provide: WorkersHealthService, useValue: { check: jest.fn() } },
+        { provide: WebsocketHealthService, useValue: { check: jest.fn() } },
+        { provide: SystemMetricsService, useValue: { getMetrics: jest.fn() } },
+        { provide: FeatureFlagsHealthService, useValue: { check: jest.fn() } },
+        { provide: ServiceRegistryHealthService, useValue: { check: jest.fn() } },
+      ],
+    }).compile();
 
-        controller = module.get<HealthPublicController>(HealthPublicController);
-        healthService = module.get<HealthService>(HealthService);
+    controller = module.get<HealthPublicController>(HealthPublicController);
+    healthService = module.get<HealthService>(HealthService);
+  });
+
+  describe('getAggregatedHealth', () => {
+    it('should return 200 OK when healthy', async () => {
+      const mockHealthResult: any = { status: 'healthy', timestamp: '2024-01-01' };
+      jest.spyOn(healthService, 'getAggregatedHealth').mockResolvedValue(mockHealthResult);
+
+      const res = mockResponse();
+      await controller.getAggregatedHealth(res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockHealthResult);
     });
 
-    describe('getAggregatedHealth', () => {
-        it('should return 200 OK when healthy', async () => {
-            const mockHealthResult: any = { status: 'healthy', timestamp: '2024-01-01' };
-            jest.spyOn(healthService, 'getAggregatedHealth').mockResolvedValue(mockHealthResult);
+    it('should return 503 SERVICE UNAVAILABLE when unhealthy', async () => {
+      const mockHealthResult: any = { status: 'unhealthy', timestamp: '2024-01-01' };
+      jest.spyOn(healthService, 'getAggregatedHealth').mockResolvedValue(mockHealthResult);
 
-            const res = mockResponse();
-            await controller.getAggregatedHealth(res);
+      const res = mockResponse();
+      await controller.getAggregatedHealth(res);
 
-            expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith(mockHealthResult);
-        });
-
-        it('should return 503 SERVICE UNAVAILABLE when unhealthy', async () => {
-            const mockHealthResult: any = { status: 'unhealthy', timestamp: '2024-01-01' };
-            jest.spyOn(healthService, 'getAggregatedHealth').mockResolvedValue(mockHealthResult);
-
-            const res = mockResponse();
-            await controller.getAggregatedHealth(res);
-
-            expect(res.status).toHaveBeenCalledWith(503);
-            expect(res.json).toHaveBeenCalledWith(mockHealthResult);
-        });
-
-        it('should return 206 PARTIAL CONTENT when degraded', async () => {
-            const mockHealthResult: any = { status: 'degraded', timestamp: '2024-01-01' };
-            jest.spyOn(healthService, 'getAggregatedHealth').mockResolvedValue(mockHealthResult);
-
-            const res = mockResponse();
-            await controller.getAggregatedHealth(res);
-
-            expect(res.status).toHaveBeenCalledWith(206);
-            expect(res.json).toHaveBeenCalledWith(mockHealthResult);
-        });
+      expect(res.status).toHaveBeenCalledWith(503);
+      expect(res.json).toHaveBeenCalledWith(mockHealthResult);
     });
 
-    describe('ping', () => {
-        it('should return empty 200', () => {
-            expect(controller.ping()).toBeUndefined();
-        });
+    it('should return 206 PARTIAL CONTENT when degraded', async () => {
+      const mockHealthResult: any = { status: 'degraded', timestamp: '2024-01-01' };
+      jest.spyOn(healthService, 'getAggregatedHealth').mockResolvedValue(mockHealthResult);
+
+      const res = mockResponse();
+      await controller.getAggregatedHealth(res);
+
+      expect(res.status).toHaveBeenCalledWith(206);
+      expect(res.json).toHaveBeenCalledWith(mockHealthResult);
     });
+  });
+
+  describe('ping', () => {
+    it('should return empty 200', () => {
+      expect(controller.ping()).toBeUndefined();
+    });
+  });
 });

@@ -5,25 +5,26 @@
 **Base Path**: `/api/v1/webhooks`
 
 ### 20.1 Overview
+
 Dedicated webhook ingestion service responsible for receiving, verifying, and enqueuing incoming webhooks from external providers (e.g., Razorpay, GitHub, Stripe). This service decouples third-party event ingestion from domain services to improve reliability and scaling.
 
 ### 20.2 Ingestion Endpoints (External Providers)
 
-| Method | Endpoint | Description | Auth Method | Rate Limit |
-|--------|----------|-------------|-------------|------------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `POST` | `/razorpay` | Razorpay webhook events | API Key + Signature | 5000/hour |
-| `POST` | `/github` | GitHub webhook events | Secret Signature | 5000/hour |
-| `POST` | `/stripe` | Stripe webhook events | Secret Signature | 5000/hour |
-| `POST` | `/cloudflare` | Cloudflare CDN webhook events | Signature Verification | 5000/hour |
-| `POST` | `/{provider}` | Generic webhook handler | Provider-specific | 5000/hour |
+| Method | Endpoint      | Description                        | Auth Method            | Rate Limit |
+| ------ | ------------- | ---------------------------------- | ---------------------- | ---------- |
+| `GET`  | `/health`     | Health check (Simplified response) | 1000/hour              | Yes        |
+| `POST` | `/razorpay`   | Razorpay webhook events            | API Key + Signature    | 5000/hour  |
+| `POST` | `/github`     | GitHub webhook events              | Secret Signature       | 5000/hour  |
+| `POST` | `/stripe`     | Stripe webhook events              | Secret Signature       | 5000/hour  |
+| `POST` | `/cloudflare` | Cloudflare CDN webhook events      | Signature Verification | 5000/hour  |
+| `POST` | `/{provider}` | Generic webhook handler            | Provider-specific      | 5000/hour  |
 
 ### 20.3 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### POST /razorpay
+
 ```json
 // Request (from Razorpay)
 POST /api/v1/webhooks/razorpay
@@ -98,6 +99,7 @@ X-Request-ID: reqWhkInvalid
 ```
 
 #### POST /github
+
 ```json
 // Request (from GitHub)
 POST /api/v1/webhooks/github
@@ -135,6 +137,7 @@ X-RateLimit-Reset: 1705326600
 ```
 
 #### POST /cloudflare
+
 ```json
 // Request (from Cloudflare)
 POST /api/v1/webhooks/cloudflare
@@ -172,6 +175,7 @@ Events handled: `cache.purge.completed`, `security.event`, `zone.update`
 Processing: Async via webhook-worker queue
 
 #### POST /{provider}
+
 ```json
 // Request (from generic provider)
 POST /api/v1/webhooks/custom-provider
@@ -206,12 +210,12 @@ Processing: Async via webhook-worker queue
 
 ### 20.4 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `WEBHOOK_001` | 401 | Invalid webhook signature | No |
-| `WEBHOOK_002` | 400 | Missing webhook signature | No |
-| `WEBHOOK_003` | 422 | Unprocessable webhook payload | No |
-| `WEBHOOK_004` | 429 | Rate limit exceeded | Yes (wait) |
-| `WEBHOOK_005` | 503 | Queue service unavailable | Yes |
+| Code          | HTTP Status | Description                   | Retryable  |
+| ------------- | ----------- | ----------------------------- | ---------- |
+| `WEBHOOK_001` | 401         | Invalid webhook signature     | No         |
+| `WEBHOOK_002` | 400         | Missing webhook signature     | No         |
+| `WEBHOOK_003` | 422         | Unprocessable webhook payload | No         |
+| `WEBHOOK_004` | 429         | Rate limit exceeded           | Yes (wait) |
+| `WEBHOOK_005` | 503         | Queue service unavailable     | Yes        |
 
 ---

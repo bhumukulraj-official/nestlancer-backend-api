@@ -7,40 +7,44 @@ import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestla
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
 describe('AuditModule (Integration)', () => {
-    let app: INestApplication;
+  let app: INestApplication;
 
-    beforeAll(async () => {
-        const moduleRef: TestingModule = await Test.createTestingModule({
-            imports: [AuditModule],
-        })
-            .overrideProvider(QueuePublisherService)
-            .useValue({ publish: jest.fn() })
-            .overrideProvider(QueueConsumerService)
-            .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
-            .overrideProvider(DlqService)
-            .useValue({})
-            .overrideProvider(PrismaWriteService)
-            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), auditLog: { createMany: jest.fn() } })
-            .overrideProvider(PrismaReadService)
-            .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), auditLog: { findMany: jest.fn() } })
-            .compile();
+  beforeAll(async () => {
+    const moduleRef: TestingModule = await Test.createTestingModule({
+      imports: [AuditModule],
+    })
+      .overrideProvider(QueuePublisherService)
+      .useValue({ publish: jest.fn() })
+      .overrideProvider(QueueConsumerService)
+      .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
+      .overrideProvider(DlqService)
+      .useValue({})
+      .overrideProvider(PrismaWriteService)
+      .useValue({
+        $connect: jest.fn(),
+        $disconnect: jest.fn(),
+        auditLog: { createMany: jest.fn() },
+      })
+      .overrideProvider(PrismaReadService)
+      .useValue({ $connect: jest.fn(), $disconnect: jest.fn(), auditLog: { findMany: jest.fn() } })
+      .compile();
 
-        app = moduleRef.createNestApplication();
-        await app.init();
-    });
+    app = moduleRef.createNestApplication();
+    await app.init();
+  });
 
-    afterAll(async () => {
-        if (app) {
-            await app.close();
-        }
-    });
+  afterAll(async () => {
+    if (app) {
+      await app.close();
+    }
+  });
 
-    it('should initialize the audit worker application context successfully', () => {
-        expect(app).toBeDefined();
-    });
+  it('should initialize the audit worker application context successfully', () => {
+    expect(app).toBeDefined();
+  });
 
-    it('should resolve AuditModule dependencies', () => {
-        const auditModule = app.get(AuditModule);
-        expect(auditModule).toBeDefined();
-    });
+  it('should resolve AuditModule dependencies', () => {
+    const auditModule = app.get(AuditModule);
+    expect(auditModule).toBeDefined();
+  });
 });

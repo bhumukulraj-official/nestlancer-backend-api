@@ -1,6 +1,10 @@
 /** Allowed MIME types for file uploads per 111-media-endpoints */
 export const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
 ] as const;
 
 export const ALLOWED_DOCUMENT_TYPES = [
@@ -9,7 +13,8 @@ export const ALLOWED_DOCUMENT_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/plain', 'text/csv',
+  'text/plain',
+  'text/csv',
 ] as const;
 
 export const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'] as const;

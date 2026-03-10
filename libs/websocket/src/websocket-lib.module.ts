@@ -4,7 +4,7 @@ import { WsThrottleGuard } from './guards/ws-throttle.guard';
 
 @Global()
 @Module({
-    providers: [WsAuthGuard, WsThrottleGuard],
-    exports: [WsAuthGuard, WsThrottleGuard],
+  providers: [WsAuthGuard, WsThrottleGuard],
+  exports: [WsAuthGuard, WsThrottleGuard],
 })
-export class WebSocketLibModule { }
+export class WebSocketLibModule {}

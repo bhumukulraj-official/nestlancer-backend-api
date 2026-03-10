@@ -32,7 +32,12 @@ export class S3Provider implements StorageProvider {
     this.logger.log(`S3Provider initialized (endpoint: ${config.endpoint || 'default'})`);
   }
 
-  async upload(bucket: string, key: string, body: Buffer, contentType: string): Promise<UploadResult> {
+  async upload(
+    bucket: string,
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<UploadResult> {
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
@@ -79,19 +84,22 @@ export class S3Provider implements StorageProvider {
   async getSignedUrl(options: SignedUrlOptions): Promise<string> {
     const expiresIn = options.expiresIn || 3600;
 
-    const command = options.operation === 'put'
-      ? new PutObjectCommand({
-        Bucket: options.bucket,
-        Key: options.key,
-        ContentType: options.contentType,
-      })
-      : new GetObjectCommand({
-        Bucket: options.bucket,
-        Key: options.key,
-      });
+    const command =
+      options.operation === 'put'
+        ? new PutObjectCommand({
+            Bucket: options.bucket,
+            Key: options.key,
+            ContentType: options.contentType,
+          })
+        : new GetObjectCommand({
+            Bucket: options.bucket,
+            Key: options.key,
+          });
 
     const url = await awsGetSignedUrl(this.client, command, { expiresIn });
-    this.logger.debug(`Generated signed URL for ${options.bucket}/${options.key} (expires: ${expiresIn}s)`);
+    this.logger.debug(
+      `Generated signed URL for ${options.bucket}/${options.key} (expires: ${expiresIn}s)`,
+    );
     return url;
   }
 

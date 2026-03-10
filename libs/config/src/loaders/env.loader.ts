@@ -14,7 +14,11 @@ export function loadEnvConfig(): Record<string, string> {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
     const [key, ...valueParts] = trimmed.split('=');
-    if (key) config[key.trim()] = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
+    if (key)
+      config[key.trim()] = valueParts
+        .join('=')
+        .trim()
+        .replace(/^["']|["']$/g, '');
   }
   return config;
 }

@@ -16,16 +16,19 @@ If automatic failover fails:
 ### Steps
 
 1. **Verify primary is truly down**:
+
    ```bash
    kubectl exec -it postgresql-primary-0 -- pg_isready
    ```
 
 2. **Check Patroni status**:
+
    ```bash
    kubectl exec -it postgresql-primary-0 -- patronictl list
    ```
 
 3. **Manual promotion** (if needed):
+
    ```bash
    kubectl exec -it postgresql-replica-0 -- patronictl failover --leader postgresql-primary-0 --candidate postgresql-replica-0
    ```
@@ -35,11 +38,13 @@ If automatic failover fails:
    - Restart affected services: `kubectl rollout restart deployment -l app.kubernetes.io/part-of=nestlancer`
 
 5. **Verify write operations**:
+
    ```bash
    curl -X POST https://api.nestlancer.com/api/v1/health -d '{"write_test": true}'
    ```
 
 6. **Rebuild old primary as replica**:
+
    ```bash
    kubectl exec -it postgresql-primary-0 -- patronictl reinit nestlancer postgresql-primary-0
    ```

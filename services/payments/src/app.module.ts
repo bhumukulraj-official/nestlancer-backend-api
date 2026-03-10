@@ -21,6 +21,45 @@ import { PaymentDisputesAdminController } from './controllers/admin/payment-disp
 import { RazorpayWebhookController } from './controllers/webhooks/razorpay-webhook.controller';
 
 import {
+  PaymentsService,
+  PaymentIntentService,
+  PaymentConfirmationService,
+  RazorpayService,
+  RefundService,
+  RazorpayWebhookService,
+  PaymentMethodsService,
+  PaymentMilestonesService,
+  ReceiptPdfService,
+  InvoicePdfService,
+  PaymentDisputesService,
+  PaymentReconciliationService,
+  PaymentStatsService,
+} from './services';
+
+@Module({
+  imports: [
+    NestlancerConfigModule.forRoot(),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    AuthLibModule,
+    StorageModule.forRoot(),
+    OutboxModule.forRoot(),
+    QueueModule.forRoot(),
+    CacheModule.forRoot(),
+    PdfModule,
+    NestConfigModule.forFeature(paymentsConfig),
+  ],
+  controllers: [
+    PaymentsController,
+    PaymentMethodsController,
+    PaymentsAdminController,
+    PaymentMilestonesAdminController,
+    PaymentDisputesAdminController,
+    RazorpayWebhookController,
+  ],
+  providers: [
     PaymentsService,
     PaymentIntentService,
     PaymentConfirmationService,
@@ -33,47 +72,8 @@ import {
     InvoicePdfService,
     PaymentDisputesService,
     PaymentReconciliationService,
-    PaymentStatsService
-} from './services';
-
-@Module({
-    imports: [
-        NestlancerConfigModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        AuthLibModule,
-        StorageModule.forRoot(),
-        OutboxModule.forRoot(),
-        QueueModule.forRoot(),
-        CacheModule.forRoot(),
-        PdfModule,
-        NestConfigModule.forFeature(paymentsConfig),
-    ],
-    controllers: [
-        PaymentsController,
-        PaymentMethodsController,
-        PaymentsAdminController,
-        PaymentMilestonesAdminController,
-        PaymentDisputesAdminController,
-        RazorpayWebhookController,
-    ],
-    providers: [
-        PaymentsService,
-        PaymentIntentService,
-        PaymentConfirmationService,
-        RazorpayService,
-        RefundService,
-        RazorpayWebhookService,
-        PaymentMethodsService,
-        PaymentMilestonesService,
-        ReceiptPdfService,
-        InvoicePdfService,
-        PaymentDisputesService,
-        PaymentReconciliationService,
-        PaymentStatsService,
-        PdfService,
-    ],
+    PaymentStatsService,
+    PdfService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

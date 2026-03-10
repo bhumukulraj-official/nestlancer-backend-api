@@ -3,23 +3,23 @@ import { BusinessLogicException } from '../../../src/exceptions/business-logic.e
 import { ERROR_CODES } from '../../../src/constants/error-codes.constants';
 
 describe('BusinessLogicException', () => {
-    it('should create an exception with UNPROCESSABLE_ENTITY status and default code', () => {
-        const msg = 'Invalid workflow state';
-        const exception = new BusinessLogicException(msg);
+  it('should create an exception with UNPROCESSABLE_ENTITY status and default code', () => {
+    const msg = 'Invalid workflow state';
+    const exception = new BusinessLogicException(msg);
 
-        expect(exception.message).toBe('Business Logic Exception');
-        expect(exception.getStatus()).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
-        const response = exception.getResponse() as any;
-        expect(response.error.message).toBe(msg);
-        expect(response.error.code).toBe(ERROR_CODES.BUSINESS_LOGIC_ERROR);
-        expect(response.error.message).toBe(msg);
-    });
+    expect(exception.message).toBe('Business Logic Exception');
+    expect(exception.getStatus()).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
+    const response = exception.getResponse() as any;
+    expect(response.error.message).toBe(msg);
+    expect(response.error.code).toBe(ERROR_CODES.BUSINESS_LOGIC_ERROR);
+    expect(response.error.message).toBe(msg);
+  });
 
-    it('should allow overriding the error code', () => {
-        const msg = 'Specific error';
-        const exception = new BusinessLogicException(msg, 'SPECIFIC_ERR');
+  it('should allow overriding the error code', () => {
+    const msg = 'Specific error';
+    const exception = new BusinessLogicException(msg, 'SPECIFIC_ERR');
 
-        const response = exception.getResponse() as any;
-        expect(response.error.code).toBe('SPECIFIC_ERR');
-    });
+    const response = exception.getResponse() as any;
+    expect(response.error.code).toBe('SPECIFIC_ERR');
+  });
 });

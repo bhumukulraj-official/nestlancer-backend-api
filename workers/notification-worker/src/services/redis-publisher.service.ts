@@ -4,32 +4,41 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisPublisherService implements OnModuleDestroy {
-    private readonly logger = new Logger(RedisPublisherService.name);
-    private readonly publisher: Redis;
-    private readonly prefix: string;
+  private readonly logger = new Logger(RedisPublisherService.name);
+  private readonly publisher: Redis;
+  private readonly prefix: string;
 
-    constructor(private readonly configService: ConfigService) {
-        this.publisher = new Redis({
-            host: process.env.NOTIFICATION_WORKER_REDIS_HOST || this.configService.get('notificationWorker.redis.host') || '100.103.64.83',
-            port: Number(process.env.NOTIFICATION_WORKER_REDIS_PORT || this.configService.get('notificationWorker.redis.port') || 6380),
-            password: process.env.NOTIFICATION_WORKER_REDIS_PASSWORD || this.configService.get('notificationWorker.redis.password'),
-            family: 4,
-            retryStrategy: (times) => Math.min(times * 50, 2000),
-        });
-        this.publisher.on('error', (err) => {
-            this.logger.error(`Redis connection error: ${err.message}`);
-        });
-        this.prefix = this.configService.get('notificationWorker.redis.pubsubPrefix') || 'ws:';
-    }
+  constructor(private readonly configService: ConfigService) {
+    this.publisher = new Redis({
+      host:
+        process.env.NOTIFICATION_WORKER_REDIS_HOST ||
+        this.configService.get('notificationWorker.redis.host') ||
+        '100.103.64.83',
+      port: Number(
+        process.env.NOTIFICATION_WORKER_REDIS_PORT ||
+          this.configService.get('notificationWorker.redis.port') ||
+          6380,
+      ),
+      password:
+        process.env.NOTIFICATION_WORKER_REDIS_PASSWORD ||
+        this.configService.get('notificationWorker.redis.password'),
+      family: 4,
+      retryStrategy: (times) => Math.min(times * 50, 2000),
+    });
+    this.publisher.on('error', (err) => {
+      this.logger.error(`Redis connection error: ${err.message}`);
+    });
+    this.prefix = this.configService.get('notificationWorker.redis.pubsubPrefix') || 'ws:';
+  }
 
-    async publish(channel: string, event: string, data: any): Promise<void> {
-        const fullChannel = `${this.prefix}${channel}`;
-        const payload = JSON.stringify({ event, data, timestamp: new Date().toISOString() });
-        await this.publisher.publish(fullChannel, payload);
-        this.logger.debug(`Published to Redis channel ${fullChannel}: ${event}`);
-    }
+  async publish(channel: string, event: string, data: any): Promise<void> {
+    const fullChannel = `${this.prefix}${channel}`;
+    const payload = JSON.stringify({ event, data, timestamp: new Date().toISOString() });
+    await this.publisher.publish(fullChannel, payload);
+    this.logger.debug(`Published to Redis channel ${fullChannel}: ${event}`);
+  }
 
-    onModuleDestroy() {
-        this.publisher.disconnect();
-    }
+  onModuleDestroy() {
+    this.publisher.disconnect();
+  }
 }

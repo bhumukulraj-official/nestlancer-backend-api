@@ -1,4 +1,12 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { Observable, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
@@ -12,7 +20,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
   constructor(
     private readonly reflector: Reflector,
     private readonly store: RedisIdempotencyStore,
-  ) { }
+  ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
     const isIdempotent = this.reflector.get<boolean>(IDEMPOTENT_KEY, context.getHandler());
@@ -67,10 +75,14 @@ export class IdempotencyInterceptor implements NestInterceptor {
         const response = context.switchToHttp().getResponse();
         const statusCode = response.statusCode || 200;
 
-        await this.store.set(key, {
-          responseCode: statusCode,
-          responseBody,
-        }, 86400); // 24 hour TTL
+        await this.store.set(
+          key,
+          {
+            responseCode: statusCode,
+            responseBody,
+          },
+          86400,
+        ); // 24 hour TTL
 
         await this.store.unlock(key);
         this.logger.debug(`Cached response for idempotency key: ${key}`);

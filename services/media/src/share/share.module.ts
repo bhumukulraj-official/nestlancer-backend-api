@@ -7,9 +7,9 @@ import { CryptoModule } from '@nestlancer/crypto';
 import { ConfigModule } from '@nestlancer/config';
 
 @Module({
-    imports: [DatabaseModule, StorageModule, CryptoModule, ConfigModule],
-    controllers: [ShareController],
-    providers: [ShareService],
-    exports: [ShareService],
+  imports: [DatabaseModule, StorageModule, CryptoModule, ConfigModule],
+  controllers: [ShareController],
+  providers: [ShareService],
+  exports: [ShareService],
 })
-export class ShareModule { }
+export class ShareModule {}

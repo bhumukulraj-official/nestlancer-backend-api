@@ -4,99 +4,108 @@ import { PrismaClient } from '@prisma/client';
  * Seed default system configuration values.
  */
 export async function seedSystemConfig(prisma: PrismaClient): Promise<void> {
-    console.log('  ⚙️  Seeding system config...');
+  console.log('  ⚙️  Seeding system config...');
 
-    const configs = [
-        {
-            key: 'system.maintenance',
-            value: { enabled: false, message: '', estimatedEndTime: null },
-            description: 'Maintenance mode configuration',
-        },
-        {
-            key: 'system.rate_limits',
-            value: {
-                anonymous: { limit: 30, windowSeconds: 60 },
-                authenticated: { limit: 100, windowSeconds: 60 },
-                admin: { limit: 300, windowSeconds: 60 },
-            },
-            description: 'Default rate limit tiers',
-        },
-        {
-            key: 'system.file_upload',
-            value: {
-                maxFileSizeMB: 50,
-                allowedMimeTypes: [
-                    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-                    'application/pdf', 'application/zip',
-                    'video/mp4', 'video/webm',
-                    'audio/mpeg', 'audio/wav',
-                    'text/plain', 'text/csv',
-                    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                ],
-                maxChunkSizeMB: 5,
-            },
-            description: 'File upload limits and allowed types',
-        },
-        {
-            key: 'system.pagination',
-            value: { defaultLimit: 20, maxLimit: 100, defaultPage: 1 },
-            description: 'Default pagination settings',
-        },
-        {
-            key: 'system.jwt',
-            value: {
-                accessTokenExpiryMinutes: 15,
-                refreshTokenExpiryDays: 7,
-                maxRefreshTokensPerUser: 10,
-            },
-            description: 'JWT token configuration',
-        },
-        {
-            key: 'system.security',
-            value: {
-                maxLoginAttempts: 5,
-                lockoutDurationMinutes: 15,
-                passwordMinLength: 8,
-                passwordMaxLength: 128,
-                emailVerificationExpiryHours: 24,
-                passwordResetExpiryMinutes: 60,
-                twoFactorSessionTTLSeconds: 300,
-            },
-            description: 'Security-related system defaults',
-        },
-        {
-            key: 'system.currency',
-            value: { default: 'INR', symbol: '₹', subunit: 'paise', subunitMultiplier: 100 },
-            description: 'Currency configuration (INR-only platform)',
-        },
-        {
-            key: 'system.media',
-            value: {
-                maxVersions: 10,
-                thumbnailSizes: { small: 150, medium: 300, large: 600 },
-                imageSizeLimit: 10485760,
-                videoSizeLimit: 104857600,
-            },
-            description: 'Media processing configuration',
-        },
-        {
-            key: 'system.notifications',
-            value: {
-                maxUnreadCount: 100,
-                expiryDays: 90,
-                batchSize: 50,
-            },
-            description: 'Notification system configuration',
-        },
-    ];
+  const configs = [
+    {
+      key: 'system.maintenance',
+      value: { enabled: false, message: '', estimatedEndTime: null },
+      description: 'Maintenance mode configuration',
+    },
+    {
+      key: 'system.rate_limits',
+      value: {
+        anonymous: { limit: 30, windowSeconds: 60 },
+        authenticated: { limit: 100, windowSeconds: 60 },
+        admin: { limit: 300, windowSeconds: 60 },
+      },
+      description: 'Default rate limit tiers',
+    },
+    {
+      key: 'system.file_upload',
+      value: {
+        maxFileSizeMB: 50,
+        allowedMimeTypes: [
+          'image/jpeg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+          'image/svg+xml',
+          'application/pdf',
+          'application/zip',
+          'video/mp4',
+          'video/webm',
+          'audio/mpeg',
+          'audio/wav',
+          'text/plain',
+          'text/csv',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ],
+        maxChunkSizeMB: 5,
+      },
+      description: 'File upload limits and allowed types',
+    },
+    {
+      key: 'system.pagination',
+      value: { defaultLimit: 20, maxLimit: 100, defaultPage: 1 },
+      description: 'Default pagination settings',
+    },
+    {
+      key: 'system.jwt',
+      value: {
+        accessTokenExpiryMinutes: 15,
+        refreshTokenExpiryDays: 7,
+        maxRefreshTokensPerUser: 10,
+      },
+      description: 'JWT token configuration',
+    },
+    {
+      key: 'system.security',
+      value: {
+        maxLoginAttempts: 5,
+        lockoutDurationMinutes: 15,
+        passwordMinLength: 8,
+        passwordMaxLength: 128,
+        emailVerificationExpiryHours: 24,
+        passwordResetExpiryMinutes: 60,
+        twoFactorSessionTTLSeconds: 300,
+      },
+      description: 'Security-related system defaults',
+    },
+    {
+      key: 'system.currency',
+      value: { default: 'INR', symbol: '₹', subunit: 'paise', subunitMultiplier: 100 },
+      description: 'Currency configuration (INR-only platform)',
+    },
+    {
+      key: 'system.media',
+      value: {
+        maxVersions: 10,
+        thumbnailSizes: { small: 150, medium: 300, large: 600 },
+        imageSizeLimit: 10485760,
+        videoSizeLimit: 104857600,
+      },
+      description: 'Media processing configuration',
+    },
+    {
+      key: 'system.notifications',
+      value: {
+        maxUnreadCount: 100,
+        expiryDays: 90,
+        batchSize: 50,
+      },
+      description: 'Notification system configuration',
+    },
+  ];
 
-    for (const config of configs) {
-        await prisma.systemConfig.upsert({
-            where: { key: config.key },
-            update: {},
-            create: config,
-        });
-    }
+  for (const config of configs) {
+    await prisma.systemConfig.upsert({
+      where: { key: config.key },
+      update: {},
+      create: config,
+    });
+  }
 
-    console.log('  ✅ System config seeded');
+  console.log('  ✅ System config seeded');
 }

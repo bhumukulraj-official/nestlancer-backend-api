@@ -5,33 +5,34 @@
 **Base Path**: `/api/v1/admin/webhooks`
 
 ### 17.1 Overview
+
 Webhook management service for **outbound** event subscriptions (allowing clients to receive events from our system). Note: Inbound webhooks from third-party services (like Razorpay, GitHub) are handled centrally by the **Webhook Ingestion Service** (`120-webhooks-inbound-endpoints.md`).
 
 ### 17.2 Webhook Management Endpoints (Admin Endpoints)
 
-| Method | Endpoint | Description | Rate Limit | Role |
-|--------|----------|-------------|------------|------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/` | List webhooks | 1000/hour | admin |
-| `POST` | `/` | Create webhook | 100/hour | admin |
-| `GET` | `/{id}` | Get webhook details | 1000/hour | admin |
-| `PATCH` | `/{id}` | Update webhook | 200/hour | admin |
-| `DELETE` | `/{id}` | Delete webhook | 100/hour | admin |
-| `POST` | `/{id}/enable` | Enable webhook | 200/hour | admin |
-| `POST` | `/{id}/disable` | Disable webhook | 200/hour | admin |
-| `GET` | `/{id}/deliveries` | Delivery history | 2000/hour | admin |
-| `GET` | `/{id}/deliveries/{deliveryId}` | Delivery details | 1000/hour | admin |
-| `POST` | `/{id}/test` | Send test event | 50/hour | admin |
-| `POST` | `/{id}/deliveries/{deliveryId}/retry` | Retry delivery | 100/hour | admin |
-| `GET` | `/{id}/stats` | Webhook stats | 1000/hour | admin |
-| `GET` | `/events` | List available events | 500/hour | admin |
+| Method   | Endpoint                              | Description                        | Rate Limit | Role  |
+| -------- | ------------------------------------- | ---------------------------------- | ---------- | ----- |
+| `GET`    | `/health`                             | Health check (Simplified response) | 1000/hour  | Yes   |
+| `GET`    | `/`                                   | List webhooks                      | 1000/hour  | admin |
+| `POST`   | `/`                                   | Create webhook                     | 100/hour   | admin |
+| `GET`    | `/{id}`                               | Get webhook details                | 1000/hour  | admin |
+| `PATCH`  | `/{id}`                               | Update webhook                     | 200/hour   | admin |
+| `DELETE` | `/{id}`                               | Delete webhook                     | 100/hour   | admin |
+| `POST`   | `/{id}/enable`                        | Enable webhook                     | 200/hour   | admin |
+| `POST`   | `/{id}/disable`                       | Disable webhook                    | 200/hour   | admin |
+| `GET`    | `/{id}/deliveries`                    | Delivery history                   | 2000/hour  | admin |
+| `GET`    | `/{id}/deliveries/{deliveryId}`       | Delivery details                   | 1000/hour  | admin |
+| `POST`   | `/{id}/test`                          | Send test event                    | 50/hour    | admin |
+| `POST`   | `/{id}/deliveries/{deliveryId}/retry` | Retry delivery                     | 100/hour   | admin |
+| `GET`    | `/{id}/stats`                         | Webhook stats                      | 1000/hour  | admin |
+| `GET`    | `/events`                             | List available events              | 500/hour   | admin |
 
 ### 17.3 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### POST /
+
 ```json
 // Request
 POST /api/v1/admin/webhooks
@@ -94,6 +95,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/test
+
 ```json
 // Request
 POST /api/v1/admin/webhooks/whkAbc123/test
@@ -140,8 +142,8 @@ X-Request-ID: reqAbc123
 
 ### 17.4 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `WHK_001` | 404 | Webhook not found | No |
-| `WHK_002` | 502 | Webhook delivery failed | Yes |
-| `WHK_003` | 422 | Invalid webhook configuration | No |
+| Code      | HTTP Status | Description                   | Retryable |
+| --------- | ----------- | ----------------------------- | --------- |
+| `WHK_001` | 404         | Webhook not found             | No        |
+| `WHK_002` | 502         | Webhook delivery failed       | Yes       |
+| `WHK_003` | 422         | Invalid webhook configuration | No        |

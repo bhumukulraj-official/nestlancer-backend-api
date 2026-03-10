@@ -4,19 +4,22 @@ import { BusinessLogicException } from '@nestlancer/common';
 
 @Injectable()
 export class TurnstileGuard implements CanActivate {
-    constructor(private turnstileService: TurnstileService) { }
+  constructor(private turnstileService: TurnstileService) {}
 
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context.switchToHttp().getRequest();
-        const token = request.body?.turnstileToken || request.query?.turnstileToken || request.headers['x-turnstile-token'];
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const token =
+      request.body?.turnstileToken ||
+      request.query?.turnstileToken ||
+      request.headers['x-turnstile-token'];
 
-        if (!token) {
-            throw new BusinessLogicException('Turnstile token required', 'AUTH_011');
-        }
-
-        const ipAddress = request.ip || request.headers['x-forwarded-for'];
-        await this.turnstileService.verifyToken(token, ipAddress);
-
-        return true;
+    if (!token) {
+      throw new BusinessLogicException('Turnstile token required', 'AUTH_011');
     }
+
+    const ipAddress = request.ip || request.headers['x-forwarded-for'];
+    await this.turnstileService.verifyToken(token, ipAddress);
+
+    return true;
+  }
 }

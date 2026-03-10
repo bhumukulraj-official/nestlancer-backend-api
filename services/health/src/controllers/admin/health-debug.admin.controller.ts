@@ -7,7 +7,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 
 /**
  * Administrative controller for accessing advanced system health and debug information.
- * 
+ *
  * @category Monitoring
  */
 @ApiTags('Health - Admin Debug')
@@ -16,19 +16,23 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class HealthDebugAdminController {
-    constructor(private readonly healthService: HealthService) { }
+  constructor(private readonly healthService: HealthService) {}
 
-    /**
-     * Retrieves comprehensive, low-level internal diagnostic information.
-     * This endpoint provides detailed metadata regarding the runtime environment,
-     * including sensitive trace information for administrative analysis.
-     * 
-     * @returns A promise resolving to extended system debug metadata
-     */
-    @Get()
-    @ApiOperation({ summary: 'Retrieve system debug logs', description: 'Access deep-trace diagnostics and environment metadata for architectural troubleshooting.' })
-    @ApiResponse({ status: 200, description: 'Verbose debug information retrieved successfully' })
-    async getDebugInfo(): Promise<any> {
-        return this.healthService.getDebugHealth();
-    }
+  /**
+   * Retrieves comprehensive, low-level internal diagnostic information.
+   * This endpoint provides detailed metadata regarding the runtime environment,
+   * including sensitive trace information for administrative analysis.
+   *
+   * @returns A promise resolving to extended system debug metadata
+   */
+  @Get()
+  @ApiOperation({
+    summary: 'Retrieve system debug logs',
+    description:
+      'Access deep-trace diagnostics and environment metadata for architectural troubleshooting.',
+  })
+  @ApiResponse({ status: 200, description: 'Verbose debug information retrieved successfully' })
+  async getDebugInfo(): Promise<any> {
+    return this.healthService.getDebugHealth();
+  }
 }

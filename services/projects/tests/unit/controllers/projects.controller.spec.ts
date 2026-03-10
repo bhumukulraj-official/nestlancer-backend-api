@@ -6,42 +6,42 @@ import { ProjectDeliverablesService } from '../../../src/services/project-delive
 import { ProjectPaymentsService } from '../../../src/services/project-payments.service';
 
 describe('ProjectsController', () => {
-    let controller: ProjectsController;
-    let projectsService: ProjectsService;
+  let controller: ProjectsController;
+  let projectsService: ProjectsService;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [ProjectsController],
-            providers: [
-                {
-                    provide: ProjectsService,
-                    useValue: {
-                        getMyProjects: jest.fn(),
-                        getProjectDetails: jest.fn(),
-                        approveProject: jest.fn(),
-                        requestRevision: jest.fn(),
-                    },
-                },
-                { provide: ProjectTimelineService, useValue: { getTimeline: jest.fn() } },
-                { provide: ProjectDeliverablesService, useValue: { getDeliverables: jest.fn() } },
-                { provide: ProjectPaymentsService, useValue: { getPayments: jest.fn() } },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [ProjectsController],
+      providers: [
+        {
+          provide: ProjectsService,
+          useValue: {
+            getMyProjects: jest.fn(),
+            getProjectDetails: jest.fn(),
+            approveProject: jest.fn(),
+            requestRevision: jest.fn(),
+          },
+        },
+        { provide: ProjectTimelineService, useValue: { getTimeline: jest.fn() } },
+        { provide: ProjectDeliverablesService, useValue: { getDeliverables: jest.fn() } },
+        { provide: ProjectPaymentsService, useValue: { getPayments: jest.fn() } },
+      ],
+    }).compile();
 
-        controller = module.get<ProjectsController>(ProjectsController);
-        projectsService = module.get<ProjectsService>(ProjectsService);
+    controller = module.get<ProjectsController>(ProjectsController);
+    projectsService = module.get<ProjectsService>(ProjectsService);
+  });
+
+  describe('approveProject', () => {
+    it('should call approveProject on service', async () => {
+      const mockResult = { status: 'completed' };
+      jest.spyOn(projectsService, 'approveProject').mockResolvedValue(mockResult as any);
+
+      const dto: any = { rating: 5, feedback: {} };
+      const result = await controller.approveProject('user1', 'proj1', dto);
+
+      expect(result).toEqual(mockResult);
+      expect(projectsService.approveProject).toHaveBeenCalledWith('user1', 'proj1', dto);
     });
-
-    describe('approveProject', () => {
-        it('should call approveProject on service', async () => {
-            const mockResult = { status: 'completed' };
-            jest.spyOn(projectsService, 'approveProject').mockResolvedValue(mockResult as any);
-
-            const dto: any = { rating: 5, feedback: {} };
-            const result = await controller.approveProject('user1', 'proj1', dto);
-
-            expect(result).toEqual(mockResult);
-            expect(projectsService.approveProject).toHaveBeenCalledWith('user1', 'proj1', dto);
-        });
-    });
+  });
 });

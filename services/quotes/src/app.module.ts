@@ -22,26 +22,26 @@ import { QuoteStatsService } from './services/quote-stats.service';
 import quotesConfig from './config/quotes.config';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        NestConfigModule.forFeature(quotesConfig),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        QueueModule.forRoot(),
-        OutboxModule.forRoot(),
-        CacheModule.forRoot(),
-        AuthLibModule,
-        StorageModule.forRoot(),
-    ],
-    controllers: [QuotesController, QuotesAdminController],
-    providers: [
-        QuotesService,
-        QuotesAdminService,
-        QuoteStatusService,
-        QuotePdfService,
-        QuoteStatsService,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    NestConfigModule.forFeature(quotesConfig),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    QueueModule.forRoot(),
+    OutboxModule.forRoot(),
+    CacheModule.forRoot(),
+    AuthLibModule,
+    StorageModule.forRoot(),
+  ],
+  controllers: [QuotesController, QuotesAdminController],
+  providers: [
+    QuotesService,
+    QuotesAdminService,
+    QuoteStatusService,
+    QuotePdfService,
+    QuoteStatsService,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

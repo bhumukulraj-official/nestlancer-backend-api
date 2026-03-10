@@ -3,6 +3,7 @@
 Handles user authentication, registration, email verification, password management, and two-factor authentication.
 
 ## Service Features
+
 - JWT Auth (RS256)
 - Refresh token rotation
 - Device/IP tracking & lockout
@@ -10,6 +11,7 @@ Handles user authentication, registration, email verification, password manageme
 - CSRF protection
 
 ## Commands
+
 ```bash
 # Start locally
 pnpm run start:dev

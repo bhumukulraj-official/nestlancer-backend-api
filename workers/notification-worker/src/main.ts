@@ -2,10 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-    const app = await NestFactory.createApplicationContext(AppModule);
+  const app = await NestFactory.createApplicationContext(AppModule);
 
-    app.enableShutdownHooks();
+  app.enableShutdownHooks();
 
-    console.log('Notification Worker is running...');
+  console.log('Notification Worker is running...');
 }
 bootstrap();

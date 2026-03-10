@@ -37,7 +37,9 @@ export function getSwaggerDocsUrl(serviceKey: string, gatewayBase: string): stri
   return `${gatewayBase}/docs-specs/${serviceKey}`;
 }
 
-export function getServiceSpecsForSwaggerUi(gatewayBase: string): Array<{ url: string; name: string }> {
+export function getServiceSpecsForSwaggerUi(
+  gatewayBase: string,
+): Array<{ url: string; name: string }> {
   const microservices = SWAGGER_SERVICE_SPECS.map((spec) => ({
     name: spec.name,
     url: getSwaggerDocsUrl(spec.serviceKey, gatewayBase),

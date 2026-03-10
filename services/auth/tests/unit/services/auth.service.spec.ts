@@ -9,40 +9,53 @@ import { EmailVerificationService } from '../../../src/services/email-verificati
 import { TurnstileService } from '../../../src/services/turnstile.service';
 
 describe('AuthService', () => {
-    let service: AuthService;
-    let RegistrationMock: any;
-    let TurnstileMock: any;
+  let service: AuthService;
+  let RegistrationMock: any;
+  let TurnstileMock: any;
 
-    beforeEach(async () => {
-        RegistrationMock = { registerUser: jest.fn(), checkEmail: jest.fn() };
-        TurnstileMock = { verifyToken: jest.fn().mockResolvedValue(true) };
+  beforeEach(async () => {
+    RegistrationMock = { registerUser: jest.fn(), checkEmail: jest.fn() };
+    TurnstileMock = { verifyToken: jest.fn().mockResolvedValue(true) };
 
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                AuthService,
-                { provide: RegistrationService, useValue: RegistrationMock },
-                { provide: LoginService, useValue: { authenticate: jest.fn() } },
-                { provide: TokenService, useValue: { refreshToken: jest.fn() } },
-                { provide: PasswordService, useValue: { requestPasswordReset: jest.fn(), resetPassword: jest.fn() } },
-                { provide: TwoFactorService, useValue: { verify2FA: jest.fn() } },
-                { provide: EmailVerificationService, useValue: { verifyEmail: jest.fn(), resendVerification: jest.fn() } },
-                { provide: TurnstileService, useValue: TurnstileMock },
-            ],
-        }).compile();
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: RegistrationService, useValue: RegistrationMock },
+        { provide: LoginService, useValue: { authenticate: jest.fn() } },
+        { provide: TokenService, useValue: { refreshToken: jest.fn() } },
+        {
+          provide: PasswordService,
+          useValue: { requestPasswordReset: jest.fn(), resetPassword: jest.fn() },
+        },
+        { provide: TwoFactorService, useValue: { verify2FA: jest.fn() } },
+        {
+          provide: EmailVerificationService,
+          useValue: { verifyEmail: jest.fn(), resendVerification: jest.fn() },
+        },
+        { provide: TurnstileService, useValue: TurnstileMock },
+      ],
+    }).compile();
 
-        service = module.get<AuthService>(AuthService);
+    service = module.get<AuthService>(AuthService);
+  });
+
+  describe('register', () => {
+    it('should verify turnstile and register user', async () => {
+      const mockDto = {
+        email: 'test@example.com',
+        password: 'pw',
+        firstName: 'fn',
+        lastName: 'ln',
+        acceptTerms: true,
+        turnstileToken: 'valid',
+      };
+      RegistrationMock.registerUser.mockResolvedValue({ user: { id: '1' } });
+
+      const result = await service.register(mockDto, '127.0.0.1');
+
+      expect(TurnstileMock.verifyToken).toHaveBeenCalledWith('valid', '127.0.0.1');
+      expect(RegistrationMock.registerUser).toHaveBeenCalledWith(mockDto);
+      expect(result).toEqual({ user: { id: '1' } });
     });
-
-    describe('register', () => {
-        it('should verify turnstile and register user', async () => {
-            const mockDto = { email: 'test@example.com', password: 'pw', firstName: 'fn', lastName: 'ln', acceptTerms: true, turnstileToken: 'valid' };
-            RegistrationMock.registerUser.mockResolvedValue({ user: { id: '1' } });
-
-            const result = await service.register(mockDto, '127.0.0.1');
-
-            expect(TurnstileMock.verifyToken).toHaveBeenCalledWith('valid', '127.0.0.1');
-            expect(RegistrationMock.registerUser).toHaveBeenCalledWith(mockDto);
-            expect(result).toEqual({ user: { id: '1' } });
-        });
-    });
+  });
 });

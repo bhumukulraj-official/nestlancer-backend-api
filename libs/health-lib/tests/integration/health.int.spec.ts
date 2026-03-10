@@ -4,23 +4,23 @@ import { DatabaseHealthIndicator } from '../../src/indicators/database.indicator
 import { RedisHealthIndicator } from '../../src/indicators/redis.indicator';
 
 describe('HealthLibModule (Integration)', () => {
-    let module: TestingModule;
+  let module: TestingModule;
 
-    beforeAll(async () => {
-        module = await Test.createTestingModule({
-            imports: [HealthLibModule],
-        }).compile();
-    });
+  beforeAll(async () => {
+    module = await Test.createTestingModule({
+      imports: [HealthLibModule],
+    }).compile();
+  });
 
-    it('should be defined', () => {
-        expect(module).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(module).toBeDefined();
+  });
 
-    it('should export indicators', () => {
-        const dbIndicator = module.get<DatabaseHealthIndicator>(DatabaseHealthIndicator);
-        const redisIndicator = module.get<RedisHealthIndicator>(RedisHealthIndicator);
+  it('should export indicators', () => {
+    const dbIndicator = module.get<DatabaseHealthIndicator>(DatabaseHealthIndicator);
+    const redisIndicator = module.get<RedisHealthIndicator>(RedisHealthIndicator);
 
-        expect(dbIndicator).toBeDefined();
-        expect(redisIndicator).toBeDefined();
-    });
+    expect(dbIndicator).toBeDefined();
+    expect(redisIndicator).toBeDefined();
+  });
 });

@@ -6,163 +6,169 @@ import { ChangePasswordDto } from '../dto/change-password.dto';
 import * as bcrypt from 'bcrypt';
 
 interface UserStats {
-    projectsCompleted: number;
-    totalSpent: number;
-    projectsInProgress: number;
-    totalProjects: number;
+  projectsCompleted: number;
+  totalSpent: number;
+  projectsInProgress: number;
+  totalProjects: number;
 }
 
 interface UserProfile {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: string;
-    twoFactorEnabled: boolean;
-    timezone?: string;
-    language?: string;
-    preferences: {
-        notifications: Record<string, unknown>;
-        privacy: Record<string, unknown>;
-    };
-    stats: UserStats;
-    createdAt: Date;
-    updatedAt: Date;
-    lastLoginAt?: Date;
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  twoFactorEnabled: boolean;
+  timezone?: string;
+  language?: string;
+  preferences: {
+    notifications: Record<string, unknown>;
+    privacy: Record<string, unknown>;
+  };
+  stats: UserStats;
+  createdAt: Date;
+  updatedAt: Date;
+  lastLoginAt?: Date;
 }
 
 @Injectable()
 export class ProfileService {
-    constructor(
-        private readonly prismaWrite: PrismaWriteService,
-        private readonly prismaRead: PrismaReadService,
-    ) { }
+  constructor(
+    private readonly prismaWrite: PrismaWriteService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
-    async getProfile(userId: string): Promise<UserProfile> {
-        const user = await this.prismaRead.user.findUnique({
-            where: { id: userId },
-            include: {
-                preferences: true,
-            }
-        });
+  async getProfile(userId: string): Promise<UserProfile> {
+    const user = await this.prismaRead.user.findUnique({
+      where: { id: userId },
+      include: {
+        preferences: true,
+      },
+    });
 
-        if (!user) {
-            throw new BusinessLogicException('User not found', 'USER_001');
-        }
-
-        const stats = await this.getUserStats(userId);
-        return this.formatProfileResponse(user, stats);
+    if (!user) {
+      throw new BusinessLogicException('User not found', 'USER_001');
     }
 
-    async updateProfile(userId: string, dto: UpdateProfileDto): Promise<UserProfile> {
-        const user = await this.prismaWrite.user.update({
-            where: { id: userId },
-            data: {
-                firstName: dto.firstName,
-                lastName: dto.lastName,
-                phone: dto.phone,
-                preferences: dto.timezone || dto.language ? {
-                    upsert: {
-                        create: {
-                            timezone: dto.timezone || 'UTC',
-                            language: dto.language || 'en',
-                        },
-                        update: {
-                            ...(dto.timezone && { timezone: dto.timezone }),
-                            ...(dto.language && { language: dto.language }),
-                        }
-                    }
-                } : undefined
-            },
-            include: {
-                preferences: true,
-            }
-        });
+    const stats = await this.getUserStats(userId);
+    return this.formatProfileResponse(user, stats);
+  }
 
-        await this.prismaWrite.outbox.create({
-            data: {
-                type: 'USER_PROFILE_UPDATED',
-                aggregateType: 'User',
-                aggregateId: user.id,
-                payload: { userId: user.id, updatedFields: Object.keys(dto) }
-            }
-        });
-
-        const stats = await this.getUserStats(userId);
-        return this.formatProfileResponse(user, stats);
-    }
-
-    private async getUserStats(userId: string): Promise<UserStats> {
-        const [projectStats, paymentStats] = await Promise.all([
-            this.prismaRead.project.groupBy({
-                by: ['status'],
-                where: { clientId: userId, deletedAt: null },
-                _count: { id: true }
-            }),
-            this.prismaRead.payment.aggregate({
-                where: {
-                    clientId: userId,
-                    status: PaymentStatus.COMPLETED
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<UserProfile> {
+    const user = await this.prismaWrite.user.update({
+      where: { id: userId },
+      data: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        phone: dto.phone,
+        preferences:
+          dto.timezone || dto.language
+            ? {
+                upsert: {
+                  create: {
+                    timezone: dto.timezone || 'UTC',
+                    language: dto.language || 'en',
+                  },
+                  update: {
+                    ...(dto.timezone && { timezone: dto.timezone }),
+                    ...(dto.language && { language: dto.language }),
+                  },
                 },
-                _sum: { amount: true }
-            })
-        ]);
+              }
+            : undefined,
+      },
+      include: {
+        preferences: true,
+      },
+    });
 
-        const statusCounts = projectStats.reduce((acc, item) => {
-            acc[item.status] = item._count.id;
-            return acc;
-        }, {} as Record<string, number>);
+    await this.prismaWrite.outbox.create({
+      data: {
+        type: 'USER_PROFILE_UPDATED',
+        aggregateType: 'User',
+        aggregateId: user.id,
+        payload: { userId: user.id, updatedFields: Object.keys(dto) },
+      },
+    });
 
-        const totalProjects = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
-        const projectsCompleted = statusCounts[ProjectStatus.COMPLETED] || 0;
-        const projectsInProgress = statusCounts[ProjectStatus.IN_PROGRESS] || 0;
+    const stats = await this.getUserStats(userId);
+    return this.formatProfileResponse(user, stats);
+  }
 
-        return {
-            projectsCompleted,
-            totalSpent: paymentStats._sum.amount || 0,
-            projectsInProgress,
-            totalProjects,
-        };
+  private async getUserStats(userId: string): Promise<UserStats> {
+    const [projectStats, paymentStats] = await Promise.all([
+      this.prismaRead.project.groupBy({
+        by: ['status'],
+        where: { clientId: userId, deletedAt: null },
+        _count: { id: true },
+      }),
+      this.prismaRead.payment.aggregate({
+        where: {
+          clientId: userId,
+          status: PaymentStatus.COMPLETED,
+        },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    const statusCounts = projectStats.reduce(
+      (acc, item) => {
+        acc[item.status] = item._count.id;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const totalProjects = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+    const projectsCompleted = statusCounts[ProjectStatus.COMPLETED] || 0;
+    const projectsInProgress = statusCounts[ProjectStatus.IN_PROGRESS] || 0;
+
+    return {
+      projectsCompleted,
+      totalSpent: paymentStats._sum.amount || 0,
+      projectsInProgress,
+      totalProjects,
+    };
+  }
+
+  private formatProfileResponse(user: any, stats: UserStats): UserProfile {
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      twoFactorEnabled: user.twoFactorEnabled || false,
+      timezone: user.preferences?.timezone,
+      language: user.preferences?.language,
+      preferences: {
+        notifications: user.preferences?.notificationSettings || {},
+        privacy: user.preferences?.privacySettings || {},
+      },
+      stats,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      lastLoginAt: user.lastLoginAt,
+    };
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BusinessLogicException('Passwords do not match', 'USER_010');
     }
 
-    private formatProfileResponse(user: any, stats: UserStats): UserProfile {
-        return {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-            twoFactorEnabled: user.twoFactorEnabled || false,
-            timezone: user.preferences?.timezone,
-            language: user.preferences?.language,
-            preferences: {
-                notifications: user.preferences?.notificationSettings || {},
-                privacy: user.preferences?.privacySettings || {}
-            },
-            stats,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-            lastLoginAt: user.lastLoginAt,
-        };
-    }
+    const user = await this.prismaRead.user.findUnique({ where: { id: userId } });
+    if (!user) throw new BusinessLogicException('User not found', 'USER_001');
 
-    async changePassword(userId: string, dto: ChangePasswordDto) {
-        if (dto.newPassword !== dto.confirmPassword) {
-            throw new BusinessLogicException('Passwords do not match', 'USER_010');
-        }
+    const isValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!isValid) throw new BusinessLogicException('Current password is incorrect', 'USER_011');
 
-        const user = await this.prismaRead.user.findUnique({ where: { id: userId } });
-        if (!user) throw new BusinessLogicException('User not found', 'USER_001');
+    const passwordHash = await bcrypt.hash(dto.newPassword, 12);
+    await this.prismaWrite.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
 
-        const isValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
-        if (!isValid) throw new BusinessLogicException('Current password is incorrect', 'USER_011');
-
-        const passwordHash = await bcrypt.hash(dto.newPassword, 12);
-        await this.prismaWrite.user.update({
-            where: { id: userId },
-            data: { passwordHash },
-        });
-
-        return { passwordChanged: true };
-    }
+    return { passwordChanged: true };
+  }
 }

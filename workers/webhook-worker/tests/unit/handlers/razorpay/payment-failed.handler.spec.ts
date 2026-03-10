@@ -94,15 +94,11 @@ describe('PaymentFailedHandler', () => {
         data: { status: 'FAILED', failureReason: 'Insufficient funds' },
       });
 
-      expect(queue.publish).toHaveBeenCalledWith(
-        'events',
-        'notification.payment.failed',
-        {
-          type: 'payment.failed',
-          userId: 'user-2',
-          payload: { paymentId: 'payment-2', reason: 'Insufficient funds' },
-        },
-      );
+      expect(queue.publish).toHaveBeenCalledWith('events', 'notification.payment.failed', {
+        type: 'payment.failed',
+        userId: 'user-2',
+        payload: { paymentId: 'payment-2', reason: 'Insufficient funds' },
+      });
     });
   });
 });

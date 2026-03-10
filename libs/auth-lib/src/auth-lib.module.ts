@@ -21,4 +21,4 @@ import { PermissionsGuard } from './guards/permissions.guard';
   providers: [JwtStrategy, JwtAuthGuard, RolesGuard, PermissionsGuard, Reflector],
   exports: [JwtModule, PassportModule, JwtAuthGuard, RolesGuard, PermissionsGuard, Reflector],
 })
-export class AuthLibModule { }
+export class AuthLibModule {}

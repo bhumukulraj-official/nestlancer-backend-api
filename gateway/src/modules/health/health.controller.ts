@@ -16,7 +16,7 @@ export class HealthController {
   constructor(
     private readonly healthService: HealthService,
     private readonly proxy: HttpProxyService,
-  ) { }
+  ) {}
 
   @Get()
   @Public()
@@ -28,14 +28,20 @@ export class HealthController {
   @Get('detailed')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Detailed health check', description: 'Returns detailed health status for all infrastructure' })
+  @ApiOperation({
+    summary: 'Detailed health check',
+    description: 'Returns detailed health status for all infrastructure',
+  })
   async detailed() {
     return this.healthService.checkAllServices();
   }
 
   @Get('ready')
   @Public()
-  @ApiOperation({ summary: 'Readiness probe', description: 'Checks if critical services are ready' })
+  @ApiOperation({
+    summary: 'Readiness probe',
+    description: 'Checks if critical services are ready',
+  })
   async ready() {
     const { ready, criticalServices } = await this.healthService.isReady();
 
@@ -60,7 +66,10 @@ export class HealthController {
   @Get('dependencies')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Dependency health', description: 'Aggregated health check of all services' })
+  @ApiOperation({
+    summary: 'Dependency health',
+    description: 'Aggregated health check of all services',
+  })
   async checkDependencies() {
     return this.healthService.checkAllServices();
   }

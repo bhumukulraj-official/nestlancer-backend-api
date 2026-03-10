@@ -21,14 +21,18 @@ export class LoggingInterceptor implements NestInterceptor {
         next: () => {
           const duration = Date.now() - startTime;
           const response = context.switchToHttp().getResponse();
-          this.logger.log(`${method} ${url} ${response.statusCode} ${duration}ms [${correlationId}]`);
+          this.logger.log(
+            `${method} ${url} ${response.statusCode} ${duration}ms [${correlationId}]`,
+          );
           if (duration > 1000) {
             this.logger.warn(`Slow request: ${method} ${url} took ${duration}ms`);
           }
         },
         error: (err) => {
           const duration = Date.now() - startTime;
-          this.logger.error(`${method} ${url} ERROR ${duration}ms [${correlationId}]: ${err.message}`);
+          this.logger.error(
+            `${method} ${url} ERROR ${duration}ms [${correlationId}]: ${err.message}`,
+          );
         },
       }),
     );

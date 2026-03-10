@@ -12,7 +12,7 @@ import { HttpProxyService } from '../../proxy';
 @ApiTags('admin')
 @ApiBearerAuth()
 export class AdminController {
-  constructor(private readonly proxy: HttpProxyService) { }
+  constructor(private readonly proxy: HttpProxyService) {}
 
   // --- Dashboard ---
 

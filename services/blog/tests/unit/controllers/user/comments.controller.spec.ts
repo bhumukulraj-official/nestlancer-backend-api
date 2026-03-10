@@ -6,78 +6,80 @@ import { CommentsService } from '../../../../src/services/comments.service';
 import { CreateCommentDto, UpdateCommentDto } from '../../../../src/dto/create-comment.dto';
 
 describe('CommentsController', () => {
-    let controller: CommentsController;
-    let commentsService: jest.Mocked<CommentsService>;
+  let controller: CommentsController;
+  let commentsService: jest.Mocked<CommentsService>;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [CommentsController],
-            providers: [
-                {
-                    provide: Reflector,
-                    useValue: {
-                        get: jest.fn(),
-                        getAllAndOverride: jest.fn(),
-                        getAllAndMerge: jest.fn(),
-                    },
-                },
-                {
-                    provide: CommentsService,
-                    useValue: {
-                        create: jest.fn(),
-                        update: jest.fn(),
-                        softDelete: jest.fn(),
-                    },
-                },
-            ],
-        })
-            .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn(() => true) })
-            .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn(() => true) })
-            .compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [CommentsController],
+      providers: [
+        {
+          provide: Reflector,
+          useValue: {
+            get: jest.fn(),
+            getAllAndOverride: jest.fn(),
+            getAllAndMerge: jest.fn(),
+          },
+        },
+        {
+          provide: CommentsService,
+          useValue: {
+            create: jest.fn(),
+            update: jest.fn(),
+            softDelete: jest.fn(),
+          },
+        },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
-        controller = module.get<CommentsController>(CommentsController);
-        commentsService = module.get(CommentsService);
+    controller = module.get<CommentsController>(CommentsController);
+    commentsService = module.get(CommentsService);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('create', () => {
+    it('should call commentsService.create', async () => {
+      commentsService.create.mockResolvedValue({ id: '1' } as any);
+      const dto: CreateCommentDto = { content: 'Nice post' };
+      const req = { user: { id: 'user1' } };
+
+      const result = await controller.create('my-post', dto, req);
+
+      expect(commentsService.create).toHaveBeenCalledWith('my-post', 'user1', dto);
+      expect(result).toEqual({ id: '1' });
     });
+  });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
+  describe('update', () => {
+    it('should call commentsService.update', async () => {
+      commentsService.update.mockResolvedValue({ id: '1', content: 'Updated' } as any);
+      const dto: UpdateCommentDto = { content: 'Updated' };
+      const req = { user: { id: 'user1' } };
+
+      const result = await controller.update('1', dto, req);
+
+      expect(commentsService.update).toHaveBeenCalledWith('1', 'user1', dto);
+      expect(result).toEqual({ id: '1', content: 'Updated' });
     });
+  });
 
-    describe('create', () => {
-        it('should call commentsService.create', async () => {
-            commentsService.create.mockResolvedValue({ id: '1' } as any);
-            const dto: CreateCommentDto = { content: 'Nice post' };
-            const req = { user: { id: 'user1' } };
+  describe('remove', () => {
+    it('should call commentsService.softDelete', async () => {
+      commentsService.softDelete.mockResolvedValue({ deleted: true } as any);
+      const req = { user: { id: 'user1' } };
 
-            const result = await controller.create('my-post', dto, req);
+      const result = await controller.remove('1', req);
 
-            expect(commentsService.create).toHaveBeenCalledWith('my-post', 'user1', dto);
-            expect(result).toEqual({ id: '1' });
-        });
+      expect(commentsService.softDelete).toHaveBeenCalledWith('1', 'user1');
+      expect(result).toEqual({ deleted: true });
     });
-
-    describe('update', () => {
-        it('should call commentsService.update', async () => {
-            commentsService.update.mockResolvedValue({ id: '1', content: 'Updated' } as any);
-            const dto: UpdateCommentDto = { content: 'Updated' };
-            const req = { user: { id: 'user1' } };
-
-            const result = await controller.update('1', dto, req);
-
-            expect(commentsService.update).toHaveBeenCalledWith('1', 'user1', dto);
-            expect(result).toEqual({ id: '1', content: 'Updated' });
-        });
-    });
-
-    describe('remove', () => {
-        it('should call commentsService.softDelete', async () => {
-            commentsService.softDelete.mockResolvedValue({ deleted: true } as any);
-            const req = { user: { id: 'user1' } };
-
-            const result = await controller.remove('1', req);
-
-            expect(commentsService.softDelete).toHaveBeenCalledWith('1', 'user1');
-            expect(result).toEqual({ deleted: true });
-        });
-    });
+  });
 });

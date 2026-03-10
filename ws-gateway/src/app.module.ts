@@ -32,4 +32,4 @@ import { RedisSubscriberService } from './services/redis-subscriber.service';
     RedisSubscriberService,
   ],
 })
-export class WsAppModule { }
+export class WsAppModule {}

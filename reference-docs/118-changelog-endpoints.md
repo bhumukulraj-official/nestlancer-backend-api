@@ -5,7 +5,9 @@
 ### Version History
 
 #### v1.1.0 (2024-02-18) - Current
+
 **Fixed:**
+
 - Added Turnstile requirement to `/auth/register` and `/auth/check-email`
 - Added rate limit 429 response format specification
 - Fixed user enumeration vulnerability in email check endpoint
@@ -13,6 +15,7 @@
 - Standardized pagination defaults across all services
 
 **Added:**
+
 - Idempotency key specification for critical operations
 - Complete error response examples for all error codes
 - WebSocket authentication documentation
@@ -25,6 +28,7 @@
 - SDK reference section
 
 **Changed:**
+
 - Updated rate limits for security-sensitive endpoints
 - Improved filter operators documentation
 - Enhanced versioning policy with deprecation timeline
@@ -32,7 +36,9 @@
 ---
 
 #### v1.0.0 (2024-01-15) - Initial Release
+
 **Added:**
+
 - Initial API documentation
 - 428 endpoints across 15 services
 - Health Service (16 endpoints)
@@ -53,12 +59,12 @@
 - WebSocket endpoints for real-time features
 - Comprehensive error code reference
 
-
 ---
 
 ### Upcoming Changes
 
 #### v1.2.0 (Planned - Q2 2024)
+
 - GraphQL API endpoint (beta)
 - Batch operations support
 - Enhanced search with Elasticsearch
@@ -66,6 +72,7 @@
 - API key authentication for integrations
 
 #### v2.0.0 (Planned - Q4 2024)
+
 - Breaking changes TBD
 - Major performance improvements
 - New microservices architecture
@@ -75,8 +82,8 @@
 
 ### Deprecation Schedule
 
-| Feature | Deprecated | Sunset | Replacement |
-|---------|------------|--------|-------------|
-| None currently | - | - | - |
+| Feature        | Deprecated | Sunset | Replacement |
+| -------------- | ---------- | ------ | ----------- |
+| None currently | -          | -      | -           |
 
 ---

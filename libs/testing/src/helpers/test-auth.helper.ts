@@ -39,13 +39,12 @@ export function createTestRefreshToken(
   userId: string,
   options?: { secret?: string; expiresIn?: string },
 ): string {
-  const secret = options?.secret || (process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-32char-min-test');
+  const secret =
+    options?.secret || process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-32char-min-test';
 
-  return jwt.sign(
-    { sub: userId, type: 'refresh' },
-    secret,
-    { expiresIn: (options?.expiresIn || '30d') as any },
-  );
+  return jwt.sign({ sub: userId, type: 'refresh' }, secret, {
+    expiresIn: (options?.expiresIn || '30d') as any,
+  });
 }
 
 /**

@@ -7,11 +7,13 @@ export class WsPresenceService {
   private readonly PRESENCE_PREFIX = 'ws:presence:';
   private readonly PRESENCE_TTL = 300; // 5 minutes
 
-  constructor(private readonly cacheService: CacheService) { }
+  constructor(private readonly cacheService: CacheService) {}
 
   async setOnline(userId: string): Promise<void> {
     try {
-      await this.cacheService.getClient().set(`${this.PRESENCE_PREFIX}${userId}`, 'online', 'EX', this.PRESENCE_TTL);
+      await this.cacheService
+        .getClient()
+        .set(`${this.PRESENCE_PREFIX}${userId}`, 'online', 'EX', this.PRESENCE_TTL);
       this.logger.debug(`User ${userId} is marked online in Redis`);
     } catch (error: any) {
       this.logger.error(`Failed to set user ${userId} online`, error);

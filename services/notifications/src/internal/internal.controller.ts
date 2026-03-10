@@ -14,17 +14,17 @@ import { ApiStandardResponse } from '@nestlancer/common';
 @Controller('internal/notifications')
 @UseGuards(JwtAuthGuard)
 export class InternalController {
-    constructor(private readonly adminService: NotificationsAdminService) { }
+  constructor(private readonly adminService: NotificationsAdminService) {}
 
-    /**
-     * Triggers a notification from another microservice.
-     * Useful for synchronous event-based notifications.
-     */
-    @Post('trigger')
-    @ApiOperation({ summary: 'Trigger an internal notification' })
-    @ApiStandardResponse(Object)
-    async triggerNotification(@Body() dto: SendNotificationDto): Promise<any> {
-        // This allows other services to send notifications via direct HTTP call if not using queue
-        return this.adminService.sendTargeted(dto);
-    }
+  /**
+   * Triggers a notification from another microservice.
+   * Useful for synchronous event-based notifications.
+   */
+  @Post('trigger')
+  @ApiOperation({ summary: 'Trigger an internal notification' })
+  @ApiStandardResponse(Object)
+  async triggerNotification(@Body() dto: SendNotificationDto): Promise<any> {
+    // This allows other services to send notifications via direct HTTP call if not using queue
+    return this.adminService.sendTargeted(dto);
+  }
 }

@@ -4,13 +4,13 @@ import { LoggerService } from '@nestlancer/logger';
 
 @Injectable()
 export class GithubDeploymentHandler implements WebhookHandler {
-    constructor(private readonly logger: LoggerService) { }
+  constructor(private readonly logger: LoggerService) {}
 
-    canHandle(provider: string, eventType: string): boolean {
-        return provider === 'github' && eventType === 'deployment';
-    }
+  canHandle(provider: string, eventType: string): boolean {
+    return provider === 'github' && eventType === 'deployment';
+  }
 
-    async handle(payload: any): Promise<void> {
-        this.logger.log(`Received GitHub deployment event: ${payload.deployment.environment}`);
-    }
+  async handle(payload: any): Promise<void> {
+    this.logger.log(`Received GitHub deployment event: ${payload.deployment.environment}`);
+  }
 }

@@ -17,7 +17,9 @@ export class QueueModule {
       module: QueueModule,
       providers: [
         { provide: 'QUEUE_OPTIONS', useValue: options || {} },
-        QueuePublisherService, QueueConsumerService, DlqService,
+        QueuePublisherService,
+        QueueConsumerService,
+        DlqService,
       ],
       exports: [QueuePublisherService, QueueConsumerService, DlqService],
     };
@@ -33,7 +35,9 @@ export class QueueModule {
           useFactory: options.useFactory,
           inject: options.inject || [],
         },
-        QueuePublisherService, QueueConsumerService, DlqService,
+        QueuePublisherService,
+        QueueConsumerService,
+        DlqService,
       ],
       exports: [QueuePublisherService, QueueConsumerService, DlqService],
     };

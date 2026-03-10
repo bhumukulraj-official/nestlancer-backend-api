@@ -7,10 +7,7 @@ export class CacheModule {
   static forRoot(options?: { redisUrl?: string }): DynamicModule {
     return {
       module: CacheModule,
-      providers: [
-        { provide: 'CACHE_OPTIONS', useValue: options || {} },
-        CacheService,
-      ],
+      providers: [{ provide: 'CACHE_OPTIONS', useValue: options || {} }, CacheService],
       exports: [CacheService],
     };
   }

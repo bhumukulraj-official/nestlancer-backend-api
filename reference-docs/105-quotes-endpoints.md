@@ -6,9 +6,11 @@
 **Admin Path**: `/api/v1/admin/quotes`
 
 ### 6.1 Overview
+
 Manages quotes (proposals) sent to clients in response to project requests. Quotes include pricing breakdown, timeline, milestones, and terms.
 
 ### 6.2 Quote Status Flow
+
 ```
 DRAFT → PENDING → SENT → VIEWED → ACCEPTED/DECLINED/EXPIRED
                     ↓
@@ -17,49 +19,49 @@ DRAFT → PENDING → SENT → VIEWED → ACCEPTED/DECLINED/EXPIRED
 
 ### 6.3 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `GET` | `/` | List own quotes | 1000/hour | Yes |
-| `GET` | `/{id}` | Get quote details | 1000/hour | Yes |
-| `POST` | `/{id}/accept` | Accept quote | 20/hour | Yes |
-| `POST` | `/{id}/decline` | Decline quote | 20/hour | Yes |
-| `POST` | `/{id}/request-changes` | Request modifications | 20/hour | No |
-| `GET` | `/{id}/pdf` | Download quote PDF | 100/hour | Yes |
-| `GET` | `/stats` | User quote statistics | 100/hour | Yes |
+| Method | Endpoint                | Description                        | Rate Limit | Idempotent |
+| ------ | ----------------------- | ---------------------------------- | ---------- | ---------- |
+| `GET`  | `/health`               | Health check (Simplified response) | 1000/hour  | Yes        |
+| `GET`  | `/`                     | List own quotes                    | 1000/hour  | Yes        |
+| `GET`  | `/{id}`                 | Get quote details                  | 1000/hour  | Yes        |
+| `POST` | `/{id}/accept`          | Accept quote                       | 20/hour    | Yes        |
+| `POST` | `/{id}/decline`         | Decline quote                      | 20/hour    | Yes        |
+| `POST` | `/{id}/request-changes` | Request modifications              | 20/hour    | No         |
+| `GET`  | `/{id}/pdf`             | Download quote PDF                 | 100/hour   | Yes        |
+| `GET`  | `/stats`                | User quote statistics              | 100/hour   | Yes        |
 
 ### 6.4 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `POST` | `/` | Create quote | 200/hour | No |
-| `GET` | `/` | List all quotes | 2000/hour | Yes |
-| `GET` | `/{id}` | Get quote (admin view) | 2000/hour | Yes |
-| `PATCH` | `/{id}` | Update quote (DRAFT/PENDING) | 200/hour | No |
-| `DELETE` | `/{id}` | Delete quote (DRAFT/PENDING) | 100/hour | Yes |
-| `POST` | `/{id}/send` | Send quote to client | 200/hour | No |
-| `POST` | `/{id}/resend` | Resend quote notification | 50/hour | No |
-| `POST` | `/{id}/duplicate` | Duplicate quote | 100/hour | No |
-| `GET` | `/stats` | Quote statistics | 500/hour | Yes |
-| `GET` | `/templates` | List quote templates | 200/hour | Yes |
-| `POST` | `/templates` | Create quote template | 50/hour | No |
+| Method   | Endpoint          | Description                  | Rate Limit | Idempotent |     | Role |
+| -------- | ----------------- | ---------------------------- | ---------- | ---------- | --- | ---- |
+| `POST`   | `/`               | Create quote                 | 200/hour   | No         |
+| `GET`    | `/`               | List all quotes              | 2000/hour  | Yes        |
+| `GET`    | `/{id}`           | Get quote (admin view)       | 2000/hour  | Yes        |
+| `PATCH`  | `/{id}`           | Update quote (DRAFT/PENDING) | 200/hour   | No         |
+| `DELETE` | `/{id}`           | Delete quote (DRAFT/PENDING) | 100/hour   | Yes        |
+| `POST`   | `/{id}/send`      | Send quote to client         | 200/hour   | No         |
+| `POST`   | `/{id}/resend`    | Resend quote notification    | 50/hour    | No         |
+| `POST`   | `/{id}/duplicate` | Duplicate quote              | 100/hour   | No         |
+| `GET`    | `/stats`          | Quote statistics             | 500/hour   | Yes        |
+| `GET`    | `/templates`      | List quote templates         | 200/hour   | Yes        |
+| `POST`   | `/templates`      | Create quote template        | 50/hour    | No         |
 
 ### 6.5 Payment Breakdown Types
 
-| Type | Description | Typical % |
-|------|-------------|-----------|
-| `advance` | Upfront payment | 20-40% |
-| `milestone` | Progress-based payment | 20-40% |
-| `final` | Completion payment | 20-40% |
-| `subscription` | Recurring payment | N/A |
-| `fullPayment` | 100% upfront | 100% |
+| Type           | Description            | Typical % |
+| -------------- | ---------------------- | --------- |
+| `advance`      | Upfront payment        | 20-40%    |
+| `milestone`    | Progress-based payment | 20-40%    |
+| `final`        | Completion payment     | 20-40%    |
+| `subscription` | Recurring payment      | N/A       |
+| `fullPayment`  | 100% upfront           | 100%      |
 
 ### 6.6 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### POST / (Admin - Create Quote)
+
 ```json
 // Request
 POST /api/v1/admin/quotes
@@ -281,6 +283,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /{id}
+
 ```json
 // Request
 GET /api/v1/quotes/quoteAbc123
@@ -410,6 +413,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/accept
+
 ```json
 // Request
 POST /api/v1/quotes/quoteAbc123/accept
@@ -519,6 +523,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/decline
+
 ```json
 // Request
 POST /api/v1/quotes/quoteAbc123/decline
@@ -559,6 +564,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/request-changes
+
 ```json
 // Request
 POST /api/v1/quotes/quoteAbc123/request-changes
@@ -610,6 +616,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /{id}/pdf
+
 ```json
 // Request
 GET /api/v1/quotes/quoteAbc123/pdf
@@ -633,19 +640,19 @@ Content-Disposition: inline; filename="quote-quoteAbc123.pdf"
 
 ### 6.7 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `QUOTE_001` | 404 | Quote not found | No |
-| `QUOTE_002` | 403 | Unauthorized access to quote | No |
-| `QUOTE_003` | 409 | Quote already accepted/declined | No |
-| `QUOTE_004` | 400 | Quote expired | No |
-| `QUOTE_005` | 400 | Invalid quote status for operation | No |
-| `QUOTE_006` | 400 | Cannot modify accepted quote | No |
-| `QUOTE_007` | 404 | Associated request not found | No |
-| `QUOTE_008` | 422 | Invalid payment breakdown structure | No |
-| `QUOTE_009` | 422 | Payment breakdown total mismatch | No |
-| `QUOTE_010` | 422 | Invalid timeline dates | No |
-| `QUOTE_011` | 400 | Quote not yet sent to client | No |
-| `QUOTE_012` | 400 | Cannot delete sent quote | No |
+| Code        | HTTP Status | Description                         | Retryable |
+| ----------- | ----------- | ----------------------------------- | --------- |
+| `QUOTE_001` | 404         | Quote not found                     | No        |
+| `QUOTE_002` | 403         | Unauthorized access to quote        | No        |
+| `QUOTE_003` | 409         | Quote already accepted/declined     | No        |
+| `QUOTE_004` | 400         | Quote expired                       | No        |
+| `QUOTE_005` | 400         | Invalid quote status for operation  | No        |
+| `QUOTE_006` | 400         | Cannot modify accepted quote        | No        |
+| `QUOTE_007` | 404         | Associated request not found        | No        |
+| `QUOTE_008` | 422         | Invalid payment breakdown structure | No        |
+| `QUOTE_009` | 422         | Payment breakdown total mismatch    | No        |
+| `QUOTE_010` | 422         | Invalid timeline dates              | No        |
+| `QUOTE_011` | 400         | Quote not yet sent to client        | No        |
+| `QUOTE_012` | 400         | Cannot delete sent quote            | No        |
 
 ---

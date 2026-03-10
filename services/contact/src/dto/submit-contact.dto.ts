@@ -7,49 +7,49 @@ import { IsString, IsEmail, MaxLength, MinLength, IsEnum } from 'class-validator
  * Captured from the platform's public contact interface.
  */
 export class SubmitContactDto {
-    @ApiProperty({
-        example: 'John Doe',
-        description: 'The full legal or preferred name of the person submitting the inquiry',
-        maxLength: 100
-    })
-    @IsString()
-    @Trim()
-    @MaxLength(100)
-    name: string;
+  @ApiProperty({
+    example: 'John Doe',
+    description: 'The full legal or preferred name of the person submitting the inquiry',
+    maxLength: 100,
+  })
+  @IsString()
+  @Trim()
+  @MaxLength(100)
+  name: string;
 
-    @ApiProperty({
-        example: 'john.doe@example.com',
-        description: 'The verified email address for receiving administrative responses'
-    })
-    @IsEmail()
-    @Trim()
-    email: string;
+  @ApiProperty({
+    example: 'john.doe@example.com',
+    description: 'The verified email address for receiving administrative responses',
+  })
+  @IsEmail()
+  @Trim()
+  email: string;
 
-    @ApiProperty({
-        enum: ContactSubject,
-        example: ContactSubject.GENERAL,
-        description: 'The primary classification or topic of the inquiry'
-    })
-    @IsEnum(ContactSubject)
-    subject: ContactSubject;
+  @ApiProperty({
+    enum: ContactSubject,
+    example: ContactSubject.GENERAL,
+    description: 'The primary classification or topic of the inquiry',
+  })
+  @IsEnum(ContactSubject)
+  subject: ContactSubject;
 
-    @ApiProperty({
-        example: 'I would like to discuss a potential partnership regarding the API ecosystem.',
-        description: 'The detailed textual content of the message body',
-        minLength: 10,
-        maxLength: 5000
-    })
-    @IsString()
-    @Trim()
-    @MinLength(10)
-    @MaxLength(5000)
-    message: string;
+  @ApiProperty({
+    example: 'I would like to discuss a potential partnership regarding the API ecosystem.',
+    description: 'The detailed textual content of the message body',
+    minLength: 10,
+    maxLength: 5000,
+  })
+  @IsString()
+  @Trim()
+  @MinLength(10)
+  @MaxLength(5000)
+  message: string;
 
-    @ApiProperty({
-        description: 'Cloudflare Turnstile cryptographic token used for validating the human-origin of the request',
-        required: true
-    })
-    @IsString()
-    turnstileToken: string;
+  @ApiProperty({
+    description:
+      'Cloudflare Turnstile cryptographic token used for validating the human-origin of the request',
+    required: true,
+  })
+  @IsString()
+  turnstileToken: string;
 }
-

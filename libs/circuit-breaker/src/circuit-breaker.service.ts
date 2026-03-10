@@ -4,11 +4,28 @@ import { CircuitBreakerOptions, CircuitState } from './interfaces/circuit-breake
 @Injectable()
 export class CircuitBreakerService {
   private readonly logger = new Logger(CircuitBreakerService.name);
-  private readonly circuits = new Map<string, { state: CircuitState; failures: number; lastFailure: number; options: CircuitBreakerOptions }>();
+  private readonly circuits = new Map<
+    string,
+    { state: CircuitState; failures: number; lastFailure: number; options: CircuitBreakerOptions }
+  >();
 
-  async execute<T>(name: string, fn: () => Promise<T>, options?: Partial<CircuitBreakerOptions>): Promise<T> {
-    const defaults: CircuitBreakerOptions = { failureThreshold: 5, resetTimeoutMs: 30000, halfOpenRequests: 1, ...options };
-    const circuit = this.circuits.get(name) || { state: CircuitState.CLOSED, failures: 0, lastFailure: 0, options: defaults };
+  async execute<T>(
+    name: string,
+    fn: () => Promise<T>,
+    options?: Partial<CircuitBreakerOptions>,
+  ): Promise<T> {
+    const defaults: CircuitBreakerOptions = {
+      failureThreshold: 5,
+      resetTimeoutMs: 30000,
+      halfOpenRequests: 1,
+      ...options,
+    };
+    const circuit = this.circuits.get(name) || {
+      state: CircuitState.CLOSED,
+      failures: 0,
+      lastFailure: 0,
+      options: defaults,
+    };
 
     if (circuit.state === CircuitState.OPEN) {
       if (Date.now() - circuit.lastFailure > circuit.options.resetTimeoutMs) {

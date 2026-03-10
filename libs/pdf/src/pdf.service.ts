@@ -10,9 +10,12 @@ export class PdfService {
 
   private getTemplate(templateName: string, data: Record<string, unknown>): string {
     switch (templateName) {
-      case 'invoice': return getInvoiceTemplate(data);
-      case 'quote': return getQuoteTemplate(data);
-      case 'receipt': return getReceiptTemplate(data);
+      case 'invoice':
+        return getInvoiceTemplate(data);
+      case 'quote':
+        return getQuoteTemplate(data);
+      case 'receipt':
+        return getReceiptTemplate(data);
       default:
         throw new Error(`Unknown template: ${templateName}`);
     }

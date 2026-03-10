@@ -15,49 +15,45 @@ import { MilestoneResponseDto } from '../../dto/milestone-response.dto';
 @Auth('ADMIN')
 @Controller('admin')
 export class MilestonesAdminController {
-    constructor(private readonly milestonesService: MilestonesService) { }
+  constructor(private readonly milestonesService: MilestonesService) {}
 
-    /**
-     * Creates a new milestone for a project.
-     */
-    @Post('projects/:projectId/milestones')
-    @ApiOperation({ summary: 'Create milestone' })
-    @ApiParam({ name: 'projectId', description: 'Project UUID' })
-    @ApiStandardResponse({ type: MilestoneResponseDto })
-    async createMilestone(
-        @Param('projectId') projectId: string,
-        @Body() dto: CreateMilestoneDto,
-    ): Promise<any> {
-        const data = await this.milestonesService.create(projectId, dto);
-        return { status: 'success', data };
-    }
+  /**
+   * Creates a new milestone for a project.
+   */
+  @Post('projects/:projectId/milestones')
+  @ApiOperation({ summary: 'Create milestone' })
+  @ApiParam({ name: 'projectId', description: 'Project UUID' })
+  @ApiStandardResponse({ type: MilestoneResponseDto })
+  async createMilestone(
+    @Param('projectId') projectId: string,
+    @Body() dto: CreateMilestoneDto,
+  ): Promise<any> {
+    const data = await this.milestonesService.create(projectId, dto);
+    return { status: 'success', data };
+  }
 
-    /**
-     * Updates an existing milestone's details (dates, description, etc.).
-     */
-    @Patch('milestones/:id')
-    @ApiOperation({ summary: 'Update milestone' })
-    @ApiParam({ name: 'id', description: 'Milestone UUID' })
-    @ApiStandardResponse({ type: MilestoneResponseDto })
-    async updateMilestone(
-        @Param('id') id: string,
-        @Body() dto: UpdateMilestoneDto,
-    ): Promise<any> {
-        const data = await this.milestonesService.update(id, dto);
-        return { status: 'success', data };
-    }
+  /**
+   * Updates an existing milestone's details (dates, description, etc.).
+   */
+  @Patch('milestones/:id')
+  @ApiOperation({ summary: 'Update milestone' })
+  @ApiParam({ name: 'id', description: 'Milestone UUID' })
+  @ApiStandardResponse({ type: MilestoneResponseDto })
+  async updateMilestone(@Param('id') id: string, @Body() dto: UpdateMilestoneDto): Promise<any> {
+    const data = await this.milestonesService.update(id, dto);
+    return { status: 'success', data };
+  }
 
-    /**
-     * Manually marks a milestone as physically complete, pending client approval.
-     */
-    @Post('milestones/:id/complete')
-    @HttpCode(200)
-    @ApiOperation({ summary: 'Mark milestone complete' })
-    @ApiParam({ name: 'id', description: 'Milestone UUID' })
-    @ApiResponse({ status: 200, description: 'Milestone marked as complete' })
-    async completeMilestone(@Param('id') id: string): Promise<any> {
-        const data = await this.milestonesService.complete(id);
-        return { status: 'success', data };
-    }
+  /**
+   * Manually marks a milestone as physically complete, pending client approval.
+   */
+  @Post('milestones/:id/complete')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Mark milestone complete' })
+  @ApiParam({ name: 'id', description: 'Milestone UUID' })
+  @ApiResponse({ status: 200, description: 'Milestone marked as complete' })
+  async completeMilestone(@Param('id') id: string): Promise<any> {
+    const data = await this.milestonesService.complete(id);
+    return { status: 'success', data };
+  }
 }
-

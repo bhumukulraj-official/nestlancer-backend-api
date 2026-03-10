@@ -3,6 +3,7 @@
 The Health Service is responsible for monitoring the health and availability of all infrastructure components, services, and workers in the Nestlancer ecosystem. It exposes public health endpoints and protected admin endpoints for deep diagnostics.
 
 ## Endpoints
+
 - `GET /api/v1/health` - Aggregated system health
 - `GET /api/v1/health/ready` - Readiness probe
 - `GET /api/v1/health/live` - Liveness probe
@@ -12,6 +13,7 @@ The Health Service is responsible for monitoring the health and availability of 
 - `GET /api/v1/health/debug` - Detailed admin diagnostics
 
 ## Setup
+
 ```bash
 # Install dependencies
 pnpm install

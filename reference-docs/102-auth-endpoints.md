@@ -5,9 +5,11 @@
 **Base Path**: `/api/v1/auth`
 
 ### 3.1 Overview
+
 Handles user authentication, registration, email verification, password management, and two-factor authentication.
 
 ### 3.2 Security Features
+
 - JWT-based authentication (RS256 signing)
 - Password hashing (bcrypt, cost factor 12)
 - Rate limiting (aggressive for auth endpoints)
@@ -18,29 +20,29 @@ Handles user authentication, registration, email verification, password manageme
 
 ### 3.3 Public Endpoints (No Auth Required)
 
-| Method | Endpoint | Description | Rate Limit | Turnstile |
-|--------|----------|-------------|------------|---------|
-| `POST` | `/register` | Create new account | 5/hour/IP | Required |
-| `POST` | `/login` | Authenticate user | 10/hour/IP | After 3 fails |
-| `POST` | `/verify-email` | Verify email with token | 5/hour/IP | No |
-| `POST` | `/forgot-password` | Request password reset | 3/hour/email | Yes |
-| `POST` | `/reset-password` | Reset password with token | 5/hour/token | No |
-| `GET` | `/check-email` | Check email availability | 5/min/IP | Yes |
-| `GET` | `/csrf-token` | Get CSRF token | 60/min | No |
-| `GET` | `/health` | Service health check | 60/min/IP | No |
+| Method | Endpoint           | Description               | Rate Limit   | Turnstile     |
+| ------ | ------------------ | ------------------------- | ------------ | ------------- |
+| `POST` | `/register`        | Create new account        | 5/hour/IP    | Required      |
+| `POST` | `/login`           | Authenticate user         | 10/hour/IP   | After 3 fails |
+| `POST` | `/verify-email`    | Verify email with token   | 5/hour/IP    | No            |
+| `POST` | `/forgot-password` | Request password reset    | 3/hour/email | Yes           |
+| `POST` | `/reset-password`  | Reset password with token | 5/hour/token | No            |
+| `GET`  | `/check-email`     | Check email availability  | 5/min/IP     | Yes           |
+| `GET`  | `/csrf-token`      | Get CSRF token            | 60/min       | No            |
+| `GET`  | `/health`          | Service health check      | 60/min/IP    | No            |
 
 ### 3.4 Authenticated Endpoints (Token Required)
 
-| Method | Endpoint | Description | Auth | Rate Limit |
-|--------|----------|-------------|------|------------|
-| `POST` | `/refresh` | Refresh access token | Refresh Token | 30/hour/token |
-| `POST` | `/verify-2fa` | Complete 2FA verification | Session Token | 10/5min/session |
-| `POST` | `/resend-verification` | Resend verification email | JWT | 3/hour/email |
+| Method | Endpoint               | Description               | Auth          | Rate Limit      |
+| ------ | ---------------------- | ------------------------- | ------------- | --------------- |
+| `POST` | `/refresh`             | Refresh access token      | Refresh Token | 30/hour/token   |
+| `POST` | `/verify-2fa`          | Complete 2FA verification | Session Token | 10/5min/session |
+| `POST` | `/resend-verification` | Resend verification email | JWT           | 3/hour/email    |
 
 ### 3.5 Request/Response Examples
 
-
 #### POST /register
+
 ```json
 // Request
 POST /api/v1/auth/register
@@ -143,6 +145,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /login
+
 ```json
 // Request
 POST /api/v1/auth/login
@@ -277,6 +280,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /verify-2fa
+
 ```json
 // Request
 POST /api/v1/auth/verify-2fa
@@ -373,6 +377,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /refresh
+
 ```json
 // Request
 POST /api/v1/auth/refresh
@@ -433,6 +438,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /verify-email
+
 ```json
 // Request
 POST /api/v1/auth/verify-email
@@ -493,6 +499,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /forgot-password
+
 ```json
 // Request
 POST /api/v1/auth/forgot-password
@@ -529,6 +536,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /reset-password
+
 ```json
 // Request
 POST /api/v1/auth/reset-password
@@ -596,6 +604,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /check-email
+
 ```json
 // Request
 GET /api/v1/auth/check-email?email=user@example.com&turnstileToken=03AGdBq25...
@@ -619,6 +628,7 @@ GET /api/v1/auth/check-email?email=user@example.com&turnstileToken=03AGdBq25...
 ### 3.6 JWT Token Structure
 
 #### Access Token Payload
+
 ```json
 {
   "sub": "usrAbc123",
@@ -632,6 +642,7 @@ GET /api/v1/auth/check-email?email=user@example.com&turnstileToken=03AGdBq25...
 ```
 
 #### Refresh Token Payload
+
 ```json
 {
   "sub": "usrAbc123",
@@ -644,20 +655,20 @@ GET /api/v1/auth/check-email?email=user@example.com&turnstileToken=03AGdBq25...
 
 ### 3.7 Error Codes
 
-| Code | HTTP Status | Description | Retry |
-|------|-------------|-------------|-------|
-| `AUTH_001` | 401 | Invalid credentials | Yes |
-| `AUTH_002` | 403 | Account not verified | No |
-| `AUTH_003` | 403 | Account locked | Wait |
-| `AUTH_004` | 401 | Invalid/expired token | No |
-| `AUTH_005` | 400 | 2FA verification failed | Yes |
-| `AUTH_006` | 409 | Email already registered | No |
-| `AUTH_007` | 422 | Password requirements not met | No |
-| `AUTH_008` | 422 | Invalid email format | No |
-| `AUTH_009` | 401 | Session expired | No |
-| `AUTH_010` | 429 | Too many failed attempts | Wait |
-| `AUTH_011` | 400 | Turnstile verification failed | Yes |
-| `AUTH_012` | 400 | Invalid verification token | No |
-| `AUTH_013` | 410 | Password reset token expired | No |
+| Code       | HTTP Status | Description                   | Retry |
+| ---------- | ----------- | ----------------------------- | ----- |
+| `AUTH_001` | 401         | Invalid credentials           | Yes   |
+| `AUTH_002` | 403         | Account not verified          | No    |
+| `AUTH_003` | 403         | Account locked                | Wait  |
+| `AUTH_004` | 401         | Invalid/expired token         | No    |
+| `AUTH_005` | 400         | 2FA verification failed       | Yes   |
+| `AUTH_006` | 409         | Email already registered      | No    |
+| `AUTH_007` | 422         | Password requirements not met | No    |
+| `AUTH_008` | 422         | Invalid email format          | No    |
+| `AUTH_009` | 401         | Session expired               | No    |
+| `AUTH_010` | 429         | Too many failed attempts      | Wait  |
+| `AUTH_011` | 400         | Turnstile verification failed | Yes   |
+| `AUTH_012` | 400         | Invalid verification token    | No    |
+| `AUTH_013` | 410         | Password reset token expired  | No    |
 
 ---

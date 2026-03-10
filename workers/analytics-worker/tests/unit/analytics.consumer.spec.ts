@@ -11,59 +11,59 @@ import { AnalyticsJobType, Period } from '../../src/interfaces/analytics-job.int
 import { QueueConsumerService } from '@nestlancer/queue';
 
 describe('AnalyticsConsumer', () => {
-    let consumer: AnalyticsConsumer;
-    let userProcessor: UserAnalyticsProcessor;
+  let consumer: AnalyticsConsumer;
+  let userProcessor: UserAnalyticsProcessor;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                AnalyticsConsumer,
-                {
-                    provide: LoggerService,
-                    useValue: { log: jest.fn(), warn: jest.fn() },
-                },
-                {
-                    provide: UserAnalyticsProcessor,
-                    useValue: { process: jest.fn() },
-                },
-                {
-                    provide: ProjectAnalyticsProcessor,
-                    useValue: { process: jest.fn() },
-                },
-                {
-                    provide: RevenueAnalyticsProcessor,
-                    useValue: { process: jest.fn() },
-                },
-                {
-                    provide: PortfolioAnalyticsProcessor,
-                    useValue: { process: jest.fn() },
-                },
-                {
-                    provide: BlogAnalyticsProcessor,
-                    useValue: { process: jest.fn() },
-                },
-                {
-                    provide: QueueConsumerService,
-                    useValue: { consume: jest.fn() },
-                },
-                {
-                    provide: EngagementAnalyticsProcessor,
-                    useValue: { process: jest.fn() },
-                },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AnalyticsConsumer,
+        {
+          provide: LoggerService,
+          useValue: { log: jest.fn(), warn: jest.fn() },
+        },
+        {
+          provide: UserAnalyticsProcessor,
+          useValue: { process: jest.fn() },
+        },
+        {
+          provide: ProjectAnalyticsProcessor,
+          useValue: { process: jest.fn() },
+        },
+        {
+          provide: RevenueAnalyticsProcessor,
+          useValue: { process: jest.fn() },
+        },
+        {
+          provide: PortfolioAnalyticsProcessor,
+          useValue: { process: jest.fn() },
+        },
+        {
+          provide: BlogAnalyticsProcessor,
+          useValue: { process: jest.fn() },
+        },
+        {
+          provide: QueueConsumerService,
+          useValue: { consume: jest.fn() },
+        },
+        {
+          provide: EngagementAnalyticsProcessor,
+          useValue: { process: jest.fn() },
+        },
+      ],
+    }).compile();
 
-        consumer = module.get<AnalyticsConsumer>(AnalyticsConsumer);
-        userProcessor = module.get<UserAnalyticsProcessor>(UserAnalyticsProcessor);
-    });
+    consumer = module.get<AnalyticsConsumer>(AnalyticsConsumer);
+    userProcessor = module.get<UserAnalyticsProcessor>(UserAnalyticsProcessor);
+  });
 
-    it('should be defined', () => {
-        expect(consumer).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(consumer).toBeDefined();
+  });
 
-    it('should route USER_STATS job to UserAnalyticsProcessor', async () => {
-        const job = { type: AnalyticsJobType.USER_STATS, period: Period.DAILY };
-        await consumer.handleJob(job);
-        expect(userProcessor.process).toHaveBeenCalledWith(Period.DAILY);
-    });
+  it('should route USER_STATS job to UserAnalyticsProcessor', async () => {
+    const job = { type: AnalyticsJobType.USER_STATS, period: Period.DAILY };
+    await consumer.handleJob(job);
+    expect(userProcessor.process).toHaveBeenCalledWith(Period.DAILY);
+  });
 });

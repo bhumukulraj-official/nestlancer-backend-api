@@ -14,20 +14,20 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { InternalModule } from './internal/internal.module';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        LoggerModule.forRoot(),
-        MetricsModule,
-        TracingModule.forRoot(),
-        DatabaseModule.forRoot(),
-        CacheModule.forRoot(),
-        QueueModule.forRoot(),
-        OutboxModule.forRoot(),
-        AuthLibModule,
-        NotificationsModule,
-        PreferencesModule,
-        SubscriptionsModule,
-        InternalModule,
-    ],
+  imports: [
+    ConfigModule.forRoot(),
+    LoggerModule.forRoot(),
+    MetricsModule,
+    TracingModule.forRoot(),
+    DatabaseModule.forRoot(),
+    CacheModule.forRoot(),
+    QueueModule.forRoot(),
+    OutboxModule.forRoot(),
+    AuthLibModule,
+    NotificationsModule,
+    PreferencesModule,
+    SubscriptionsModule,
+    InternalModule,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

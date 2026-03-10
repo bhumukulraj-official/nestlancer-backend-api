@@ -7,12 +7,14 @@ export class WsConnectionService {
   private readonly CONNECTIONS_PREFIX = 'ws:connections:';
   private readonly CONNECTIONS_TTL = 86400; // 24 hours
 
-  constructor(private readonly cacheService: CacheService) { }
+  constructor(private readonly cacheService: CacheService) {}
 
   async addConnection(userId: string, socketId: string): Promise<void> {
     try {
       await this.cacheService.getClient().sadd(`${this.CONNECTIONS_PREFIX}${userId}`, socketId);
-      await this.cacheService.getClient().expire(`${this.CONNECTIONS_PREFIX}${userId}`, this.CONNECTIONS_TTL);
+      await this.cacheService
+        .getClient()
+        .expire(`${this.CONNECTIONS_PREFIX}${userId}`, this.CONNECTIONS_TTL);
       this.logger.debug(`Added connection for user ${userId}: ${socketId}`);
     } catch (error: any) {
       this.logger.error(`Failed to add connection for user ${userId}: ${socketId}`, error);
@@ -30,7 +32,9 @@ export class WsConnectionService {
 
   async isOnline(userId: string): Promise<boolean> {
     try {
-      const count = await this.cacheService.getClient().scard(`${this.CONNECTIONS_PREFIX}${userId}`);
+      const count = await this.cacheService
+        .getClient()
+        .scard(`${this.CONNECTIONS_PREFIX}${userId}`);
       return count > 0;
     } catch (error: any) {
       this.logger.error(`Failed to check if user ${userId} is online`, error);

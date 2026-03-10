@@ -6,9 +6,11 @@
 **Admin Path**: `/api/v1/admin/payments`
 
 ### 9.1 Overview
+
 Handles all payment processing, milestone payments, refunds, and integrations with Razorpay payment gateway. Supports multiple payment methods and currencies.
 
 ### 9.2 Payment Status Flow
+
 ```
 CREATED → PENDING → PROCESSING → COMPLETED
                         ↓            ↓
@@ -17,69 +19,69 @@ CREATED → PENDING → PROCESSING → COMPLETED
 
 ### 9.3 Supported Payment Methods
 
-| Method | Provider | Currencies | Processing Time |
-|--------|----------|------------|-----------------|
-| `GET` | `/health` | Health check (Simplified format) | 1000/hour |
-| Credit/Debit Card | Razorpay | INR, EUR, GBP | Instant |
-| UPI | Razorpay | INR | Instant |
-| Net Banking | Razorpay | INR | 1-2 hours |
-| Wallets | Razorpay | INR | Instant |
-| Bank Transfer | Manual | INR | 1-3 days |
+| Method            | Provider  | Currencies                       | Processing Time |
+| ----------------- | --------- | -------------------------------- | --------------- |
+| `GET`             | `/health` | Health check (Simplified format) | 1000/hour       |
+| Credit/Debit Card | Razorpay  | INR, EUR, GBP                    | Instant         |
+| UPI               | Razorpay  | INR                              | Instant         |
+| Net Banking       | Razorpay  | INR                              | 1-2 hours       |
+| Wallets           | Razorpay  | INR                              | Instant         |
+| Bank Transfer     | Manual    | INR                              | 1-3 days        |
 
 ### 9.4 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `POST` | `/create-intent` | Create payment intent | 100/hour | No |
-| `POST` | `/initiate` | Initiate Razorpay payment | 100/hour | Yes |
-| `POST` | `/confirm` | Confirm payment | 100/hour | Yes |
-| `POST` | `/cancel` | Cancel pending payment | 50/hour | Yes |
-| `GET` | `/` | List user payments | 1000/hour | Yes |
-| `GET` | `/{id}` | Get payment details | 1000/hour | Yes |
-| `GET` | `/{id}/status` | Check payment status | 2000/hour | Yes |
-| `GET` | `/{id}/receipt` | Download receipt PDF | 100/hour | Yes |
-| `GET` | `/{id}/invoice` | Download invoice PDF | 100/hour | Yes |
-| `GET` | `/projects/{projectId}` | Get project payments | 500/hour | Yes |
-| `GET` | `/projects/{projectId}/milestones` | Get payment milestones | 500/hour | Yes |
-| `GET` | `/methods` | List saved payment methods | 500/hour | Yes |
-| `POST` | `/methods` | Save payment method | 50/hour | No |
-| `DELETE` | `/methods/{id}` | Remove payment method | 50/hour | Yes |
-| `GET` | `/stats` | User payment statistics | 100/hour | Yes |
-| `POST` | `/{id}/verify` | Verify payment after Razorpay callback | 100/hour | Yes |
-| `POST` | `/{id}/dispute` | File a payment dispute | 50/hour | No |
-| `GET` | `/invoices` | List user invoices | 500/hour | Yes |
-| `GET` | `/invoices/{id}` | Get invoice details | 500/hour | Yes |
-| `GET` | `/invoices/{id}/download` | Download invoice PDF | 100/hour | Yes |
+| Method   | Endpoint                           | Description                            | Rate Limit | Idempotent |
+| -------- | ---------------------------------- | -------------------------------------- | ---------- | ---------- |
+| `POST`   | `/create-intent`                   | Create payment intent                  | 100/hour   | No         |
+| `POST`   | `/initiate`                        | Initiate Razorpay payment              | 100/hour   | Yes        |
+| `POST`   | `/confirm`                         | Confirm payment                        | 100/hour   | Yes        |
+| `POST`   | `/cancel`                          | Cancel pending payment                 | 50/hour    | Yes        |
+| `GET`    | `/`                                | List user payments                     | 1000/hour  | Yes        |
+| `GET`    | `/{id}`                            | Get payment details                    | 1000/hour  | Yes        |
+| `GET`    | `/{id}/status`                     | Check payment status                   | 2000/hour  | Yes        |
+| `GET`    | `/{id}/receipt`                    | Download receipt PDF                   | 100/hour   | Yes        |
+| `GET`    | `/{id}/invoice`                    | Download invoice PDF                   | 100/hour   | Yes        |
+| `GET`    | `/projects/{projectId}`            | Get project payments                   | 500/hour   | Yes        |
+| `GET`    | `/projects/{projectId}/milestones` | Get payment milestones                 | 500/hour   | Yes        |
+| `GET`    | `/methods`                         | List saved payment methods             | 500/hour   | Yes        |
+| `POST`   | `/methods`                         | Save payment method                    | 50/hour    | No         |
+| `DELETE` | `/methods/{id}`                    | Remove payment method                  | 50/hour    | Yes        |
+| `GET`    | `/stats`                           | User payment statistics                | 100/hour   | Yes        |
+| `POST`   | `/{id}/verify`                     | Verify payment after Razorpay callback | 100/hour   | Yes        |
+| `POST`   | `/{id}/dispute`                    | File a payment dispute                 | 50/hour    | No         |
+| `GET`    | `/invoices`                        | List user invoices                     | 500/hour   | Yes        |
+| `GET`    | `/invoices/{id}`                   | Get invoice details                    | 500/hour   | Yes        |
+| `GET`    | `/invoices/{id}/download`          | Download invoice PDF                   | 100/hour   | Yes        |
 
 ### 9.5 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `POST` | `/projects/{projectId}/milestones` | Create payment milestones | 200/hour | No |
-| `GET` | `/milestones` | List all payment milestones | 2000/hour | Yes |
-| `GET` | `/milestones/{id}` | Get milestone details | 2000/hour | Yes |
-| `PATCH` | `/milestones/{id}` | Update milestone | 200/hour | No |
-| `POST` | `/milestones/{id}/mark-complete` | Mark work complete | 200/hour | No |
-| `POST` | `/milestones/{id}/request-payment` | Send payment request | 100/hour | No |
-| `POST` | `/milestones/{id}/release` | Release escrowed payment | 100/hour | Yes |
-| `GET` | `/` | List all payments | 2000/hour | Yes |
-| `GET` | `/{id}` | Get payment (admin view) | 2000/hour | Yes |
-| `POST` | `/{id}/refund` | Process refund | 100/hour | Yes |
-| `POST` | `/{id}/verify` | Manual verification | 100/hour | No |
-| `GET` | `/stats` | Payment statistics | 500/hour | Yes |
-| `GET` | `/disputes` | List payment disputes | 500/hour | Yes |
-| `GET` | `/disputes/{id}` | Get dispute details | 500/hour | Yes |
-| `POST` | `/disputes/{id}/respond` | Respond to dispute | 100/hour | No |
-| `POST` | `/disputes/{id}/resolve` | Resolve dispute | 50/hour | No |
-| `GET` | `/reconciliation` | Payment reconciliation report | 200/hour | Yes |
-| `POST` | `/manual` | Create manual payment entry | 100/hour | No |
-| `GET` | `/revenue/report` | Revenue analytics report | 500/hour | Yes |
-| `GET` | `/revenue/export` | Export revenue data | 200/hour | Yes |
-| `GET` | `/{id}/transactions` | Payment transaction history | 500/hour | Yes |
-| `GET` | `/{id}/timeline` | Payment lifecycle timeline | 500/hour | Yes |
-| `GET` | `/methods/supported` | List supported payment methods | 500/hour | Yes |
-| `PATCH` | `/settings` | Update payment configuration | 50/hour | No |
-| `POST` | `/reconcile` | Trigger payment reconciliation | 50/hour | No |
+| Method  | Endpoint                           | Description                    | Rate Limit | Idempotent |     | Role |
+| ------- | ---------------------------------- | ------------------------------ | ---------- | ---------- | --- | ---- |
+| `POST`  | `/projects/{projectId}/milestones` | Create payment milestones      | 200/hour   | No         |
+| `GET`   | `/milestones`                      | List all payment milestones    | 2000/hour  | Yes        |
+| `GET`   | `/milestones/{id}`                 | Get milestone details          | 2000/hour  | Yes        |
+| `PATCH` | `/milestones/{id}`                 | Update milestone               | 200/hour   | No         |
+| `POST`  | `/milestones/{id}/mark-complete`   | Mark work complete             | 200/hour   | No         |
+| `POST`  | `/milestones/{id}/request-payment` | Send payment request           | 100/hour   | No         |
+| `POST`  | `/milestones/{id}/release`         | Release escrowed payment       | 100/hour   | Yes        |
+| `GET`   | `/`                                | List all payments              | 2000/hour  | Yes        |
+| `GET`   | `/{id}`                            | Get payment (admin view)       | 2000/hour  | Yes        |
+| `POST`  | `/{id}/refund`                     | Process refund                 | 100/hour   | Yes        |
+| `POST`  | `/{id}/verify`                     | Manual verification            | 100/hour   | No         |
+| `GET`   | `/stats`                           | Payment statistics             | 500/hour   | Yes        |
+| `GET`   | `/disputes`                        | List payment disputes          | 500/hour   | Yes        |
+| `GET`   | `/disputes/{id}`                   | Get dispute details            | 500/hour   | Yes        |
+| `POST`  | `/disputes/{id}/respond`           | Respond to dispute             | 100/hour   | No         |
+| `POST`  | `/disputes/{id}/resolve`           | Resolve dispute                | 50/hour    | No         |
+| `GET`   | `/reconciliation`                  | Payment reconciliation report  | 200/hour   | Yes        |
+| `POST`  | `/manual`                          | Create manual payment entry    | 100/hour   | No         |
+| `GET`   | `/revenue/report`                  | Revenue analytics report       | 500/hour   | Yes        |
+| `GET`   | `/revenue/export`                  | Export revenue data            | 200/hour   | Yes        |
+| `GET`   | `/{id}/transactions`               | Payment transaction history    | 500/hour   | Yes        |
+| `GET`   | `/{id}/timeline`                   | Payment lifecycle timeline     | 500/hour   | Yes        |
+| `GET`   | `/methods/supported`               | List supported payment methods | 500/hour   | Yes        |
+| `PATCH` | `/settings`                        | Update payment configuration   | 50/hour    | No         |
+| `POST`  | `/reconcile`                       | Trigger payment reconciliation | 50/hour    | No         |
 
 ### 9.6 Webhook Endpoint (Moved to Ingestion Service)
 
@@ -87,10 +89,10 @@ CREATED → PENDING → PROCESSING → COMPLETED
 
 ### 9.7 Request/Response Examples
 
-
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### POST /create-intent
+
 ```json
 // Request
 POST /api/v1/payments/create-intent
@@ -151,6 +153,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /initiate
+
 ```json
 // Request
 POST /api/v1/payments/initiate
@@ -194,6 +197,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /confirm
+
 ```json
 // Request
 POST /api/v1/payments/confirm
@@ -274,6 +278,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /{id}
+
 ```json
 // Request
 GET /api/v1/payments/pmtAbc123
@@ -350,6 +355,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/refund (Admin)
+
 ```json
 // Request
 POST /api/v1/admin/payments/pmtAbc123/refund
@@ -427,6 +433,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /projects/{projectId}/milestones
+
 ```json
 // Request
 GET /api/v1/payments/projects/projAbc123/milestones
@@ -512,6 +519,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{id}/verify
+
 ```json
 // Request
 POST /api/v1/payments/pmtAbc123/verify
@@ -544,6 +552,7 @@ X-Request-ID: reqDef456
 ```
 
 #### POST /{id}/dispute
+
 ```json
 // Request
 POST /api/v1/payments/pmtAbc123/dispute
@@ -577,6 +586,7 @@ X-Request-ID: reqGhi789
 ```
 
 #### GET /invoices
+
 ```json
 // Request
 GET /api/v1/invoices?page=1&limit=10
@@ -631,6 +641,7 @@ X-Request-ID: reqJkl012
 ```
 
 #### GET /invoices/{id}
+
 ```json
 // Request
 GET /api/v1/invoices/invAbc001
@@ -681,6 +692,7 @@ X-Request-ID: reqMno345
 ```
 
 #### GET /invoices/{id}/download
+
 ```json
 // Request
 GET /api/v1/invoices/invAbc001/download
@@ -707,6 +719,7 @@ X-Request-ID: reqPqr678
 ```
 
 #### POST /manual (Admin)
+
 ```json
 // Request
 POST /api/v1/admin/payments/manual
@@ -750,6 +763,7 @@ X-Request-ID: reqStu901
 ```
 
 #### GET /revenue/report (Admin)
+
 ```json
 // Request
 GET /api/v1/admin/payments/revenue/report?from=2024-01-01&to=2024-03-31&groupBy=month
@@ -804,6 +818,7 @@ X-Request-ID: reqVwx234
 ```
 
 #### GET /revenue/export (Admin)
+
 ```json
 // Request
 GET /api/v1/admin/payments/revenue/export?from=2024-01-01&to=2024-03-31&format=csv
@@ -834,6 +849,7 @@ X-Request-ID: reqYza567
 ```
 
 #### GET /{id}/transactions (Admin)
+
 ```json
 // Request
 GET /api/v1/admin/payments/pmtAbc123/transactions
@@ -880,6 +896,7 @@ X-Request-ID: reqBcd890
 ```
 
 #### GET /{id}/timeline (Admin)
+
 ```json
 // Request
 GET /api/v1/admin/payments/pmtAbc123/timeline
@@ -927,6 +944,7 @@ X-Request-ID: reqEfg123
 ```
 
 #### GET /methods/supported (Admin)
+
 ```json
 // Request
 GET /api/v1/admin/payments/methods/supported
@@ -981,6 +999,7 @@ X-Request-ID: reqHij456
 ```
 
 #### PATCH /settings (Admin)
+
 ```json
 // Request
 PATCH /api/v1/admin/payments/settings
@@ -1029,6 +1048,7 @@ X-Request-ID: reqKlm789
 ```
 
 #### POST /reconcile (Admin)
+
 ```json
 // Request
 POST /api/v1/admin/payments/reconcile
@@ -1086,22 +1106,22 @@ X-Request-ID: reqNop012
 
 ### 9.8 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `PAYMENT_001` | 404 | Payment not found | No |
-| `PAYMENT_002` | 403 | Unauthorized access to payment | No |
-| `PAYMENT_003` | 409 | Payment already completed | No |
-| `PAYMENT_004` | 400 | Payment failed | No |
-| `PAYMENT_005` | 422 | Invalid payment amount | No |
-| `PAYMENT_006` | 404 | Milestone not found | No |
-| `PAYMENT_007` | 502 | Razorpay service error | Yes |
-| `PAYMENT_008` | 401 | Signature verification failed | No |
-| `PAYMENT_009` | 400 | Insufficient funds | No |
-| `PAYMENT_010` | 400 | Refund not allowed | No |
-| `PAYMENT_011` | 400 | Refund amount exceeds payment | No |
-| `PAYMENT_012` | 409 | Dispute already exists | No |
-| `PAYMENT_013` | 410 | Payment intent expired | No |
-| `PAYMENT_014` | 400 | Payment method declined | No |
-| `PAYMENT_015` | 429 | Too many payment attempts | Yes (wait) |
+| Code          | HTTP Status | Description                    | Retryable  |
+| ------------- | ----------- | ------------------------------ | ---------- |
+| `PAYMENT_001` | 404         | Payment not found              | No         |
+| `PAYMENT_002` | 403         | Unauthorized access to payment | No         |
+| `PAYMENT_003` | 409         | Payment already completed      | No         |
+| `PAYMENT_004` | 400         | Payment failed                 | No         |
+| `PAYMENT_005` | 422         | Invalid payment amount         | No         |
+| `PAYMENT_006` | 404         | Milestone not found            | No         |
+| `PAYMENT_007` | 502         | Razorpay service error         | Yes        |
+| `PAYMENT_008` | 401         | Signature verification failed  | No         |
+| `PAYMENT_009` | 400         | Insufficient funds             | No         |
+| `PAYMENT_010` | 400         | Refund not allowed             | No         |
+| `PAYMENT_011` | 400         | Refund amount exceeds payment  | No         |
+| `PAYMENT_012` | 409         | Dispute already exists         | No         |
+| `PAYMENT_013` | 410         | Payment intent expired         | No         |
+| `PAYMENT_014` | 400         | Payment method declined        | No         |
+| `PAYMENT_015` | 429         | Too many payment attempts      | Yes (wait) |
 
 ---

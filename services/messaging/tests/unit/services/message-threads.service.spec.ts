@@ -12,7 +12,10 @@ describe('MessageThreadsService', () => {
         {
           provide: PrismaReadService,
           useValue: {
-            message: { findMany: jest.fn().mockResolvedValue([]), count: jest.fn().mockResolvedValue(0) },
+            message: {
+              findMany: jest.fn().mockResolvedValue([]),
+              count: jest.fn().mockResolvedValue(0),
+            },
           },
         },
       ],

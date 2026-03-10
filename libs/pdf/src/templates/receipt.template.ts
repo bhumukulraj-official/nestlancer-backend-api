@@ -56,16 +56,24 @@ export function getReceiptTemplate(data: Record<string, unknown>): string {
       <span class="detail-label">Payment Method</span>
       <span class="detail-value">${paymentMethod}</span>
     </div>
-    ${transactionId ? `
+    ${
+      transactionId
+        ? `
     <div class="detail-row">
       <span class="detail-label">Transaction ID</span>
       <span class="detail-value">${transactionId}</span>
-    </div>` : ''}
-    ${data.projectTitle ? `
+    </div>`
+        : ''
+    }
+    ${
+      data.projectTitle
+        ? `
     <div class="detail-row">
       <span class="detail-label">For Project</span>
       <span class="detail-value">${data.projectTitle}</span>
-    </div>` : ''}
+    </div>`
+        : ''
+    }
     <div class="detail-row amount-row">
       <span class="detail-label" style="font-size: 16px;">Amount Paid</span>
       <span class="detail-value">${formatMoney(amountPaise)}</span>

@@ -7,21 +7,21 @@ import { PrismaWriteService } from '@nestlancer/database';
 @Processor('generic.webhook')
 @Injectable()
 export class GenericWebhookProcessor {
-    constructor(
-        private readonly logger: LoggerService,
-        private readonly prisma: PrismaWriteService,
-    ) { }
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly prisma: PrismaWriteService,
+  ) {}
 
-    @Process()
-    async handleGeneric(job: IncomingWebhookJob): Promise<void> {
-        this.logger.warn(`Received generic webhook event from ${job.provider}: ${job.eventType}`);
+  @Process()
+  async handleGeneric(job: IncomingWebhookJob): Promise<void> {
+    this.logger.warn(`Received generic webhook event from ${job.provider}: ${job.eventType}`);
 
-        await this.prisma.webhookLog.update({
-            where: { id: job.incomingWebhookId },
-            data: {
-                status: 'FAILED',
-                error: `Generic processor fallback for ${job.provider}`,
-            },
-        });
-    }
+    await this.prisma.webhookLog.update({
+      where: { id: job.incomingWebhookId },
+      data: {
+        status: 'FAILED',
+        error: `Generic processor fallback for ${job.provider}`,
+      },
+    });
+  }
 }

@@ -6,96 +6,102 @@
 **Admin Path**: `/api/v1/admin/media`
 
 ### 12.1 Overview
+
 Handles file uploads, storage, processing, and delivery. Supports images, documents, videos, and archives with automatic processing, virus scanning, and CDN delivery.
 
 > **Architecture Note (Dual Bucket):** The system uses a strict dual-bucket architecture for security.
+>
 > - **Private Bucket (`nestlancer-private`)**: All uploads land here by default. Files are strictly private and accessed via temporary, short-lived presigned URLs.
 > - **Public Bucket (`nestlancer-public`)**: Files are copied here only when an entity (like a Portfolio item or Blog post) is officially published. The public bucket is connected to the CDN for high-performance, cacheable global delivery.
 
 ### 12.2 Supported File Types
 
 #### Images
-| Extension | MIME Type | Max Size | Processing |
-|-----------|-----------|----------|------------|
-| `jpg`, `jpeg` | image/jpeg | 10MB | Resize, compress, thumbnail |
-| `png` | image/png | 10MB | Resize, compress, thumbnail |
-| `gif` | image/gif | 5MB | Thumbnail |
-| `webp` | image/webp | 10MB | Resize, compress, thumbnail |
-| `svg` | image/svg+xml | 2MB | Validation only |
+
+| Extension     | MIME Type     | Max Size | Processing                  |
+| ------------- | ------------- | -------- | --------------------------- |
+| `jpg`, `jpeg` | image/jpeg    | 10MB     | Resize, compress, thumbnail |
+| `png`         | image/png     | 10MB     | Resize, compress, thumbnail |
+| `gif`         | image/gif     | 5MB      | Thumbnail                   |
+| `webp`        | image/webp    | 10MB     | Resize, compress, thumbnail |
+| `svg`         | image/svg+xml | 2MB      | Validation only             |
 
 #### Documents
-| Extension | MIME Type | Max Size | Processing |
-|-----------|-----------|----------|------------|
-| `pdf` | application/pdf | 25MB | Thumbnail, text extraction |
-| `doc` | application/msword | 25MB | Virus scan |
-| `docx` | application/vnd.openxmlformats-officedocument.wordprocessingml.document | 25MB | Virus scan |
-| `xls` | application/vnd.ms-excel | 25MB | Virus scan |
-| `xlsx` | application/vnd.openxmlformats-officedocument.spreadsheetml.sheet | 25MB | Virus scan |
-| `ppt` | application/vnd.ms-powerpoint | 50MB | Virus scan |
-| `pptx` | application/vnd.openxmlformats-officedocument.presentationml.presentation | 50MB | Virus scan |
-| `txt` | text/plain | 5MB | None |
+
+| Extension | MIME Type                                                                 | Max Size | Processing                 |
+| --------- | ------------------------------------------------------------------------- | -------- | -------------------------- |
+| `pdf`     | application/pdf                                                           | 25MB     | Thumbnail, text extraction |
+| `doc`     | application/msword                                                        | 25MB     | Virus scan                 |
+| `docx`    | application/vnd.openxmlformats-officedocument.wordprocessingml.document   | 25MB     | Virus scan                 |
+| `xls`     | application/vnd.ms-excel                                                  | 25MB     | Virus scan                 |
+| `xlsx`    | application/vnd.openxmlformats-officedocument.spreadsheetml.sheet         | 25MB     | Virus scan                 |
+| `ppt`     | application/vnd.ms-powerpoint                                             | 50MB     | Virus scan                 |
+| `pptx`    | application/vnd.openxmlformats-officedocument.presentationml.presentation | 50MB     | Virus scan                 |
+| `txt`     | text/plain                                                                | 5MB      | None                       |
 
 #### Archives
-| Extension | MIME Type | Max Size | Processing |
-|-----------|-----------|----------|------------|
-| `zip` | application/zip | 100MB | Virus scan, contents list |
-| `rar` | application/x-rar-compressed | 100MB | Virus scan |
-| `7z` | application/x-7z-compressed | 100MB | Virus scan |
+
+| Extension | MIME Type                    | Max Size | Processing                |
+| --------- | ---------------------------- | -------- | ------------------------- |
+| `zip`     | application/zip              | 100MB    | Virus scan, contents list |
+| `rar`     | application/x-rar-compressed | 100MB    | Virus scan                |
+| `7z`      | application/x-7z-compressed  | 100MB    | Virus scan                |
 
 #### Videos
-| Extension | MIME Type | Max Size | Processing |
-|-----------|-----------|----------|------------|
-| `mp4` | video/mp4 | 500MB | Thumbnail, transcode |
-| `webm` | video/webm | 500MB | Thumbnail, transcode |
-| `mov` | video/quicktime | 500MB | Thumbnail, transcode |
+
+| Extension | MIME Type       | Max Size | Processing           |
+| --------- | --------------- | -------- | -------------------- |
+| `mp4`     | video/mp4       | 500MB    | Thumbnail, transcode |
+| `webm`    | video/webm      | 500MB    | Thumbnail, transcode |
+| `mov`     | video/quicktime | 500MB    | Thumbnail, transcode |
 
 ### 12.3 User Endpoints (JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent |
-|--------|----------|-------------|------------|------------|
-| `GET` | `/health` | Health check (Simplified response) | 1000/hour | Yes |
-| `POST` | `/upload/request` | Get presigned upload URL | 500/hour | No |
-| `POST` | `/upload/confirm` | Confirm upload completion | 500/hour | Yes |
-| `POST` | `/upload` | Direct upload (<10MB) | 200/hour | No |
-| `POST` | `/upload/chunked/init` | Initialize chunked upload | 100/hour | No |
-| `POST` | `/upload/chunked/{uploadId}/part` | Upload chunk | 500/hour | Yes |
-| `POST` | `/upload/chunked/{uploadId}/complete` | Complete chunked upload | 100/hour | Yes |
-| `POST` | `/upload/chunked/{uploadId}/abort` | Abort chunked upload | 100/hour | Yes |
-| `GET` | `/` | List user's media | 1000/hour | Yes |
-| `GET` | `/{mediaId}` | Get media details | 2000/hour | Yes |
-| `PATCH` | `/{mediaId}` | Update metadata | 500/hour | No |
-| `DELETE` | `/{mediaId}` | Delete media | 200/hour | Yes (soft) |
-| `GET` | `/{mediaId}/status` | Check processing status | 2000/hour | Yes |
-| `POST` | `/{mediaId}/regenerate-thumbnail` | Regenerate thumbnail | 50/hour | No |
-| `GET` | `/{mediaId}/download` | Get temporary presigned download/view URL | 1000/hour | Yes |
-| `GET` | `/{mediaId}/versions` | Get file versions | 500/hour | Yes |
-| `POST` | `/{mediaId}/share` | Generate share link | 200/hour | No |
-| `DELETE` | `/{mediaId}/share` | Revoke share link | 200/hour | Yes |
-| `GET` | `/stats` | Storage usage statistics | 100/hour | Yes |
+| Method   | Endpoint                              | Description                               | Rate Limit | Idempotent |
+| -------- | ------------------------------------- | ----------------------------------------- | ---------- | ---------- |
+| `GET`    | `/health`                             | Health check (Simplified response)        | 1000/hour  | Yes        |
+| `POST`   | `/upload/request`                     | Get presigned upload URL                  | 500/hour   | No         |
+| `POST`   | `/upload/confirm`                     | Confirm upload completion                 | 500/hour   | Yes        |
+| `POST`   | `/upload`                             | Direct upload (<10MB)                     | 200/hour   | No         |
+| `POST`   | `/upload/chunked/init`                | Initialize chunked upload                 | 100/hour   | No         |
+| `POST`   | `/upload/chunked/{uploadId}/part`     | Upload chunk                              | 500/hour   | Yes        |
+| `POST`   | `/upload/chunked/{uploadId}/complete` | Complete chunked upload                   | 100/hour   | Yes        |
+| `POST`   | `/upload/chunked/{uploadId}/abort`    | Abort chunked upload                      | 100/hour   | Yes        |
+| `GET`    | `/`                                   | List user's media                         | 1000/hour  | Yes        |
+| `GET`    | `/{mediaId}`                          | Get media details                         | 2000/hour  | Yes        |
+| `PATCH`  | `/{mediaId}`                          | Update metadata                           | 500/hour   | No         |
+| `DELETE` | `/{mediaId}`                          | Delete media                              | 200/hour   | Yes (soft) |
+| `GET`    | `/{mediaId}/status`                   | Check processing status                   | 2000/hour  | Yes        |
+| `POST`   | `/{mediaId}/regenerate-thumbnail`     | Regenerate thumbnail                      | 50/hour    | No         |
+| `GET`    | `/{mediaId}/download`                 | Get temporary presigned download/view URL | 1000/hour  | Yes        |
+| `GET`    | `/{mediaId}/versions`                 | Get file versions                         | 500/hour   | Yes        |
+| `POST`   | `/{mediaId}/share`                    | Generate share link                       | 200/hour   | No         |
+| `DELETE` | `/{mediaId}/share`                    | Revoke share link                         | 200/hour   | Yes        |
+| `GET`    | `/stats`                              | Storage usage statistics                  | 100/hour   | Yes        |
 
 ### 12.4 Admin Endpoints (Admin JWT Required)
 
-| Method | Endpoint | Description | Rate Limit | Idempotent | | Role |
-|--------|----------|-------------|------------|------------|------|
-| `GET` | `/` | List all media | 2000/hour | Yes |
-| `GET` | `/{mediaId}` | Get media (admin view) | 2000/hour | Yes |
-| `GET` | `/analytics` | Media analytics | 1000/hour | Yes |
-| `DELETE` | `/{mediaId}` | Delete any media | 500/hour | Yes |
-| `POST` | `/{mediaId}/reprocess` | Reprocess media | 100/hour | No |
-| `GET` | `/storage-usage` | Storage usage stats | 500/hour | Yes |
-| `GET` | `/quarantine` | List quarantined files | 500/hour | Yes |
-| `POST` | `/quarantine/{mediaId}/release` | Release from quarantine | 100/hour | No |
-| `DELETE` | `/quarantine/{mediaId}` | Delete quarantined file | 100/hour | Yes |
-| `POST` | `/cleanup` | Trigger storage cleanup | 10/hour | No |
-| `GET` | `/users/{userId}` | List media for a specific user | 1000/hour | Yes |
-| `PATCH` | `/settings` | Update media upload configuration | 100/hour | No |
+| Method   | Endpoint                        | Description                       | Rate Limit | Idempotent |     | Role |
+| -------- | ------------------------------- | --------------------------------- | ---------- | ---------- | --- | ---- |
+| `GET`    | `/`                             | List all media                    | 2000/hour  | Yes        |
+| `GET`    | `/{mediaId}`                    | Get media (admin view)            | 2000/hour  | Yes        |
+| `GET`    | `/analytics`                    | Media analytics                   | 1000/hour  | Yes        |
+| `DELETE` | `/{mediaId}`                    | Delete any media                  | 500/hour   | Yes        |
+| `POST`   | `/{mediaId}/reprocess`          | Reprocess media                   | 100/hour   | No         |
+| `GET`    | `/storage-usage`                | Storage usage stats               | 500/hour   | Yes        |
+| `GET`    | `/quarantine`                   | List quarantined files            | 500/hour   | Yes        |
+| `POST`   | `/quarantine/{mediaId}/release` | Release from quarantine           | 100/hour   | No         |
+| `DELETE` | `/quarantine/{mediaId}`         | Delete quarantined file           | 100/hour   | Yes        |
+| `POST`   | `/cleanup`                      | Trigger storage cleanup           | 10/hour    | No         |
+| `GET`    | `/users/{userId}`               | List media for a specific user    | 1000/hour  | Yes        |
+| `PATCH`  | `/settings`                     | Update media upload configuration | 100/hour   | No         |
 
 ### 12.5 Request/Response Examples
-
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
 #### POST /upload/request (Presigned URL)
+
 ```json
 // Request
 POST /api/v1/media/upload/request
@@ -156,6 +162,7 @@ const response = await fetch(presignedUrl, {
 ```
 
 #### POST /upload/confirm
+
 ```json
 // Request
 POST /api/v1/media/upload/confirm
@@ -252,6 +259,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /upload (Direct Upload - Small Files)
+
 ```json
 // Request
 POST /api/v1/media/upload
@@ -311,6 +319,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /upload/chunked/init (Large File Upload)
+
 ```json
 // Request
 POST /api/v1/media/upload/chunked/init
@@ -367,6 +376,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /{mediaId}
+
 ```json
 // Request
 GET /api/v1/media/mediaAbc123
@@ -467,6 +477,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### POST /{mediaId}/share
+
 ```json
 // Request
 POST /api/v1/media/mediaAbc123/share
@@ -511,6 +522,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /stats
+
 ```json
 // Request
 GET /api/v1/media/stats
@@ -573,6 +585,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### GET /admin/media/users/{userId}
+
 ```json
 // Request
 GET /api/v1/admin/media/users/usrAbc123?page=1&limit=20&type=image
@@ -624,6 +637,7 @@ X-Request-ID: reqAbc123
 ```
 
 #### PATCH /admin/media/settings
+
 ```json
 // Request
 PATCH /api/v1/admin/media/settings
@@ -664,22 +678,22 @@ X-Request-ID: reqAbc123
 
 ### 12.6 Error Codes
 
-| Code | HTTP Status | Description | Retryable |
-|------|-------------|-------------|-----------|
-| `MEDIA_001` | 404 | Media not found | No |
-| `MEDIA_002` | 403 | Unauthorized access | No |
-| `MEDIA_003` | 413 | File size exceeds limit | No |
-| `MEDIA_004` | 415 | Unsupported file type | No |
-| `MEDIA_005` | 500 | Upload failed | Yes |
-| `MEDIA_006` | 500 | Processing failed | Yes |
-| `MEDIA_007` | 410 | Presigned URL expired | No |
-| `MEDIA_008` | 400 | Virus detected | No |
-| `MEDIA_009` | 507 | Storage quota exceeded | No |
-| `MEDIA_010` | 422 | Invalid file content (type mismatch) | No |
-| `MEDIA_011` | 400 | Checksum mismatch | No |
-| `MEDIA_012` | 400 | Chunked upload incomplete | No |
-| `MEDIA_013` | 404 | Upload session not found | No |
-| `MEDIA_014` | 410 | Share link expired | No |
-| `MEDIA_015` | 429 | Download limit reached | No |
+| Code        | HTTP Status | Description                          | Retryable |
+| ----------- | ----------- | ------------------------------------ | --------- |
+| `MEDIA_001` | 404         | Media not found                      | No        |
+| `MEDIA_002` | 403         | Unauthorized access                  | No        |
+| `MEDIA_003` | 413         | File size exceeds limit              | No        |
+| `MEDIA_004` | 415         | Unsupported file type                | No        |
+| `MEDIA_005` | 500         | Upload failed                        | Yes       |
+| `MEDIA_006` | 500         | Processing failed                    | Yes       |
+| `MEDIA_007` | 410         | Presigned URL expired                | No        |
+| `MEDIA_008` | 400         | Virus detected                       | No        |
+| `MEDIA_009` | 507         | Storage quota exceeded               | No        |
+| `MEDIA_010` | 422         | Invalid file content (type mismatch) | No        |
+| `MEDIA_011` | 400         | Checksum mismatch                    | No        |
+| `MEDIA_012` | 400         | Chunked upload incomplete            | No        |
+| `MEDIA_013` | 404         | Upload session not found             | No        |
+| `MEDIA_014` | 410         | Share link expired                   | No        |
+| `MEDIA_015` | 429         | Download limit reached               | No        |
 
 ---

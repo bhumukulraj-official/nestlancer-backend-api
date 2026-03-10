@@ -7,152 +7,148 @@ import { PortfolioAnalyticsService } from '../../../../src/services/portfolio-an
 import { PortfolioLikesService } from '../../../../src/services/portfolio-likes.service';
 
 describe('PortfolioPublicController', () => {
-    let controller: PortfolioPublicController;
-    let portfolioService: jest.Mocked<PortfolioService>;
-    let categoriesService: jest.Mocked<PortfolioCategoriesService>;
-    let searchService: jest.Mocked<PortfolioSearchService>;
-    let analyticsService: jest.Mocked<PortfolioAnalyticsService>;
-    let likesService: jest.Mocked<PortfolioLikesService>;
+  let controller: PortfolioPublicController;
+  let portfolioService: jest.Mocked<PortfolioService>;
+  let categoriesService: jest.Mocked<PortfolioCategoriesService>;
+  let searchService: jest.Mocked<PortfolioSearchService>;
+  let analyticsService: jest.Mocked<PortfolioAnalyticsService>;
+  let likesService: jest.Mocked<PortfolioLikesService>;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [PortfolioPublicController],
-            providers: [
-                {
-                    provide: PortfolioService,
-                    useValue: {
-                        findPublished: jest.fn(),
-                        getFeatured: jest.fn(),
-                        findByIdOrSlug: jest.fn(),
-                    },
-                },
-                {
-                    provide: PortfolioCategoriesService,
-                    useValue: {
-                        findAll: jest.fn(),
-                    },
-                },
-                {
-                    provide: PortfolioSearchService,
-                    useValue: {
-                        search: jest.fn(),
-                    },
-                },
-                {
-                    provide: PortfolioAnalyticsService,
-                    useValue: {
-                        trackView: jest.fn(),
-                    },
-                },
-                {
-                    provide: PortfolioLikesService,
-                    useValue: {
-                        toggleLike: jest.fn(),
-                    },
-                },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [PortfolioPublicController],
+      providers: [
+        {
+          provide: PortfolioService,
+          useValue: {
+            findPublished: jest.fn(),
+            getFeatured: jest.fn(),
+            findByIdOrSlug: jest.fn(),
+          },
+        },
+        {
+          provide: PortfolioCategoriesService,
+          useValue: {
+            findAll: jest.fn(),
+          },
+        },
+        {
+          provide: PortfolioSearchService,
+          useValue: {
+            search: jest.fn(),
+          },
+        },
+        {
+          provide: PortfolioAnalyticsService,
+          useValue: {
+            trackView: jest.fn(),
+          },
+        },
+        {
+          provide: PortfolioLikesService,
+          useValue: {
+            toggleLike: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
 
-        controller = module.get<PortfolioPublicController>(PortfolioPublicController);
-        portfolioService = module.get(PortfolioService);
-        categoriesService = module.get(PortfolioCategoriesService);
-        searchService = module.get(PortfolioSearchService);
-        analyticsService = module.get(PortfolioAnalyticsService);
-        likesService = module.get(PortfolioLikesService);
+    controller = module.get<PortfolioPublicController>(PortfolioPublicController);
+    portfolioService = module.get(PortfolioService);
+    categoriesService = module.get(PortfolioCategoriesService);
+    searchService = module.get(PortfolioSearchService);
+    analyticsService = module.get(PortfolioAnalyticsService);
+    likesService = module.get(PortfolioLikesService);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('list', () => {
+    it('should call portfolioService.findPublished', async () => {
+      portfolioService.findPublished.mockResolvedValue({ items: [] } as any);
+
+      const result = await controller.list({} as any);
+
+      expect(portfolioService.findPublished).toHaveBeenCalled();
+      expect(result).toHaveProperty('items');
     });
+  });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
+  describe('getFeatured', () => {
+    it('should call portfolioService.getFeatured', async () => {
+      portfolioService.getFeatured.mockResolvedValue([]);
+
+      const result = await controller.getFeatured();
+
+      expect(portfolioService.getFeatured).toHaveBeenCalled();
+      expect(result).toEqual([]);
     });
+  });
 
-    describe('list', () => {
-        it('should call portfolioService.findPublished', async () => {
-            portfolioService.findPublished.mockResolvedValue({ items: [] } as any);
+  describe('getCategories', () => {
+    it('should call categoriesService.findAll', async () => {
+      categoriesService.findAll.mockResolvedValue([]);
 
-            const result = await controller.list({} as any);
+      const result = await controller.getCategories();
 
-            expect(portfolioService.findPublished).toHaveBeenCalled();
-            expect(result).toHaveProperty('items');
-        });
+      expect(categoriesService.findAll).toHaveBeenCalled();
+      expect(result).toEqual([]);
     });
+  });
 
-    describe('getFeatured', () => {
-        it('should call portfolioService.getFeatured', async () => {
-            portfolioService.getFeatured.mockResolvedValue([]);
+  describe('getTags', () => {
+    it('should extract tags from published items', async () => {
+      portfolioService.findPublished.mockResolvedValue({
+        items: [{ tags: ['react', 'node'] }, { tags: ['node', 'aws'] }, { tags: null }],
+      } as any);
 
-            const result = await controller.getFeatured();
+      const result = await controller.getTags();
 
-            expect(portfolioService.getFeatured).toHaveBeenCalled();
-            expect(result).toEqual([]);
-        });
+      expect(result).toEqual(expect.arrayContaining(['react', 'node', 'aws']));
+      expect(result.length).toBe(3);
     });
+  });
 
-    describe('getCategories', () => {
-        it('should call categoriesService.findAll', async () => {
-            categoriesService.findAll.mockResolvedValue([]);
+  describe('search', () => {
+    it('should call searchService.search', async () => {
+      searchService.search.mockResolvedValue({ items: [] } as any);
 
-            const result = await controller.getCategories();
+      const result = await controller.search({} as any);
 
-            expect(categoriesService.findAll).toHaveBeenCalled();
-            expect(result).toEqual([]);
-        });
+      expect(searchService.search).toHaveBeenCalled();
+      expect(result).toHaveProperty('items');
     });
+  });
 
-    describe('getTags', () => {
-        it('should extract tags from published items', async () => {
-            portfolioService.findPublished.mockResolvedValue({
-                items: [
-                    { tags: ['react', 'node'] },
-                    { tags: ['node', 'aws'] },
-                    { tags: null },
-                ],
-            } as any);
+  describe('getDetail', () => {
+    it('should fetch item and track view', async () => {
+      portfolioService.findByIdOrSlug.mockResolvedValue({ id: '1' } as any);
+      analyticsService.trackView.mockResolvedValue();
 
-            const result = await controller.getTags();
+      const req = { ip: '127.0.0.1', headers: {} };
+      const expectedIpHash = Buffer.from('127.0.0.1').toString('base64');
 
-            expect(result).toEqual(expect.arrayContaining(['react', 'node', 'aws']));
-            expect(result.length).toBe(3);
-        });
+      const result = await controller.getDetail('1', req);
+
+      expect(portfolioService.findByIdOrSlug).toHaveBeenCalledWith('1');
+      expect(analyticsService.trackView).toHaveBeenCalledWith('1', expectedIpHash);
+      expect(result).toEqual({ id: '1' });
     });
+  });
 
-    describe('search', () => {
-        it('should call searchService.search', async () => {
-            searchService.search.mockResolvedValue({ items: [] } as any);
+  describe('toggleLike', () => {
+    it('should call likesService.toggleLike', async () => {
+      likesService.toggleLike.mockResolvedValue({ liked: true } as any);
 
-            const result = await controller.search({} as any);
+      const req = { ip: '127.0.0.1', user: { id: 'u1' } };
+      const expectedIpHash = Buffer.from('127.0.0.1').toString('base64');
 
-            expect(searchService.search).toHaveBeenCalled();
-            expect(result).toHaveProperty('items');
-        });
+      const result = await controller.toggleLike('1', req);
+
+      expect(likesService.toggleLike).toHaveBeenCalledWith('1', 'u1', expectedIpHash);
+      expect(result).toEqual({ liked: true });
     });
-
-    describe('getDetail', () => {
-        it('should fetch item and track view', async () => {
-            portfolioService.findByIdOrSlug.mockResolvedValue({ id: '1' } as any);
-            analyticsService.trackView.mockResolvedValue();
-
-            const req = { ip: '127.0.0.1', headers: {} };
-            const expectedIpHash = Buffer.from('127.0.0.1').toString('base64');
-
-            const result = await controller.getDetail('1', req);
-
-            expect(portfolioService.findByIdOrSlug).toHaveBeenCalledWith('1');
-            expect(analyticsService.trackView).toHaveBeenCalledWith('1', expectedIpHash);
-            expect(result).toEqual({ id: '1' });
-        });
-    });
-
-    describe('toggleLike', () => {
-        it('should call likesService.toggleLike', async () => {
-            likesService.toggleLike.mockResolvedValue({ liked: true } as any);
-
-            const req = { ip: '127.0.0.1', user: { id: 'u1' } };
-            const expectedIpHash = Buffer.from('127.0.0.1').toString('base64');
-
-            const result = await controller.toggleLike('1', req);
-
-            expect(likesService.toggleLike).toHaveBeenCalledWith('1', 'u1', expectedIpHash);
-            expect(result).toEqual({ liked: true });
-        });
-    });
+  });
 });

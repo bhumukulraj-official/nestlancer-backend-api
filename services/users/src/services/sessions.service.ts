@@ -5,98 +5,101 @@ import { UAParser } from 'ua-parser-js';
 
 @Injectable()
 export class SessionsService {
-    constructor(
-        private readonly prismaWrite: PrismaWriteService,
-        private readonly prismaRead: PrismaReadService,
-    ) { }
+  constructor(
+    private readonly prismaWrite: PrismaWriteService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
-    async getSessions(userId: string, currentJti: string) {
-        const sessions = await this.prismaRead.session.findMany({
-            where: {
-                userId,
-                expiresAt: { gt: new Date() }
-            },
-            orderBy: { lastActiveAt: 'desc' }
-        });
+  async getSessions(userId: string, currentJti: string) {
+    const sessions = await this.prismaRead.session.findMany({
+      where: {
+        userId,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { lastActiveAt: 'desc' },
+    });
 
-        return sessions.map((s: any) => {
-            const parser = new UAParser(s.userAgent);
-            return {
-                id: s.id,
-                device: {
-                    type: parser.getDevice().type || 'desktop',
-                    browser: `${parser.getBrowser().name} ${parser.getBrowser().version}`,
-                    os: `${parser.getOS().name} ${parser.getOS().version}`
-                },
-                location: {
-                    ip: s.ip,
-                    // Geographic mapping would go here
-                },
-                current: s.token === currentJti,
-                createdAt: s.createdAt,
-                lastActivityAt: s.lastActiveAt,
-                expiresAt: s.expiresAt
-            };
-        });
+    return sessions.map((s: any) => {
+      const parser = new UAParser(s.userAgent);
+      return {
+        id: s.id,
+        device: {
+          type: parser.getDevice().type || 'desktop',
+          browser: `${parser.getBrowser().name} ${parser.getBrowser().version}`,
+          os: `${parser.getOS().name} ${parser.getOS().version}`,
+        },
+        location: {
+          ip: s.ip,
+          // Geographic mapping would go here
+        },
+        current: s.token === currentJti,
+        createdAt: s.createdAt,
+        lastActivityAt: s.lastActiveAt,
+        expiresAt: s.expiresAt,
+      };
+    });
+  }
+
+  async getSessionById(userId: string, sessionId: string) {
+    const session = await this.prismaRead.session.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session || session.userId !== userId) {
+      throw new BusinessLogicException('Session not found', 'USER_003');
     }
 
-    async getSessionById(userId: string, sessionId: string) {
-        const session = await this.prismaRead.session.findUnique({
-            where: { id: sessionId }
-        });
+    const parser = new UAParser(session.userAgent ?? undefined);
+    return {
+      id: session.id,
+      device: {
+        type: parser.getDevice().type || 'desktop',
+        browser: `${parser.getBrowser().name} ${parser.getBrowser().version}`,
+        os: `${parser.getOS().name} ${parser.getOS().version}`,
+      },
+      location: {
+        ip: (session as any).ip,
+      },
+      createdAt: session.createdAt,
+      lastActivityAt: (session as any).lastActiveAt,
+      expiresAt: session.expiresAt,
+    };
+  }
 
-        if (!session || session.userId !== userId) {
-            throw new BusinessLogicException('Session not found', 'USER_003');
-        }
+  async terminateSession(userId: string, sessionId: string, currentJti: string) {
+    const session = await this.prismaRead.session.findUnique({
+      where: { id: sessionId },
+    });
 
-        const parser = new UAParser(session.userAgent ?? undefined);
-        return {
-            id: session.id,
-            device: {
-                type: parser.getDevice().type || 'desktop',
-                browser: `${parser.getBrowser().name} ${parser.getBrowser().version}`,
-                os: `${parser.getOS().name} ${parser.getOS().version}`
-            },
-            location: {
-                ip: (session as any).ip,
-            },
-            createdAt: session.createdAt,
-            lastActivityAt: (session as any).lastActiveAt,
-            expiresAt: session.expiresAt
-        };
+    if (!session || session.userId !== userId) {
+      throw new BusinessLogicException('Session not found', 'USER_003');
     }
 
-    async terminateSession(userId: string, sessionId: string, currentJti: string) {
-        const session = await this.prismaRead.session.findUnique({
-            where: { id: sessionId }
-        });
-
-        if (!session || session.userId !== userId) {
-            throw new BusinessLogicException('Session not found', 'USER_003');
-        }
-
-        if (session.token === currentJti) {
-            throw new BusinessLogicException('Cannot terminate current session. Use logout instead.', 'USER_004');
-        }
-
-        await this.prismaWrite.session.update({
-            where: { id: sessionId },
-            data: { expiresAt: new Date() }
-        });
-
-        return { sessionId, terminatedAt: new Date() };
+    if (session.token === currentJti) {
+      throw new BusinessLogicException(
+        'Cannot terminate current session. Use logout instead.',
+        'USER_004',
+      );
     }
 
-    async terminateOtherSessions(userId: string, currentJti: string) {
-        await this.prismaWrite.session.updateMany({
-            where: {
-                userId,
-                token: { not: currentJti },
-                expiresAt: { gt: new Date() }
-            },
-            data: { expiresAt: new Date() }
-        });
+    await this.prismaWrite.session.update({
+      where: { id: sessionId },
+      data: { expiresAt: new Date() },
+    });
 
-        return true;
-    }
+    return { sessionId, terminatedAt: new Date() };
+  }
+
+  async terminateOtherSessions(userId: string, currentJti: string) {
+    await this.prismaWrite.session.updateMany({
+      where: {
+        userId,
+        token: { not: currentJti },
+        expiresAt: { gt: new Date() },
+      },
+      data: { expiresAt: new Date() },
+    });
+
+    return true;
+  }
 }

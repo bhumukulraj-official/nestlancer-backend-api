@@ -5,7 +5,17 @@ import type { Request, Response, NextFunction } from 'express';
 import { getServiceSpecsForSwaggerUi } from './swagger/swagger.config';
 import { HealthModule } from './modules/health/health.module';
 import { SwaggerDocsModule } from './swagger/swagger.module';
-import { AppValidationPipe, AllExceptionsFilter, TransformResponseInterceptor, LoggingInterceptor, TimeoutInterceptor, API_PREFIX, API_VERSION, DEFAULT_GATEWAY_PORT, MAX_PAYLOAD_SIZE } from '@nestlancer/common';
+import {
+  AppValidationPipe,
+  AllExceptionsFilter,
+  TransformResponseInterceptor,
+  LoggingInterceptor,
+  TimeoutInterceptor,
+  API_PREFIX,
+  API_VERSION,
+  DEFAULT_GATEWAY_PORT,
+  MAX_PAYLOAD_SIZE,
+} from '@nestlancer/common';
 import { getCorsConfig, getHelmetConfig } from '@nestlancer/middleware';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -41,7 +51,11 @@ async function bootstrap() {
   // Global pipes, filters, interceptors
   app.useGlobalPipes(new AppValidationPipe());
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.useGlobalInterceptors(new LoggingInterceptor(), new TransformResponseInterceptor(), new TimeoutInterceptor());
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TransformResponseInterceptor(),
+    new TimeoutInterceptor(),
+  );
 
   // Swagger/OpenAPI documentation – dropdown per microservice
   const gatewayBase = `/${API_PREFIX}/${API_VERSION}`;

@@ -3,4 +3,3 @@ export enum PortfolioStatus {
   PUBLISHED = 'PUBLISHED',
   ARCHIVED = 'ARCHIVED',
 }
-

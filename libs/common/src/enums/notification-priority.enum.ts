@@ -4,4 +4,3 @@ export enum NotificationPriority {
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
 }
-

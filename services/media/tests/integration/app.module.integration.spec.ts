@@ -11,103 +11,106 @@ import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NestlancerConfigService as ConfigLibService } from '@nestlancer/config';
 
 function loadDevEnv() {
-    const envPath = resolve(__dirname, '../../../../.env.development');
-    if (!existsSync(envPath)) return;
-    const content = readFileSync(envPath, 'utf8');
-    content.split('\n').forEach(line => {
-        const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith('#')) {
-            const [key, ...value] = trimmed.split('=');
-            if (key) {
-                process.env[key.trim()] = value.join('=').trim().replace(/^["']|["']$/g, '');
-            }
-        }
-    });
+  const envPath = resolve(__dirname, '../../../../.env.development');
+  if (!existsSync(envPath)) return;
+  const content = readFileSync(envPath, 'utf8');
+  content.split('\n').forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#')) {
+      const [key, ...value] = trimmed.split('=');
+      if (key) {
+        process.env[key.trim()] = value
+          .join('=')
+          .trim()
+          .replace(/^["']|["']$/g, '');
+      }
+    }
+  });
 }
 
 describe('AppModule (Integration)', () => {
-    let app: INestApplication;
+  let app: INestApplication;
 
-    beforeAll(async () => {
-        loadDevEnv();
-        process.env.NODE_ENV = 'development';
+  beforeAll(async () => {
+    loadDevEnv();
+    process.env.NODE_ENV = 'development';
 
-        const moduleRef: TestingModule = await Test.createTestingModule({
-            imports: [AppModule],
-        })
-            .overrideProvider(LibStorageService)
-            .useValue({
-                getSignedUrl: jest.fn().mockResolvedValue('https://example.com'),
-                upload: jest.fn().mockResolvedValue({}),
-                delete: jest.fn().mockResolvedValue({}),
-                exists: jest.fn().mockResolvedValue(true),
-                download: jest.fn().mockResolvedValue(Buffer.from('')),
-                onModuleInit: jest.fn(),
-            })
-            .overrideProvider(MediaStorageService)
-            .useValue({
-                generateStorageKey: jest.fn().mockReturnValue('key'),
-                generatePresignedUploadUrl: jest.fn().mockResolvedValue('https://example.com'),
-                generatePresignedDownloadUrl: jest.fn().mockResolvedValue('https://example.com'),
-                upload: jest.fn().mockResolvedValue({}),
-                deleteFile: jest.fn().mockResolvedValue({}),
-                getFileSize: jest.fn().mockResolvedValue(0),
-            })
-            .overrideProvider(PrismaWriteService)
-            .useValue({
-                media: {
-                    findFirst: jest.fn().mockResolvedValue({ id: '1', metadata: { storageKey: 'key' } }),
-                    create: jest.fn().mockResolvedValue({ id: '1' }),
-                    update: jest.fn().mockResolvedValue({ id: '1' }),
-                    delete: jest.fn().mockResolvedValue({ id: '1' }),
-                },
-                mediaShareLink: {
-                    create: jest.fn().mockResolvedValue({ id: '1' }),
-                    findUnique: jest.fn().mockResolvedValue({ id: '1' }),
-                    delete: jest.fn().mockResolvedValue({ id: '1' }),
-                },
-                onModuleInit: jest.fn(),
-                onModuleDestroy: jest.fn(),
-            })
-            .overrideProvider(PrismaReadService)
-            .useValue({
-                media: {
-                    findFirst: jest.fn().mockResolvedValue({ id: '1', metadata: { storageKey: 'key' } }),
-                    findMany: jest.fn().mockResolvedValue([]),
-                    count: jest.fn().mockResolvedValue(0),
-                    findUnique: jest.fn().mockResolvedValue({ id: '1', metadata: { storageKey: 'key' } }),
-                    aggregate: jest.fn().mockResolvedValue({ _sum: { size: 0 } }),
-                    groupBy: jest.fn().mockResolvedValue([]),
-                },
-                mediaShareLink: {
-                    findUnique: jest.fn().mockResolvedValue({ id: '1' }),
-                },
-                onModuleInit: jest.fn(),
-                onModuleDestroy: jest.fn(),
-            })
-            .overrideProvider(ConfigLibService)
-            .useValue({
-                get: jest.fn().mockReturnValue('https://nestlancer.com'),
-                getOptional: jest.fn().mockReturnValue('https://nestlancer.com'),
-            })
-            .compile();
+    const moduleRef: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(LibStorageService)
+      .useValue({
+        getSignedUrl: jest.fn().mockResolvedValue('https://example.com'),
+        upload: jest.fn().mockResolvedValue({}),
+        delete: jest.fn().mockResolvedValue({}),
+        exists: jest.fn().mockResolvedValue(true),
+        download: jest.fn().mockResolvedValue(Buffer.from('')),
+        onModuleInit: jest.fn(),
+      })
+      .overrideProvider(MediaStorageService)
+      .useValue({
+        generateStorageKey: jest.fn().mockReturnValue('key'),
+        generatePresignedUploadUrl: jest.fn().mockResolvedValue('https://example.com'),
+        generatePresignedDownloadUrl: jest.fn().mockResolvedValue('https://example.com'),
+        upload: jest.fn().mockResolvedValue({}),
+        deleteFile: jest.fn().mockResolvedValue({}),
+        getFileSize: jest.fn().mockResolvedValue(0),
+      })
+      .overrideProvider(PrismaWriteService)
+      .useValue({
+        media: {
+          findFirst: jest.fn().mockResolvedValue({ id: '1', metadata: { storageKey: 'key' } }),
+          create: jest.fn().mockResolvedValue({ id: '1' }),
+          update: jest.fn().mockResolvedValue({ id: '1' }),
+          delete: jest.fn().mockResolvedValue({ id: '1' }),
+        },
+        mediaShareLink: {
+          create: jest.fn().mockResolvedValue({ id: '1' }),
+          findUnique: jest.fn().mockResolvedValue({ id: '1' }),
+          delete: jest.fn().mockResolvedValue({ id: '1' }),
+        },
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+      })
+      .overrideProvider(PrismaReadService)
+      .useValue({
+        media: {
+          findFirst: jest.fn().mockResolvedValue({ id: '1', metadata: { storageKey: 'key' } }),
+          findMany: jest.fn().mockResolvedValue([]),
+          count: jest.fn().mockResolvedValue(0),
+          findUnique: jest.fn().mockResolvedValue({ id: '1', metadata: { storageKey: 'key' } }),
+          aggregate: jest.fn().mockResolvedValue({ _sum: { size: 0 } }),
+          groupBy: jest.fn().mockResolvedValue([]),
+        },
+        mediaShareLink: {
+          findUnique: jest.fn().mockResolvedValue({ id: '1' }),
+        },
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+      })
+      .overrideProvider(ConfigLibService)
+      .useValue({
+        get: jest.fn().mockReturnValue('https://nestlancer.com'),
+        getOptional: jest.fn().mockReturnValue('https://nestlancer.com'),
+      })
+      .compile();
 
-        app = moduleRef.createNestApplication();
-        await app.init();
-    });
+    app = moduleRef.createNestApplication();
+    await app.init();
+  });
 
-    afterAll(async () => {
-        if (app) {
-            await app.close();
-        }
-    });
+  afterAll(async () => {
+    if (app) {
+      await app.close();
+    }
+  });
 
-    it('should initialize the HTTP service application successfully', () => {
-        expect(app).toBeDefined();
-    });
+  it('should initialize the HTTP service application successfully', () => {
+    expect(app).toBeDefined();
+  });
 
-    it('should resolve AppModule dependencies', () => {
-        const appModule = app.get(AppModule);
-        expect(appModule).toBeDefined();
-    });
+  it('should resolve AppModule dependencies', () => {
+    const appModule = app.get(AppModule);
+    expect(appModule).toBeDefined();
+  });
 });

@@ -6,94 +6,111 @@ import { ResourceNotFoundException, ContactStatus } from '@nestlancer/common';
 import { RespondContactDto } from '../../../src/dto/respond-contact.dto';
 
 describe('ContactResponseService', () => {
-    let service: ContactResponseService;
-    let prismaWrite: jest.Mocked<PrismaWriteService>;
-    let prismaRead: jest.Mocked<PrismaReadService>;
-    let queuePublisher: jest.Mocked<QueuePublisherService>;
+  let service: ContactResponseService;
+  let prismaWrite: jest.Mocked<PrismaWriteService>;
+  let prismaRead: jest.Mocked<PrismaReadService>;
+  let queuePublisher: jest.Mocked<QueuePublisherService>;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                ContactResponseService,
-                {
-                    provide: PrismaWriteService,
-                    useValue: {
-                        $transaction: jest.fn(),
-                        contactResponseLog: { create: jest.fn() },
-                        contactMessage: { update: jest.fn() },
-                    },
-                },
-                {
-                    provide: PrismaReadService,
-                    useValue: {
-                        contactMessage: { findUnique: jest.fn() },
-                        contactResponseLog: { findMany: jest.fn() },
-                    },
-                },
-                {
-                    provide: QueuePublisherService,
-                    useValue: {
-                        publish: jest.fn(),
-                    },
-                },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ContactResponseService,
+        {
+          provide: PrismaWriteService,
+          useValue: {
+            $transaction: jest.fn(),
+            contactResponseLog: { create: jest.fn() },
+            contactMessage: { update: jest.fn() },
+          },
+        },
+        {
+          provide: PrismaReadService,
+          useValue: {
+            contactMessage: { findUnique: jest.fn() },
+            contactResponseLog: { findMany: jest.fn() },
+          },
+        },
+        {
+          provide: QueuePublisherService,
+          useValue: {
+            publish: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
 
-        service = module.get<ContactResponseService>(ContactResponseService);
-        prismaWrite = module.get(PrismaWriteService);
-        prismaRead = module.get(PrismaReadService);
-        queuePublisher = module.get(QueuePublisherService);
+    service = module.get<ContactResponseService>(ContactResponseService);
+    prismaWrite = module.get(PrismaWriteService);
+    prismaRead = module.get(PrismaReadService);
+    queuePublisher = module.get(QueuePublisherService);
 
-        prismaWrite.$transaction.mockImplementation(async (cb: any) => cb(prismaWrite));
+    prismaWrite.$transaction.mockImplementation(async (cb: any) => cb(prismaWrite));
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('respond', () => {
+    it('should throw ResourceNotFoundException if message not found', async () => {
+      prismaRead.contactMessage.findUnique.mockResolvedValue(null);
+      await expect(service.respond('1', 'admin1', {} as any)).rejects.toThrow(
+        ResourceNotFoundException,
+      );
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    it('should create response log, optionally update status, and publish event', async () => {
+      const mockContact = { id: '1', email: 'test@user.com', name: 'User', ticketId: 'TCK' };
+      prismaRead.contactMessage.findUnique.mockResolvedValue(mockContact as any);
+
+      const mockLog = {
+        id: 'log1',
+        contactMessageId: '1',
+        adminId: 'admin1',
+        subject: 'Re:',
+        message: 'Hi',
+      };
+      prismaWrite.contactResponseLog.create.mockResolvedValue(mockLog as any);
+
+      const dto: RespondContactDto = { subject: 'Re:', message: 'Hi', markAsResponded: true };
+
+      const result = await service.respond('1', 'admin1', dto);
+
+      expect(prismaWrite.contactResponseLog.create).toHaveBeenCalled();
+      expect(prismaWrite.contactMessage.update).toHaveBeenCalledWith({
+        where: { id: '1' },
+        data: { status: ContactStatus.RESPONDED },
+      });
+      expect(queuePublisher.publish).toHaveBeenCalledWith(
+        EXCHANGES.EVENTS.name,
+        ROUTING_KEYS.EMAIL_CONTACT_RESPONSE,
+        expect.any(Object),
+      );
+      expect(result.id).toEqual(mockLog.id);
     });
+  });
 
-    describe('respond', () => {
-        it('should throw ResourceNotFoundException if message not found', async () => {
-            prismaRead.contactMessage.findUnique.mockResolvedValue(null);
-            await expect(service.respond('1', 'admin1', {} as any)).rejects.toThrow(ResourceNotFoundException);
-        });
+  describe('getResponseHistory', () => {
+    it('should return response history', async () => {
+      const mockLogs = [
+        {
+          id: '1',
+          contactMessageId: 'c1',
+          adminId: 'admin1',
+          subject: 's',
+          message: 'm',
+          sentAt: new Date(),
+        },
+      ];
+      prismaRead.contactResponseLog.findMany.mockResolvedValue(mockLogs as any);
 
-        it('should create response log, optionally update status, and publish event', async () => {
-            const mockContact = { id: '1', email: 'test@user.com', name: 'User', ticketId: 'TCK' };
-            prismaRead.contactMessage.findUnique.mockResolvedValue(mockContact as any);
+      const result = await service.getResponseHistory('c1');
 
-            const mockLog = { id: 'log1', contactMessageId: '1', adminId: 'admin1', subject: 'Re:', message: 'Hi' };
-            prismaWrite.contactResponseLog.create.mockResolvedValue(mockLog as any);
-
-            const dto: RespondContactDto = { subject: 'Re:', message: 'Hi', markAsResponded: true };
-
-            const result = await service.respond('1', 'admin1', dto);
-
-            expect(prismaWrite.contactResponseLog.create).toHaveBeenCalled();
-            expect(prismaWrite.contactMessage.update).toHaveBeenCalledWith({
-                where: { id: '1' },
-                data: { status: ContactStatus.RESPONDED },
-            });
-            expect(queuePublisher.publish).toHaveBeenCalledWith(
-                EXCHANGES.EVENTS.name,
-                ROUTING_KEYS.EMAIL_CONTACT_RESPONSE,
-                expect.any(Object)
-            );
-            expect(result.id).toEqual(mockLog.id);
-        });
+      expect(prismaRead.contactResponseLog.findMany).toHaveBeenCalledWith({
+        where: { contactMessageId: 'c1' },
+        orderBy: { sentAt: 'desc' },
+      });
+      expect(result).toEqual(mockLogs);
     });
-
-    describe('getResponseHistory', () => {
-        it('should return response history', async () => {
-            const mockLogs = [{ id: '1', contactMessageId: 'c1', adminId: 'admin1', subject: 's', message: 'm', sentAt: new Date() }];
-            prismaRead.contactResponseLog.findMany.mockResolvedValue(mockLogs as any);
-
-            const result = await service.getResponseHistory('c1');
-
-            expect(prismaRead.contactResponseLog.findMany).toHaveBeenCalledWith({
-                where: { contactMessageId: 'c1' },
-                orderBy: { sentAt: 'desc' },
-            });
-            expect(result).toEqual(mockLogs);
-        });
-    });
+  });
 });

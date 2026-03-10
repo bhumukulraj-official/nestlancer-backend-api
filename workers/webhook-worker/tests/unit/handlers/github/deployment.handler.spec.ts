@@ -51,9 +51,7 @@ describe('GithubDeploymentHandler', () => {
 
       await handler.handle(payload);
 
-      expect(logger.log).toHaveBeenCalledWith(
-        'Received GitHub deployment event: production',
-      );
+      expect(logger.log).toHaveBeenCalledWith('Received GitHub deployment event: production');
     });
   });
 });

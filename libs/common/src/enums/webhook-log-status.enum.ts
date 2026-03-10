@@ -5,4 +5,3 @@ export enum WebhookLogStatus {
   FAILED = 'FAILED',
   RETRYING = 'RETRYING',
 }
-

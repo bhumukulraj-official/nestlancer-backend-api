@@ -1,4 +1,13 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, WsException } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  WsException,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { WsAuthGuard } from '@nestlancer/websocket';
@@ -10,7 +19,7 @@ export class ProjectGateway implements OnGatewayConnection, OnGatewayDisconnect 
   @WebSocketServer() server!: Server;
   private readonly logger = new Logger(ProjectGateway.name);
 
-  constructor(private readonly connectionService: WsConnectionService) { }
+  constructor(private readonly connectionService: WsConnectionService) {}
 
   async handleConnection(client: Socket) {
     try {
@@ -50,9 +59,13 @@ export class ProjectGateway implements OnGatewayConnection, OnGatewayDisconnect 
   }
 
   @SubscribeMessage('progress:update')
-  handleProgressUpdate(@MessageBody() data: { projectId: string; progress: number }, @ConnectedSocket() client: Socket) {
+  handleProgressUpdate(
+    @MessageBody() data: { projectId: string; progress: number },
+    @ConnectedSocket() client: Socket,
+  ) {
     try {
-      if (!data?.projectId || data?.progress === undefined) throw new WsException('Invalid payload');
+      if (!data?.projectId || data?.progress === undefined)
+        throw new WsException('Invalid payload');
       this.server.to(`project:${data.projectId}`).emit('progress:updated', data);
       this.logger.debug(`Progress update emitted for project: ${data.projectId}`);
     } catch (error: any) {
