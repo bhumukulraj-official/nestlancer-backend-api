@@ -1,25 +1,38 @@
+import './integration.env';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { ConfigModule } from '@nestlancer/config';
+import { Reflector } from '@nestjs/core';
 import { AppModule } from '../../src/app.module';
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
+
+function loadDevEnv() {
+    const envPath = resolve(__dirname, '../../../../.env.development');
+    if (!existsSync(envPath)) return;
+    const content = readFileSync(envPath, 'utf8');
+    content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+            const [key, ...value] = trimmed.split('=');
+            if (key) {
+                process.env[key.trim()] = value.join('=').trim().replace(/^["']|["']$/g, '');
+            }
+        }
+    });
+}
 
 describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
-        process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/nestlancer_test';
-        process.env.JWT_ACCESS_SECRET = 'test-secret-that-is-long-enough';
-        process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-that-is-long';
+        loadDevEnv();
+        process.env.NODE_ENV = 'development';
 
         const moduleRef: TestingModule = await Test.createTestingModule({
-            imports: [
-                ConfigModule.forRoot(),
-                AppModule
-            ],
-        })
-            .overrideProvider('QueueConsumerService').useValue({ start: jest.fn(), stop: jest.fn() })
-            .overrideProvider('OutboxPollerService').useValue({ start: jest.fn(), stop: jest.fn() })
-            .compile();
+            imports: [AppModule],
+            providers: [Reflector],
+        }).compile();
 
         app = moduleRef.createNestApplication();
         await app.init();
