@@ -3,9 +3,15 @@ import { AuthLibModule } from '../../src/auth-lib.module';
 import { JwtAuthGuard } from '../../src/guards/jwt-auth.guard';
 import { JwtStrategy } from '../../src/strategies/jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
+import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../../src/constants';
 
 describe('AuthLibModule (Integration)', () => {
   let module: TestingModule;
+  let guard: JwtAuthGuard;
+  let strategy: JwtStrategy;
+  let reflector: Reflector;
 
   beforeAll(async () => {
     process.env.NODE_ENV = 'test';
@@ -18,6 +24,10 @@ describe('AuthLibModule (Integration)', () => {
     module = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }), AuthLibModule],
     }).compile();
+
+    guard = module.get<JwtAuthGuard>(JwtAuthGuard);
+    strategy = module.get<JwtStrategy>(JwtStrategy);
+    reflector = module.get<Reflector>(Reflector);
   });
 
   afterAll(async () => {
@@ -27,14 +37,80 @@ describe('AuthLibModule (Integration)', () => {
   });
 
   it('should be defined', () => {
-    expect(module).toBeDefined();
-  });
-
-  it('should have JwtAuthGuard and JwtStrategy registered', () => {
-    const guard = module.get<JwtAuthGuard>(JwtAuthGuard);
-    const strategy = module.get<JwtStrategy>(JwtStrategy);
-
     expect(guard).toBeDefined();
     expect(strategy).toBeDefined();
+  });
+
+  describe('JwtAuthGuard', () => {
+    it('should allow access for public routes', () => {
+      const mockContext = {
+        getHandler: () => ({}),
+        getClass: () => ({}),
+        switchToHttp: () => ({ getRequest: () => ({}) }),
+      } as unknown as ExecutionContext;
+
+      // Mock reflector to return true for IS_PUBLIC_KEY
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValueOnce(true);
+
+      const result = guard.canActivate(mockContext);
+      expect(result).toBe(true);
+    });
+
+    it('should throw UnauthorizedException when handleRequest receives no user', () => {
+      expect(() => guard.handleRequest(null, null as any)).toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when handleRequest receives an error', () => {
+      expect(() => guard.handleRequest(new Error('token expired'), null as any)).toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should return user when handleRequest receives a valid user', () => {
+      const user = { userId: 'user-1', email: 'test@example.com', role: 'USER' };
+      const result = guard.handleRequest(null, user as any);
+      expect(result).toEqual(user);
+    });
+  });
+
+  describe('JwtStrategy', () => {
+    it('should validate and transform JWT payload to AuthenticatedUser', () => {
+      const payload = {
+        sub: 'user-123',
+        email: 'test@nestlancer.com',
+        role: 'FREELANCER',
+        jti: 'token-jti-123',
+        iat: 1700000000,
+        exp: 1700003600,
+      };
+
+      const result = strategy.validate(payload);
+
+      expect(result).toEqual({
+        userId: 'user-123',
+        sub: 'user-123',
+        email: 'test@nestlancer.com',
+        role: 'FREELANCER',
+        jti: 'token-jti-123',
+        iat: 1700000000,
+        exp: 1700003600,
+      });
+    });
+
+    it('should handle payload with missing optional fields', () => {
+      const payload = {
+        sub: 'user-456',
+        email: 'minimal@test.com',
+        role: 'CLIENT',
+      };
+
+      const result = strategy.validate(payload as any);
+
+      expect(result.userId).toBe('user-456');
+      expect(result.email).toBe('minimal@test.com');
+      expect(result.role).toBe('CLIENT');
+      expect(result.iat).toBe(0);
+      expect(result.exp).toBe(0);
+    });
   });
 });

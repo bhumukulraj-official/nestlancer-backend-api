@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule as NestlancerConfigModule } from '../../src/config.module';
+import { NestlancerConfigModule } from '../../src/config.module';
 import { NestlancerConfigService } from '../../src/config.service';
-import { ConfigModule } from '@nestjs/config';
+import * as dotenv from 'dotenv';
+import { resolve } from 'path';
+
+dotenv.config({ path: resolve(process.cwd(), '.env.test') });
+process.env.NODE_ENV = 'test';
 
 describe('ConfigModule (Integration)', () => {
   let module: TestingModule;
@@ -9,12 +13,6 @@ describe('ConfigModule (Integration)', () => {
 
   beforeAll(async () => {
     process.env.NODE_ENV = 'test';
-    process.env.DATABASE_URL = 'postgres://localhost:5432/db';
-    process.env.REDIS_CACHE_URL = 'redis://localhost:6379';
-    process.env.RABBITMQ_URL = 'amqp://localhost';
-    process.env.JWT_ACCESS_SECRET = 'secret1234567890';
-    process.env.JWT_REFRESH_SECRET = 'secret1234567890';
-
     module = await Test.createTestingModule({
       imports: [NestlancerConfigModule.forRoot()],
     }).compile();
@@ -35,8 +33,8 @@ describe('ConfigModule (Integration)', () => {
   it('should return correct configuration values', () => {
     expect(service.nodeEnv).toBe('test');
     expect(service.isTest).toBe(true);
-    expect(service.databaseUrl).toBe('postgres://localhost:5432/db');
-    expect(service.redisCacheUrl).toBe('redis://localhost:6379');
+    expect(service.databaseUrl).toContain('100.103.64.83');
+    expect(service.redisCacheUrl).toContain('100.103.64.83');
   });
 
   it('should return default values for optional keys', () => {

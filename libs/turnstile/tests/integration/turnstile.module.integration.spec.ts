@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TurnstileModule } from '../../src/turnstile.module';
 import { TurnstileService } from '../../src/turnstile.service';
 import { ConfigModule } from '@nestjs/config';
-import { Reflector } from '@nestjs/core';
+import { TurnstileGuard } from '../../src/turnstile.guard';
 
 describe('TurnstileModule (Integration)', () => {
   let module: TestingModule;
@@ -14,8 +14,10 @@ describe('TurnstileModule (Integration)', () => {
         ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
         TurnstileModule.forRoot({ secretKey: 'test-secret' }),
       ],
-      providers: [Reflector],
-    }).compile();
+    })
+      .overrideProvider(TurnstileGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     service = module.get<TurnstileService>(TurnstileService);
   });

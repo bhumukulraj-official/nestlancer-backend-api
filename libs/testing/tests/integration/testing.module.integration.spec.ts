@@ -20,4 +20,27 @@ describe('TestingModule (Integration)', () => {
   it('should be defined', () => {
     expect(module).toBeDefined();
   });
+
+  it('should compile without errors when combined with other modules', async () => {
+    // TestingModule is an empty @Module({}) — the key integration test
+    // is that it compiles and initializes cleanly alongside ConfigModule
+    const testModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
+        TestingModule,
+      ],
+    }).compile();
+
+    expect(testModule).toBeDefined();
+    await testModule.close();
+  });
+
+  it('should close gracefully', async () => {
+    const testModule = await Test.createTestingModule({
+      imports: [TestingModule],
+    }).compile();
+
+    // Verify close doesn't throw
+    await expect(testModule.close()).resolves.toBeUndefined();
+  });
 });

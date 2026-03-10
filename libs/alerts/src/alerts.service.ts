@@ -13,7 +13,7 @@ export class AlertsService {
     private readonly slackChannel: SlackChannel,
     private readonly pagerdutyChannel: PagerdutyChannel,
     private readonly emailChannel: EmailAlertChannel,
-  ) {}
+  ) { }
 
   async sendAlert(alert: AlertPayload): Promise<void> {
     this.logger.warn(`ALERT [${alert.severity}]: ${alert.title} - ${alert.message}`);

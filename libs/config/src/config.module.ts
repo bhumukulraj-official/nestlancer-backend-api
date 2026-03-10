@@ -6,10 +6,10 @@ import { loadEnvConfig } from './loaders/env.loader';
 
 @Global()
 @Module({})
-export class ConfigModule {
+export class NestlancerConfigModule {
   static forRoot(): DynamicModule {
     return {
-      module: ConfigModule,
+      module: NestlancerConfigModule,
       imports: [
         NestConfigModule.forRoot({
           isGlobal: true,

@@ -2,86 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CacheModule } from '../../src/cache.module';
 import { CacheService } from '../../src/cache.service';
 
-// Provide an in-memory Redis mock so these integration tests
-// don't depend on a real Redis instance being available.
-jest.mock('ioredis', () => {
-  const store = new Map<string, { value: string; expiresAt?: number }>();
-
-  class MockRedis {
-    on() {
-      return this;
-    }
-
-    async get(key: string) {
-      const entry = store.get(key);
-      if (!entry) return null;
-      if (entry.expiresAt && Date.now() > entry.expiresAt) {
-        store.delete(key);
-        return null;
-      }
-      return entry.value;
-    }
-
-    async set(key: string, value: string) {
-      store.set(key, { value });
-      return 'OK';
-    }
-
-    async setex(key: string, ttlSeconds: number, value: string) {
-      store.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
-      return 'OK';
-    }
-
-    async del(key: string) {
-      store.delete(key);
-      return 1;
-    }
-
-    async exists(key: string) {
-      const entry = store.get(key);
-      if (!entry) return 0;
-      if (entry.expiresAt && Date.now() > entry.expiresAt) {
-        store.delete(key);
-        return 0;
-      }
-      return 1;
-    }
-
-    async sadd(key: string, member: string) {
-      const existing = store.get(key);
-      const current = existing ? JSON.parse(existing.value) : [];
-      const set = new Set<string>(current);
-      set.add(member);
-      store.set(key, { value: JSON.stringify([...set]) });
-      return 1;
-    }
-
-    async smembers(key: string) {
-      const entry = store.get(key);
-      if (!entry) return [];
-      try {
-        const parsed = JSON.parse(entry.value);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    }
-
-    async quit() {
-      store.clear();
-      return 'OK';
-    }
-  }
-
-  return jest.fn(() => new MockRedis());
-});
-
 describe('Cache Integration', () => {
   let cacheService: CacheService;
 
   beforeAll(async () => {
+    const redisUrl = process.env.REDIS_CACHE_URL || 'redis://:dev-rcache-p4q5r6s7t8u9@100.103.64.83:6379/2';
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.forRoot({ redisUrl: 'redis://localhost:6379' })],
+      imports: [CacheModule.forRoot({ redisUrl })],
     }).compile();
 
     cacheService = module.get<CacheService>(CacheService);

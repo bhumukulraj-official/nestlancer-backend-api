@@ -2,7 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CryptoModule } from '../../src/crypto.module';
 import { HashingService } from '../../src/hashing.service';
 import { EncryptionService } from '../../src/encryption.service';
-import { ConfigModule } from '@nestjs/config';
+import * as dotenv from 'dotenv';
+import { resolve } from 'path';
+
+dotenv.config({ path: resolve(process.cwd(), '.env.test') });
 
 describe('CryptoModule (Integration)', () => {
   let module: TestingModule;
@@ -10,11 +13,8 @@ describe('CryptoModule (Integration)', () => {
   let encryptionService: EncryptionService;
 
   beforeAll(async () => {
-    // 32 byte key for AES-256
-    process.env.ENCRYPTION_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
-
     module = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }), CryptoModule],
+      imports: [CryptoModule],
     }).compile();
 
     hashingService = module.get<HashingService>(HashingService);

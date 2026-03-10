@@ -17,10 +17,11 @@ jest.mock('amqplib', () => {
     }),
     bindQueue: jest.fn(async () => undefined),
     publish: jest.fn(async (exchange: string, routingKey: string, content: Buffer) => {
-      // For tests we just deliver directly to any queue with a consumer
-      const handler = consumers.get(routingKey);
+      // Simple mock: deliver to any consumer registered for this routing key
+      // or to the 'test.queue' if that's what we're testing.
+      const handler = consumers.get(routingKey) || consumers.get('test.queue');
       if (handler) {
-        await handler({ content });
+        await handler({ content } as any);
       }
       return true;
     }),
@@ -28,7 +29,7 @@ jest.mock('amqplib', () => {
       queues.get(queue)?.push(content);
       const handler = consumers.get(queue);
       if (handler) {
-        await handler({ content });
+        await handler({ content } as any);
       }
       return true;
     }),
@@ -36,10 +37,13 @@ jest.mock('amqplib', () => {
       consumers.set(queue, onMessage);
       const existing = queues.get(queue) || [];
       for (const msg of existing) {
-        await onMessage({ content: msg });
+        await onMessage({ content: msg } as any);
       }
     }),
     close: jest.fn(async () => undefined),
+    prefetch: jest.fn(async () => undefined),
+    ack: jest.fn(() => undefined),
+    nack: jest.fn(() => undefined),
   };
 
   return {

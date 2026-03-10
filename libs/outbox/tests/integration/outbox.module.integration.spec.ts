@@ -8,6 +8,7 @@ describe('OutboxModule (Integration)', () => {
   let module: TestingModule;
   let service: OutboxService;
   let repository: OutboxRepository;
+  const mockCreate = jest.fn().mockResolvedValue('event-123');
 
   beforeAll(async () => {
     process.env.NODE_ENV = 'test';
@@ -25,12 +26,16 @@ describe('OutboxModule (Integration)', () => {
     })
       .overrideProvider(OutboxRepository)
       .useValue({
-        create: jest.fn().mockResolvedValue('event-123'),
+        create: mockCreate,
       })
       .compile();
 
     service = module.get<OutboxService>(OutboxService);
     repository = module.get<OutboxRepository>(OutboxRepository);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
@@ -43,7 +48,7 @@ describe('OutboxModule (Integration)', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create an outbox event', async () => {
+  it('should create an outbox event and return its ID', async () => {
     const event = {
       eventType: 'USER_CREATED',
       aggregateType: 'USER',
@@ -54,6 +59,53 @@ describe('OutboxModule (Integration)', () => {
     const id = await service.createEvent(event as any);
 
     expect(id).toBe('event-123');
-    expect(repository.create).toHaveBeenCalledWith(event, undefined);
+    expect(mockCreate).toHaveBeenCalledWith(event, undefined);
+  });
+
+  it('should pass correct fields to repository.create', async () => {
+    const event = {
+      eventType: 'PROPOSAL_SUBMITTED',
+      aggregateType: 'PROPOSAL',
+      aggregateId: 'prop-42',
+      payload: { freelancerId: 'fl-1', projectId: 'proj-1', amount: 5000 },
+    };
+
+    await service.createEvent(event as any);
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'PROPOSAL_SUBMITTED',
+        aggregateType: 'PROPOSAL',
+        aggregateId: 'prop-42',
+        payload: expect.objectContaining({
+          freelancerId: 'fl-1',
+          projectId: 'proj-1',
+          amount: 5000,
+        }),
+      }),
+      undefined,
+    );
+  });
+
+  it('should create multiple events sequentially', async () => {
+    mockCreate.mockResolvedValueOnce('event-1').mockResolvedValueOnce('event-2');
+
+    const id1 = await service.createEvent({
+      eventType: 'ORDER_CREATED',
+      aggregateType: 'ORDER',
+      aggregateId: 'order-1',
+      payload: {},
+    } as any);
+
+    const id2 = await service.createEvent({
+      eventType: 'PAYMENT_PROCESSED',
+      aggregateType: 'PAYMENT',
+      aggregateId: 'pay-1',
+      payload: {},
+    } as any);
+
+    expect(id1).toBe('event-1');
+    expect(id2).toBe('event-2');
+    expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 });
