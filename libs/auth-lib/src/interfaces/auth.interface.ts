@@ -10,6 +10,7 @@ export interface JwtPayload {
 
 export interface AuthenticatedUser {
     userId: string;
+    sub?: string; // Alias for userId (JWT standard claim)
     email: string;
     role: string;
     jti?: string;

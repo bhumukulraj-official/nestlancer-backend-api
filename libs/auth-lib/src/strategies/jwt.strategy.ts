@@ -19,6 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   validate(payload: JwtPayload): AuthenticatedUser {
     return {
       userId: payload.sub,
+      sub: payload.sub, // Alias for @ActiveUser('sub') compatibility
       email: payload.email,
       role: payload.role,
       jti: payload.jti,
