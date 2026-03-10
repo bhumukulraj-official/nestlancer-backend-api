@@ -1,8 +1,23 @@
-process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
-process.env.JWT_ACCESS_SECRET = 'super-secret-access-token-minimum-16-chars';
-process.env.JWT_REFRESH_SECRET = 'super-secret-refresh-token-minimum-16-chars';
+import './integration.env';
 
 import { Test, TestingModule } from '@nestjs/testing';
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
+
+function loadDevEnv() {
+    const envPath = resolve(__dirname, '../../../.env.development');
+    if (!existsSync(envPath)) return;
+    const content = readFileSync(envPath, 'utf8');
+    content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+            const [key, ...value] = trimmed.split('=');
+            if (key) {
+                process.env[key.trim()] = value.join('=').trim().replace(/^["']|["']$/g, '');
+            }
+        }
+    });
+}
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import { CacheService } from '@nestlancer/cache';
@@ -17,6 +32,9 @@ describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
+        loadDevEnv();
+        process.env.NODE_ENV = 'test';
+
         const mockCacheService = {
             getClient: jest.fn().mockReturnValue({
                 on: jest.fn(),
@@ -29,6 +47,7 @@ describe('AppModule (Integration)', () => {
 
         const mockHttpService = {
             request: jest.fn().mockReturnValue(of({ data: {}, status: 200, headers: {} })),
+            get: jest.fn().mockReturnValue(of({ data: { status: 'ok' }, status: 200, headers: {} })),
         };
 
         const moduleRef: TestingModule = await Test.createTestingModule({
