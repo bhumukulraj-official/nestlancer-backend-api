@@ -1,20 +1,37 @@
+import './integration.env';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
+
+function loadDevEnv() {
+    const envPath = resolve(__dirname, '../../../../.env.development');
+    if (!existsSync(envPath)) return;
+    const content = readFileSync(envPath, 'utf8');
+    content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+            const [key, ...value] = trimmed.split('=');
+            if (key) {
+                process.env[key.trim()] = value.join('=').trim().replace(/^["']|["']$/g, '');
+            }
+        }
+    });
+}
 
 describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
-        process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/testdb';
-        process.env.JWT_ACCESS_SECRET = 'test-secret';
-        process.env.JWT_REFRESH_SECRET = 'test-secret';
-        process.env.CACHE_HOST = 'localhost';
-        process.env.CACHE_PORT = '6379';
-        process.env.SEARCH_URL = 'http://localhost:7700';
+        loadDevEnv();
+        process.env.NODE_ENV = 'development';
 
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
+            providers: [Reflector],
         }).compile();
 
         app = moduleRef.createNestApplication();
