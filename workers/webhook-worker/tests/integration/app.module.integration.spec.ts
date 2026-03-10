@@ -1,12 +1,10 @@
-process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
-process.env.JWT_ACCESS_SECRET = 'test-access-secret';
-process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
+import './integration.env';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { QueuePublisherService } from '@nestlancer/queue';
+import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
 import { LoggerService } from '@nestlancer/logger';
 
 describe('AppModule (Integration)', () => {
@@ -16,12 +14,12 @@ describe('AppModule (Integration)', () => {
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         })
-            .overrideProvider('QUEUE_OPTIONS')
-            .useValue({})
-            .overrideProvider('LOGGER_OPTIONS')
-            .useValue({})
             .overrideProvider(QueuePublisherService)
             .useValue({ publish: jest.fn() })
+            .overrideProvider(QueueConsumerService)
+            .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
+            .overrideProvider(DlqService)
+            .useValue({})
             .overrideProvider(PrismaWriteService)
             .useValue({
                 payment: { findFirst: jest.fn(), update: jest.fn() },
