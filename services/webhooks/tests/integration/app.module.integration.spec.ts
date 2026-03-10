@@ -1,23 +1,40 @@
+import './integration.env';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
 import { JwtStrategy } from '@nestlancer/auth-lib';
 import { ConfigService } from '@nestjs/config';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 
-process.env.NODE_ENV = 'test';
-process.env.JWT_ACCESS_SECRET = 'test-secret';
-process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
-process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+function loadDevEnv() {
+    const envPath = resolve(__dirname, '../../../../.env.development');
+    if (!existsSync(envPath)) return;
+    const content = readFileSync(envPath, 'utf8');
+    content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+            const [key, ...value] = trimmed.split('=');
+            if (key) {
+                process.env[key.trim()] = value.join('=').trim().replace(/^["']|["']$/g, '');
+            }
+        }
+    });
+}
 
 describe('AppModule (Integration)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
+        loadDevEnv();
+        process.env.NODE_ENV = 'test';
+
         const moduleRef: TestingModule = await Test.createTestingModule({
             imports: [AppModule],
         })
-            .overrideProvider('QUEUE_OPTIONS').useValue({ url: 'redis://localhost:6379' })
+            .overrideProvider('QUEUE_OPTIONS').useValue({ url: process.env.RABBITMQ_URL || 'amqp://localhost:5672' })
             .overrideProvider(ConfigService).useValue({ get: jest.fn().mockReturnValue('test-secret') })
             .overrideProvider(PrismaWriteService).useValue({})
             .overrideProvider(PrismaReadService).useValue({})
