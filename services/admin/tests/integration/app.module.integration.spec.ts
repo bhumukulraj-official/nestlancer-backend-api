@@ -66,11 +66,8 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
+  it('should bootstrap and resolve AppModule', () => {
     expect(app).toBeDefined();
-  });
-
-  it('should resolve AppModule dependencies', () => {
     const appModule = app.get(AppModule);
     expect(appModule).toBeDefined();
   });

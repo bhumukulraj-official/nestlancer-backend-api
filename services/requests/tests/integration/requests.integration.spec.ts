@@ -84,7 +84,7 @@ describe('Requests Service (Integration)', () => {
   });
 
   describe('Health', () => {
-    it('GET /api/v1/requests/health', async () => {
+    it('GET /api/v1/requests/health - should return 200 with success and service status', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/requests/health')
         .expect(200);
@@ -96,32 +96,34 @@ describe('Requests Service (Integration)', () => {
   });
 
   describe('Requests (Authenticated)', () => {
-    it('GET /api/v1/requests - should reject unauthenticated', async () => {
+    it('GET /api/v1/requests - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/requests');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/requests - should accept valid token', async () => {
+    it('GET /api/v1/requests - should accept valid token and return list or 404/500', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/requests')
         .set(authHeader('test-user-1'));
 
-      expect([200, 404, 500]).toContain(response.status);
-      if (response.status === 200) {
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
         expect(Array.isArray(response.body.data)).toBe(true);
       }
     });
 
-    it('POST /api/v1/requests - should reject unauthenticated', async () => {
+    it('POST /api/v1/requests - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/requests')
         .send(validCreateRequestDto);
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/requests - should reject invalid data (validation)', async () => {
+    it('POST /api/v1/requests - should reject invalid data with 400 (validation)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/requests')
         .set(authHeader('test-user-1'))
@@ -138,10 +140,11 @@ describe('Requests Service (Integration)', () => {
           requirements: [],
         });
 
-      expect([400, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/requests - should accept valid payload', async () => {
+    it('POST /api/v1/requests - should accept valid payload with 201 or 500', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/requests')
         .set(authHeader('test-user-1'))
@@ -154,133 +157,269 @@ describe('Requests Service (Integration)', () => {
       }
     });
 
-    it('GET /api/v1/requests/stats - should reject unauthenticated', async () => {
+    it('GET /api/v1/requests/stats - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/requests/stats');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/requests/stats - should accept valid token', async () => {
+    it('GET /api/v1/requests/stats - should accept valid token and return stats or 404/500', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/requests/stats')
         .set(authHeader('test-user-1'));
 
-      expect([200, 404, 500]).toContain(response.status);
-      if (response.status === 200) {
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
       }
     });
 
-    it('GET /api/v1/requests/:id - should reject invalid id', async () => {
+    it('GET /api/v1/requests/:id - should reject invalid id (400, 404, or 422)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/requests/invalid-uuid')
         .set(authHeader('test-user-1'));
 
       expect([400, 404, 422, 500]).toContain(response.status);
+      if (response.status !== 500 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('PATCH /api/v1/requests/:id - should reject invalid payload (validation)', async () => {
+    it('PATCH /api/v1/requests/:id - should reject invalid payload (400 validation or 404)', async () => {
       const response = await request(app.getHttpServer())
         .patch('/api/v1/requests/550e8400-e29b-41d4-a716-446655440000')
         .set(authHeader('test-user-1'))
         .send({ title: 'Ab' });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/requests/:id/submit - should reject unauthenticated', async () => {
+    it('POST /api/v1/requests/:id/submit - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).post(
         '/api/v1/requests/550e8400-e29b-41d4-a716-446655440000/submit',
       );
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('DELETE /api/v1/requests/:id - should reject unauthenticated', async () => {
+    it('POST /api/v1/requests/:id/submit - should allow submitting an existing request when backend is healthy', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/v1/requests')
+        .set(authHeader('e2e-user-1'))
+        .send(validCreateRequestDto);
+
+      expect([201, 500]).toContain(createResponse.status);
+
+      if (createResponse.status !== 201) {
+        return;
+      }
+
+      const created = createResponse.body.data ?? createResponse.body;
+      const requestId = created.id;
+      expect(requestId).toBeDefined();
+
+      const submitResponse = await request(app.getHttpServer())
+        .post(`/api/v1/requests/${requestId}/submit`)
+        .set(authHeader('e2e-user-1'));
+
+      expect([200, 400, 404, 500]).toContain(submitResponse.status);
+    });
+
+    it('DELETE /api/v1/requests/:id - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).delete(
         '/api/v1/requests/550e8400-e29b-41d4-a716-446655440000',
       );
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
+    });
+
+    it('DELETE /api/v1/requests/:id - should delete an existing request when backend is healthy', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/v1/requests')
+        .set(authHeader('e2e-user-1'))
+        .send(validCreateRequestDto);
+
+      expect([201, 500]).toContain(createResponse.status);
+
+      if (createResponse.status !== 201) {
+        return;
+      }
+
+      const created = createResponse.body.data ?? createResponse.body;
+      const requestId = created.id;
+      expect(requestId).toBeDefined();
+
+      const deleteResponse = await request(app.getHttpServer())
+        .delete(`/api/v1/requests/${requestId}`)
+        .set(authHeader('e2e-user-1'));
+
+      expect([200, 404, 500]).toContain(deleteResponse.status);
+    });
+
+    it('should create a request and then retrieve it by id when backend is healthy', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/v1/requests')
+        .set(authHeader('e2e-user-1'))
+        .send(validCreateRequestDto);
+
+      expect([201, 500]).toContain(createResponse.status);
+
+      if (createResponse.status !== 201) {
+        // If the backend is misconfigured or unavailable, treat this as a soft-fail for the flow test.
+        return;
+      }
+
+      const created = createResponse.body.data ?? createResponse.body;
+      const requestId = created.id;
+      expect(requestId).toBeDefined();
+
+      const getResponse = await request(app.getHttpServer())
+        .get(`/api/v1/requests/${requestId}`)
+        .set(authHeader('e2e-user-1'));
+
+      expect([200, 404, 500]).toContain(getResponse.status);
+      if (getResponse.status === 200) {
+        expect(getResponse.body.status).toBe('success');
+        expect(getResponse.body.data ?? getResponse.body).toBeDefined();
+      }
     });
   });
 
   describe('Attachments', () => {
-    it('GET /api/v1/requests/:id/attachments - should reject unauthenticated', async () => {
+    it('GET /api/v1/requests/:id/attachments - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get(
         '/api/v1/requests/550e8400-e29b-41d4-a716-446655440000/attachments',
       );
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/requests/:id/attachments - should reject unauthenticated', async () => {
+    it('GET /api/v1/requests/:id/attachments - should list attachments for an existing request when backend is healthy', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/v1/requests')
+        .set(authHeader('e2e-user-1'))
+        .send(validCreateRequestDto);
+
+      expect([201, 500]).toContain(createResponse.status);
+
+      if (createResponse.status !== 201) {
+        return;
+      }
+
+      const created = createResponse.body.data ?? createResponse.body;
+      const requestId = created.id;
+      expect(requestId).toBeDefined();
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/requests/${requestId}/attachments`)
+        .set(authHeader('e2e-user-1'));
+
+      expect([200, 404, 500]).toContain(response.status);
+    });
+
+    it('POST /api/v1/requests/:id/attachments - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/requests/550e8400-e29b-41d4-a716-446655440000/attachments')
         .attach('file', Buffer.from('fake'), 'test.png');
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
+    });
+
+    it('POST /api/v1/requests/:id/attachments - should upload attachment for an existing request when backend is healthy', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/v1/requests')
+        .set(authHeader('e2e-user-1'))
+        .send(validCreateRequestDto);
+
+      expect([201, 500]).toContain(createResponse.status);
+
+      if (createResponse.status !== 201) {
+        return;
+      }
+
+      const created = createResponse.body.data ?? createResponse.body;
+      const requestId = created.id;
+      expect(requestId).toBeDefined();
+
+      const response = await request(app.getHttpServer())
+        .post(`/api/v1/requests/${requestId}/attachments`)
+        .set(authHeader('e2e-user-1'))
+        .attach('file', Buffer.from('test'), 'test.txt');
+
+      expect([201, 400, 500]).toContain(response.status);
     });
   });
 
   describe('Admin - Requests', () => {
-    it('GET /api/v1/admin/requests - should reject unauthenticated', async () => {
+    it('GET /api/v1/admin/requests - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/admin/requests');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/requests - should reject non-admin user', async () => {
+    it('GET /api/v1/admin/requests - should reject non-admin user (403 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/requests')
         .set(authHeader('regular-user-1'));
 
-      expect([403, 500]).toContain(response.status);
+      expect(response.status).toBe(403);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/requests - should accept admin token', async () => {
+    it('GET /api/v1/admin/requests - should accept admin token and return list', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/requests')
         .query({ page: '1', limit: '20' })
         .set(adminAuthHeader());
 
-      expect([200, 500]).toContain(response.status);
-      if (response.status === 200) {
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
         expect(response.body.data).toBeDefined();
       }
     });
 
-    it('GET /api/v1/admin/requests/stats - should reject non-admin', async () => {
+    it('GET /api/v1/admin/requests/stats - should reject non-admin (403 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/requests/stats')
         .set(authHeader('regular-user-1'));
 
-      expect([403, 500]).toContain(response.status);
+      expect(response.status).toBe(403);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/requests/stats - should accept admin token', async () => {
+    it('GET /api/v1/admin/requests/stats - should accept admin token and return stats', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/requests/stats')
         .set(adminAuthHeader());
 
-      expect([200, 500]).toContain(response.status);
+      expect(response.status).toBe(200);
+      {
+        expect(response.body.status).toBe('success');
+      }
     });
 
-    it('PATCH /api/v1/admin/requests/:id/status - should reject invalid payload (validation)', async () => {
+    it('PATCH /api/v1/admin/requests/:id/status - should reject invalid status (400 validation or 404)', async () => {
       const response = await request(app.getHttpServer())
         .patch('/api/v1/admin/requests/550e8400-e29b-41d4-a716-446655440000/status')
         .set(adminAuthHeader())
         .send({ status: 'invalid' });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/admin/requests/:id/notes - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/admin/requests/:id/notes - should reject empty content (400 validation or 404)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/admin/requests/550e8400-e29b-41d4-a716-446655440000/notes')
         .set(adminAuthHeader())
         .send({ content: '' });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
   });
 });

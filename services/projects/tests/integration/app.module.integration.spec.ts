@@ -3,9 +3,14 @@ import './integration.env';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import request from 'supertest';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
+import { ProjectsController } from '../../src/controllers/projects.controller';
+import { ProjectsAdminController } from '../../src/controllers/projects.admin.controller';
+import { ProjectsPublicController } from '../../src/controllers/projects.public.controller';
+import { ProjectsService } from '../../src/services/projects.service';
 
 function loadDevEnv() {
   const envPath = resolve(__dirname, '../../../../.env.development');
@@ -38,6 +43,7 @@ describe('AppModule (Integration)', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    app.setGlobalPrefix('api/v1');
     await app.init();
   });
 
@@ -47,12 +53,29 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
-    expect(app).toBeDefined();
+  it('should resolve ProjectsController, ProjectsAdminController and ProjectsPublicController', () => {
+    const projectsController = app.get(ProjectsController);
+    const adminController = app.get(ProjectsAdminController);
+    const publicController = app.get(ProjectsPublicController);
+    expect(projectsController).toBeDefined();
+    expect(projectsController).toBeInstanceOf(ProjectsController);
+    expect(adminController).toBeDefined();
+    expect(adminController).toBeInstanceOf(ProjectsAdminController);
+    expect(publicController).toBeDefined();
+    expect(publicController).toBeInstanceOf(ProjectsPublicController);
   });
 
-  it('should resolve AppModule dependencies', () => {
-    const appModule = app.get(AppModule);
-    expect(appModule).toBeDefined();
+  it('should resolve ProjectsService as dependency of projects controller', () => {
+    const projectsService = app.get(ProjectsService);
+    expect(projectsService).toBeDefined();
+    expect(projectsService).toBeInstanceOf(ProjectsService);
+  });
+
+  it('should expose health endpoint and return projects service status', async () => {
+    const res = await request(app.getHttpServer()).get('/api/v1/projects/health');
+    expect(res.status).toBe(200);
+    expect(res.body).toBeDefined();
+    expect(res.body.status).toBe('ok');
+    expect(res.body.service).toBe('projects');
   });
 });

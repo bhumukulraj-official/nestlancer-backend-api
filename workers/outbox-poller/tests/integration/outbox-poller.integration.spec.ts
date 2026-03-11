@@ -106,5 +106,86 @@ describe('Outbox Poller (Integration)', () => {
       const service = app.get(StaleEventMonitorService);
       expect(service).toBeDefined();
     });
+    describe('OutboxPollerService Logic', () => {
+      let poller: OutboxPollerService;
+      let leaderElection: LeaderElectionService;
+      let publisher: OutboxPublisherService;
+      let prisma: PrismaWriteService;
+
+      beforeEach(() => {
+        poller = app.get(OutboxPollerService);
+        leaderElection = app.get(LeaderElectionService);
+        publisher = app.get(OutboxPublisherService);
+        prisma = app.get(PrismaWriteService);
+
+        jest.spyOn(leaderElection, 'acquireLock').mockResolvedValue(true);
+      });
+
+      it('should skip polling if not leader', async () => {
+        jest.spyOn(leaderElection, 'acquireLock').mockResolvedValue(false);
+        (prisma as any).outbox = { findMany: jest.fn() };
+
+        await poller.poll();
+
+        expect((prisma as any).outbox.findMany).not.toHaveBeenCalled();
+      });
+
+      it('should poll pending events and publish successfully', async () => {
+        const pendingEvents = [
+          { id: 1, eventType: 'user.created', payload: {}, retries: 0 }
+        ];
+
+        (prisma as any).outbox = {
+          findMany: jest.fn().mockResolvedValue(pendingEvents),
+          update: jest.fn().mockResolvedValue({}),
+        };
+        jest.spyOn(publisher, 'publish').mockResolvedValue(undefined);
+
+        await poller.poll();
+
+        expect(leaderElection.acquireLock).toHaveBeenCalled();
+        expect((prisma as any).outbox.findMany).toHaveBeenCalled();
+        expect(publisher.publish).toHaveBeenCalledWith(pendingEvents[0]);
+        expect((prisma as any).outbox.update).toHaveBeenCalledWith(
+          expect.objectContaining({ data: expect.objectContaining({ status: 'PUBLISHED' }) })
+        );
+      });
+    });
+
+    describe('OutboxPublisherService Logic', () => {
+      let publisher: OutboxPublisherService;
+      let queuePublisher: QueuePublisherService;
+
+      beforeEach(() => {
+        publisher = app.get(OutboxPublisherService);
+        queuePublisher = app.get(QueuePublisherService);
+        (queuePublisher.publish as jest.Mock).mockClear();
+      });
+
+      it('should route event to correct exchange based on prefix', async () => {
+        const event: any = { id: 'evt-1', eventType: 'payment.succeeded', payload: { amount: 100 }, createdAt: new Date() };
+
+        await publisher.publish(event);
+
+        expect(queuePublisher.publish).toHaveBeenCalledWith(
+          'nestlancer.payments',
+          'payment.succeeded',
+          { amount: 100 },
+          expect.objectContaining({ messageId: 'evt-1' })
+        );
+      });
+
+      it('should route default events to generic exchange', async () => {
+        const event: any = { id: 'evt-2', eventType: 'system.update', payload: {}, createdAt: new Date() };
+
+        await publisher.publish(event);
+
+        expect(queuePublisher.publish).toHaveBeenCalledWith(
+          'nestlancer.events',
+          'system.update',
+          {},
+          expect.any(Object)
+        );
+      });
+    });
   });
-});

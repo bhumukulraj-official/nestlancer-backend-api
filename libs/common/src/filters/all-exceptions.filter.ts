@@ -34,13 +34,26 @@ export class AllExceptionsFilter implements ExceptionFilter {
       code = error.code as string;
       message = error.message as string;
       details = error.details as unknown[] | undefined;
-    } else if (exception instanceof HttpException) {
-      status = exception.getStatus();
-      const exResponse = exception.getResponse();
-      message =
-        typeof exResponse === 'string'
-          ? exResponse
-          : ((exResponse as Record<string, unknown>).message as string);
+    } else if (
+      exception instanceof HttpException ||
+      (exception &&
+        typeof (exception as HttpException).getStatus === 'function' &&
+        typeof (exception as HttpException).getResponse === 'function')
+    ) {
+      const httpEx = exception as HttpException;
+      status = httpEx.getStatus();
+      const exResponse = httpEx.getResponse();
+      if (typeof exResponse === 'string') {
+        message = exResponse;
+      } else {
+        const res = exResponse as Record<string, unknown>;
+        const nestedError = res?.error as Record<string, unknown> | undefined;
+        message =
+          (res?.message as string) ??
+          (nestedError?.message as string) ??
+          (res?.error as string) ??
+          'Unknown error';
+      }
       code = `HTTP_${status}`;
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;

@@ -89,8 +89,8 @@ describe('HealthPublicController', () => {
   });
 
   describe('ping', () => {
-    it('should return empty 200', () => {
-      expect(controller.ping()).toBeUndefined();
+    it('should return empty 200', async () => {
+      await expect(controller.ping()).resolves.toBeUndefined();
     });
   });
 });

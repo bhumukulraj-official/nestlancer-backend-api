@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AppModule } from '../../src/app.module';
+import { MessagingService } from '../../src/services';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
@@ -54,5 +55,10 @@ describe('AppModule (Integration)', () => {
   it('should resolve AppModule dependencies', () => {
     const appModule = app.get(AppModule);
     expect(appModule).toBeDefined();
+  });
+
+  it('should resolve MessagingService from the module', () => {
+    const messagingService = app.get(MessagingService);
+    expect(messagingService).toBeDefined();
   });
 });

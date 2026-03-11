@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import request from 'supertest';
 import { AppModule } from '../../src/app.module';
+import { HealthService } from '../../src/services/health.service';
+import { HealthPublicController } from '../../src/controllers/public/health.public.controller';
+import { HealthDebugAdminController } from '../../src/controllers/admin/health-debug.admin.controller';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
@@ -36,6 +40,7 @@ describe('AppModule (Integration)', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    app.setGlobalPrefix('api/v1/health');
     await app.init();
   });
 
@@ -45,12 +50,26 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
-    expect(app).toBeDefined();
+  it('should resolve HealthPublicController and HealthDebugAdminController', () => {
+    const publicController = app.get(HealthPublicController);
+    const adminController = app.get(HealthDebugAdminController);
+    expect(publicController).toBeDefined();
+    expect(publicController).toBeInstanceOf(HealthPublicController);
+    expect(adminController).toBeDefined();
+    expect(adminController).toBeInstanceOf(HealthDebugAdminController);
   });
 
-  it('should resolve AppModule dependencies', () => {
-    const appModule = app.get(AppModule);
-    expect(appModule).toBeDefined();
+  it('should resolve HealthService as dependency of health controllers', () => {
+    const healthService = app.get(HealthService);
+    expect(healthService).toBeDefined();
+    expect(healthService).toBeInstanceOf(HealthService);
+  });
+
+  it('should expose liveness endpoint and return alive status', async () => {
+    const res = await request(app.getHttpServer()).get('/api/v1/health/live');
+    expect(res.status).toBe(200);
+    expect(res.body).toBeDefined();
+    expect(res.body.status).toBe('alive');
+    expect(typeof res.body.uptime).toBe('number');
   });
 });

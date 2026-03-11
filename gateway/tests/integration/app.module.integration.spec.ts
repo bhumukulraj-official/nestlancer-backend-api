@@ -67,7 +67,7 @@ describe('AppModule (Integration)', () => {
       .overrideProvider(NestlancerConfigService)
       .useValue({
         port: 3000,
-        get: jest.fn().mockReturnValue('mocked-value'),
+        get: jest.fn((key: string) => (key === 'port' ? 3000 : 'mocked-value')),
       })
       .compile();
 
@@ -85,12 +85,44 @@ describe('AppModule (Integration)', () => {
     expect(app).toBeDefined();
   });
 
-  it('should resolve AppModule dependencies', () => {
+  it('should resolve AppModule dependencies correctly', () => {
     const appModule = app.get(AppModule);
     expect(appModule).toBeDefined();
   });
 
-  it('should route auth/login correctly to downstream service', async () => {
+  it('should resolve CacheService as a global provider', () => {
+    const cacheService = app.get(CacheService);
+    expect(cacheService).toBeDefined();
+    expect(typeof cacheService.getClient).toBe('function');
+  });
+
+  it('should resolve NestlancerConfigService properly', () => {
+    const configService = app.get(NestlancerConfigService);
+    expect(configService).toBeDefined();
+    expect(configService.get('port')).toEqual(3000);
+  });
+
+  it('should provide Prisma services for potential local writes/reads', () => {
+    const writeService = app.get(PrismaWriteService);
+    const readService = app.get(PrismaReadService);
+    expect(writeService).toBeDefined();
+    expect(readService).toBeDefined();
+  });
+
+  it('should instantiate the primary controllers', () => {
+    const authController = app.get(AuthController);
+    const usersController = app.get(UsersController);
+    expect(authController).toBeDefined();
+    expect(usersController).toBeDefined();
+  });
+
+  it('should have HttpService injected for proxying', () => {
+    const httpService = app.get(HttpService);
+    expect(httpService).toBeDefined();
+    expect(typeof httpService.request).toBe('function');
+  });
+
+  it('should configure routing for auth/login to downstream service', async () => {
     const httpService = app.get(HttpService);
     const authController = app.get(AuthController);
 
@@ -111,7 +143,7 @@ describe('AppModule (Integration)', () => {
     );
   });
 
-  it('should route users/profile correctly and strip /users segment', async () => {
+  it('should configure routing for users/profile and strip /users segment', async () => {
     const httpService = app.get(HttpService);
     const usersController = app.get(UsersController);
 

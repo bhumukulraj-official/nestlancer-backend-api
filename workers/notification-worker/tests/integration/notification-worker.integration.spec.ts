@@ -107,5 +107,70 @@ describe('Notification Worker (Integration)', () => {
       const processor = app.get(InAppNotificationProcessor);
       expect(processor).toBeDefined();
     });
+    describe('NotificationWorkerService Logic', () => {
+      let service: NotificationWorkerService;
+      let inAppProcessor: InAppNotificationProcessor;
+      let prisma: PrismaWriteService;
+
+      beforeEach(() => {
+        service = app.get(NotificationWorkerService);
+        inAppProcessor = app.get(InAppNotificationProcessor);
+        prisma = app.get(PrismaWriteService);
+      });
+
+      it('should process IN_APP notification through InAppNotificationProcessor', async () => {
+        jest.spyOn(inAppProcessor, 'process').mockResolvedValue(undefined);
+
+        const job = {
+          userId: 'user-1',
+          channels: ['IN_APP'],
+          notification: { title: 'Test', message: 'Test Msg' }
+        };
+
+        await service.processNotification(job as any);
+
+        expect(inAppProcessor.process).toHaveBeenCalledWith(job);
+      });
+
+      it('should handle PUSH notification gracefully even if no tokens found', async () => {
+        (prisma.userPushSubscription.findMany as jest.Mock).mockResolvedValue([]);
+
+        const job = {
+          userId: 'user-2',
+          channels: ['PUSH'],
+          notification: { title: 'Alert', message: 'Msg' }
+        };
+
+        await service.processNotification(job as any);
+
+        expect(prisma.userPushSubscription.findMany).toHaveBeenCalledWith({ where: { userId: 'user-2' } });
+      });
+    });
+
+    describe('NotificationConsumer Logic', () => {
+      let queueConsumer: QueueConsumerService;
+      let service: NotificationWorkerService;
+
+      beforeEach(() => {
+        queueConsumer = app.get(QueueConsumerService);
+        service = app.get(NotificationWorkerService);
+      });
+
+      it('should run consumer callback and trigger service logic', async () => {
+        jest.spyOn(service, 'processNotification').mockResolvedValue(undefined);
+
+        const consumer = app.get(NotificationConsumer);
+        await consumer.onModuleInit();
+
+        const consumeCalls = (queueConsumer.consume as jest.Mock).mock.calls;
+        const callback = consumeCalls[consumeCalls.length - 1][1];
+
+        const payload = { userId: 'u1', notification: { title: 'Hi' } };
+        const msg: any = { content: Buffer.from(JSON.stringify(payload)) };
+
+        await callback(msg);
+
+        expect(service.processNotification).toHaveBeenCalledWith(payload);
+      });
+    });
   });
-});

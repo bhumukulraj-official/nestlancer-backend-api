@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
-import { ConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
@@ -14,7 +14,7 @@ import { EmailConsumer } from './consumers/email.consumer';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    NestlancerConfigModule.forRoot(),
     NestConfigModule.forFeature(emailWorkerConfig),
     LoggerModule.forRoot(),
     MetricsModule,

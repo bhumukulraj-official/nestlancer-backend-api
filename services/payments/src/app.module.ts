@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule as NestlancerConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { DatabaseModule } from '@nestlancer/database';

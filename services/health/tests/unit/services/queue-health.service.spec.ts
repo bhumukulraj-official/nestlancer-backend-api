@@ -16,6 +16,7 @@ describe('QueueHealthService', () => {
     mockChannel = {
       checkQueue: jest.fn().mockResolvedValue({ messageCount: 0, consumerCount: 1 }),
       close: jest.fn().mockResolvedValue(undefined),
+      on: jest.fn(),
     };
     mockConnection = {
       createChannel: jest.fn().mockResolvedValue(mockChannel),

@@ -17,6 +17,10 @@ export class ContactService {
     const { page = 1, limit = 20, status, sortBy = 'createdAt', order = 'desc' } = query as any;
     const { skip, take } = buildPrismaSkipTake({ page, limit });
 
+    const allowedSortFields = ['createdAt', 'status', 'email', 'name'];
+    const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const normalizedOrder = String(order).toLowerCase() === 'asc' ? 'asc' : 'desc';
+
     const where: any = {};
     if (status) {
       where.status = status;
@@ -27,7 +31,7 @@ export class ContactService {
         where,
         skip,
         take,
-        orderBy: { [sortBy]: order },
+        orderBy: { [sortField]: normalizedOrder },
       }),
       this.prismaRead.contactMessage.count({ where }),
     ]);

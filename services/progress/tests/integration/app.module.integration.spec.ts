@@ -6,6 +6,13 @@ import { Reflector } from '@nestjs/core';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
+import { ProgressController } from '../../src/controllers/user/progress.controller';
+import { ProgressAdminController } from '../../src/controllers/admin/progress.admin.controller';
+import { MilestonesAdminController } from '../../src/controllers/admin/milestones.admin.controller';
+import { DeliverablesAdminController } from '../../src/controllers/admin/deliverables.admin.controller';
+import { MilestoneApprovalsController } from '../../src/controllers/user/milestone-approvals.controller';
+import { DeliverableReviewsController } from '../../src/controllers/user/deliverable-reviews.controller';
+import { ProgressService } from '../../src/services/progress.service';
 
 function loadDevEnv() {
   const envPath = resolve(__dirname, '../../../../.env.development');
@@ -47,12 +54,28 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
-    expect(app).toBeDefined();
+  it('should resolve user progress controllers', () => {
+    const progressController = app.get(ProgressController);
+    const milestoneApprovalsController = app.get(MilestoneApprovalsController);
+    const deliverableReviewsController = app.get(DeliverableReviewsController);
+    expect(progressController).toBeDefined();
+    expect(progressController).toBeInstanceOf(ProgressController);
+    expect(milestoneApprovalsController).toBeInstanceOf(MilestoneApprovalsController);
+    expect(deliverableReviewsController).toBeInstanceOf(DeliverableReviewsController);
   });
 
-  it('should resolve AppModule dependencies', () => {
-    const appModule = app.get(AppModule);
-    expect(appModule).toBeDefined();
+  it('should resolve admin progress controllers', () => {
+    const progressAdminController = app.get(ProgressAdminController);
+    const milestonesAdminController = app.get(MilestonesAdminController);
+    const deliverablesAdminController = app.get(DeliverablesAdminController);
+    expect(progressAdminController).toBeInstanceOf(ProgressAdminController);
+    expect(milestonesAdminController).toBeInstanceOf(MilestonesAdminController);
+    expect(deliverablesAdminController).toBeInstanceOf(DeliverablesAdminController);
+  });
+
+  it('should resolve ProgressService as dependency of progress controllers', () => {
+    const progressService = app.get(ProgressService);
+    expect(progressService).toBeDefined();
+    expect(progressService).toBeInstanceOf(ProgressService);
   });
 });

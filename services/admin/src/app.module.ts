@@ -1,5 +1,5 @@
 import { Module, Logger } from '@nestjs/common';
-import { ConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { DatabaseModule, PrismaReadService, PrismaWriteService } from '@nestlancer/database';
 import { CacheModule } from '@nestlancer/cache';
 import { QueueModule, QueuePublisherService } from '@nestlancer/queue';
@@ -45,7 +45,7 @@ import { WebhooksManagementService } from './services/webhooks-management.servic
 
 @Module({
   imports: [
-    process.env.NODE_ENV === 'test' ? ConfigModule : ConfigModule.forRoot(),
+    process.env.NODE_ENV === 'test' ? NestlancerConfigModule : NestlancerConfigModule.forRoot(),
     LoggerModule.forRoot(),
     MetricsModule,
     TracingModule.forRoot(),

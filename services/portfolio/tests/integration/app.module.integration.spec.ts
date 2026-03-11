@@ -6,6 +6,10 @@ import { Reflector } from '@nestjs/core';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
+import { PortfolioPublicController } from '../../src/controllers/public/portfolio.public.controller';
+import { PortfolioAdminController } from '../../src/controllers/admin/portfolio.admin.controller';
+import { PortfolioCategoriesAdminController } from '../../src/controllers/admin/portfolio-categories.admin.controller';
+import { PortfolioService } from '../../src/services/portfolio.service';
 
 function loadDevEnv() {
   const envPath = resolve(__dirname, '../../../../.env.development');
@@ -47,12 +51,22 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
-    expect(app).toBeDefined();
+  it('should resolve public portfolio controller', () => {
+    const controller = app.get(PortfolioPublicController);
+    expect(controller).toBeDefined();
+    expect(controller).toBeInstanceOf(PortfolioPublicController);
   });
 
-  it('should resolve AppModule dependencies', () => {
-    const appModule = app.get(AppModule);
-    expect(appModule).toBeDefined();
+  it('should resolve admin portfolio controllers', () => {
+    const adminController = app.get(PortfolioAdminController);
+    const categoriesAdminController = app.get(PortfolioCategoriesAdminController);
+    expect(adminController).toBeInstanceOf(PortfolioAdminController);
+    expect(categoriesAdminController).toBeInstanceOf(PortfolioCategoriesAdminController);
+  });
+
+  it('should resolve PortfolioService as dependency of portfolio controllers', () => {
+    const portfolioService = app.get(PortfolioService);
+    expect(portfolioService).toBeDefined();
+    expect(portfolioService).toBeInstanceOf(PortfolioService);
   });
 });

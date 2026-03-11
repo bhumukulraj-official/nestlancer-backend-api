@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { DatabaseModule } from '@nestlancer/database';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
@@ -15,7 +15,7 @@ import { InternalModule } from './internal/internal.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    NestlancerConfigModule.forRoot(),
     LoggerModule.forRoot(),
     MetricsModule,
     TracingModule.forRoot(),

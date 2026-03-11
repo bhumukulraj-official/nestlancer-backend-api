@@ -49,8 +49,8 @@ export class ContactSubmissionService {
     const spamCheck = this.spamFilterService.checkSpam(dto.email, dto.message);
     const resolvedStatus = spamCheck.isSpam ? ContactStatus.SPAM : ContactStatus.NEW;
 
-    // 4. Generate unique ticketId
-    const ticketId = `TKT-${generateUuid().substring(0, 8).toUpperCase()}`;
+    // 4. Generate unique ticketId (use full UUID segment to avoid collisions with seeded data)
+    const ticketId = `TKT-${generateUuid().toUpperCase()}`;
 
     // 5. Create Contact Message
     const message = await this.prismaWrite.contactMessage.create({

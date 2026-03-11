@@ -1,7 +1,7 @@
 import './integration.env';
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
@@ -90,5 +90,73 @@ describe('CDN Worker (Integration)', () => {
       const processor = app.get(BatchInvalidationProcessor);
       expect(processor).toBeDefined();
     });
+    describe('CdnConsumer Logic', () => {
+      let consumer: CdnConsumer;
+      let service: CdnWorkerService;
+
+      beforeEach(() => {
+        consumer = app.get(CdnConsumer);
+        service = app.get(CdnWorkerService);
+      });
+
+      it('should route INVALIDATE_PATH job to CdnWorkerService.invalidatePath', async () => {
+        jest.spyOn(service, 'invalidatePath').mockResolvedValue(undefined);
+        const msg: any = {
+          content: Buffer.from(JSON.stringify({ type: 'INVALIDATE_PATH', paths: ['/images/1.png'] })),
+        };
+
+        await (consumer as any).handleMessage(msg);
+
+        expect(service.invalidatePath).toHaveBeenCalledWith('/images/1.png');
+      });
+
+      it('should route INVALIDATE_BATCH job to CdnWorkerService.invalidateBatch', async () => {
+        jest.spyOn(service, 'invalidateBatch').mockResolvedValue(undefined);
+        const msg: any = {
+          content: Buffer.from(JSON.stringify({ type: 'INVALIDATE_BATCH', paths: ['/assets/*'] })),
+        };
+
+        await (consumer as any).handleMessage(msg);
+
+        expect(service.invalidateBatch).toHaveBeenCalledWith(['/assets/*']);
+      });
+
+      it('should route PURGE_ALL job to CdnWorkerService.purgeAll', async () => {
+        jest.spyOn(service, 'purgeAll').mockResolvedValue(undefined);
+        const msg: any = {
+          content: Buffer.from(JSON.stringify({ type: 'PURGE_ALL' })),
+        };
+
+        await (consumer as any).handleMessage(msg);
+
+        expect(service.purgeAll).toHaveBeenCalled();
+      });
+
+      it('should safely handle unknown job types without throwing', async () => {
+        const msg: any = {
+          content: Buffer.from(JSON.stringify({ type: 'UNKNOWN_JOB' })),
+        };
+
+        await expect((consumer as any).handleMessage(msg)).resolves.not.toThrow();
+      });
+    });
+
+    describe('PathInvalidationProcessor', () => {
+      let processor: PathInvalidationProcessor;
+      let service: CdnWorkerService;
+
+      beforeEach(() => {
+        processor = app.get(PathInvalidationProcessor);
+        service = app.get(CdnWorkerService);
+      });
+
+      it('should process paths individually through CdnWorkerService', async () => {
+        jest.spyOn(service, 'invalidatePath').mockResolvedValue(undefined);
+        await processor.process(['/path1', '/path2']);
+
+        expect(service.invalidatePath).toHaveBeenCalledTimes(2);
+        expect(service.invalidatePath).toHaveBeenCalledWith('/path1');
+        expect(service.invalidatePath).toHaveBeenCalledWith('/path2');
+      });
+    });
   });
-});

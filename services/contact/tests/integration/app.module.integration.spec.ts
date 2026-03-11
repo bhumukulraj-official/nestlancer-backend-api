@@ -3,6 +3,7 @@ import './integration.env';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
@@ -47,12 +48,16 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
-    expect(app).toBeDefined();
-  });
-
-  it('should resolve AppModule dependencies', () => {
+  it('should bootstrap and resolve AppModule', () => {
     const appModule = app.get(AppModule);
     expect(appModule).toBeDefined();
+  });
+
+  it('should expose public health and return 200 with status healthy and service name', async () => {
+    const response = await request(app.getHttpServer()).get('/contact/health');
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+    expect(response.body.status).toBe('healthy');
+    expect(response.body.service).toBe('contact');
   });
 });

@@ -96,7 +96,7 @@ export class RegistrationService {
       return newUser;
     });
 
-    return { user, emailVerificationToken };
+    return { user, emailVerificationToken, emailVerificationExpiresAt: verificationExpiresAt };
   }
 
   async checkEmail(email: string): Promise<boolean> {

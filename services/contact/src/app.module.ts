@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
@@ -18,7 +18,7 @@ import { ContactAdminService } from './services/contact-admin.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    NestlancerConfigModule.forRoot(),
     LoggerModule.forRoot(),
     MetricsModule,
     TracingModule.forRoot(),

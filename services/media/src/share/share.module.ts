@@ -4,10 +4,9 @@ import { ShareService } from './share.service';
 import { DatabaseModule } from '@nestlancer/database';
 import { StorageModule } from '../storage/storage.module';
 import { CryptoModule } from '@nestlancer/crypto';
-import { ConfigModule } from '@nestlancer/config';
 
 @Module({
-  imports: [DatabaseModule, StorageModule, CryptoModule, ConfigModule],
+  imports: [DatabaseModule, StorageModule, CryptoModule],
   controllers: [ShareController],
   providers: [ShareService],
   exports: [ShareService],

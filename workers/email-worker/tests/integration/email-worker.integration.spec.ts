@@ -78,5 +78,67 @@ describe('Email Worker (Integration)', () => {
       const consumer = app.get(EmailConsumer);
       expect(consumer).toBeDefined();
     });
+    describe('EmailConsumer Logic', () => {
+      let service: EmailWorkerService;
+      let queueConsumer: QueueConsumerService;
+
+      beforeEach(() => {
+        service = app.get(EmailWorkerService);
+        queueConsumer = app.get(QueueConsumerService);
+      });
+
+      it('should parse message and call EmailWorkerService.processEmail', async () => {
+        jest.spyOn(service, 'processEmail').mockResolvedValue(undefined);
+
+        // Simulate module init to register the consumer
+        const consumer = app.get(EmailConsumer);
+        await consumer.onModuleInit();
+
+        const payload = { type: 'WELCOME', to: 'test@example.com', data: {} };
+        const msg: any = { content: Buffer.from(JSON.stringify(payload)) };
+
+        // Extract the callback registered with consume
+        const consumeCalls = (queueConsumer.consume as jest.Mock).mock.calls;
+        const callback = consumeCalls[consumeCalls.length - 1][1];
+
+        await callback(msg);
+
+        expect(service.processEmail).toHaveBeenCalledWith(payload);
+      });
+
+      it('should throw an error for invalid JSON payloads', async () => {
+        const consumer = app.get(EmailConsumer);
+        await consumer.onModuleInit();
+
+        const consumeCalls = (queueConsumer.consume as jest.Mock).mock.calls;
+        const callback = consumeCalls[consumeCalls.length - 1][1];
+
+        const msg: any = { content: Buffer.from('invalid-json') };
+
+        await expect(callback(msg)).rejects.toThrow();
+      });
+    });
+
+    describe('EmailWorkerService Logic', () => {
+      let service: EmailWorkerService;
+
+      beforeEach(() => {
+        service = app.get(EmailWorkerService);
+      });
+
+      it('should map EMAIL_VERIFICATION type to correct subject', () => {
+        const subject = (service as any).getSubjectForType('EMAIL_VERIFICATION', {});
+        expect(subject).toBe('Verify your email address');
+      });
+
+      it('should dynamically map PROJECT_UPDATE subject', () => {
+        const subject = (service as any).getSubjectForType('PROJECT_UPDATE', { projectName: 'Alpha' });
+        expect(subject).toBe('Project Update: Alpha');
+      });
+
+      it('should return default subject for unknown type', () => {
+        const subject = (service as any).getSubjectForType('UNKNOWN_RANDOM_TYPE', {});
+        expect(subject).toBe('Notification from Nestlancer');
+      });
+    });
   });
-});

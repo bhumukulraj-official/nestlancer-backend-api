@@ -1,4 +1,16 @@
-import { Controller, Post, Get, Body, Query, Headers, Ip, Res, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  Headers,
+  Ip,
+  Res,
+  HttpStatus,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { ApiStandardResponse, Public } from '@nestlancer/common';
 import { AuthService } from '../services/auth.service';
@@ -10,6 +22,7 @@ import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { RefreshTokenDto } from '../dto/refresh.dto';
 import { ResendVerificationDto } from '../dto/resend-verification.dto';
+import { TurnstileGuard } from '../guards/turnstile.guard';
 
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiProperty } from '@nestjs/swagger';
 
@@ -34,6 +47,7 @@ export class AuthPublicController {
    * @returns Basic user info and verification status
    */
   @Post('register')
+  @UseGuards(TurnstileGuard)
   @ApiOperation({
     summary: 'Register new account',
     description: 'Create a new user account and trigger an email verification process.',
@@ -50,7 +64,7 @@ export class AuthPublicController {
       userId: result.user.id,
       email: result.user.email,
       emailVerificationSent: true,
-      emailVerificationExpiresAt: result.user.verificationTokens[0].expiresAt,
+      emailVerificationExpiresAt: result.emailVerificationExpiresAt,
     };
   }
 
@@ -173,6 +187,7 @@ export class AuthPublicController {
    * @returns Success confirmation (regardless of account existence for security)
    */
   @Post('forgot-password')
+  @UseGuards(TurnstileGuard)
   @ApiOperation({
     summary: 'Forgot password',
     description:
@@ -211,6 +226,7 @@ export class AuthPublicController {
    * @returns Availability status
    */
   @Get('check-email')
+  @UseGuards(TurnstileGuard)
   @ApiOperation({
     summary: 'Check email availability',
     description: 'Verify if an email address is available or already in use on the platform.',
@@ -221,6 +237,10 @@ export class AuthPublicController {
     @Query('turnstileToken') token: string,
     @Ip() ipAddress: string,
   ): Promise<any> {
+    if (!email) {
+      throw new BadRequestException('Email query parameter is required');
+    }
+
     return this.authService.checkEmail(email, token, ipAddress);
   }
 

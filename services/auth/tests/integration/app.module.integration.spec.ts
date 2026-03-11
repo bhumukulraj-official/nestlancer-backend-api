@@ -3,9 +3,13 @@ import './integration.env';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AppModule } from '../../src/app.module';
+import request from 'supertest';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import { AppModule } from '../../src/app.module';
+import { AuthPublicController } from '../../src/controllers/auth.public.controller';
+import { AuthService } from '../../src/services/auth.service';
+import { TurnstileGuard } from '../../src/guards/turnstile.guard';
 
 function loadDevEnv() {
   const envPath = resolve(__dirname, '../../../../.env.development');
@@ -47,12 +51,28 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
-    expect(app).toBeDefined();
+  it('should resolve AppModule and register AuthPublicController', () => {
+    const controller = app.get(AuthPublicController);
+    expect(controller).toBeDefined();
+    expect(controller).toBeInstanceOf(AuthPublicController);
   });
 
-  it('should resolve AppModule dependencies', () => {
-    const appModule = app.get(AppModule);
-    expect(appModule).toBeDefined();
+  it('should resolve AuthService as a dependency of the auth controller', () => {
+    const authService = app.get(AuthService);
+    expect(authService).toBeDefined();
+  });
+
+  it('should resolve TurnstileGuard from the module', () => {
+    const guard = app.get(TurnstileGuard);
+    expect(guard).toBeDefined();
+    expect(guard).toBeInstanceOf(TurnstileGuard);
+  });
+
+  it('should expose health endpoint and return auth service status', async () => {
+    const res = await request(app.getHttpServer()).get('/health');
+    expect(res.status).toBe(200);
+    expect(res.body).toBeDefined();
+    expect(res.body.status).toBe('ok');
+    expect(res.body.service).toBe('auth');
   });
 });

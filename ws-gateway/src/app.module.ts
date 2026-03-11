@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { DatabaseModule } from '@nestlancer/database';
 import { CacheModule } from '@nestlancer/cache';
 import { AuthLibModule } from '@nestlancer/auth-lib';
@@ -15,7 +15,7 @@ import { RedisSubscriberService } from './services/redis-subscriber.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    NestlancerConfigModule.forRoot(),
     DatabaseModule.forRoot(),
     CacheModule.forRoot(),
     AuthLibModule,

@@ -3,9 +3,13 @@ import './integration.env';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AppModule } from '../../src/app.module';
+import request from 'supertest';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import { AppModule } from '../../src/app.module';
+import { UsersController } from '../../src/controllers/users.controller';
+import { UsersAdminController } from '../../src/controllers/users.admin.controller';
+import { ProfileService } from '../../src/services/profile.service';
 
 function loadDevEnv() {
   const envPath = resolve(__dirname, '../../../../.env.development');
@@ -38,6 +42,7 @@ describe('AppModule (Integration)', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    app.setGlobalPrefix('api/v1');
     await app.init();
   });
 
@@ -47,12 +52,26 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
-    expect(app).toBeDefined();
+  it('should resolve UsersController and UsersAdminController', () => {
+    const usersController = app.get(UsersController);
+    const adminController = app.get(UsersAdminController);
+    expect(usersController).toBeDefined();
+    expect(usersController).toBeInstanceOf(UsersController);
+    expect(adminController).toBeDefined();
+    expect(adminController).toBeInstanceOf(UsersAdminController);
   });
 
-  it('should resolve AppModule dependencies', () => {
-    const appModule = app.get(AppModule);
-    expect(appModule).toBeDefined();
+  it('should resolve ProfileService as dependency of users controller', () => {
+    const profileService = app.get(ProfileService);
+    expect(profileService).toBeDefined();
+    expect(profileService).toBeInstanceOf(ProfileService);
+  });
+
+  it('should expose health endpoint and return users service status', async () => {
+    const res = await request(app.getHttpServer()).get('/api/v1/users/health');
+    expect(res.status).toBe(200);
+    expect(res.body).toBeDefined();
+    expect(res.body.status).toBe('ok');
+    expect(res.body.service).toBe('users');
   });
 });

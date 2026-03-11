@@ -9,6 +9,12 @@ import { StorageService as LibStorageService } from '@nestlancer/storage';
 import { MediaStorageService } from '../../src/storage/storage.service';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { NestlancerConfigService as ConfigLibService } from '@nestlancer/config';
+import { MediaController } from '../../src/media/media.controller';
+import { MediaRootController } from '../../src/media/media-root.controller';
+import { MediaAdminController } from '../../src/media/media.admin.controller';
+import { MediaService } from '../../src/media/media.service';
+import { MediaAdminService } from '../../src/media/media-admin.service';
+import { ShareController } from '../../src/share/share.controller';
 
 function loadDevEnv() {
   const envPath = resolve(__dirname, '../../../../.env.development');
@@ -109,8 +115,23 @@ describe('AppModule (Integration)', () => {
     expect(app).toBeDefined();
   });
 
-  it('should resolve AppModule dependencies', () => {
+  it('should resolve AppModule', () => {
     const appModule = app.get(AppModule);
     expect(appModule).toBeDefined();
+  });
+
+  it('should resolve media controllers registered by MediaModule', () => {
+    expect(app.get(MediaController)).toBeDefined();
+    expect(app.get(MediaRootController)).toBeDefined();
+    expect(app.get(MediaAdminController)).toBeDefined();
+  });
+
+  it('should resolve media services', () => {
+    expect(app.get(MediaService)).toBeDefined();
+    expect(app.get(MediaAdminService)).toBeDefined();
+  });
+
+  it('should resolve ShareController from ShareModule', () => {
+    expect(app.get(ShareController)).toBeDefined();
   });
 });

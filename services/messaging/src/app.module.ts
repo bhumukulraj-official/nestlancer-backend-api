@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { DatabaseModule } from '@nestlancer/database';
 import { AuthLibModule } from '@nestlancer/auth-lib';
@@ -25,8 +25,8 @@ import {
 
 @Module({
   imports: [
-    ConfigModule,
-    LoggerModule,
+    NestlancerConfigModule.forRoot(),
+    LoggerModule.forRoot(),
     DatabaseModule.forRoot(),
     AuthLibModule,
     StorageModule.forRoot(),

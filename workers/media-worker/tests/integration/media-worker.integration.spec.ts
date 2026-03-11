@@ -124,5 +124,96 @@ describe('Media Worker (Integration)', () => {
       const processor = app.get(MetadataExtractorProcessor);
       expect(processor).toBeDefined();
     });
+    describe('MediaWorkerService Pipeline Logic', () => {
+      let service: MediaWorkerService;
+      let virusScan: VirusScanProcessor;
+      let metadataExtractor: MetadataExtractorProcessor;
+      let thumbnailGenerator: ThumbnailGeneratorProcessor;
+      let imageResize: ImageResizeProcessor;
+      let prisma: PrismaWriteService;
+
+      beforeEach(() => {
+        service = app.get(MediaWorkerService);
+        virusScan = app.get(VirusScanProcessor);
+        metadataExtractor = app.get(MetadataExtractorProcessor);
+        thumbnailGenerator = app.get(ThumbnailGeneratorProcessor);
+        imageResize = app.get(ImageResizeProcessor);
+        prisma = app.get(PrismaWriteService);
+
+        (prisma.media.update as jest.Mock).mockClear();
+      });
+
+      it('should process a clean image and update status to READY', async () => {
+        jest.spyOn(virusScan, 'scanFile').mockResolvedValue({ isInfected: false });
+        jest.spyOn(metadataExtractor, 'extract').mockResolvedValue({ width: 800, height: 600 });
+        jest.spyOn(thumbnailGenerator, 'generate').mockResolvedValue('thumb-key');
+        jest.spyOn(imageResize, 'process').mockResolvedValue({});
+
+        const job = { mediaId: 'media-1', s3Key: 'test.png', contentType: 'image/png' };
+
+        await service.processJob(job as any);
+
+        expect(prisma.media.update).toHaveBeenCalledWith(
+          expect.objectContaining({ data: { status: 'PROCESSING' } })
+        );
+        expect(prisma.media.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({ status: 'READY', urls: { thumbnail: 'thumb-key' } })
+          })
+        );
+      });
+
+      it('should quarantine infected files', async () => {
+        jest.spyOn(virusScan, 'scanFile').mockResolvedValue({ isInfected: true, virusName: 'EICAR' });
+
+        const job = { mediaId: 'media-2', s3Key: 'virus.exe', contentType: 'application/x-msdownload' };
+
+        await service.processJob(job as any);
+
+        expect(prisma.media.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({ status: 'QUARANTINED' })
+          })
+        );
+      });
+
+      it('should set FAILED status if an error occurs', async () => {
+        jest.spyOn(virusScan, 'scanFile').mockRejectedValue(new Error('S3 offline'));
+
+        const job = { mediaId: 'media-3', s3Key: 'test.jpg', contentType: 'image/jpeg' };
+
+        await expect(service.processJob(job as any)).rejects.toThrow('S3 offline');
+
+        expect(prisma.media.update).toHaveBeenCalledWith(
+          expect.objectContaining({ data: { status: 'FAILED' } })
+        );
+      });
+    });
+
+    describe('MediaConsumer Logic', () => {
+      let service: MediaWorkerService;
+      let queueConsumer: QueueConsumerService;
+
+      beforeEach(() => {
+        service = app.get(MediaWorkerService);
+        queueConsumer = app.get(QueueConsumerService);
+      });
+
+      it('should run consumer callback and trigger service logic', async () => {
+        jest.spyOn(service, 'processJob').mockResolvedValue(undefined);
+
+        const consumer = app.get(MediaConsumer);
+        await consumer.onModuleInit();
+
+        const consumeCalls = (queueConsumer.consume as jest.Mock).mock.calls;
+        const callback = consumeCalls[consumeCalls.length - 1][1];
+
+        const payload = { mediaId: 'media-99', s3Key: 'rabbit.mp4', contentType: 'video/mp4' };
+        const msg: any = { content: Buffer.from(JSON.stringify(payload)) };
+
+        await callback(msg);
+
+        expect(service.processJob).toHaveBeenCalledWith(payload);
+      });
+    });
   });
-});

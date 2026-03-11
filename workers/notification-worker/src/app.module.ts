@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
-import { ConfigModule } from '@nestlancer/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from '@nestlancer/logger';
 import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
@@ -17,7 +16,7 @@ import { NotificationConsumer } from './consumers/notification.consumer';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    NestConfigModule.forFeature(notificationWorkerConfig),
+    ConfigModule.forFeature(notificationWorkerConfig),
     LoggerModule.forRoot(),
     MetricsModule,
     TracingModule.forRoot(),

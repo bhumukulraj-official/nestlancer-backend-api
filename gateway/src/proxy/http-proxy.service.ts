@@ -56,6 +56,7 @@ export class HttpProxyService {
       url: targetUrl,
       headers: this.prepareHeaders(req),
       data: req.body,
+      params: req.query && Object.keys(req.query).length > 0 ? req.query : undefined,
       timeout: serviceConfig.timeout,
       responseType: res ? 'stream' : 'json',
       validateStatus: () => true, // Don't throw on error status codes
@@ -133,6 +134,7 @@ export class HttpProxyService {
       url: targetUrl,
       headers: this.prepareHeaders(req),
       data: req.body,
+      params: req.query && Object.keys(req.query).length > 0 ? req.query : undefined,
       timeout: serviceConfig.timeout,
       validateStatus: () => true,
     };

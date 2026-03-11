@@ -120,5 +120,71 @@ describe('Webhook Worker (Integration)', () => {
       const processor = app.get(GenericWebhookProcessor);
       expect(processor).toBeDefined();
     });
+    describe('WebhookWorkerService Logic', () => {
+      let service: WebhookWorkerService;
+
+      beforeEach(() => {
+        service = app.get(WebhookWorkerService);
+      });
+
+      it('should throw ResourceNotFoundException for unknown provider/eventType', async () => {
+        await expect(service.dispatch('unknown_provider', 'unknown_event', {}))
+          .rejects.toThrowError(/WebhookHandler/);
+      });
+    });
+
+    describe('WebhookConsumer Logic', () => {
+      let consumer: WebhookConsumer;
+      let service: WebhookWorkerService;
+      let queueConsumer: QueueConsumerService;
+      let prisma: PrismaWriteService;
+
+      beforeEach(() => {
+        consumer = app.get(WebhookConsumer);
+        service = app.get(WebhookWorkerService);
+        queueConsumer = app.get(QueueConsumerService);
+        prisma = app.get(PrismaWriteService);
+
+        (queueConsumer.consume as jest.Mock).mockClear();
+      });
+
+      it('should parse message and dispatch to WebhookWorkerService', async () => {
+        jest.spyOn(service, 'dispatch').mockResolvedValue(undefined);
+        (prisma.webhookLog.update as jest.Mock).mockResolvedValue(undefined);
+
+        await consumer.onModuleInit();
+
+        const consumeCalls = (queueConsumer.consume as jest.Mock).mock.calls;
+        const callback = consumeCalls[0][1]; // first queue callback
+
+        const payload = {
+          provider: 'razorpay',
+          eventType: 'payment.captured',
+          rawPayloadId: 'log-1',
+          data: { id: 'pay_123' }
+        };
+
+        const msg: any = { content: Buffer.from(JSON.stringify(payload)) };
+
+        await callback(msg);
+
+        expect(service.dispatch).toHaveBeenCalledWith('razorpay', 'payment.captured', { id: 'pay_123' });
+        expect(prisma.webhookLog.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: { id: 'log-1' },
+            data: expect.objectContaining({ status: 'PROCESSED' })
+          })
+        );
+      });
+
+      it('should throw error for invalid JSON payload', async () => {
+        await consumer.onModuleInit();
+        const consumeCalls = (queueConsumer.consume as jest.Mock).mock.calls;
+        const callback = consumeCalls[0][1];
+
+        const msg: any = { content: Buffer.from('invalid-json') };
+
+        await expect(callback(msg)).rejects.toThrow();
+      });
+    });
   });
-});

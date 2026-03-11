@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
-import { ConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from '@nestlancer/database';
 import { CacheModule } from '@nestlancer/cache';
@@ -26,7 +26,7 @@ import { WeeklyReportCron } from './cron/weekly-report.cron';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    NestlancerConfigModule.forRoot(),
     NestConfigModule.forFeature(analyticsConfig),
     ScheduleModule.forRoot(),
     DatabaseModule.forRoot(),

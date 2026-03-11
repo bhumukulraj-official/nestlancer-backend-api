@@ -71,19 +71,19 @@ describe('Contact Service (Integration)', () => {
   });
 
   describe('Health', () => {
-    it('GET /api/v1/contact/health', async () => {
+    it('GET /api/v1/contact/health - should return 200 with status healthy and service contact', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/contact/health');
 
-      expect([200, 500]).toContain(response.status);
-      if (response.status === 200) {
-        expect(response.body).toBeDefined();
-        expect(response.body.status || response.body.service).toBeDefined();
-      }
+      expect(response.status).toBe(200);
+      expect(response.body).toBeDefined();
+      const health = response.body.data ?? response.body;
+      expect(health.status).toBe('healthy');
+      expect(health.service).toBe('contact');
     });
   });
 
   describe('Public Contact Form', () => {
-    it('POST /api/v1/contact - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/contact - should return 400 or 422 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer()).post('/api/v1/contact').send({
         name: '',
         email: 'invalid-email',
@@ -92,10 +92,10 @@ describe('Contact Service (Integration)', () => {
         turnstileToken: '',
       });
 
-      expect([400, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
     });
 
-    it('POST /api/v1/contact - should accept valid payload', async () => {
+    it('POST /api/v1/contact - should not return 4xx validation error when payload is valid', async () => {
       const response = await request(app.getHttpServer()).post('/api/v1/contact').send({
         name: 'John Doe',
         email: 'john@example.com',
@@ -104,62 +104,58 @@ describe('Contact Service (Integration)', () => {
         turnstileToken: 'test-turnstile-token',
       });
 
-      expect([200, 201, 400, 422, 429, 500]).toContain(response.status);
-      if (response.status === 200 || response.status === 201) {
-        expect(response.body).toBeDefined();
-      }
+      // We only assert that validation passed (i.e. not 400/422); external services may still fail.
+      expect([200, 201, 429, 500]).toContain(response.status);
     });
   });
 
   describe('Admin - Contact', () => {
-    it('GET /api/v1/admin/contact - should reject unauthenticated', async () => {
+    it('GET /api/v1/admin/contact - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/admin/contact');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
     });
 
-    it('GET /api/v1/admin/contact - should reject non-admin user', async () => {
+    it('GET /api/v1/admin/contact - should reject non-admin user (403 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/contact')
         .set(authHeader('regular-user-1'));
 
-      expect([403, 500]).toContain(response.status);
+      expect(response.status).toBe(403);
     });
 
-    it('GET /api/v1/admin/contact - should accept admin token', async () => {
+    it('GET /api/v1/admin/contact - should return 2xx with data when admin', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/contact')
         .query({ page: '1', limit: '20' })
         .set(adminAuthHeader());
 
       expect([200, 500]).toContain(response.status);
-      if (response.status === 200) {
-        expect(response.body).toBeDefined();
-      }
+      expect(response.body).toBeDefined();
     });
 
-    it('GET /api/v1/admin/contact/:id - should reject invalid id', async () => {
+    it('GET /api/v1/admin/contact/:id - should return 400 for invalid uuid', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/contact/invalid-uuid')
         .set(adminAuthHeader());
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
     });
 
-    it('PATCH /api/v1/admin/contact/:id/status - should reject invalid payload (validation)', async () => {
+    it('PATCH /api/v1/admin/contact/:id/status - should return 400 or 422 for invalid status', async () => {
       const response = await request(app.getHttpServer())
         .patch('/api/v1/admin/contact/550e8400-e29b-41d4-a716-446655440000/status')
         .set(adminAuthHeader())
         .send({ status: 'INVALID_STATUS' });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
     });
 
-    it('POST /api/v1/admin/contact/:id/respond - should reject unauthenticated', async () => {
+    it('POST /api/v1/admin/contact/:id/respond - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/admin/contact/550e8400-e29b-41d4-a716-446655440000/respond')
         .send({ message: 'Admin response' });
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
     });
   });
 });

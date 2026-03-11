@@ -2,6 +2,7 @@ import './integration.env';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
@@ -59,12 +60,16 @@ describe('AppModule (Integration)', () => {
     }
   });
 
-  it('should initialize the HTTP service application successfully', () => {
-    expect(app).toBeDefined();
-  });
-
-  it('should resolve AppModule dependencies', () => {
+  it('should bootstrap and resolve AppModule', () => {
     const appModule = app.get(AppModule);
     expect(appModule).toBeDefined();
+  });
+
+  it('should expose webhooks health at GET /webhooks/health and return 200 with status ok and service name', async () => {
+    const response = await request(app.getHttpServer()).get('/webhooks/health');
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+    expect(response.body.status).toBe('ok');
+    expect(response.body.service).toBe('webhooks-inbound');
   });
 });

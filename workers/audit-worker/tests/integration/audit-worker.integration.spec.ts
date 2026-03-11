@@ -98,5 +98,74 @@ describe('Audit Worker (Integration)', () => {
       const processor = app.get(AuditBatchInsertProcessor);
       expect(processor).toBeDefined();
     });
+    describe('AuditWorkerService & Processor Logic', () => {
+      let service: AuditWorkerService;
+      let processor: AuditBatchInsertProcessor;
+      let prisma: PrismaWriteService;
+
+      beforeEach(() => {
+        service = app.get(AuditWorkerService);
+        processor = app.get(AuditBatchInsertProcessor);
+        prisma = app.get(PrismaWriteService);
+
+        jest.spyOn(processor, 'insertBatch');
+        (prisma.auditLog.createMany as jest.Mock).mockClear();
+      });
+
+      it('should handle audit entry and process batch insertion correctly', async () => {
+        const entryProps = {
+          action: 'USER_LOGIN',
+          userId: 'test-user-123',
+          ip: '127.0.0.1',
+        };
+
+        await service.handleAuditEntry(entryProps as any);
+        await service.flush();
+
+        expect(processor.insertBatch).toHaveBeenCalledWith([entryProps]);
+        expect(prisma.auditLog.createMany).toHaveBeenCalledWith({
+          data: expect.arrayContaining([
+            expect.objectContaining({ action: 'USER_LOGIN', userId: 'test-user-123' })
+          ]),
+        });
+      });
+
+      it('should fallback to file writing on database failure', async () => {
+        const fs = require('fs');
+        jest.spyOn(fs.promises, 'appendFile').mockResolvedValue(undefined);
+        (prisma.auditLog.createMany as jest.Mock).mockRejectedValueOnce(new Error('DB Error'));
+
+        const entryProps = { action: 'DB_FAILED_ACTION' as any };
+
+        await processor.insertBatch([entryProps]);
+
+        expect(fs.promises.appendFile).toHaveBeenCalled();
+      });
+    });
+
+    describe('AuditConsumer', () => {
+      let consumer: AuditConsumer;
+      let service: AuditWorkerService;
+
+      beforeEach(() => {
+        consumer = app.get(AuditConsumer);
+        service = app.get(AuditWorkerService);
+        jest.spyOn(service, 'handleAuditEntry').mockResolvedValue(undefined);
+      });
+
+      it('should parse RabbitMQ messages and forward to AuditWorkerService', async () => {
+        const payload = { action: 'RABBITMQ_TEST' };
+        const msg: any = { content: Buffer.from(JSON.stringify(payload)) };
+
+        await (consumer as any).handleMessage(msg);
+
+        expect(service.handleAuditEntry).toHaveBeenCalledWith(payload);
+      });
+
+      it('should throw error for invalid JSON payload', async () => {
+        const msg: any = { content: Buffer.from('invalid json') };
+
+        await expect((consumer as any).handleMessage(msg)).rejects.toThrow();
+      });
+    });
   });
-});

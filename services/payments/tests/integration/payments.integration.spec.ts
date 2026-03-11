@@ -72,11 +72,21 @@ describe('Payments Service (Integration)', () => {
   });
 
   describe('Health', () => {
-    it('GET /api/v1/payments/health', async () => {
+    it('GET /api/v1/payments/health - should reject unauthenticated with 401', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/payments/health');
+      expect(response.status).toBe(401);
+      if (response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
+    });
 
-      expect([200, 500]).toContain(response.status);
-      if (response.status === 200) {
+    it('GET /api/v1/payments/health - returns 200 with success and service info when authenticated', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/payments/health')
+        .set(authHeader('test-user-1'));
+
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
         expect(response.body.data?.status).toBe('ok');
         expect(response.body.data?.service).toBe('payments');
@@ -85,116 +95,232 @@ describe('Payments Service (Integration)', () => {
   });
 
   describe('Payments (Authenticated)', () => {
-    it('GET /api/v1/payments - should reject unauthenticated', async () => {
+    it('GET /api/v1/payments - should reject unauthenticated with 401', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/payments');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
 
-    it('GET /api/v1/payments - should accept valid token', async () => {
+    it('GET /api/v1/payments - with valid token returns 200 with success and list shape or 404/500', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments')
         .set(authHeader('test-user-1'));
 
-      expect([200, 404, 500]).toContain(response.status);
-      if (response.status === 200) {
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
-        expect(response.body.data !== undefined || response.body.items !== undefined).toBe(true);
+        expect(
+          response.body.data !== undefined ||
+            response.body.items !== undefined ||
+            (response.body.meta !== undefined && Array.isArray(response.body.items)),
+        ).toBe(true);
       }
     });
 
-    it('GET /api/v1/payments/stats - should reject unauthenticated', async () => {
+    it('GET /api/v1/payments/stats - should reject unauthenticated with 401', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/payments/stats');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
 
-    it('POST /api/v1/payments/create-intent - should reject unauthenticated', async () => {
+    it('GET /api/v1/payments/stats - should execute successfully with valid token', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/payments/stats')
+        .set(authHeader('test-user-1'));
+
+      expect(response.status).toBe(200);
+      if (response.body?.status) {
+        expect(response.body.status).toBe('success');
+      }
+    });
+
+    it('POST /api/v1/payments/create-intent - should reject unauthenticated with 401', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/payments/create-intent')
         .send({ amount: 1000, currency: 'INR', projectId: '550e8400-e29b-41d4-a716-446655440000' });
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
 
-    it('POST /api/v1/payments/create-intent - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/payments/create-intent - should return 400/422 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/payments/create-intent')
         .set(authHeader('test-user-1'))
         .send({ amount: -1, currency: '', projectId: '' });
 
-      expect([400, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.status === 400 || response.status === 422) {
+        expect(response.body?.status).toBe('error');
+      }
     });
 
-    it('GET /api/v1/payments/:id - should reject invalid id', async () => {
+    it('POST /api/v1/payments/create-intent - should create a payment intent and allow fetching it when backend is healthy', async () => {
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/v1/payments/create-intent')
+        .set(authHeader('e2e-user-1'))
+        .send({
+          amount: 10_000,
+          currency: 'INR',
+          projectId: '550e8400-e29b-41d4-a716-446655440000',
+        });
+
+      expect([200, 201, 500]).toContain(createResponse.status);
+
+      if (createResponse.status !== 200 && createResponse.status !== 201) {
+        // If infrastructure is unavailable in CI, skip the rest of the flow.
+        return;
+      }
+
+      const body = createResponse.body.data ?? createResponse.body;
+      const paymentId = body.id ?? body.paymentId ?? body.intentId;
+      expect(paymentId).toBeDefined();
+
+      const getResponse = await request(app.getHttpServer())
+        .get(`/api/v1/payments/${paymentId}`)
+        .set(authHeader('e2e-user-1'));
+
+      expect([200, 404, 422, 500]).toContain(getResponse.status);
+      if (getResponse.status === 200) {
+        const fetched = getResponse.body.data ?? getResponse.body;
+        expect(fetched).toBeDefined();
+      }
+    });
+
+    it('GET /api/v1/payments/:id - should return 400 or 404 for invalid id', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments/invalid-uuid')
         .set(authHeader('test-user-1'));
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect([400, 404]).toContain(response.status);
+      if (response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
   });
 
   describe('Payment Methods (Authenticated)', () => {
-    it('GET /api/v1/payments/methods - should reject unauthenticated', async () => {
+    it('GET /api/v1/payments/methods - should reject unauthenticated with 401', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/payments/methods');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
 
-    it('POST /api/v1/payments/methods - should reject unauthenticated', async () => {
+    it('GET /api/v1/payments/methods - should execute successfully with valid token', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/payments/methods')
+        .set(authHeader('test-user-1'));
+
+      expect([200, 404, 500]).toContain(response.status);
+    });
+
+    it('POST /api/v1/payments/methods - should reject unauthenticated with 401', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/payments/methods')
         .send({ type: 'card', token: 'tok_xxx' });
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
+    });
+
+    it('POST /api/v1/payments/methods - should add payment method or fail with infrastructure error', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/payments/methods')
+        .set(authHeader('test-user-1'))
+        .send({
+          type: 'card',
+          tokenId: 'tok_visa',
+          last4: '4242',
+          cardBrand: 'visa',
+          cardExpMonth: 12,
+          cardExpYear: 2028,
+          nickname: 'Integration Test Card',
+        });
+
+      expect([201, 500]).toContain(response.status);
     });
   });
 
   describe('Admin - Payments', () => {
-    it('GET /api/v1/admin/payments - should reject unauthenticated', async () => {
+    it('GET /api/v1/admin/payments - should reject unauthenticated with 401', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/admin/payments');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
 
-    it('GET /api/v1/admin/payments - should reject non-admin user', async () => {
+    it('GET /api/v1/admin/payments - should reject non-admin user with 403', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/payments')
         .set(authHeader('regular-user-1'));
 
-      expect([403, 500]).toContain(response.status);
+      expect(response.status).toBe(403);
+      if (response.status === 403 && response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
 
-    it('GET /api/v1/admin/payments - should accept admin token', async () => {
+    it('GET /api/v1/admin/payments - with admin token returns 200 with success and list shape', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/payments')
         .query({ page: '1', limit: '20' })
         .set(adminAuthHeader());
 
-      expect([200, 500]).toContain(response.status);
-      if (response.status === 200) {
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
-        expect(response.body.data !== undefined || response.body.items !== undefined).toBe(true);
+        expect(
+          response.body.data !== undefined ||
+            response.body.items !== undefined ||
+            response.body.meta !== undefined,
+        ).toBe(true);
       }
     });
 
-    it('GET /api/v1/admin/payments/stats - should reject non-admin', async () => {
+    it('GET /api/v1/admin/payments/stats - should reject non-admin with 403', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/payments/stats')
         .set(authHeader('regular-user-1'));
 
-      expect([403, 500]).toContain(response.status);
+      expect(response.status).toBe(403);
+      if (response.status === 403 && response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
 
-    it('GET /api/v1/admin/payments/stats - should accept admin token', async () => {
+    it('GET /api/v1/admin/payments/stats - with admin token returns 200 with success and data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/payments/stats')
         .set(adminAuthHeader());
 
-      expect([200, 500]).toContain(response.status);
+      expect(response.status).toBe(200);
+      {
+        expect(response.body.status).toBe('success');
+        expect(response.body.data).toBeDefined();
+      }
     });
 
-    it('GET /api/v1/admin/payments/:id - should reject invalid id', async () => {
+    it('GET /api/v1/admin/payments/:id - with invalid or non-existent id returns 200 with error payload (or 500)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/payments/invalid-uuid')
         .set(adminAuthHeader());
 
-      expect([200, 400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(200);
+      {
+        const errorStatus = response.body.status === 'error' || response.body.data?.status === 'error';
+        const message = response.body.message ?? response.body.data?.message;
+        expect(errorStatus).toBe(true);
+        expect(message).toBeDefined();
+      }
     });
   });
 });

@@ -70,8 +70,10 @@ describe('Quotes Service (Integration)', () => {
   });
 
   describe('Health', () => {
-    it('GET /api/v1/quotes/health', async () => {
-      const response = await request(app.getHttpServer()).get('/api/v1/quotes/health').expect(200);
+    it('GET /api/v1/quotes/health - should return 200 with success and service status', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/quotes/health')
+        .expect(200);
 
       expect(response.body.status).toBe('success');
       expect(response.body.data.status).toBe('ok');
@@ -80,48 +82,84 @@ describe('Quotes Service (Integration)', () => {
   });
 
   describe('Quotes (Authenticated)', () => {
-    it('GET /api/v1/quotes - should reject unauthenticated', async () => {
+    it('GET /api/v1/quotes - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/quotes');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/quotes - should accept valid token', async () => {
+    it('GET /api/v1/quotes - should accept valid token and return list or 404/500', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/quotes')
         .set(authHeader('test-user-1'));
 
-      expect([200, 404, 500]).toContain(response.status);
-      if (response.status === 200) {
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
         expect(Array.isArray(response.body.data)).toBe(true);
       }
     });
 
-    it('GET /api/v1/quotes/stats - should reject unauthenticated', async () => {
+    it('GET /api/v1/quotes/stats - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/quotes/stats');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/quotes/stats - should accept valid token', async () => {
+    it('GET /api/v1/quotes/stats - should accept valid token and return stats or 404/500', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/quotes/stats')
         .set(authHeader('test-user-1'));
 
-      expect([200, 404, 500]).toContain(response.status);
-      if (response.status === 200) {
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
       }
     });
 
-    it('GET /api/v1/quotes/:id - should reject invalid id', async () => {
+    it('GET /api/v1/quotes/:id - should reject invalid id (400, 404, or 422)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/quotes/invalid-uuid')
         .set(authHeader('test-user-1'));
 
       expect([400, 404, 422, 500]).toContain(response.status);
+      if (response.status !== 500 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/quotes/:id/accept - should reject unauthenticated', async () => {
+    it('GET + POST /api/v1/quotes/:id/accept - should allow acceptance of an existing quote when backend is healthy', async () => {
+      const listResponse = await request(app.getHttpServer())
+        .get('/api/v1/quotes')
+        .set(authHeader('e2e-user-1'));
+
+      expect([200, 404, 500]).toContain(listResponse.status);
+
+      if (listResponse.status !== 200 || !Array.isArray(listResponse.body.data)) {
+        // No accessible quotes or backend unavailable; skip flow.
+        return;
+      }
+
+      const first = listResponse.body.data[0];
+      if (!first || !first.id) {
+        return;
+      }
+
+      const acceptResponse = await request(app.getHttpServer())
+        .post(`/api/v1/quotes/${first.id}/accept`)
+        .set(authHeader('e2e-user-1'))
+        .send({
+          acceptTerms: true,
+          signatureName: 'Integration Tester',
+          signatureDate: '2025-01-01T00:00:00Z',
+        });
+
+      expect([200, 404, 422, 500]).toContain(acceptResponse.status);
+      if (acceptResponse.status === 200) {
+        const body = acceptResponse.body.data ?? acceptResponse.body;
+        expect(body).toBeDefined();
+      }
+    });
+
+    it('POST /api/v1/quotes/:id/accept - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/quotes/550e8400-e29b-41d4-a716-446655440000/accept')
         .send({
@@ -130,10 +168,11 @@ describe('Quotes Service (Integration)', () => {
           signatureDate: '2025-01-01T00:00:00Z',
         });
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/quotes/:id/accept - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/quotes/:id/accept - should reject invalid payload (400 validation or 404)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/quotes/550e8400-e29b-41d4-a716-446655440000/accept')
         .set(authHeader('test-user-1'))
@@ -144,9 +183,10 @@ describe('Quotes Service (Integration)', () => {
         });
 
       expect([400, 404, 422, 500]).toContain(response.status);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/quotes/:id/decline - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/quotes/:id/decline - should reject invalid payload (400 validation or 404)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/quotes/550e8400-e29b-41d4-a716-446655440000/decline')
         .set(authHeader('test-user-1'))
@@ -156,9 +196,10 @@ describe('Quotes Service (Integration)', () => {
         });
 
       expect([400, 404, 422, 500]).toContain(response.status);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/quotes/:id/request-changes - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/quotes/:id/request-changes - should reject invalid payload (400 validation or 404)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/quotes/550e8400-e29b-41d4-a716-446655440000/request-changes')
         .set(authHeader('test-user-1'))
@@ -167,61 +208,96 @@ describe('Quotes Service (Integration)', () => {
         });
 
       expect([400, 404, 422, 500]).toContain(response.status);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/quotes/:id/pdf - should reject unauthenticated', async () => {
+    it('GET /api/v1/quotes/:id/pdf - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get(
         '/api/v1/quotes/550e8400-e29b-41d4-a716-446655440000/pdf',
       );
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
+    });
+
+    it('GET /api/v1/quotes/:id/pdf - should require auth and use a real quote id when available', async () => {
+      const listResponse = await request(app.getHttpServer())
+        .get('/api/v1/quotes')
+        .set(authHeader('e2e-user-1'));
+
+      expect([200, 404, 500]).toContain(listResponse.status);
+
+      if (listResponse.status !== 200 || !Array.isArray(listResponse.body.data)) {
+        return;
+      }
+
+      const firstQuote = listResponse.body.data[0];
+      if (!firstQuote || !firstQuote.id) {
+        return;
+      }
+
+      const pdfResponse = await request(app.getHttpServer())
+        .get(`/api/v1/quotes/${firstQuote.id}/pdf`)
+        .set(authHeader('e2e-user-1'));
+
+      expect([200, 404, 500]).toContain(pdfResponse.status);
+
+      if (pdfResponse.status === 200) {
+        expect(pdfResponse.headers['content-type']).toContain('application/pdf');
+      }
     });
   });
 
   describe('Admin - Quotes', () => {
-    it('GET /api/v1/admin/quotes - should reject unauthenticated', async () => {
+    it('GET /api/v1/admin/quotes - should reject unauthenticated (401 or 500)', async () => {
       const response = await request(app.getHttpServer()).get('/api/v1/admin/quotes');
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/quotes - should reject non-admin user', async () => {
+    it('GET /api/v1/admin/quotes - should reject non-admin user (403 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/quotes')
         .set(authHeader('regular-user-1'));
 
-      expect([403, 500]).toContain(response.status);
+      expect(response.status).toBe(403);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/quotes - should accept admin token', async () => {
+    it('GET /api/v1/admin/quotes - should accept admin token and return list', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/quotes')
         .query({ page: '1', limit: '20' })
         .set(adminAuthHeader());
 
-      expect([200, 500]).toContain(response.status);
-      if (response.status === 200) {
+      expect(response.status).toBe(200);
+      {
         expect(response.body.status).toBe('success');
         expect(response.body.data).toBeDefined();
       }
     });
 
-    it('GET /api/v1/admin/quotes/stats - should reject non-admin', async () => {
+    it('GET /api/v1/admin/quotes/stats - should reject non-admin (403 or 500)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/quotes/stats')
         .set(authHeader('regular-user-1'));
 
-      expect([403, 500]).toContain(response.status);
+      expect(response.status).toBe(403);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/quotes/stats - should accept admin token', async () => {
+    it('GET /api/v1/admin/quotes/stats - should accept admin token and return stats', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/quotes/stats')
         .set(adminAuthHeader());
 
-      expect([200, 500]).toContain(response.status);
+      expect(response.status).toBe(200);
+      {
+        expect(response.body.status).toBe('success');
+      }
     });
 
-    it('POST /api/v1/admin/quotes - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/admin/quotes - should reject invalid payload (400 validation or 404)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/admin/quotes')
         .set(adminAuthHeader())
@@ -236,32 +312,39 @@ describe('Quotes Service (Integration)', () => {
           paymentBreakdown: [],
         });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/quotes/templates - should accept admin token', async () => {
+    it('GET /api/v1/admin/quotes/templates - should accept admin token and return templates', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/quotes/templates')
         .set(adminAuthHeader());
 
-      expect([200, 500]).toContain(response.status);
+      expect(response.status).toBe(200);
+      {
+        expect(response.body.status).toBe('success');
+        expect(response.body.data).toBeDefined();
+      }
     });
 
-    it('GET /api/v1/admin/quotes/:id - should reject invalid id', async () => {
+    it('GET /api/v1/admin/quotes/:id - should reject invalid id (400, 404, or 422)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/admin/quotes/invalid-uuid')
         .set(adminAuthHeader());
 
       expect([400, 404, 422, 500]).toContain(response.status);
+      if (response.status !== 500 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('PATCH /api/v1/admin/quotes/:id - should reject invalid payload (validation)', async () => {
+    it('PATCH /api/v1/admin/quotes/:id - should reject invalid payload (400 validation or 404)', async () => {
       const response = await request(app.getHttpServer())
         .patch('/api/v1/admin/quotes/550e8400-e29b-41d4-a716-446655440000')
         .set(adminAuthHeader())
         .send({ totalAmount: -1 });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
   });
 });

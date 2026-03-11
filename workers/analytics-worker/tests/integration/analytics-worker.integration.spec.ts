@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { AppModule } from '../../src/app.module';
+import { LoggerService } from '@nestlancer/logger';
 import { AnalyticsWorkerService } from '../../src/services/analytics-worker.service';
 import { AnalyticsConsumer } from '../../src/consumers/analytics.consumer';
 import { UserAnalyticsProcessor } from '../../src/processors/user-analytics.processor';
@@ -30,6 +31,18 @@ function loadDevEnv() {
     }
   });
 }
+
+const cacheClientMock = {
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
+};
+
+const cacheServiceMock = {
+  getClient: jest.fn().mockReturnValue(cacheClientMock),
+  get: cacheClientMock.get,
+  set: cacheClientMock.set,
+} as any;
 
 describe('Analytics Worker (Integration)', () => {
   let app: INestApplication;
@@ -64,9 +77,7 @@ describe('Analytics Worker (Integration)', () => {
         analyticsAggregation: { findMany: jest.fn(), findUnique: jest.fn() },
       })
       .overrideProvider(CacheService)
-      .useValue({
-        getClient: jest.fn().mockReturnValue({ get: jest.fn(), set: jest.fn(), del: jest.fn() }),
-      })
+      .useValue(cacheServiceMock)
       .overrideProvider(StorageService)
       .useValue({
         upload: jest.fn(),
@@ -113,4 +124,88 @@ describe('Analytics Worker (Integration)', () => {
       expect(processor).toBeDefined();
     });
   });
-});
+
+  describe('Queue Subscription Wiring', () => {
+    it('should subscribe AnalyticsConsumer to the analytics queue on module init', async () => {
+      const queueConsumer = app.get(QueueConsumerService) as any;
+      const consumer = app.get(AnalyticsConsumer);
+
+      await consumer.onModuleInit();
+
+      expect(queueConsumer.consume).toHaveBeenCalledWith('analytics.queue', expect.any(Function));
+    });
+    describe('AnalyticsWorkerService', () => {
+      let service: AnalyticsWorkerService;
+      let cacheService: CacheService;
+
+      beforeEach(() => {
+        service = app.get(AnalyticsWorkerService);
+        cacheService = app.get(CacheService);
+      });
+
+      it('should calculate TTL and save analytics result to cache using correct keys', async () => {
+        const cacheClient = cacheService.getClient();
+        const mockResult = {
+          type: 'USER_STATS' as any,
+          period: 'DAILY' as any,
+          data: { active: 100 },
+          generatedAt: new Date(),
+          cachedUntil: new Date(Date.now() + 3600000), // 1 hour TTL
+        };
+
+        await service.saveResult(mockResult);
+
+        expect(cacheClient.set).toHaveBeenCalledWith(
+          'analytics:user_stats:daily',
+          mockResult,
+          expect.any(Number),
+        );
+        expect(cacheClient.set).toHaveBeenCalledWith(
+          'analytics:user_stats:latest',
+          mockResult,
+        );
+      });
+
+      it('should retrieve the latest analytics result from cache', async () => {
+        const cacheClient = cacheService.getClient();
+        const mockData = { active: 200 };
+        (cacheClient.get as jest.Mock).mockResolvedValueOnce(mockData);
+
+        const result = await service.getLatest('PROJECT_STATS' as any);
+
+        expect(cacheClient.get).toHaveBeenCalledWith('analytics:project_stats:latest');
+        expect(result).toEqual(mockData);
+      });
+    });
+
+    describe('AnalyticsConsumer', () => {
+      let consumer: AnalyticsConsumer;
+      let userProcessor: UserAnalyticsProcessor;
+
+      beforeEach(() => {
+        consumer = app.get(AnalyticsConsumer);
+        userProcessor = app.get(UserAnalyticsProcessor);
+        jest.spyOn(userProcessor, 'process').mockResolvedValue(undefined);
+      });
+
+      it('should route USER_STATS job to UserAnalyticsProcessor', async () => {
+        const job = { type: 'USER_STATS' as any, period: 'DAILY' as any };
+
+        await consumer.handleJob(job);
+
+        expect(userProcessor.process).toHaveBeenCalledWith('DAILY');
+      });
+
+      it('should log warning for unsupported job types', async () => {
+        const logger = app.get(LoggerService);
+        const warnSpy = jest.spyOn(logger, 'warn').mockImplementation();
+
+        const job = { type: 'UNKNOWN_TYPE' as any, period: 'DAILY' as any };
+        await consumer.handleJob(job);
+
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('Unsupported job type received: UNKNOWN_TYPE')
+        );
+      });
+    });
+  });

@@ -5,10 +5,13 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import * as crypto from 'crypto';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
 import { AppModule } from '../../src/app.module';
 import { QueuePublisherService, QueueConsumerService } from '@nestlancer/queue';
+import { ConfigService } from '@nestjs/config';
+import { PrismaWriteService } from '@nestlancer/database';
 
 function loadDevEnv() {
   const envPath = resolve(__dirname, '../../../../.env.development');
@@ -29,6 +32,8 @@ function loadDevEnv() {
 }
 
 const basePath = '/api/v1/webhooks';
+const RAZORPAY_SECRET = 'test-razorpay-secret';
+const CLOUDFLARE_SECRET = 'test-cloudflare-secret';
 
 describe('Webhooks Service (Integration)', () => {
   let app: INestApplication;
@@ -42,6 +47,26 @@ describe('Webhooks Service (Integration)', () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
+      .overrideProvider(ConfigService)
+      .useValue({
+        get: jest.fn((key: string) => {
+          if (key === 'webhooks.razorpaySecret') return RAZORPAY_SECRET;
+          if (key === 'webhooks.cloudflareSecret') return CLOUDFLARE_SECRET;
+          return undefined;
+        }),
+      })
+      .overrideProvider(PrismaWriteService)
+      .useValue({
+        webhookLog: {
+          create: jest.fn().mockResolvedValue({
+            id: 'log-1',
+            provider: 'razorpay',
+            status: 'PENDING',
+            eventType: 'payment.captured',
+          }),
+          update: jest.fn().mockResolvedValue({}),
+        },
+      })
       .overrideProvider(QueuePublisherService)
       .useValue({
         publish: jest.fn().mockResolvedValue(undefined),
@@ -59,7 +84,9 @@ describe('Webhooks Service (Integration)', () => {
       .useValue({ url: 'amqp://localhost:5672' })
       .compile();
 
-    app = moduleRef.createNestApplication();
+    app = moduleRef.createNestApplication({
+      rawBody: true,
+    });
 
     app.setGlobalPrefix('api/v1/webhooks');
     app.useGlobalPipes(
@@ -82,78 +109,141 @@ describe('Webhooks Service (Integration)', () => {
   });
 
   describe('Health', () => {
-    it(`GET ${basePath}/webhooks/health`, async () => {
+    it(`GET ${basePath}/webhooks/health - should return 200 with status ok and service webhooks-inbound`, async () => {
       const response = await request(app.getHttpServer()).get(`${basePath}/webhooks/health`);
 
-      expect([200, 500]).toContain(response.status);
-      if (response.status === 200) {
-        const healthData = response.body.data ?? response.body;
-        expect(healthData.status).toBe('ok');
-        expect(healthData.service).toBe('webhooks-inbound');
-      }
+      expect(response.status).toBe(200);
+      const healthData = response.body?.data ?? response.body;
+      expect(healthData).toBeDefined();
+      expect(healthData.status).toBe('ok');
+      expect(healthData.service).toBe('webhooks-inbound');
     });
   });
 
-  describe('Webhook Receivers (Public)', () => {
-    it('POST /api/v1/webhooks/razorpay - should accept webhook payload', async () => {
+  describe('Supported providers (razorpay, cloudflare)', () => {
+    it('POST /api/v1/webhooks/razorpay - should return 401 when signature is missing', async () => {
+      const payload = {
+        entity: 'event',
+        event: 'payment.captured',
+        created_at: Math.floor(Date.now() / 1000),
+        contains: ['payment'],
+        payload: { payment: { entity: { id: 'pay_test123' } } },
+      };
       const response = await request(app.getHttpServer())
         .post(`${basePath}/razorpay`)
         .set('Content-Type', 'application/json')
-        .send({
-          entity: 'event',
-          event: 'payment.captured',
-          payload: { payment: { entity: { id: 'pay_test123' } } },
-        });
+        .send(payload);
 
-      expect([200, 201, 400, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      expect(response.body?.error?.message || response.body?.message).toMatch(/signature|invalid/i);
     });
 
-    it('POST /api/v1/webhooks/cloudflare - should accept webhook payload', async () => {
+    it('POST /api/v1/webhooks/razorpay - should return 401 when signature is invalid', async () => {
+      const rawBody = JSON.stringify({
+        entity: 'event',
+        event: 'payment.captured',
+        created_at: Math.floor(Date.now() / 1000),
+        contains: ['payment'],
+        payload: { payment: { entity: { id: 'pay_test123' } } },
+      });
+      const response = await request(app.getHttpServer())
+        .post(`${basePath}/razorpay`)
+        .set('Content-Type', 'application/json')
+        .set('X-Razorpay-Signature', 'invalid-signature')
+        .send(rawBody);
+
+      expect(response.status).toBe(401);
+    });
+
+    it('POST /api/v1/webhooks/razorpay - should return 200 when signature is valid and payload is valid JSON', async () => {
+      const payload = {
+        entity: 'event',
+        event: 'payment.captured',
+        created_at: Math.floor(Date.now() / 1000),
+        contains: ['payment'],
+        payload: { payment: { entity: { id: 'pay_test123' } } },
+      };
+      const rawBody = JSON.stringify(payload);
+      const signature = crypto.createHmac('sha256', RAZORPAY_SECRET).update(rawBody).digest('hex');
+
+      const response = await request(app.getHttpServer())
+        .post(`${basePath}/razorpay`)
+        .set('Content-Type', 'application/json')
+        .set('X-Razorpay-Signature', signature)
+        .send(rawBody);
+
+      expect(response.status).toBe(200);
+    });
+
+    it('POST /api/v1/webhooks/razorpay - should return 422 or 400 when body is not valid JSON', async () => {
+      const rawBody = 'not valid json';
+      const signature = crypto.createHmac('sha256', RAZORPAY_SECRET).update(rawBody).digest('hex');
+
+      const response = await request(app.getHttpServer())
+        .post(`${basePath}/razorpay`)
+        .set('Content-Type', 'application/json')
+        .set('X-Razorpay-Signature', signature)
+        .send(rawBody);
+
+      // 422 from our UnprocessableEntityException, or 400 if body parser rejects invalid JSON first
+      expect([400, 422]).toContain(response.status);
+    });
+
+    it('POST /api/v1/webhooks/cloudflare - should return 401 when signature is missing', async () => {
       const response = await request(app.getHttpServer())
         .post(`${basePath}/cloudflare`)
         .set('Content-Type', 'application/json')
-        .send({
-          action: 'alert',
-          alert_name: 'Test Alert',
-          metadata: {},
-        });
+        .send({ action: 'alert', alert_name: 'Test', metadata: {} });
 
-      expect([200, 201, 400, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
     });
 
-    it('POST /api/v1/webhooks/github - should accept webhook payload', async () => {
+    it('POST /api/v1/webhooks/cloudflare - should return 200 when cf-webhook-auth matches secret', async () => {
+      const payload = { action: 'alert', alert_name: 'Test', metadata: {} };
+      const response = await request(app.getHttpServer())
+        .post(`${basePath}/cloudflare`)
+        .set('Content-Type', 'application/json')
+        .set('cf-webhook-auth', CLOUDFLARE_SECRET)
+        .send(payload);
+
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe('Unsupported providers', () => {
+    it('POST /api/v1/webhooks/github - should return 400 with provider not supported', async () => {
       const response = await request(app.getHttpServer())
         .post(`${basePath}/github`)
         .set('Content-Type', 'application/json')
         .set('X-GitHub-Event', 'push')
-        .send({
-          repository: { full_name: 'test/repo' },
-          action: 'opened',
-        });
+        .send({ repository: { full_name: 'test/repo' }, action: 'opened' });
 
-      expect([200, 201, 400, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      const message = response.body?.error?.message ?? response.body?.message ?? '';
+      expect(message).toMatch(/not supported|github/i);
     });
 
-    it('POST /api/v1/webhooks/stripe - should accept webhook payload', async () => {
+    it('POST /api/v1/webhooks/stripe - should return 400 with provider not supported', async () => {
       const response = await request(app.getHttpServer())
         .post(`${basePath}/stripe`)
         .set('Content-Type', 'application/json')
         .set('Stripe-Signature', 'test-signature')
-        .send({
-          type: 'payment_intent.succeeded',
-          data: { object: {} },
-        });
+        .send({ type: 'payment_intent.succeeded', data: { object: {} } });
 
-      expect([200, 201, 400, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      const message = response.body?.error?.message ?? response.body?.message ?? '';
+      expect(message).toMatch(/not supported|stripe/i);
     });
 
-    it('POST /api/v1/webhooks/:provider - should accept dynamic provider webhook', async () => {
+    it('POST /api/v1/webhooks/:provider - should return 400 for dynamic unsupported provider', async () => {
       const response = await request(app.getHttpServer())
         .post(`${basePath}/custom-provider`)
         .set('Content-Type', 'application/json')
         .send({ event: 'test', data: {} });
 
-      expect([200, 201, 400, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      const message = response.body?.error?.message ?? response.body?.message ?? '';
+      expect(message).toMatch(/not supported|custom-provider/i);
     });
   });
 });

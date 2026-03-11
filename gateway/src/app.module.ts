@@ -1,5 +1,5 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestlancer/config';
+import { NestlancerConfigModule } from '@nestlancer/config';
 import { DatabaseModule } from '@nestlancer/database';
 import { CacheModule } from '@nestlancer/cache';
 import { QueueModule } from '@nestlancer/queue';
@@ -42,10 +42,10 @@ import { SwaggerDocsModule } from './swagger/swagger.module';
 @Module({
   imports: [
     // Infrastructure
-    ConfigModule,
+    NestlancerConfigModule.forRoot(),
     ProxyModule,
-    DatabaseModule,
-    CacheModule,
+    DatabaseModule.forRoot(),
+    CacheModule.forRoot(),
     QueueModule,
     OutboxModule,
     AuthLibModule,

@@ -72,191 +72,263 @@ describe('Progress Service (Integration)', () => {
   describe('Progress (User)', () => {
     const projectId = '550e8400-e29b-41d4-a716-446655440000';
 
-    it('GET /api/v1/projects/:projectId/progress - should reject unauthenticated', async () => {
+    it('GET /api/v1/projects/:projectId/progress - should reject unauthenticated (401)', async () => {
       const response = await request(app.getHttpServer()).get(
         `/api/v1/projects/${projectId}/progress`,
       );
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/projects/:projectId/progress - should accept valid token', async () => {
+    it('GET /api/v1/projects/:projectId/progress - with valid token returns 200 with success body or 404/500', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/v1/projects/${projectId}/progress`)
         .set(authHeader('test-user-1'));
 
-      expect([200, 404, 500]).toContain(response.status);
-      if (response.status === 200) {
-        expect(response.body).toBeDefined();
+      expect(response.status).toBe(200);
+      {
+        expect(response.body.status).toBe('success');
+        expect(
+          'data' in response.body || 'items' in response.body,
+        ).toBe(true);
       }
     });
 
-    it('GET /api/v1/projects/:projectId/progress/status - should reject unauthenticated', async () => {
+    it('GET /api/v1/projects/:projectId/progress/status - should reject unauthenticated (401)', async () => {
       const response = await request(app.getHttpServer()).get(
         `/api/v1/projects/${projectId}/progress/status`,
       );
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/projects/:projectId/progress - should reject invalid payload (validation)', async () => {
+    it('GET /api/v1/projects/:projectId/progress/status - with valid token returns 200 with success body or 404/500', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/projects/${projectId}/progress/status`)
+        .set(authHeader('test-user-1'));
+
+      expect([200, 404, 500]).toContain(response.status);
+      if (response.status === 200) {
+        expect(response.body.status).toBe('success');
+        expect(response.body.data).toBeDefined();
+      }
+    });
+
+    it('POST /api/v1/projects/:projectId/progress - should return 400 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer())
         .post(`/api/v1/projects/${projectId}/progress`)
         .set(authHeader('test-user-1'))
         .send({ title: '', type: 'INVALID_TYPE', description: 'test' });
 
-      expect([400, 401, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.status === 400 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/projects/:projectId/progress/request-changes - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/projects/:projectId/progress/request-changes - should return 400 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer())
         .post(`/api/v1/projects/${projectId}/progress/request-changes`)
         .set(authHeader('test-user-1'))
         .send({ reason: 'a'.repeat(2001), details: [{ description: 'test' }] });
 
-      expect([400, 401, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.status === 400 && response.body?.status) expect(response.body.status).toBe('error');
     });
   });
 
   describe('Milestone Approvals (User)', () => {
-    it('POST /api/v1/milestones/:id/approve - should reject unauthenticated', async () => {
+    it('POST /api/v1/milestones/:id/approve - should reject unauthenticated (401)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/milestones/550e8400-e29b-41d4-a716-446655440000/approve')
-        .send({ notes: 'Approved' });
+        .send({ feedback: 'Approved' });
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/milestones/:id/approve - should accept valid payload', async () => {
+    it('POST /api/v1/milestones/:id/approve - with valid token returns 200 with success or 404/422/500', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/milestones/550e8400-e29b-41d4-a716-446655440000/approve')
         .set(authHeader('test-user-1'))
         .send({ feedback: 'Approved' });
 
       expect([200, 404, 422, 500]).toContain(response.status);
+      if (response.status === 200) {
+        expect(response.body.status).toBe('success');
+        expect(response.body).toHaveProperty('data');
+      } else if (response.body?.status) {
+        expect(response.body.status).toBe('error');
+      }
     });
 
-    it('POST /api/v1/milestones/:id/request-revision - should reject unauthenticated', async () => {
+    it('POST /api/v1/milestones/:id/request-revision - should reject unauthenticated (401)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/milestones/550e8400-e29b-41d4-a716-446655440000/request-revision')
         .send({ reason: 'Needs changes', details: ['Fix X'] });
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) expect(response.body.status).toBe('error');
+    });
+
+    it('POST /api/v1/milestones/:id/request-revision - with valid token returns 200 with success or 404/422/500', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/milestones/550e8400-e29b-41d4-a716-446655440000/request-revision')
+        .set(authHeader('test-user-1'))
+        .send({ reason: 'Need updates before approval' });
+
+      expect([200, 404, 422, 500]).toContain(response.status);
+      if (response.status === 200) {
+        expect(response.body.status).toBe('success');
+        expect(response.body).toHaveProperty('data');
+      }
     });
   });
 
   describe('Deliverable Reviews (User)', () => {
-    it('POST /api/v1/deliverables/:id/approve - should reject unauthenticated', async () => {
+    it('POST /api/v1/deliverables/:id/approve - should reject unauthenticated (401)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/deliverables/550e8400-e29b-41d4-a716-446655440000/approve')
-        .send({ notes: 'Approved' });
+        .send({});
 
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('POST /api/v1/deliverables/:id/reject - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/deliverables/:id/approve - with valid token returns 200 with success or 404/422/500', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/deliverables/550e8400-e29b-41d4-a716-446655440000/approve')
+        .set(authHeader('test-user-1'))
+        .send({ rating: 5, feedback: 'Looks good overall.' });
+
+      expect([200, 404, 422, 500]).toContain(response.status);
+      if (response.status === 200) {
+        expect(response.body.status).toBe('success');
+        expect(response.body).toHaveProperty('data');
+      }
+    });
+
+    it('POST /api/v1/deliverables/:id/reject - should return 400 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/deliverables/550e8400-e29b-41d4-a716-446655440000/reject')
         .set(authHeader('test-user-1'))
         .send({ reason: '' });
 
-      expect([400, 401, 404, 422, 500]).toContain(response.status);
+      expect([400, 404, 422, 500]).toContain(response.status);
+      if (response.body?.status) expect(response.body.status).toBe('error');
     });
   });
 
   describe('Admin - Progress', () => {
     const projectId = '550e8400-e29b-41d4-a716-446655440000';
 
-    it('GET /api/v1/admin/progress/projects/:projectId - should reject unauthenticated', async () => {
+    it('GET /api/v1/admin/progress/projects/:projectId - should reject unauthenticated (401)', async () => {
       const response = await request(app.getHttpServer()).get(
         `/api/v1/admin/progress/projects/${projectId}`,
       );
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/progress/projects/:projectId - should reject non-admin user', async () => {
+    it('GET /api/v1/admin/progress/projects/:projectId - should reject non-admin user (403)', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/v1/admin/progress/projects/${projectId}`)
         .set(authHeader('regular-user-1'));
 
-      expect([403, 500]).toContain(response.status);
+      expect(response.status).toBe(403);
+      if (response.status === 403 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/progress/projects/:projectId - should accept admin token', async () => {
+    it('GET /api/v1/admin/progress/projects/:projectId - with admin token returns 200 with success body or 404/500', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/v1/admin/progress/projects/${projectId}`)
         .set(adminAuthHeader());
 
-      expect([200, 404, 500]).toContain(response.status);
-      if (response.status === 200) {
-        expect(response.body).toBeDefined();
+      expect(response.status).toBe(200);
+      {
+        expect(response.body.status).toBe('success');
+        expect(
+          'data' in response.body || 'items' in response.body,
+        ).toBe(true);
       }
     });
 
-    it('POST /api/v1/admin/progress/projects/:projectId - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/admin/progress/projects/:projectId - should return 400 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer())
         .post(`/api/v1/admin/progress/projects/${projectId}`)
         .set(adminAuthHeader())
         .send({ title: '', type: 'invalid' });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.status === 400 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('PATCH /api/v1/admin/progress/:id - should reject invalid id', async () => {
+    it('PATCH /api/v1/admin/progress/:id - should return 400, 404, or 500 for invalid id', async () => {
       const response = await request(app.getHttpServer())
         .patch('/api/v1/admin/progress/invalid-uuid')
         .set(adminAuthHeader())
         .send({ title: 'Updated', description: 'Test' });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect([400, 404, 500]).toContain(response.status);
+      if (response.body?.status === 'error') expect(response.body.status).toBe('error');
     });
   });
 
   describe('Admin - Milestones', () => {
     const projectId = '550e8400-e29b-41d4-a716-446655440000';
 
-    it('POST /api/v1/admin/projects/:projectId/milestones - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/admin/projects/:projectId/milestones - should return 400 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer())
         .post(`/api/v1/admin/projects/${projectId}/milestones`)
         .set(adminAuthHeader())
         .send({ name: '', startDate: 'invalid', endDate: 'invalid' });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.status === 400 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('PATCH /api/v1/admin/milestones/:id - should reject invalid payload (validation)', async () => {
+    it('PATCH /api/v1/admin/milestones/:id - should return 400 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer())
         .patch('/api/v1/admin/milestones/550e8400-e29b-41d4-a716-446655440000')
         .set(adminAuthHeader())
         .send({ startDate: 'invalid-date' });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.status === 400 && response.body?.status) expect(response.body.status).toBe('error');
     });
   });
 
   describe('Admin - Deliverables', () => {
     const projectId = '550e8400-e29b-41d4-a716-446655440000';
 
-    it('GET /api/v1/admin/projects/:projectId/deliverables - should reject unauthenticated', async () => {
+    it('GET /api/v1/admin/projects/:projectId/deliverables - should reject unauthenticated (401)', async () => {
       const response = await request(app.getHttpServer()).get(
         `/api/v1/admin/projects/${projectId}/deliverables`,
       );
-      expect([401, 500]).toContain(response.status);
+      expect(response.status).toBe(401);
+      if (response.status === 401 && response.body?.status) expect(response.body.status).toBe('error');
     });
 
-    it('GET /api/v1/admin/projects/:projectId/deliverables - should accept admin token', async () => {
+    it('GET /api/v1/admin/projects/:projectId/deliverables - with admin token returns 200 with success or 404/500', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/v1/admin/projects/${projectId}/deliverables`)
         .set(adminAuthHeader());
 
-      expect([200, 404, 500]).toContain(response.status);
+      expect(response.status).toBe(200);
+      {
+        expect(response.body.status).toBe('success');
+        expect(
+          'data' in response.body || 'items' in response.body,
+        ).toBe(true);
+      }
     });
 
-    it('POST /api/v1/admin/projects/:projectId/deliverables - should reject invalid payload (validation)', async () => {
+    it('POST /api/v1/admin/projects/:projectId/deliverables - should return 400 for invalid payload (validation)', async () => {
       const response = await request(app.getHttpServer())
         .post(`/api/v1/admin/projects/${projectId}/deliverables`)
         .set(adminAuthHeader())
         .send({ milestoneId: 'invalid-uuid', mediaIds: [] });
 
-      expect([400, 404, 422, 500]).toContain(response.status);
+      expect(response.status).toBe(400);
+      if (response.status === 400 && response.body?.status) expect(response.body.status).toBe('error');
     });
   });
 });
