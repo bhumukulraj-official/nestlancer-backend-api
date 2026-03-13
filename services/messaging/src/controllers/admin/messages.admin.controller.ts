@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Query, Body } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Query, Body, HttpCode } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Auth } from '@nestlancer/auth-lib';
 import { PrismaReadService, PrismaWriteService } from '@nestlancer/database';
@@ -192,6 +192,7 @@ export class MessagesAdminController {
     summary: 'Flag message',
     description: 'Mark a message as potentially violating terms for internal review.',
   })
+  @HttpCode(200)
   async flagMessage(@Param('id') id: string): Promise<any> {
     const message = await this.prismaRead.message.findUnique({ where: { id } });
     if (!message) throw new Error('Message not found');
@@ -218,6 +219,7 @@ export class MessagesAdminController {
     summary: 'Broadcast system message',
     description: 'Inject an automated system notification into a project chat stream.',
   })
+  @HttpCode(200)
   async broadcastSystemMessage(
     @Param('projectId') projectId: string,
     @Body() body: { content: string; senderId?: string },

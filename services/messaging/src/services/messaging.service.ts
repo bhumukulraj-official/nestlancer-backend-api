@@ -13,6 +13,10 @@ export class MessagingService {
   ) {}
 
   async sendMessage(userId: string, dto: CreateMessageDto) {
+    if (!dto.projectId) {
+      throw new BadRequestException('Project ID is required for messages');
+    }
+
     if (!dto.content && dto.type === 'TEXT') {
       throw new BadRequestException('Content is required for text messages');
     }
@@ -31,7 +35,7 @@ export class MessagingService {
 
       await tx.outbox.create({
         data: {
-          eventType: 'MESSAGE_SENT',
+          type: 'MESSAGE_SENT',
           payload: {
             messageId: msg.id,
             projectId: msg.projectId,

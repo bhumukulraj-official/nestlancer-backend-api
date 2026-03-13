@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Post, Get, Put, Patch, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
 import { Auth, CurrentUser } from '@nestlancer/auth-lib';
 import {
   MessagingService,
@@ -253,6 +253,7 @@ export class MessagesController {
     summary: 'Toggle reaction',
     description: 'Add or remove an emoji reaction on a specific message.',
   })
+  @HttpCode(200)
   async toggleReaction(
     @CurrentUser('userId') userId: string,
     @Param('id') id: string,
@@ -274,6 +275,7 @@ export class MessagesController {
     summary: 'Mark as read',
     description: 'Indicate that the specified message has been viewed.',
   })
+  @HttpCode(200)
   async markAsRead(@CurrentUser('userId') userId: string, @Param('id') id: string): Promise<any> {
     await this.readService.markAsRead(userId, id);
     return { status: 'success' };
@@ -291,6 +293,7 @@ export class MessagesController {
     summary: 'Mark project messages as read',
     description: 'Mark every unread message in a project chat as seen.',
   })
+  @HttpCode(200)
   async markProjectAsRead(
     @CurrentUser('userId') userId: string,
     @Param('projectId') projectId: string,
@@ -311,6 +314,7 @@ export class MessagesController {
     summary: 'Mark project messages as read (Alias)',
     description: 'Batch update all messages in a project to read status.',
   })
+  @HttpCode(200)
   async markProjectAsReadAll(
     @CurrentUser('userId') userId: string,
     @Param('projectId') projectId: string,
@@ -331,6 +335,7 @@ export class MessagesController {
     summary: 'Pin message',
     description: 'Highlight a message by pinning it to the chat header.',
   })
+  @HttpCode(200)
   async pinMessage(@CurrentUser('userId') userId: string, @Param('id') id: string): Promise<any> {
     const message = await this.prismaRead.message.findUnique({ where: { id } });
     if (!message) throw new Error('Message not found');
@@ -355,6 +360,7 @@ export class MessagesController {
    */
   @Post(':id/unpin')
   @ApiOperation({ summary: 'Unpin message', description: 'Remove a message from the pinned list.' })
+  @HttpCode(200)
   async unpinMessage(@CurrentUser('userId') userId: string, @Param('id') id: string): Promise<any> {
     const message = await this.prismaRead.message.findUnique({ where: { id } });
     if (!message) throw new Error('Message not found');

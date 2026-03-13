@@ -11,8 +11,8 @@ export class CreateMessageDto {
     description: 'The project ID this message belongs to',
   })
   @IsUUID()
-  @IsNotEmpty()
-  projectId: string;
+  @IsOptional()
+  projectId?: string;
 
   @ApiPropertyOptional({
     example: 'Hello, how is the progress?',
