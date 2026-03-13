@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query, Post, Req, Body } from '@nestjs/common';
-import { Public, ApiStandardResponse } from '@nestlancer/common';
+import { Public, ApiStandardResponse, UserRole } from '@nestlancer/common';
+import { Auth } from '@nestlancer/auth-lib';
 import { Cacheable } from '@nestlancer/cache';
 import { PortfolioService } from '../../services/portfolio.service';
 import { PortfolioCategoriesService } from '../../services/portfolio-categories.service';
@@ -158,9 +159,10 @@ export class PortfolioPublicController {
 
   /**
    * Toggles a 'like' on a portfolio item.
-   * This endpoint technically requires authentication but is placed in the public controller.
+   * Requires authentication: unauthenticated calls receive 401.
    */
   @Post(':id/like')
+  @Auth(UserRole.USER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle like on portfolio item' })
   @ApiParam({ name: 'id', description: 'Portfolio item ID' })
