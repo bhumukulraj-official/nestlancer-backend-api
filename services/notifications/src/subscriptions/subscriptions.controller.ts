@@ -1,5 +1,6 @@
-import { Controller, Post, Delete, Body, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Post, Delete, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 import { SubscriptionsService } from './subscriptions.service';
 import { RegisterPushSubscriptionDto } from '../dto/register-push-subscription.dto';
 import { JwtAuthGuard, CurrentUser, AuthenticatedUser } from '@nestlancer/auth-lib';
@@ -10,6 +11,7 @@ import { ApiStandardResponse } from '@nestlancer/common';
  */
 class RemoveSubscriptionDto {
   @ApiProperty({ description: 'The endpoint URL of the push subscription to remove' })
+  @IsString()
   endpoint: string;
 }
 

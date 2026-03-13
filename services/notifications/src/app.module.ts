@@ -12,6 +12,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { InternalModule } from './internal/internal.module';
+import { PushModule } from './push/push.module';
 
 @Module({
   imports: [
@@ -24,10 +25,13 @@ import { InternalModule } from './internal/internal.module';
     QueueModule.forRoot(),
     OutboxModule.forRoot(),
     AuthLibModule,
-    NotificationsModule,
+    // Preferences before Notifications so GET /notifications/preferences and /channels
+    // are registered before GET /notifications/:id (avoids :id matching "preferences"|"channels").
     PreferencesModule,
+    NotificationsModule,
     SubscriptionsModule,
     InternalModule,
+    PushModule,
   ],
 })
 export class AppModule {}

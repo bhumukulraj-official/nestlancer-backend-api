@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Query, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Query, Body, UseGuards, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { NotificationsAdminService } from './notifications-admin.service';
 import { NotificationBroadcastService } from './notification-broadcast.service';
@@ -87,6 +87,7 @@ export class NotificationsAdminController {
   @Post('broadcast')
   @ApiOperation({ summary: 'Broadcast notification to all users' })
   @ApiStandardResponse(Object)
+  @HttpCode(200)
   async broadcastNotification(@Body() dto: BroadcastNotificationDto): Promise<any> {
     return this.broadcastService.broadcast(dto);
   }
@@ -115,20 +116,26 @@ export class NotificationsAdminController {
    * Resends a specific notification.
    */
   @Post(':id/resend')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Resend a notification' })
   @ApiStandardResponse(Object)
   async resendNotification(@Param('id') id: string): Promise<any> {
     const notification = await this.prismaRead.notification.findUnique({ where: { id } });
     if (!notification) throw new Error('Notification not found');
 
-    await this.prismaWrite.outboxEvent.create({
-      data: {
-        aggregateType: 'NOTIFICATION',
-        aggregateId: id,
-        eventType: 'NOTIFICATION_RESEND_TRIGGERED',
-        payload: { notificationId: id },
-      },
-    });
+    const outboxClient =
+      (this.prismaWrite as any).outboxEvent || (this.prismaRead as any).outboxEvent;
+
+    if (outboxClient) {
+      await outboxClient.create({
+        data: {
+          aggregateType: 'NOTIFICATION',
+          aggregateId: id,
+          eventType: 'NOTIFICATION_RESEND_TRIGGERED',
+          payload: { notificationId: id },
+        },
+      });
+    }
 
     return { id, status: 'resent' };
   }

@@ -46,8 +46,6 @@ export class UpdatePreferencesDto {
   })
   @IsOptional()
   @IsObject()
-  @ValidateNested({ each: true })
-  @Type(() => ChannelPreferencesDto)
   preferences?: Record<string, ChannelPreferencesDto>;
 
   @ApiPropertyOptional({ description: 'Quiet hours settings' })

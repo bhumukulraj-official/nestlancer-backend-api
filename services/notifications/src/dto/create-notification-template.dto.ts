@@ -13,7 +13,7 @@ export class CreateNotificationTemplateDto {
     example: 'USER_REGISTERED',
     description: 'The event type that triggers this template',
   })
-  @IsEnum(String)
+  @IsString()
   eventType: string; // NotificationEventType
 
   @ApiProperty({ description: 'Configuration for different delivery channels (email, push, etc.)' })

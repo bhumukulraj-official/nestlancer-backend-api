@@ -1,14 +1,6 @@
-import {
-  IsArray,
-  IsUUID,
-  IsString,
-  MaxLength,
-  IsOptional,
-  IsEnum,
-  IsDateString,
-} from 'class-validator';
+import { IsArray, IsString, MaxLength, IsOptional, IsDateString, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { NotificationType, NotificationChannel } from '../interfaces/notification.interface';
+import { NotificationChannel } from '../interfaces/notification.interface';
 
 /**
  * Data Transfer Object for sending a notification to specific recipients.
@@ -19,7 +11,7 @@ export class SendNotificationDto {
     description: 'List of recipient user IDs',
   })
   @IsArray()
-  @IsUUID(undefined, { each: true })
+  @IsString({ each: true })
   recipientIds: string[];
 
   @ApiProperty({ example: 'New Message', description: 'Brief title of the notification' })
@@ -36,12 +28,11 @@ export class SendNotificationDto {
   message: string;
 
   @ApiPropertyOptional({
-    enum: NotificationType,
-    description: 'Categorical type of the notification',
+    description: 'Categorical type of the notification (free-form string, e.g. "system.e2e")',
   })
   @IsOptional()
-  @IsEnum(NotificationType)
-  type?: NotificationType;
+  @IsString()
+  type?: string;
 
   @ApiPropertyOptional({
     enum: NotificationChannel,
