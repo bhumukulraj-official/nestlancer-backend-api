@@ -47,6 +47,8 @@ export async function setupApp(): Promise<INestApplication> {
     app.useGlobalInterceptors(new TransformResponseInterceptor());
     app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
+    // Listen on an ephemeral port so tests can optionally use getAppUrl()
+    await app.listen(0);
     return app;
   } catch (err: any) {
     // eslint-disable-next-line no-console
@@ -71,4 +73,13 @@ export function getApp(): INestApplication {
 
 export function getGlobalPrefix(): string {
   return GLOBAL_PREFIX;
+}
+
+export function getAppUrl(): string {
+  if (!app) {
+    throw new Error('App has not been initialized. Call setupApp() first.');
+  }
+  const server = app.getHttpServer();
+  const address = server.address() as { port: number };
+  return `http://localhost:${address.port}`;
 }
