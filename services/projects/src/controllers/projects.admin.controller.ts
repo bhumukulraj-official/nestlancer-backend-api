@@ -17,6 +17,10 @@ import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ProjectsAdminService } from '../services/projects.admin.service';
 import { UpdateProjectStatusAdminDto } from '../dto/update-project-status.admin.dto';
 import { UpdateProjectAdminDto } from '../dto/update-project.admin.dto';
+import { CreateProjectAdminDto } from '../dto/create-project.admin.dto';
+import { ManageProjectTeamAdminDto } from '../dto/manage-project-team.admin.dto';
+import { CreateMilestonesAdminDto } from '../dto/create-milestones.admin.dto';
+import { ExtendProjectAdminDto } from '../dto/extend-project.admin.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -61,7 +65,8 @@ export class ProjectsAdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
   ): Promise<any> {
-    return this.adminService.listProjects(parseInt(page, 10), parseInt(limit, 10));
+    const result = await this.adminService.listProjects(parseInt(page, 10), parseInt(limit, 10));
+    return result.data;
   }
 
   /**
@@ -142,16 +147,19 @@ export class ProjectsAdminController {
   @Post()
   @ApiOperation({ summary: 'Create project (Admin)' })
   @ApiStandardResponse({ message: 'Project created successfully' })
-  async createProject(@ActiveUser('sub') adminId: string, @Body() body: any): Promise<any> {
+  async createProject(
+    @ActiveUser('sub') adminId: string,
+    @Body() dto: CreateProjectAdminDto,
+  ): Promise<any> {
     return this.prismaWrite.project.create({
       data: {
-        title: body.title,
-        description: body.description,
+        title: dto.title,
+        description: dto.description ?? '',
         status: 'CREATED',
-        quote: { connect: { id: body.quoteId } },
-        client: { connect: { id: body.clientId } },
+        quote: { connect: { id: dto.quoteId } },
+        client: { connect: { id: dto.clientId } },
         admin: { connect: { id: adminId } },
-        targetEndDate: body.targetEndDate ? new Date(body.targetEndDate) : null,
+        targetEndDate: dto.targetEndDate ? new Date(dto.targetEndDate) : null,
       },
     });
   }
@@ -179,12 +187,15 @@ export class ProjectsAdminController {
   @ApiOperation({ summary: 'Manage project team' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiStandardResponse({ message: 'Team member added' })
-  async manageTeam(@Param('id') id: string, @Body() body: any): Promise<any> {
+  async manageTeam(
+    @Param('id') id: string,
+    @Body() dto: ManageProjectTeamAdminDto,
+  ): Promise<any> {
     await this.prismaWrite.project.update({
       where: { id },
-      data: { adminId: body.memberId },
+      data: { adminId: dto.memberId },
     });
-    return { projectId: id, action: 'added', memberId: body.memberId };
+    return { projectId: id, action: 'added', memberId: dto.memberId };
   }
 
   /**
@@ -241,9 +252,12 @@ export class ProjectsAdminController {
   @ApiOperation({ summary: 'Batch create milestones' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiStandardResponse({ message: 'Milestones created' })
-  async createMilestones(@Param('id') id: string, @Body() body: any): Promise<any> {
+  async createMilestones(
+    @Param('id') id: string,
+    @Body() dto: CreateMilestonesAdminDto,
+  ): Promise<any> {
     const milestones = await this.prismaWrite.milestone.createMany({
-      data: body.milestones.map((m: any) => ({
+      data: dto.milestones.map((m) => ({
         projectId: id,
         name: m.name,
         description: m.description,
@@ -264,11 +278,11 @@ export class ProjectsAdminController {
   @ApiStandardResponse({ message: 'Deadline extended' })
   async extendDeadline(
     @Param('id') id: string,
-    @Body() body: { newDeadline: string; reason: string },
+    @Body() dto: ExtendProjectAdminDto,
   ): Promise<any> {
     await this.prismaWrite.project.update({
       where: { id },
-      data: { targetEndDate: new Date(body.newDeadline) },
+      data: { targetEndDate: new Date(dto.newDeadline) },
     });
 
     await this.prismaWrite.outboxEvent.create({
@@ -276,11 +290,11 @@ export class ProjectsAdminController {
         aggregateType: 'PROJECT',
         aggregateId: id,
         eventType: 'PROJECT_DEADLINE_EXTENDED',
-        payload: { projectId: id, newDeadline: body.newDeadline, reason: body.reason },
+        payload: { projectId: id, newDeadline: dto.newDeadline, reason: dto.reason },
       },
     });
 
-    return { projectId: id, newDeadline: body.newDeadline, extended: true };
+    return { projectId: id, newDeadline: dto.newDeadline, extended: true };
   }
 
   /**
@@ -305,6 +319,7 @@ export class ProjectsAdminController {
   @ApiOperation({ summary: 'Unarchive project' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiStandardResponse({ message: 'Project unarchived' })
+  @HttpCode(HttpStatus.OK)
   async unarchiveProject(@Param('id') id: string): Promise<any> {
     return { projectId: id, unarchived: true };
   }
@@ -316,6 +331,7 @@ export class ProjectsAdminController {
   @ApiOperation({ summary: 'Duplicate project as template' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiStandardResponse({ message: 'Project duplicated as template' })
+  @HttpCode(HttpStatus.OK)
   async duplicateProject(@Param('id') id: string): Promise<any> {
     return { originalId: id, duplicateId: `proj_${Date.now()}`, status: 'TEMPLATE' };
   }
@@ -327,6 +343,7 @@ export class ProjectsAdminController {
   @ApiOperation({ summary: 'Export project data' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiStandardResponse({ message: 'Project exported' })
+  @HttpCode(HttpStatus.OK)
   async exportProject(@Param('id') id: string): Promise<any> {
     return { projectId: id, exportUrl: `https://export.url/${id}` };
   }

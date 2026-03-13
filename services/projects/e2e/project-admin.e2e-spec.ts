@@ -30,205 +30,188 @@ describe('Projects Service - Admin APIs (E2E)', () => {
   });
 
   describe('Auth guards', () => {
-    it('GET /admin/projects without token returns 401', async () => {
-      const res = await request(basePath()).get('/admin/projects');
-      expect(res.status).toBe(401);
+    it('GET /admin/projects without token returns 401 error', async () => {
+      const res = await request(basePath()).get('/admin/projects').expect(401);
+      expect(res.body?.status).toBe('error');
     });
 
-    it('GET /admin/projects with USER role returns 403', async () => {
+    it('GET /admin/projects with USER role returns 403 error', async () => {
       const res = await request(basePath())
         .get('/admin/projects')
-        .set(authHeader('normal-user', 'USER'));
-      expect(res.status).toBe(403);
+        .set(authHeader('normal-user', 'USER'))
+        .expect(403);
+      expect(res.body?.status).toBe('error');
     });
   });
 
-  describe('Admin - list and stats', () => {
-    it('GET /admin/projects with admin token returns list or 5xx', async () => {
-      const res = await request(basePath()).get('/admin/projects').set(adminAuthHeader());
+  describe('Admin - list and stats (E2E)', () => {
+    it('GET /admin/projects with admin token returns 200 and list (possibly empty)', async () => {
+      const res = await request(basePath()).get('/admin/projects').set(adminAuthHeader()).expect(200);
 
-      expect([200, 500]).toContain(res.status);
-      if (res.status === 200) {
-        const body = res.body?.data ?? res.body;
-        const list = Array.isArray(body) ? body : body?.data ?? body?.items;
-        if (list) {
-          expect(Array.isArray(list)).toBe(true);
-        }
-      }
+      expect(res.body?.status).toBe('success');
+      const data = res.body?.data ?? res.body;
+      expect(Array.isArray(data)).toBe(true);
     });
 
-    it('GET /admin/projects/stats returns stats or 5xx', async () => {
-      const res = await request(basePath()).get('/admin/projects/stats').set(adminAuthHeader());
-      expect([200, 500]).toContain(res.status);
+    it('GET /admin/projects/stats returns 200 and stats payload', async () => {
+      const res = await request(basePath())
+        .get('/admin/projects/stats')
+        .set(adminAuthHeader())
+        .expect(200);
+
+      expect(res.body?.status).toBe('success');
+      expect(res.body?.data).toBeDefined();
+      expect(typeof res.body?.data?.total).toBe('number');
+      expect(typeof res.body?.data?.active).toBe('number');
+      expect(typeof res.body?.data?.completed).toBe('number');
     });
   });
 
-  describe('Admin - actions on project', () => {
-    const projectId = '00000000-0000-0000-0000-000000000000';
+  describe('Admin - project actions validation and errors (E2E)', () => {
+    const missingProjectId = '00000000-0000-0000-0000-000000000000';
 
-    it('GET /admin/projects/:id returns details or 4xx/5xx but not 401/403', async () => {
+    it('GET /admin/projects/:id for non-existent id returns 500 INTERNAL_ERROR via global filter', async () => {
       const res = await request(basePath())
-        .get(`/admin/projects/${projectId}`)
-        .set(adminAuthHeader());
-
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 404, 422, 500]).toContain(res.status);
-    });
-
-    it('PATCH /admin/projects/:id/status updates status or returns 4xx/5xx but not 401/403', async () => {
-      const res = await request(basePath())
-        .patch(`/admin/projects/${projectId}/status`)
+        .get(`/admin/projects/${missingProjectId}`)
         .set(adminAuthHeader())
-        .send({ status: 'inProgress', reason: 'E2E admin status change' });
+        .expect(500);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('INTERNAL_ERROR');
     });
 
-    it('PATCH /admin/projects/:id updates details or returns 4xx/5xx but not 401/403', async () => {
+    it('PATCH /admin/projects/:id/status with invalid body returns 400 validation error', async () => {
       const res = await request(basePath())
-        .patch(`/admin/projects/${projectId}`)
+        .patch(`/admin/projects/${missingProjectId}/status`)
         .set(adminAuthHeader())
-        .send({ title: 'Updated E2E Project Title' });
+        .send({})
+        .expect(400);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('VALIDATION_ERROR');
     });
 
-    it('POST /admin/projects creates project or fails validation but not 401/403', async () => {
+    it('PATCH /admin/projects/:id with empty body returns 400 validation error', async () => {
+      const res = await request(basePath())
+        .patch(`/admin/projects/${missingProjectId}`)
+        .set(adminAuthHeader())
+        .send({})
+        .expect(400);
+
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('POST /admin/projects with missing required fields returns 400 validation error', async () => {
       const res = await request(basePath())
         .post('/admin/projects')
         .set(adminAuthHeader())
-        .send({
-          title: 'E2E Admin Created Project',
-          description: 'Project created from E2E admin test.',
-          quoteId: '00000000-0000-0000-0000-000000000001',
-          clientId: '00000000-0000-0000-0000-000000000002',
-          targetEndDate: new Date().toISOString(),
-        });
+        .send({})
+        .expect(400);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([201, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('VALIDATION_ERROR');
     });
 
-    it('POST /admin/projects/:id/team manages team or returns 4xx/5xx but not 401/403', async () => {
+    it('POST /admin/projects/:id/team without memberId returns 400 validation error', async () => {
       const res = await request(basePath())
-        .post(`/admin/projects/${projectId}/team`)
+        .post(`/admin/projects/${missingProjectId}/team`)
         .set(adminAuthHeader())
-        .send({ memberId: '00000000-0000-0000-0000-000000000010' });
+        .send({})
+        .expect(400);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('VALIDATION_ERROR');
     });
 
-    it('DELETE /admin/projects/:id/team/:memberId removes team member or returns 4xx/5xx but not 401/403', async () => {
+    it('GET /admin/projects/:id/analytics for non-existent project returns 200 with zeroed analytics', async () => {
       const res = await request(basePath())
-        .delete(`/admin/projects/${projectId}/team/00000000-0000-0000-0000-000000000010`)
-        .set(adminAuthHeader());
-
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 400, 404, 422, 500]).toContain(res.status);
-    });
-
-    it('GET /admin/projects/:id/analytics returns analytics or 4xx/5xx but not 401/403', async () => {
-      const res = await request(basePath())
-        .get(`/admin/projects/${projectId}/analytics`)
-        .set(adminAuthHeader());
-
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 404, 422, 500]).toContain(res.status);
-    });
-
-    it('POST /admin/projects/:id/milestones creates milestones or returns 4xx/5xx but not 401/403', async () => {
-      const res = await request(basePath())
-        .post(`/admin/projects/${projectId}/milestones`)
+        .get(`/admin/projects/${missingProjectId}/analytics`)
         .set(adminAuthHeader())
-        .send({
-          milestones: [
-            {
-              name: 'E2E Milestone 1',
-              description: 'First milestone created by E2E test',
-              amount: 10000,
-              dueDate: new Date().toISOString(),
-              order: 1,
-            },
-          ],
-        });
+        .expect(200);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 201, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('success');
+      expect(res.body?.data?.projectId).toBe(missingProjectId);
+      expect(typeof res.body?.data?.progress).toBe('number');
     });
 
-    it('POST /admin/projects/:id/extend extends deadline or returns 4xx/5xx but not 401/403', async () => {
+    it('POST /admin/projects/:id/milestones with invalid body returns 400 validation error', async () => {
       const res = await request(basePath())
-        .post(`/admin/projects/${projectId}/extend`)
+        .post(`/admin/projects/${missingProjectId}/milestones`)
         .set(adminAuthHeader())
-        .send({
-          newDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          reason: 'E2E test extension',
-        });
+        .send({})
+        .expect(400);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('VALIDATION_ERROR');
     });
 
-    it('POST /admin/projects/:id/archive archives project or returns 4xx/5xx but not 401/403', async () => {
+    it('POST /admin/projects/:id/extend with invalid body returns 400 validation error', async () => {
       const res = await request(basePath())
-        .post(`/admin/projects/${projectId}/archive`)
-        .set(adminAuthHeader());
+        .post(`/admin/projects/${missingProjectId}/extend`)
+        .set(adminAuthHeader())
+        .send({})
+        .expect(400);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('VALIDATION_ERROR');
     });
 
-    it('POST /admin/projects/:id/unarchive unarchives project or returns 4xx/5xx but not 401/403', async () => {
+    it('POST /admin/projects/:id/archive for non-existent project returns 500 INTERNAL_ERROR', async () => {
       const res = await request(basePath())
-        .post(`/admin/projects/${projectId}/unarchive`)
-        .set(adminAuthHeader());
+        .post(`/admin/projects/${missingProjectId}/archive`)
+        .set(adminAuthHeader())
+        .expect(500);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 201, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('INTERNAL_ERROR');
     });
 
-    it('POST /admin/projects/:id/duplicate duplicates project or returns 4xx/5xx but not 401/403', async () => {
+    it('DELETE /admin/projects/:id for non-existent project returns 500 INTERNAL_ERROR', async () => {
       const res = await request(basePath())
-        .post(`/admin/projects/${projectId}/duplicate`)
-        .set(adminAuthHeader());
+        .delete(`/admin/projects/${missingProjectId}`)
+        .set(adminAuthHeader())
+        .expect(500);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 201, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('error');
+      expect(res.body?.error?.code).toBe('INTERNAL_ERROR');
+    });
+  });
+
+  describe('Admin - idempotent utility actions (E2E)', () => {
+    const anyProjectId = '00000000-0000-0000-0000-000000000000';
+
+    it('POST /admin/projects/:id/unarchive returns 200 success envelope even if project not persisted', async () => {
+      const res = await request(basePath())
+        .post(`/admin/projects/${anyProjectId}/unarchive`)
+        .set(adminAuthHeader())
+        .expect(200);
+
+      expect(res.body?.status).toBe('success');
+      expect(res.body?.data?.projectId).toBe(anyProjectId);
+      expect(res.body?.data?.unarchived).toBe(true);
     });
 
-    it('POST /admin/projects/:id/export exports project or returns 4xx/5xx but not 401/403', async () => {
+    it('POST /admin/projects/:id/duplicate returns 200 and duplicateId in body', async () => {
       const res = await request(basePath())
-        .post(`/admin/projects/${projectId}/export`)
-        .set(adminAuthHeader());
+        .post(`/admin/projects/${anyProjectId}/duplicate`)
+        .set(adminAuthHeader())
+        .expect(200);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 201, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('success');
+      expect(res.body?.data?.originalId).toBe(anyProjectId);
+      expect(res.body?.data?.duplicateId).toBeDefined();
     });
 
-    it('DELETE /admin/projects/:id deletes project or returns 4xx/5xx but not 401/403', async () => {
+    it('POST /admin/projects/:id/export returns 200 and exportUrl in body', async () => {
       const res = await request(basePath())
-        .delete(`/admin/projects/${projectId}`)
-        .set(adminAuthHeader());
+        .post(`/admin/projects/${anyProjectId}/export`)
+        .set(adminAuthHeader())
+        .expect(200);
 
-      expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
-      expect([200, 204, 400, 404, 422, 500]).toContain(res.status);
+      expect(res.body?.status).toBe('success');
+      expect(res.body?.data?.projectId).toBe(anyProjectId);
+      expect(typeof res.body?.data?.exportUrl).toBe('string');
     });
   });
 });

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
-import { BusinessLogicException } from '@nestlancer/common';
+import { BusinessLogicException, ValidationException } from '@nestlancer/common';
 import { UpdateProjectStatusAdminDto } from '../dto/update-project-status.admin.dto';
 import { UpdateProjectAdminDto } from '../dto/update-project.admin.dto';
 
@@ -64,6 +64,10 @@ export class ProjectsAdminService {
   }
 
   async updateProject(projectId: string, dto: UpdateProjectAdminDto) {
+    if (!dto || (dto.title === undefined && dto.description === undefined)) {
+      throw new ValidationException('At least one field must be provided to update a project');
+    }
+
     const project = await this.prismaRead.project.findUnique({ where: { id: projectId } });
     if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
 

@@ -28,7 +28,7 @@ export class ProjectsPublicController {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit || '20', 10)));
     const skip = (pageNum - 1) * limitNum;
 
-    const [data, total] = await Promise.all([
+    const [items, total] = await Promise.all([
       this.prismaRead.portfolioItem.findMany({
         where: { status: 'PUBLISHED', visibility: 'PUBLIC', deletedAt: null },
         skip,
@@ -51,15 +51,7 @@ export class ProjectsPublicController {
       }),
     ]);
 
-    return {
-      data,
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total,
-        totalPages: Math.ceil(total / limitNum),
-      },
-    };
+    return items;
   }
 
   /**

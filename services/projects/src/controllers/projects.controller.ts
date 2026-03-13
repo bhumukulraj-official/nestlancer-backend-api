@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiStandardResponse, Public } from '@nestlancer/common';
+import { ApiStandardResponse, BusinessLogicException, Public } from '@nestlancer/common';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { ActiveUser, JwtAuthGuard } from '@nestlancer/auth-lib';
 import { ProjectsService } from '../services/projects.service';
@@ -9,6 +9,7 @@ import { ProjectPaymentsService } from '../services/project-payments.service';
 import { ApproveProjectDto } from '../dto/approve-project.dto';
 import { RequestProjectRevisionDto } from '../dto/request-project-revision.dto';
 import { SendMessageDto } from '../dto/send-message.dto';
+import { SubmitFeedbackDto } from '../dto/submit-feedback.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -208,7 +209,7 @@ export class ProjectsController {
         take: 5,
       }),
     ]);
-    if (!project) throw new Error('Project not found or unauthorized');
+    if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
 
     return { projectId: id, overallProgress: project.overallProgress, milestones, recentUpdates };
   }
@@ -221,6 +222,12 @@ export class ProjectsController {
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiStandardResponse()
   async getMilestones(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
+    const project = await this.prismaRead.project.findFirst({
+      where: { id, clientId: userId },
+      select: { id: true },
+    });
+    if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
+
     const milestones = await this.prismaRead.milestone.findMany({
       where: { projectId: id },
       orderBy: { order: 'asc' },
@@ -243,6 +250,12 @@ export class ProjectsController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
   ): Promise<any> {
+    const project = await this.prismaRead.project.findFirst({
+      where: { id, clientId: userId },
+      select: { id: true },
+    });
+    if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
+
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
@@ -282,6 +295,12 @@ export class ProjectsController {
     @Param('id') id: string,
     @Body() dto: SendMessageDto,
   ): Promise<any> {
+    const project = await this.prismaRead.project.findFirst({
+      where: { id, clientId: userId },
+      select: { id: true },
+    });
+    if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
+
     return { projectId: id, messageId: `msg_${Date.now()}`, sent: true };
   }
 
@@ -295,16 +314,22 @@ export class ProjectsController {
   async submitFeedback(
     @ActiveUser('sub') userId: string,
     @Param('id') id: string,
-    @Body() body: any,
+    @Body() dto: SubmitFeedbackDto,
   ): Promise<any> {
+    const project = await this.prismaRead.project.findFirst({
+      where: { id, clientId: userId },
+      select: { id: true },
+    });
+    if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
+
     const entry = await this.prismaWrite.progressEntry.create({
       data: {
         projectId: id,
         type: 'FEEDBACK',
-        title: body.title || 'Client Feedback',
-        description: body.feedback,
+        title: dto.title,
+        description: dto.feedback,
         actorId: userId,
-        details: body.details || {},
+        details: {},
       },
     });
     return { projectId: id, feedbackId: entry.id, submitted: true };
@@ -318,6 +343,12 @@ export class ProjectsController {
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiStandardResponse()
   async getFeedback(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
+    const project = await this.prismaRead.project.findFirst({
+      where: { id, clientId: userId },
+      select: { id: true },
+    });
+    if (!project) throw new BusinessLogicException('Project not found', 'PROJECT_001');
+
     const feedback = await this.prismaRead.progressEntry.findMany({
       where: { projectId: id, type: 'FEEDBACK' },
       orderBy: { createdAt: 'desc' },

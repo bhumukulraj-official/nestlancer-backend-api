@@ -1,9 +1,5 @@
-import {
-  ValidationPipe as NestValidationPipe,
-  ValidationError,
-  BadRequestException,
-} from '@nestjs/common';
-import { ERROR_CODES } from '../constants/error-codes.constants';
+import { ValidationPipe as NestValidationPipe, ValidationError } from '@nestjs/common';
+import { ValidationException } from '../exceptions/validation.exception';
 
 /**
  * Extended ValidationPipe with standard error format per 100-api-standards.
@@ -21,15 +17,7 @@ export class AppValidationPipe extends NestValidationPipe {
           constraints: error.constraints || {},
         }));
 
-        return new BadRequestException({
-          status: 'error',
-          error: {
-            code: ERROR_CODES.VALIDATION_ERROR,
-            message: 'Request validation failed',
-            details,
-            timestamp: new Date().toISOString(),
-          },
-        });
+        return new ValidationException('Request validation failed', details);
       },
     });
   }

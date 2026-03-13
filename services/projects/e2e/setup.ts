@@ -9,8 +9,7 @@ dotenv.config({
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { ValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
+import { AllExceptionsFilter, TransformResponseInterceptor, AppValidationPipe } from '@nestlancer/common';
 import { AppModule } from '../src/app.module';
 
 const GLOBAL_PREFIX = 'api/v1';
@@ -24,7 +23,7 @@ export async function setupApp(): Promise<INestApplication> {
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix(GLOBAL_PREFIX);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalPipes(new AppValidationPipe());
   app.useGlobalInterceptors(new TransformResponseInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());
   await app.init();
