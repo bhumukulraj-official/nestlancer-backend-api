@@ -123,7 +123,7 @@ export class MediaController {
     @Body() dto: DirectUploadDto,
     @UploadedFile() file: any,
   ): Promise<any> {
-    return this.mediaService.directUpload(user.userId, dto, file);
+    return this.mediaService.directUpload(user.userId, file, dto);
   }
 
   /**

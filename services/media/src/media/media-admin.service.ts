@@ -20,6 +20,8 @@ export class MediaAdminService {
   @ReadOnly()
   async findAll(query: QueryMediaDto) {
     const { skip, take } = buildPrismaSkipTake(query.page, query.limit);
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
 
     const where: any = {};
     if (query.fileType) where.mimeType = { contains: query.fileType };
@@ -37,7 +39,7 @@ export class MediaAdminService {
 
     return {
       data: items,
-      pagination: createPaginationMeta(query.page, query.limit, total),
+      pagination: createPaginationMeta(total, page, limit),
     };
   }
 
@@ -51,6 +53,8 @@ export class MediaAdminService {
   @ReadOnly()
   async findQuarantined(query: QueryMediaDto) {
     const { skip, take } = buildPrismaSkipTake(query.page, query.limit);
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
     const where = { status: MediaStatus.QUARANTINED };
 
     const [items, total] = await Promise.all([
@@ -65,7 +69,7 @@ export class MediaAdminService {
 
     return {
       data: items,
-      pagination: createPaginationMeta(query.page, query.limit, total),
+      pagination: createPaginationMeta(total, page, limit),
     };
   }
 

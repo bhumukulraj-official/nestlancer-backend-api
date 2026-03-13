@@ -27,6 +27,8 @@ export class MediaService {
   @ReadOnly()
   async findByUser(userId: string, query: QueryMediaDto) {
     const { skip, take } = buildPrismaSkipTake(query.page, query.limit);
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
 
     const where: any = { uploaderId: userId };
     if (query.fileType) where.mimeType = { contains: query.fileType };
@@ -44,7 +46,7 @@ export class MediaService {
 
     return {
       data: items,
-      pagination: createPaginationMeta(query.page, query.limit, total),
+      pagination: createPaginationMeta(total, page, limit),
     };
   }
 
