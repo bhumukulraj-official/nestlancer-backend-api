@@ -200,6 +200,7 @@ export class RequestsAdminController {
   @ApiOperation({ summary: 'Assign request to staff' })
   @ApiParam({ name: 'id', description: 'Request UUID' })
   @ApiStandardResponse({ message: 'Request assigned successfully' })
+  @HttpCode(HttpStatus.OK)
   async assignRequest(
     @Param('id') id: string,
     @ActiveUser('sub') adminId: string,
@@ -210,11 +211,11 @@ export class RequestsAdminController {
       data: { assigneeId: body.assigneeId },
     });
 
-    await this.prismaWrite.outboxEvent.create({
+    await this.prismaWrite.outbox.create({
       data: {
+        type: 'REQUEST_ASSIGNED',
         aggregateType: 'REQUEST',
         aggregateId: id,
-        eventType: 'REQUEST_ASSIGNED',
         payload: { assigneeId: body.assigneeId, assignedBy: adminId },
       },
     });

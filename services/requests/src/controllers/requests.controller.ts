@@ -11,6 +11,7 @@ import {
   UploadedFile,
   HttpStatus,
   Res,
+  HttpCode,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -168,6 +169,7 @@ export class RequestsController {
   @ApiStandardResponse({
     message: 'Request submitted successfully. You will receive a quote within 24-48 hours.',
   })
+  @HttpCode(HttpStatus.OK)
   async submitRequest(@ActiveUser('sub') userId: string, @Param('id') id: string): Promise<any> {
     return this.requestsService.submitRequest(userId, id);
   }

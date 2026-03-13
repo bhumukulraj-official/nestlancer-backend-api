@@ -31,6 +31,8 @@ export class QuotesAdminService {
           requestId,
           userId: request.userId,
           createdById: adminId,
+          title: request.title,
+          description: request.description,
           subtotal,
           taxPercentage: dto.taxPercentage,
           taxAmount,
@@ -40,16 +42,13 @@ export class QuotesAdminService {
           termsAndConditions: dto.termsAndConditions,
           internalNotes: dto.internalNotes,
           status: 'PENDING',
-          items: {
-            create: dto.items.map((i) => ({
-              description: i.description,
-              quantity: i.quantity,
-              unitPrice: i.unitPrice,
-              totalPrice: i.quantity * i.unitPrice,
-            })),
-          },
+          paymentBreakdown: dto.items.map((i) => ({
+            description: i.description,
+            quantity: i.quantity,
+            unitPrice: i.unitPrice,
+            totalPrice: i.quantity * i.unitPrice,
+          })) as any,
         },
-        include: { items: true },
       });
 
       await tx.projectRequest.update({
@@ -62,13 +61,14 @@ export class QuotesAdminService {
           requestId,
           status: 'QUOTED',
           note: 'Quote provided',
-          createdById: adminId,
         },
       });
 
       await tx.outbox.create({
         data: {
-          eventType: 'QUOTE_CREATED',
+          type: 'QUOTE_CREATED',
+          aggregateType: 'REQUEST',
+          aggregateId: requestId,
           payload: { quoteId: newQuote.id, requestId },
         },
       });
@@ -81,7 +81,12 @@ export class QuotesAdminService {
       requestId: quote.requestId,
       status: 'pending',
       amount: { subtotal, taxAmount, totalAmount, currency: dto.currency },
-      items: quote.items,
+      items: dto.items.map((i) => ({
+        description: i.description,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+        totalPrice: i.quantity * i.unitPrice,
+      })),
       createdAt: quote.createdAt,
     };
   }

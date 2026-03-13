@@ -53,7 +53,7 @@ export class RequestsAdminService {
       include: {
         user: { select: { id: true, email: true, firstName: true, lastName: true } },
         attachments: true,
-        quotes: true,
+        quote: true,
         statusHistory: { orderBy: { createdAt: 'desc' } },
         adminNotes: {
           orderBy: { createdAt: 'desc' },
@@ -174,11 +174,15 @@ export class RequestsAdminService {
         req.attachments?.map((a: any) => ({ id: a.id, filename: a.filename, url: a.fileUrl })) ||
         [],
       quotes:
-        req.quotes?.map((q: any) => ({
-          id: q.id,
-          status: q.status.toLowerCase(),
-          totalAmount: q.totalAmount,
-        })) || [],
+        req.quote
+          ? [
+              {
+                id: req.quote.id,
+                status: req.quote.status.toLowerCase(),
+                totalAmount: req.quote.totalAmount,
+              },
+            ]
+          : [],
       statusHistory:
         req.statusHistory?.map((sh: any) => ({
           status: sh.status
