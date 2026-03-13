@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiStandardResponse, UserRole } from '@nestlancer/common';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
@@ -67,6 +68,9 @@ export class UsersAdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
   ): Promise<any> {
+    if (!query || !query.trim()) {
+      throw new BadRequestException('Query parameter "q" is required');
+    }
     return this.adminService.searchUsers(query, parseInt(page, 10), parseInt(limit, 10));
   }
 

@@ -1,41 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { PrismaWriteService } from '@nestlancer/database';
 import { UpdatePreferencesDto } from '../dto/update-preferences.dto';
 
 @Injectable()
 export class PreferencesService {
-  constructor(
-    private readonly prismaWrite: PrismaWriteService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaWriteService) {}
 
   async getPreferences(userId: string) {
-    const prefs = await this.prismaRead.userPreferences.findUnique({
+    const prefs = await this.prisma.userPreference.findUnique({
       where: { userId },
     });
 
     return {
-      notifications: prefs?.emailNotifications || {},
+      notifications: prefs?.notificationSettings || {},
       privacy: prefs?.privacySettings || {},
     };
   }
 
   async updatePreferences(userId: string, dto: UpdatePreferencesDto) {
-    const updated = await this.prismaWrite.userPreferences.upsert({
+    const updated = await this.prisma.userPreference.upsert({
       where: { userId },
       update: {
-        emailNotifications: dto.notifications as any,
+        notificationSettings: dto.notifications as any,
         privacySettings: dto.privacy as any,
       },
       create: {
         userId,
-        emailNotifications: dto.notifications as any,
+        notificationSettings: dto.notifications as any,
         privacySettings: dto.privacy as any,
       },
     });
 
     return {
-      notifications: updated.emailNotifications,
+      notifications: updated.notificationSettings,
       privacy: updated.privacySettings,
       updatedAt: updated.updatedAt,
     };

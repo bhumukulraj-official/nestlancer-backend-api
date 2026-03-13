@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsArray, IsNotEmpty, IsOptional, ArrayNotEmpty, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -21,6 +21,7 @@ export class AdminBulkOperationDto {
   })
   @IsArray()
   @IsString({ each: true })
+  @ArrayNotEmpty()
   userIds: string[];
 
   @ApiProperty({
@@ -28,9 +29,9 @@ export class AdminBulkOperationDto {
     enum: BulkAction,
     example: BulkAction.SUSPEND,
   })
-  @IsString()
+  @IsEnum(BulkAction)
   @IsNotEmpty()
-  action: string; // 'suspend' | 'activate' | 'delete' | 'resetPassword'
+  action: BulkAction;
 
   @ApiPropertyOptional({
     description:

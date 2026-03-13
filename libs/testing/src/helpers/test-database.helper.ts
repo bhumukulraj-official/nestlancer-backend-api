@@ -41,9 +41,11 @@ export async function resetTestDatabase(): Promise<void> {
   if (!prismaClient) return;
 
   const tables = await prismaClient.$queryRawUnsafe<Array<{ table_name: string }>>(`
-      SELECT table_name FROM information_schema.tables
+      SELECT table_name
+      FROM information_schema.tables
       WHERE table_schema = 'public'
-      AND table_name != '_prisma_migrations'
+        AND table_type = 'BASE TABLE'
+        AND table_name != '_prisma_migrations'
     `);
 
   const tableNames = tables.map((t) => `"${t.table_name}"`).join(', ');
