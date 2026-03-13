@@ -16,8 +16,9 @@ describe('Health Service - Public endpoints (E2E)', () => {
     it('GET /live returns 200 and confirms process is alive', async () => {
       const res = await request(getApp().getHttpServer()).get(`/${prefix}/live`);
       expect(res.status).toBe(200);
-      expect(res.body).toMatchObject({ status: 'alive' });
-      expect(typeof res.body.uptime).toBe('number');
+      const payload = res.body?.data ?? res.body;
+      expect(payload).toMatchObject({ status: 'alive' });
+      expect(typeof payload.uptime).toBe('number');
     });
 
     it('HEAD /ping returns 200', async () => {
@@ -125,18 +126,20 @@ describe('Health Service - Public endpoints (E2E)', () => {
     it('GET /system returns 200 and system metrics shape', async () => {
       const res = await request(getApp().getHttpServer()).get(`/${prefix}/system`);
       expect(res.status).toBe(200);
-      expect(res.body.status).toBe('healthy');
-      expect(res.body).toHaveProperty('memory');
-      expect(res.body).toHaveProperty('cpu');
-      expect(res.body).toHaveProperty('disk');
-      expect(res.body).toHaveProperty('process');
+      const payload = res.body?.data ?? res.body;
+      expect(payload.status).toBe('healthy');
+      expect(payload).toHaveProperty('memory');
+      expect(payload).toHaveProperty('cpu');
+      expect(payload).toHaveProperty('disk');
+      expect(payload).toHaveProperty('process');
     });
 
     it('GET /features returns 200 and feature flags health shape', async () => {
       const res = await request(getApp().getHttpServer()).get(`/${prefix}/features`);
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('status');
-      expect(res.body).toHaveProperty('flags');
+      const payload = res.body?.data ?? res.body;
+      expect(payload).toHaveProperty('status');
+      expect(payload).toHaveProperty('flags');
     });
   });
 });
@@ -168,7 +171,8 @@ describe('Health Service - Admin Debug (E2E)', () => {
   it('GET /debug without token returns 401', async () => {
     const res = await request(getApp().getHttpServer()).get(`/${prefix}/debug`);
     expect(res.status).toBe(401);
-    expect(res.body).toHaveProperty('message');
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toHaveProperty('message');
   });
 
   it('GET /debug with USER role returns 403', async () => {
@@ -176,7 +180,8 @@ describe('Health Service - Admin Debug (E2E)', () => {
       .get(`/${prefix}/debug`)
       .set('Authorization', `Bearer ${userToken}`);
     expect(res.status).toBe(403);
-    expect(res.body).toHaveProperty('message');
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toHaveProperty('message');
   });
 
   it('GET /debug with ADMIN role returns 200 and debug body shape', async () => {
