@@ -65,19 +65,33 @@ export class DeliverablesService {
   }
 
   async update(id: string, dto: UpdateDeliverableDto) {
-    const deliverable = await this.prismaWrite.deliverable.update({
-      where: { id },
-      data: {
-        description: dto.description,
-      },
-    });
-    return deliverable;
+    try {
+      const deliverable = await this.prismaWrite.deliverable.update({
+        where: { id },
+        data: {
+          description: dto.description,
+        },
+      });
+      return deliverable;
+    } catch (error: any) {
+      if (error?.code === 'P2025') {
+        throw new NotFoundException('Deliverable not found');
+      }
+      throw error;
+    }
   }
 
   async delete(id: string) {
-    await this.prismaWrite.deliverable.delete({
-      where: { id },
-    });
-    return { success: true };
+    try {
+      await this.prismaWrite.deliverable.delete({
+        where: { id },
+      });
+      return { success: true };
+    } catch (error: any) {
+      if (error?.code === 'P2025') {
+        throw new NotFoundException('Deliverable not found');
+      }
+      throw error;
+    }
   }
 }

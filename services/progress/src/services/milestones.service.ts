@@ -31,17 +31,24 @@ export class MilestonesService {
   }
 
   async update(id: string, dto: UpdateMilestoneDto) {
-    const milestone = await this.prismaWrite.milestone.update({
-      where: { id },
-      data: {
-        name: dto.name,
-        description: dto.description,
-        startDate: dto.startDate ? new Date(dto.startDate) : undefined,
-        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
-        order: dto.order,
-      },
-    });
-    return milestone;
+    try {
+      const milestone = await this.prismaWrite.milestone.update({
+        where: { id },
+        data: {
+          name: dto.name,
+          description: dto.description,
+          startDate: dto.startDate ? new Date(dto.startDate) : undefined,
+          endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+          order: dto.order,
+        },
+      });
+      return milestone;
+    } catch (error: any) {
+      if (error?.code === 'P2025') {
+        throw new NotFoundException('Milestone not found');
+      }
+      throw error;
+    }
   }
 
   async complete(id: string) {

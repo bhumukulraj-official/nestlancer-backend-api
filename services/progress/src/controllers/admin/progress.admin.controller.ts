@@ -164,6 +164,7 @@ export class ProgressAdminController {
    * @returns A promise resolving to the final completion status of the project
    */
   @Post('projects/:projectId/complete')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Mark project as complete (admin)',
     description: 'Finalize a project and record its completion details in the system.',
