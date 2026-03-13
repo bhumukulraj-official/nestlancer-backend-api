@@ -2,12 +2,14 @@
  * E2E setup: bootstraps the WebSocket Gateway app (no Redis adapter; default in-memory).
  * Mocks CacheService and RedisSubscriberService so connection/presence work without Redis.
  */
-process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL =
-  process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/testdb';
-process.env.JWT_ACCESS_SECRET =
-  process.env.JWT_ACCESS_SECRET || 'test-secret-32-chars-minimum!!';
-process.env.REDIS_PUB_SUB_URL = process.env.REDIS_PUB_SUB_URL || 'redis://localhost:6379/1';
+import * as path from 'path';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const dotenv = require('dotenv');
+
+process.env.NODE_ENV = process.env.NODE_ENV || 'e2e';
+dotenv.config({
+  path: path.resolve(__dirname, '../../.env.e2e'),
+});
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';

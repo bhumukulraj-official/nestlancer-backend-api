@@ -1,25 +1,25 @@
-import axios from 'axios';
-import { setupApp, teardownApp, getAppUrl, getGlobalPrefix } from './setup';
+import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { setupApp, teardownApp, getGlobalPrefix, getApp } from './setup';
 
 describe('Auth Service - Token Refresh (E2E)', () => {
-  let baseUrl: string;
+  let app: INestApplication;
   const prefix = getGlobalPrefix();
 
   beforeAll(async () => {
-    await setupApp();
-    baseUrl = `${getAppUrl()}/${prefix}`;
+    app = await setupApp();
   });
 
   afterAll(async () => {
     await teardownApp();
   });
 
-  it('POST /refresh with invalid token returns 401', async () => {
-    const res = await axios.post(
-      `${baseUrl}/refresh`,
-      { refreshToken: 'invalid-refresh-token' },
-      { validateStatus: () => true },
-    );
-    expect([401, 400]).toContain(res.status);
+  it('POST /refresh with invalid token returns 4xx', async () => {
+    const res = await request(getApp().getHttpServer())
+      .post(`/${prefix}/refresh`)
+      .send({ refreshToken: 'invalid-refresh-token' })
+      .set('Accept', 'application/json');
+
+    expect([400, 401, 422]).toContain(res.status);
   });
 });

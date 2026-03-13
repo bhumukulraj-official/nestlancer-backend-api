@@ -1,5 +1,11 @@
-process.env.NODE_ENV = 'test';
-process.env.RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
+import * as path from 'path';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const dotenv = require('dotenv');
+
+process.env.NODE_ENV = process.env.NODE_ENV || 'e2e';
+dotenv.config({
+  path: path.resolve(__dirname, '../../../.env.e2e'),
+});
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';

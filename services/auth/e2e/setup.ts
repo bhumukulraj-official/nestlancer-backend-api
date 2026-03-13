@@ -1,48 +1,72 @@
 /**
  * E2E setup: bootstraps the Auth service app and exposes URL for HTTP calls.
  * Must be imported first so env is set before AppModule loads.
+ *
+ * This uses the root-level `.env.e2e` so that all shared E2E
+ * infrastructure (Postgres/Redis/RabbitMQ/etc.) is consistent.
  */
-process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL =
-  process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/testdb';
-process.env.JWT_ACCESS_SECRET =
-  process.env.JWT_ACCESS_SECRET || 'test-secret-32-chars-minimum!!';
-process.env.JWT_REFRESH_SECRET =
-  process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-32-chars!!';
-
-import { INestApplication } from '@nestjs/common';
+import * as path from 'path';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
-import { AppModule } from '../src/app.module';
+
+// Ensure we are in the E2E environment and load `.env.e2e`
+// so core variables like DATABASE_URL / JWT_* are available.
+// Use `require` to avoid TypeScript type dependency on dotenv and
+// `require`-load the AppModule afterwards so config sees populated env.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const dotenv = require('dotenv');
+
+process.env.NODE_ENV = process.env.NODE_ENV || 'e2e';
+dotenv.config({
+  path: path.resolve(__dirname, '../../../.env.e2e'),
+});
+
+// Lazily require AppModule after env has been loaded so that
+// NestlancerConfigModule.forRoot() runs with the correct environment.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { AppModule } = require('../src/app.module');
 
 const GLOBAL_PREFIX = 'api/v1/auth';
 
-let app: INestApplication;
+let app: INestApplication | null = null;
 
 export async function setupApp(): Promise<INestApplication> {
-  const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
-  }).compile();
+  if (app) {
+    return app;
+  }
 
-  app = moduleRef.createNestApplication();
-  app.setGlobalPrefix(GLOBAL_PREFIX);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.useGlobalInterceptors(new TransformResponseInterceptor());
-  app.useGlobalFilters(new AllExceptionsFilter());
-  await app.init();
-  await app.listen(0);
-  return app;
+  try {
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleRef.createNestApplication();
+    app.setGlobalPrefix(GLOBAL_PREFIX);
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalInterceptors(new TransformResponseInterceptor());
+    app.useGlobalFilters(new AllExceptionsFilter());
+    await app.init();
+    return app;
+  } catch (err: any) {
+    // eslint-disable-next-line no-console
+    console.error('AUTH E2E setupApp error:', err, err?.errors);
+    throw err;
+  }
 }
 
 export async function teardownApp(): Promise<void> {
-  await app?.close();
+  if (app) {
+    await app.close();
+    app = null;
+  }
 }
 
-export function getAppUrl(): string {
-  const server = app.getHttpServer();
-  const address = server.address() as { port: number };
-  return `http://localhost:${address.port}`;
+export function getApp(): INestApplication {
+  if (!app) {
+    throw new Error('App has not been initialized. Call setupApp() first.');
+  }
+  return app;
 }
 
 export function getGlobalPrefix(): string {

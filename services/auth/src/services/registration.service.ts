@@ -18,7 +18,9 @@ export class RegistrationService {
     private readonly logger: LoggerService,
   ) {}
 
-  async registerUser(dto: RegisterDto): Promise<{ user: any; emailVerificationToken: string }> {
+  async registerUser(
+    dto: RegisterDto,
+  ): Promise<{ user: any; emailVerificationToken: string; emailVerificationExpiresAt: Date }> {
     const existingUser = await this.prismaRead.user.findUnique({
       where: { email: dto.email.toLowerCase() },
     });

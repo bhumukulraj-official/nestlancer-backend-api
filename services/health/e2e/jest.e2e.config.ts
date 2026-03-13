@@ -8,6 +8,11 @@ const config: Config = {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'json'],
+  moduleNameMapper: {
+    '^@nestlancer/common$': '<rootDir>/e2e/__mocks__/nestlancer-common.ts',
+    '^@nestlancer/auth-lib$': '<rootDir>/e2e/__mocks__/auth-lib.ts',
+    '^@nestlancer/tracing$': '<rootDir>/e2e/__mocks__/tracing.ts',
+  },
   testTimeout: 30_000,
   maxWorkers: 1,
   verbose: true,

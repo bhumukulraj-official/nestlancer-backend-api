@@ -92,7 +92,6 @@ export class RequestsAdminService {
           requestId,
           status: dbStatus as any,
           note: notes || `Status updated to ${status}`,
-          createdById: adminId,
         },
       });
 

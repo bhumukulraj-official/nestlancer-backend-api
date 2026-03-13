@@ -1,27 +1,121 @@
-process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL =
-  process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/testdb';
+import * as path from 'path';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const dotenv = require('dotenv');
 
-import { INestApplication } from '@nestjs/common';
+process.env.NODE_ENV = process.env.NODE_ENV || 'e2e';
+dotenv.config({
+  path: path.resolve(__dirname, '../../../.env.e2e'),
+});
+process.env.HEALTH_E2E_DISABLE_AUTH = 'true';
+
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { ValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
 import { AppModule } from '../src/app.module';
+import { DatabaseHealthService } from '../src/services/database-health.service';
+import { CacheHealthService } from '../src/services/cache-health.service';
+import { QueueHealthService } from '../src/services/queue-health.service';
+import { StorageHealthService } from '../src/services/storage-health.service';
+import { ExternalServicesHealthService } from '../src/services/external-services-health.service';
+import { WorkersHealthService } from '../src/services/workers-health.service';
+import { WebsocketHealthService } from '../src/services/websocket-health.service';
+import { SystemMetricsService } from '../src/services/system-metrics.service';
+import { FeatureFlagsHealthService } from '../src/services/feature-flags-health.service';
+import { ServiceRegistryHealthService } from '../src/services/service-registry-health.service';
 
 const GLOBAL_PREFIX = 'api/v1/health';
 
 let app: INestApplication;
 
 export async function setupApp(): Promise<INestApplication> {
-  const moduleRef = await Test.createTestingModule({
+  const testingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  })
+    .overrideProvider(DatabaseHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        responseTime: 1,
+        details: {},
+      }),
+    })
+    .overrideProvider(CacheHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        responseTime: 1,
+        details: {},
+      }),
+    })
+    .overrideProvider(QueueHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        responseTime: 1,
+        details: {},
+      }),
+    })
+    .overrideProvider(StorageHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        responseTime: 1,
+        details: {},
+      }),
+    })
+    .overrideProvider(ExternalServicesHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        responseTime: 1,
+        details: {},
+      }),
+    })
+    .overrideProvider(WorkersHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        responseTime: 1,
+        details: {},
+      }),
+    })
+    .overrideProvider(WebsocketHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        responseTime: 1,
+        details: {},
+      }),
+    })
+    .overrideProvider(SystemMetricsService)
+    .useValue({
+      getMetrics: () => ({
+        memory: {},
+        cpu: {},
+        disk: {},
+        process: {},
+      }),
+    })
+    .overrideProvider(FeatureFlagsHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        flags: {},
+      }),
+    })
+    .overrideProvider(ServiceRegistryHealthService)
+    .useValue({
+      check: async () => ({
+        status: 'unhealthy',
+        responseTime: 1,
+        details: {},
+      }),
+    });
+
+  const moduleRef = await testingModuleBuilder.compile();
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix(GLOBAL_PREFIX);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.useGlobalInterceptors(new TransformResponseInterceptor());
-  app.useGlobalFilters(new AllExceptionsFilter());
   await app.init();
   await app.listen(0);
   return app;

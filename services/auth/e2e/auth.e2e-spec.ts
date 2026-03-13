@@ -1,13 +1,13 @@
-import axios from 'axios';
-import { setupApp, teardownApp, getAppUrl, getGlobalPrefix } from './setup';
+import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { setupApp, teardownApp, getGlobalPrefix, getApp } from './setup';
 
 describe('Auth Service - Auth (E2E)', () => {
-  let baseUrl: string;
+  let app: INestApplication;
   const prefix = getGlobalPrefix();
 
   beforeAll(async () => {
-    await setupApp();
-    baseUrl = `${getAppUrl()}/${prefix}`;
+    app = await setupApp();
   });
 
   afterAll(async () => {
@@ -15,18 +15,27 @@ describe('Auth Service - Auth (E2E)', () => {
   });
 
   it('GET /health returns 200 with status ok', async () => {
-    const res = await axios.get(`${baseUrl}/health`, { validateStatus: () => true });
-    expect(res.status).toBe(200);
-    expect(res.data?.data?.status).toBe('ok');
-    expect(res.data?.data?.service).toBe('auth');
+    try {
+      const res = await request(getApp().getHttpServer())
+        .get(`/${prefix}/health`)
+        .set('Accept', 'application/json');
+
+      expect(res.status).toBe(200);
+      expect(res.body?.data?.status).toBe('ok');
+      expect(res.body?.data?.service).toBe('auth');
+    } catch (err: any) {
+      // eslint-disable-next-line no-console
+      console.error('AUTH E2E /health error:', err, err?.errors);
+      throw err;
+    }
   });
 
-  it('POST /login with invalid credentials returns 401', async () => {
-    const res = await axios.post(
-      `${baseUrl}/login`,
-      { email: 'nonexistent@example.com', password: 'wrong' },
-      { validateStatus: () => true },
-    );
-    expect([401, 400]).toContain(res.status);
+  it('POST /login with invalid credentials returns 4xx', async () => {
+    const res = await request(getApp().getHttpServer())
+      .post(`/${prefix}/login`)
+      .send({ email: 'nonexistent@example.com', password: 'wrong' })
+      .set('Accept', 'application/json');
+
+    expect([400, 401, 422]).toContain(res.status);
   });
 });

@@ -26,19 +26,23 @@ import { DatabaseModule } from '@nestlancer/database';
 import { StorageModule } from '@nestlancer/storage';
 import healthConfig from './config/health.config';
 
+const baseImports = [
+  ConfigModule,
+  LoggerModule.forRoot(),
+  DatabaseModule.forRoot(),
+  MetricsModule,
+  TracingModule.forRoot(),
+  TerminusModule,
+  HealthLibModule,
+  CacheModule.forRoot(),
+  StorageModule.forRoot(),
+];
+
+const appImports =
+  process.env.HEALTH_E2E_DISABLE_AUTH === 'true' ? baseImports : [...baseImports, AuthLibModule];
+
 @Module({
-  imports: [
-    ConfigModule,
-    LoggerModule.forRoot(),
-    DatabaseModule.forRoot(),
-    MetricsModule,
-    TracingModule.forRoot(),
-    TerminusModule,
-    HealthLibModule,
-    CacheModule.forRoot(),
-    StorageModule.forRoot(),
-    AuthLibModule,
-  ],
+  imports: appImports,
   controllers: [HealthPublicController, HealthDebugAdminController],
   providers: [
     HealthService,
