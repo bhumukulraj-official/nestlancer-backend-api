@@ -8,9 +8,6 @@ const config: Config = {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'json'],
-  moduleNameMapper: {
-    '^uuid$': '<rootDir>/e2e/__mocks__/uuid.ts',
-  },
   testTimeout: 30_000,
   maxWorkers: 1,
   verbose: true,

@@ -8,9 +8,6 @@ const config: Config = {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'json'],
-  moduleNameMapper: {
-    '^@nestlancer/queue$': '<rootDir>/e2e/__mocks__/nestlancer-queue.ts',
-  },
   testTimeout: 30_000,
   maxWorkers: 1,
   verbose: true,

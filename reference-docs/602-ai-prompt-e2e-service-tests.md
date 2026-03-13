@@ -58,7 +58,25 @@ For **known error cases** (e.g. unauthenticated, invalid body), assert the **exa
 
 ---
 
-### 4. Auth and Roles
+### 4. Libs vs Mocks
+
+**Prefer lib dir (real code) when:**
+
+- The dependency is **in-repo shared code** that does not talk to external infra: e.g. `@nestlancer/common` (filters, interceptors, DTOs), `libs/testing` (JWT helper, fixtures), `@nestlancer/auth-lib` for token validation.
+- You want E2E to **exercise real behavior** so integration bugs (wrong status, wrong envelope, wrong auth) are caught.
+- The code is fast and deterministic (e.g. JWT with a test secret, validation pipes).
+
+**Use `e2e/__mocks__/` (and `moduleNameMapper` in `jest.e2e.config.ts`) only when:**
+
+- The dependency talks to **external infra** not available in E2E: queues (e.g. `@nestlancer/queue`), Redis, S3, SMTP, tracing/OTLP. Mock so tests do not time out or require real services.
+- You need **determinism** (e.g. mock `uuid` so generated IDs are stable for assertions).
+- The real implementation is slow, flaky, or has side effects (e.g. sending real emails, opening real connections).
+
+**Alternative to mocks:** For Nest-injected services (e.g. health checks that hit DB/cache/queue), prefer **`Test.createTestingModule().overrideProvider(SomeService).useValue({ ... })`** in `setup.ts` over module-level mocks, so the app still uses real libs and only the infra-facing provider is replaced.
+
+---
+
+### 5. Auth and Roles
 
 - Use a **test JWT helper** (e.g. from `libs/testing` or a local helper) to build `Authorization: Bearer <token>` with the right `sub` and `role` (USER, ADMIN, etc.).
 - **Unauthenticated**: For protected routes, always have a test that calls without a token and assert **401**.
@@ -67,7 +85,7 @@ For **known error cases** (e.g. unauthenticated, invalid body), assert the **exa
 
 ---
 
-### 5. Data and Environment
+### 6. Data and Environment
 
 - Prefer **deterministic data**: Use fixed UUIDs or seeded data where the service supports it, so success-path tests can assert exact status and body.
 - If the service requires DB state (e.g. "user must exist"), either:
@@ -77,21 +95,21 @@ For **known error cases** (e.g. unauthenticated, invalid body), assert the **exa
 
 ---
 
-### 6. HTTP Client and Prefix
+### 7. HTTP Client and Prefix
 
 - Use **supertest** with `request(getApp().getHttpServer())` or `request(getAppUrl())` so requests hit the in-process app.
 - Use the **global prefix** from setup (e.g. `api/v1`) in every URL: `get(`${getGlobalPrefix()}/users/profile`)` or equivalent. Do not hardcode prefixes that differ from the app.
 
 ---
 
-### 7. Response Shape
+### 8. Response Shape
 
 - Respect the app’s **response envelope** (e.g. `{ status: 'success', data: { … } }` from `TransformResponseInterceptor`). When asserting success, read from `res.body?.data` or `res.body` consistently with how the service actually returns data.
 - For lists, assert that the result is an array (or has `items`/`data` array) and, when relevant, assert length or at least one item’s shape.
 
 ---
 
-### 8. What to Avoid
+### 9. What to Avoid
 
 - **No loose status sets** for a specific scenario: e.g. do not use `expect([200, 404, 500]).toContain(res.status)` when the scenario has a single correct outcome.
 - **No silent skips** in the middle of a flow: do not `if (res.status !== 201) return;` without failing; either fail the test or ensure preconditions so the test can assert the success path.
@@ -117,3 +135,4 @@ For **known error cases** (e.g. unauthenticated, invalid body), assert the **exa
 - [ ] Auth: unauthenticated → 401; wrong role → 403; authenticated success → exact status + body.
 - [ ] Setup uses `.env.e2e` and global prefix; URLs use `getGlobalPrefix()`.
 - [ ] No silent skips; tests either fail or have preconditions that allow strict assertions.
+- [ ] Libs vs mocks: real libs for in-repo code (common, auth-lib, testing); mocks only for external infra (queue, email, etc.) or determinism (e.g. uuid); prefer `overrideProvider` in setup for Nest services over module mocks when possible.

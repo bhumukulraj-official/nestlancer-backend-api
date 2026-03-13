@@ -107,7 +107,7 @@ Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **ser
   - **Test setup:** Wrong URL, missing auth header, wrong body shape, or missing seed data. Fix `setup.ts` or the spec (e.g. create resource in `beforeAll`).
   - **App code:** Controller/service returns wrong status or body, or throws. Fix the app code; keep the test expectation.
   - **Env/DB:** Missing or wrong `DATABASE_URL`, migrations not run, or empty DB so “get by id” returns 404. Fix env or seed; do not relax the test to accept 404 when the scenario requires success.
-  - **Dependency/mock:** External client (e.g. queue, email) not mocked in e2e and causes timeout or error. Add or fix mock in `e2e/__mocks__/` and ensure Jest uses it (e.g. `moduleNameMapper` in `jest.e2e.config.ts`).
+  - **Dependency/mock:** External client (e.g. queue, email) not mocked in e2e and causes timeout or error. Follow **Libs vs mocks** (below): use real libs for in-repo code; add or fix mock in `e2e/__mocks__/` only for external infra or determinism; ensure `moduleNameMapper` in `jest.e2e.config.ts` points to the mock. For Nest-injected infra services, prefer `overrideProvider` in `setup.ts` over module mocks.
 
 - **Flaky tests:** If a test passes sometimes and fails sometimes, look for: shared state, missing `maxWorkers: 1`, time-dependent logic, or reliance on unseeded DB. Prefer deterministic data and single-worker e2e; fix the cause rather than retrying.
 
@@ -125,7 +125,7 @@ Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **ser
 
 - **DB/seed:** If the test expects an entity to exist (e.g. user, project), verify that migrations and seed run for the E2E DB (or the test creates the entity). Use the same `DATABASE_URL` as in `.env.e2e`.
 
-- **Mocks:** If the service uses `@nestlancer/queue` or another external, ensure `e2e/__mocks__/` and `moduleNameMapper` in `jest.e2e.config.ts` point to the mock so e2e doesn’t hit real infra.
+- **Libs vs mocks:** Prefer **lib dir (real code)** for in-repo dependencies (`@nestlancer/common`, `libs/testing`, `@nestlancer/auth-lib`) so E2E exercises real behavior. Use **`e2e/__mocks__/`** only for (a) external infra (queue, email, Redis, S3, tracing) so e2e doesn’t hit real services, or (b) determinism (e.g. mock `uuid` for stable IDs). For Nest-injected infra-facing services (e.g. health checks), prefer **`overrideProvider(...).useValue(...)`** in `setup.ts` over adding a module mock. Ensure `moduleNameMapper` in `jest.e2e.config.ts` points to any mocks you add.
 
 - **Single change:** After a fix, run the failing test again, then the full e2e for that service, then (if applicable) related packages, to avoid regressions.
 
@@ -155,7 +155,7 @@ Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **ser
 - **Across services:** Use the same patterns where possible:
   - **setup.ts:** Load `.env.e2e`, set `NODE_ENV=e2e`, use `GLOBAL_PREFIX = 'api/v1'`, apply `ValidationPipe`, `TransformResponseInterceptor`, `AllExceptionsFilter`, then `app.init()` and `app.listen(0)`.
   - **Auth:** Use a shared test JWT helper (e.g. from `libs/testing`) and the same header shape `Authorization: Bearer <token>`.
-  - **Jest e2e config:** Same `testRegex`, `testTimeout`, `maxWorkers: 1`, and similar `moduleNameMapper` for mocks.
+  - **Jest e2e config:** Same `testRegex`, `testTimeout`, `maxWorkers: 1`, and similar `moduleNameMapper` only for dependencies that must be mocked (external infra or determinism); use real libs otherwise (see 602 “Libs vs Mocks”).
 
 - **Docs and prompts:** After changing how e2e works (e.g. new env var, new mock), update `reference-docs/601-e2e-test-plan.md` or `reference-docs/602-ai-prompt-e2e-service-tests.md` if they’re affected, so future test creation stays aligned.
 
@@ -190,3 +190,4 @@ Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **ser
 - [ ] Failing test and full e2e **for the target(s)** re-run and pass.
 - [ ] Within the target(s), patterns aligned (setup, auth, assertions); cross-target alignment only if user asked.
 - [ ] Reference docs (601, 602) or package scripts updated if behavior or structure changed.
+- [ ] Libs vs mocks respected: real libs for in-repo code; mocks only for external infra or determinism; `overrideProvider` in setup preferred for Nest infra services.

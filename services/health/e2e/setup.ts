@@ -6,10 +6,13 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'e2e';
 dotenv.config({
   path: path.resolve(__dirname, '../../../.env.e2e'),
 });
-process.env.HEALTH_E2E_DISABLE_AUTH = 'true';
+process.env.JWT_ACCESS_SECRET =
+  process.env.JWT_ACCESS_SECRET || 'test-secret-key-for-testing-only-32char';
+// Do not set HEALTH_E2E_DISABLE_AUTH so AuthLibModule is loaded and admin routes enforce 401/403.
 
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
 import { AppModule } from '../src/app.module';
 import { DatabaseHealthService } from '../src/services/database-health.service';
 import { CacheHealthService } from '../src/services/cache-health.service';
@@ -24,9 +27,11 @@ import { ServiceRegistryHealthService } from '../src/services/service-registry-h
 
 const GLOBAL_PREFIX = 'api/v1/health';
 
-let app: INestApplication;
+let app: INestApplication | null = null;
 
 export async function setupApp(): Promise<INestApplication> {
+  if (app) return app;
+
   const testingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
   })
@@ -116,16 +121,27 @@ export async function setupApp(): Promise<INestApplication> {
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix(GLOBAL_PREFIX);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalInterceptors(new TransformResponseInterceptor());
+  app.useGlobalFilters(new AllExceptionsFilter());
   await app.init();
   await app.listen(0);
   return app;
 }
 
 export async function teardownApp(): Promise<void> {
-  await app?.close();
+  if (app) {
+    await app.close();
+    app = null;
+  }
+}
+
+export function getApp(): INestApplication {
+  if (!app) throw new Error('App has not been initialized. Call setupApp() first.');
+  return app;
 }
 
 export function getAppUrl(): string {
+  if (!app) throw new Error('App has not been initialized. Call setupApp() first.');
   const server = app.getHttpServer();
   const address = server.address() as { port: number };
   return `http://localhost:${address.port}`;
