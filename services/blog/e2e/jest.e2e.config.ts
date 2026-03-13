@@ -7,8 +7,11 @@ const config: Config = {
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
-  // Allow transforming ESM-only uuid so we use the real lib (pnpm nests at .pnpm/uuid@x/node_modules/uuid)
+  // Use deterministic UUID mock for ESM-only uuid in E2E, per 602 (mocks for determinism / avoid Jest ESM issues).
   transformIgnorePatterns: ['/node_modules/(?!.*uuid)'],
+  moduleNameMapper: {
+    '^uuid$': '<rootDir>/../../libs/testing/src/uuid.mock.ts',
+  },
   moduleFileExtensions: ['ts', 'js', 'json'],
   testTimeout: 30_000,
   maxWorkers: 1,

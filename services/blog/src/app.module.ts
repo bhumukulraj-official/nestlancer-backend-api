@@ -26,6 +26,7 @@ import { CommentsAdminController } from './controllers/admin/comments.admin.cont
 import {
   BlogCategoriesAdminController,
   BlogTagsAdminController,
+  BlogAuthorsAdminController,
 } from './controllers/admin/taxonomy.admin.controller';
 import { BlogAnalyticsAdminController } from './controllers/admin/blog-analytics.admin.controller';
 import { PostsService } from './services/posts.service';
@@ -55,12 +56,13 @@ import { BlogAdminService } from './services/blog-admin.service';
     OutboxModule.forRoot(),
   ],
   controllers: [
+    // PostInteractionsController first so POST/DELETE posts/:slug/bookmark and POST posts/:slug/view (auth) match
+    PostInteractionsController,
     PostsPublicController,
     BlogCategoriesPublicController,
     BlogTagsPublicController,
     AuthorsPublicController,
     FeedPublicController,
-    PostInteractionsController,
     CommentsController,
     StandaloneCommentsController,
     // BookmarksController,
@@ -68,6 +70,7 @@ import { BlogAdminService } from './services/blog-admin.service';
     CommentsAdminController,
     BlogCategoriesAdminController,
     BlogTagsAdminController,
+    BlogAuthorsAdminController,
     BlogAnalyticsAdminController,
   ],
   providers: [

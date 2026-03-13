@@ -44,8 +44,7 @@ export class PostInteractionsController {
    * @param req Express request for user identification
    * @returns A promise resolving to the updated post interaction status
    */
-  @Post('bookmarks')
-  @Post('bookmark')
+  @Post(['bookmarks', 'bookmark'])
   @Auth(UserRole.USER)
   @ApiOperation({
     summary: 'Bookmark post',
@@ -62,8 +61,7 @@ export class PostInteractionsController {
    * @param req Express request for user identification
    * @returns A promise resolving to the updated post interaction status
    */
-  @Delete('bookmarks')
-  @Delete('bookmark')
+  @Delete(['bookmarks', 'bookmark'])
   @Auth(UserRole.USER)
   @ApiOperation({
     summary: 'Remove bookmark',
@@ -80,8 +78,7 @@ export class PostInteractionsController {
    * @param req Express request context
    * @returns A promise resolving to the tracking confirmation
    */
-  @Post('views')
-  @Post('view')
+  @Post(['views', 'view'])
   @Auth(UserRole.USER)
   @ApiOperation({
     summary: 'Track authenticated view',
