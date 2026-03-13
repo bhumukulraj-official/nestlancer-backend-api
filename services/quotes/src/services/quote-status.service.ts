@@ -48,10 +48,12 @@ export class QuoteStatusService {
         data: { status: 'ACCEPTED' }, // Technically converts to project later
       });
 
-      // Emitting event to spawn Project Service creation
+      // Emitting event to spawn Project Service creation via transactional outbox
       await tx.outbox.create({
         data: {
-          eventType: 'QUOTE_ACCEPTED',
+          type: 'QUOTE_ACCEPTED',
+          aggregateType: 'QUOTE',
+          aggregateId: quoteId,
           payload: { quoteId, requestId: quote.requestId, userId },
         },
       });
@@ -100,7 +102,9 @@ export class QuoteStatusService {
 
       await tx.outbox.create({
         data: {
-          eventType: 'QUOTE_DECLINED',
+          type: 'QUOTE_DECLINED',
+          aggregateType: 'QUOTE',
+          aggregateId: quoteId,
           payload: { quoteId, requestId: quote.requestId, reason: dto.reason },
         },
       });
@@ -142,7 +146,9 @@ export class QuoteStatusService {
 
       await tx.outbox.create({
         data: {
-          eventType: 'QUOTE_CHANGES_REQUESTED',
+          type: 'QUOTE_CHANGES_REQUESTED',
+          aggregateType: 'QUOTE',
+          aggregateId: quoteId,
           payload: { quoteId, changes: dto.changes },
         },
       });

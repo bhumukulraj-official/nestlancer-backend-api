@@ -27,14 +27,15 @@ export enum QuotePaymentType {
  * Detailed line item for the payment schedule of a quote.
  */
 class QuotePaymentBreakdownDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The nature of this payment installment',
     enum: QuotePaymentType,
     example: QuotePaymentType.MILESTONE,
   })
+  @IsOptional()
   @IsString()
   @IsIn(['advance', 'milestone', 'final', 'subscription', 'fullPayment'])
-  type: string;
+  type?: string;
 
   @ApiProperty({
     description: 'Specific description of what this payment covers',
@@ -139,14 +140,15 @@ export class CreateQuoteAdminDto {
   @IsNotEmpty()
   validUntil: string; // ISO date
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Duration in days the quote remains valid from issuance',
     example: 30,
     minimum: 1,
   })
+  @IsOptional()
   @IsNumber()
   @Min(1)
-  validityDays: number;
+  validityDays?: number;
 
   @ApiProperty({
     description: 'Phased payment schedule and milestones',

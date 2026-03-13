@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Res, HttpCode } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiStandardResponse, Public } from '@nestlancer/common';
 import { ActiveUser, JwtAuthGuard } from '@nestlancer/auth-lib';
@@ -89,6 +89,7 @@ export class QuotesController {
    * Accepts a quote and initiates the project creation workflow.
    */
   @Post(':id/accept')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Accept quote' })
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse({ message: 'Quote accepted successfully. Project has been created.' })
@@ -104,6 +105,7 @@ export class QuotesController {
    * Declines a quote with optional qualitative feedback.
    */
   @Post(':id/decline')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Decline quote' })
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse({ message: 'Quote declined. Your feedback has been sent.' })
@@ -119,6 +121,7 @@ export class QuotesController {
    * Requests specific modifications or clarifications on a quote.
    */
   @Post(':id/request-changes')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Request quote changes' })
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse({ message: 'Change request submitted.' })

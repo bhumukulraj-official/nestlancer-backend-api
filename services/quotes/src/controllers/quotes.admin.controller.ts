@@ -13,7 +13,7 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiStandardResponse, UserRole } from '@nestlancer/common';
+import { ApiStandardResponse, BusinessLogicException, UserRole } from '@nestlancer/common';
 import { ActiveUser, JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { QuotesAdminService } from '../services/quotes.admin.service';
@@ -128,6 +128,7 @@ export class QuotesAdminController {
    * Sends/Issues a finalized quote to the client via configured channels.
    */
   @Post(':id/send')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Send quote to client' })
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse({ message: 'Quote sent successfully' })
@@ -139,6 +140,7 @@ export class QuotesAdminController {
    * Triggers a resend of the quote notification to the client.
    */
   @Post(':id/resend')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend quote notification' })
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse({ message: 'Quote notification resent' })
@@ -154,11 +156,13 @@ export class QuotesAdminController {
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse()
   async getQuoteDetails(@Param('id') id: string): Promise<any> {
-    const quote = await this.prismaRead.quote.findUnique({
+    const quote = await this.prismaWrite.quote.findUnique({
       where: { id },
       include: { request: true, project: true },
     });
-    if (!quote) throw new Error('Quote not found');
+    if (!quote) {
+      throw new BusinessLogicException('Quote not found', 'QUOTE_001');
+    }
     return quote;
   }
 
@@ -170,6 +174,11 @@ export class QuotesAdminController {
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse({ message: 'Quote updated successfully' })
   async updateQuote(@Param('id') id: string, @Body() dto: UpdateQuoteAdminDto): Promise<any> {
+    const existing = await this.prismaWrite.quote.findUnique({ where: { id } });
+    if (!existing) {
+      throw new BusinessLogicException('Quote not found', 'QUOTE_001');
+    }
+
     const payload = dto as any;
     const updated = await this.prismaWrite.quote.update({
       where: { id },
@@ -187,6 +196,11 @@ export class QuotesAdminController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: 204, description: 'Quote deleted' })
   async deleteQuote(@Param('id') id: string): Promise<any> {
+    const existing = await this.prismaWrite.quote.findUnique({ where: { id } });
+    if (!existing) {
+      throw new BusinessLogicException('Quote not found', 'QUOTE_001');
+    }
+
     await this.prismaWrite.quote.delete({ where: { id } });
     return { quoteId: id, deleted: true };
   }
@@ -195,15 +209,18 @@ export class QuotesAdminController {
    * Creates an identical copy of an existing quote.
    */
   @Post(':id/duplicate')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Duplicate quote' })
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse({ message: 'Quote duplicated successfully' })
   async duplicateQuote(@Param('id') id: string): Promise<any> {
-    const original = await this.prismaRead.quote.findUnique({
+    const original = await this.prismaWrite.quote.findUnique({
       where: { id },
       include: { request: true },
     });
-    if (!original) throw new Error('Quote not found');
+    if (!original) {
+      throw new BusinessLogicException('Quote not found', 'QUOTE_001');
+    }
 
     // Create new project request to satisfy unique constraint
     const newRequest = await this.prismaWrite.projectRequest.create({
@@ -244,12 +261,15 @@ export class QuotesAdminController {
    * Generates a new version (revision) based on an existing quote.
    */
   @Post(':id/revise')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Create quote revision' })
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse({ message: 'Quote revision created successfully' })
   async createRevision(@Param('id') id: string, @Body() body: any): Promise<any> {
-    const original = await this.prismaRead.quote.findUnique({ where: { id } });
-    if (!original) throw new Error('Quote not found');
+    const original = await this.prismaWrite.quote.findUnique({ where: { id } });
+    if (!original) {
+      throw new BusinessLogicException('Quote not found', 'QUOTE_001');
+    }
 
     const updated = await this.prismaWrite.quote.update({
       where: { id },
@@ -259,11 +279,11 @@ export class QuotesAdminController {
       },
     });
 
-    await this.prismaWrite.outboxEvent.create({
+    await this.prismaWrite.outbox.create({
       data: {
+        type: 'QUOTE_REVISION_CREATED',
         aggregateType: 'QUOTE',
         aggregateId: id,
-        eventType: 'QUOTE_REVISION_CREATED',
         payload: { originalData: original, newData: updated },
       },
     });
@@ -279,8 +299,8 @@ export class QuotesAdminController {
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse()
   async getHistory(@Param('id') id: string): Promise<any> {
-    const history = await this.prismaRead.outboxEvent.findMany({
-      where: { aggregateType: 'QUOTE', aggregateId: id, eventType: 'QUOTE_REVISION_CREATED' },
+    const history = await this.prismaWrite.outbox.findMany({
+      where: { aggregateType: 'QUOTE', aggregateId: id },
       orderBy: { createdAt: 'desc' },
       select: { id: true, payload: true, createdAt: true },
     });
@@ -295,8 +315,10 @@ export class QuotesAdminController {
   @ApiParam({ name: 'id', description: 'Quote UUID' })
   @ApiStandardResponse()
   async getAdminPDF(@Param('id') id: string): Promise<any> {
-    const quote = await this.prismaRead.quote.findUnique({ where: { id }, select: { id: true } });
-    if (!quote) throw new Error('Quote not found');
+    const quote = await this.prismaWrite.quote.findUnique({ where: { id }, select: { id: true } });
+    if (!quote) {
+      throw new BusinessLogicException('Quote not found', 'QUOTE_001');
+    }
     return { quoteId: id, pdfUrl: `https://storage.nestlancer.com/quotes/${id}/admin-view.pdf` };
   }
 }

@@ -79,7 +79,7 @@ export class QuotesAdminService {
   }
 
   async sendQuote(quoteId: string) {
-    const quote = await this.prismaRead.quote.findUnique({ where: { id: quoteId } });
+    const quote = await this.prismaWrite.quote.findUnique({ where: { id: quoteId } });
     if (!quote) throw new BusinessLogicException('Quote not found', 'QUOTE_001');
 
     await this.prismaWrite.$transaction(async (tx: any) => {
@@ -88,7 +88,12 @@ export class QuotesAdminService {
         data: { status: 'SENT' },
       });
       await tx.outbox.create({
-        data: { eventType: 'QUOTE_SENT', payload: { quoteId, userId: quote.userId } },
+        data: {
+          type: 'QUOTE_SENT',
+          aggregateType: 'QUOTE',
+          aggregateId: quoteId,
+          payload: { quoteId, userId: quote.userId },
+        },
       });
     });
 

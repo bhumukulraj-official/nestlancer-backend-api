@@ -7,20 +7,96 @@ dotenv.config({
   path: path.resolve(__dirname, '../../../.env.e2e'),
 });
 
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { ValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter, TransformResponseInterceptor } from '@nestlancer/common';
+import {
+  AllExceptionsFilter,
+  BusinessLogicException,
+  TransformResponseInterceptor,
+} from '@nestlancer/common';
+import {
+  setupTestDatabase,
+  resetTestDatabase,
+  teardownTestDatabase,
+  getTestPrismaClient,
+} from '../../../libs/testing/src/helpers/test-database.helper';
+import { QuotePdfService } from '../src/services/quote-pdf.service';
 import { AppModule } from '../src/app.module';
 
 const GLOBAL_PREFIX = 'api/v1';
 
-let app: INestApplication;
+let app: INestApplication | null = null;
+let dbInitialized = false;
+
+async function seedQuotesTestData(): Promise<void> {
+  const prisma = getTestPrismaClient();
+  if (!prisma) {
+    return;
+  }
+
+  const users = [
+    { id: 'quotes-e2e-client-1', email: 'quotes-e2e-client-1@example.com', role: 'USER' },
+    { id: 'quotes-e2e-client-2', email: 'quotes-e2e-client-2@example.com', role: 'USER' },
+    { id: 'quotes-e2e-client-3', email: 'quotes-e2e-client-3@example.com', role: 'USER' },
+    { id: 'user-1', email: 'user-1@example.com', role: 'USER' },
+    { id: 'admin-quotes-e2e-1', email: 'admin-quotes-e2e-1@example.com', role: 'ADMIN' },
+  ];
+
+  for (const user of users) {
+    await prisma.user.upsert({
+      where: { id: user.id },
+      create: {
+        id: user.id,
+        email: user.email,
+        passwordHash: 'test-hash',
+        firstName: 'E2E',
+        lastName: 'User',
+        role: user.role as any,
+        status: 'ACTIVE' as any,
+      },
+      update: {},
+    });
+  }
+}
 
 export async function setupApp(): Promise<INestApplication> {
-  const moduleRef = await Test.createTestingModule({
+  if (!dbInitialized) {
+    await setupTestDatabase();
+    await resetTestDatabase();
+    await seedQuotesTestData();
+    dbInitialized = true;
+  }
+
+  if (app) {
+    return app;
+  }
+
+  const prisma = getTestPrismaClient();
+
+  const moduleBuilder = Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  });
+
+  moduleBuilder.overrideProvider(QuotePdfService).useValue({
+    generatePdf: async (userId: string, quoteId: string): Promise<Buffer> => {
+      if (!prisma) {
+        throw new BusinessLogicException('Quote not found', 'QUOTE_001');
+      }
+
+      const quote = await prisma.quote.findFirst({
+        where: { id: quoteId, userId },
+        select: { id: true },
+      });
+
+      if (!quote) {
+        throw new BusinessLogicException('Quote not found', 'QUOTE_001');
+      }
+
+      return Buffer.from(`PDF for quote ${quote.id}`);
+    },
+  });
+
+  const moduleRef = await moduleBuilder.compile();
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix(GLOBAL_PREFIX);
@@ -33,11 +109,26 @@ export async function setupApp(): Promise<INestApplication> {
 }
 
 export async function teardownApp(): Promise<void> {
-  await app?.close();
+  if (app) {
+    await app.close();
+    app = null;
+  }
+
+  if (dbInitialized) {
+    await teardownTestDatabase();
+    dbInitialized = false;
+  }
+}
+
+export function getApp(): INestApplication {
+  if (!app) {
+    throw new Error('App has not been initialized. Call setupApp() first.');
+  }
+  return app;
 }
 
 export function getAppUrl(): string {
-  const server = app.getHttpServer();
+  const server = getApp().getHttpServer();
   const address = server.address() as { port: number };
   return `http://localhost:${address.port}`;
 }
