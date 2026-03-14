@@ -7,8 +7,10 @@ const config: Config = {
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
-  // Allow transforming ESM-only uuid so we use the real lib (pnpm nests at .pnpm/uuid@x/node_modules/uuid)
-  transformIgnorePatterns: ['/node_modules/(?!.*uuid)'],
+  // ESM-only uuid: use mock so Jest can load @nestlancer/tracing (and other libs) without parsing node_modules uuid
+  moduleNameMapper: {
+    '^uuid$': '<rootDir>/../../libs/testing/src/uuid.mock.ts',
+  },
   moduleFileExtensions: ['ts', 'js', 'json'],
   testTimeout: 30_000,
   maxWorkers: 1,
