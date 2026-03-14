@@ -2304,7 +2304,7 @@
 │   │   │   │   ├── background-job.entity.ts
 │   │   │   │   └── announcement.entity.ts
 │   │   │   ├── guards/
-│   │   │   │   └── super-admin.guard.ts
+│   │   │   │   └── admin.guard.ts
 │   │   │   ├── interfaces/
 │   │   │   │   ├── dashboard.interface.ts
 │   │   │   │   ├── system-config.interface.ts

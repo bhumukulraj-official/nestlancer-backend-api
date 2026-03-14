@@ -432,7 +432,7 @@ X-Request-ID: reqAbc123
 | Code        | HTTP Status | Description                                      | Retryable  |
 | ----------- | ----------- | ------------------------------------------------ | ---------- |
 | `ADMIN_001` | 403         | Admin access required                            | No         |
-| `ADMIN_002` | 403         | Admin access required (Removed SuperAdmin check) | No         |
+| `ADMIN_002` | 403         | Admin access required | No         |
 | `ADMIN_003` | 422         | Invalid configuration value                      | No         |
 | `ADMIN_004` | 404         | Audit log not found                              | No         |
 | `ADMIN_008` | 403         | Cannot impersonate admin users                   | No         |

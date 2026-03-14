@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ImpersonationAdminController } from '../../../../src/controllers/admin/impersonation.admin.controller';
 import { ImpersonationService } from '../../../../src/services/impersonation.service';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
-import { SuperAdminGuard } from '../../../../src/guards/super-admin.guard';
+import { AdminGuard } from '../../../../src/guards/admin.guard';
 
 describe('ImpersonationAdminController', () => {
   let controller: ImpersonationAdminController;
@@ -25,7 +25,7 @@ describe('ImpersonationAdminController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard)
+      .overrideGuard(AdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

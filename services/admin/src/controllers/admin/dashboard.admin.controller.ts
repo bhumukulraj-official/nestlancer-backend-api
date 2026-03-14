@@ -2,7 +2,7 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, SuccessResponse } from '@nestlancer/common';
-import { SuperAdminGuard } from '../../guards/super-admin.guard';
+import { AdminGuard } from '../../guards/admin.guard';
 import { DashboardService } from '../../services/dashboard.service';
 import { DashboardQueryDto } from '../../dto/dashboard-query.dto';
 import { RevenueQueryDto } from '../../dto/revenue-query.dto';
@@ -20,7 +20,7 @@ import { AuditService } from '../../services/audit.service';
  */
 @ApiTags('Admin - Dashboard')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
+@UseGuards(JwtAuthGuard, AdminGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Controller('dashboard')
 export class DashboardAdminController {
@@ -128,8 +128,7 @@ export class DashboardAdminController {
   @SuccessResponse('Recent activity retrieved successfully')
   async getActivity(@Query('limit') limit?: string): Promise<any> {
     const limitNum = limit ? Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100) : 20;
-    const data = await this.auditService.getRecentActivity(limitNum);
-    return { data };
+    return this.auditService.getRecentActivity(limitNum);
   }
 
   /**

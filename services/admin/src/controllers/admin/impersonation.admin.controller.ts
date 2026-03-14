@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/comm
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, SuccessResponse } from '@nestlancer/common';
-import { SuperAdminGuard } from '../../guards/super-admin.guard';
+import { AdminGuard } from '../../guards/admin.guard';
 
 import { ImpersonationService } from '../../services/impersonation.service';
 import { ImpersonateUserDto } from '../../dto/impersonate-user.dto';
@@ -15,7 +15,7 @@ import { ImpersonateUserDto } from '../../dto/impersonate-user.dto';
  */
 @ApiTags('Admin - User Impersonation')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
+@UseGuards(JwtAuthGuard, AdminGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Controller('users')
 export class ImpersonationAdminController {

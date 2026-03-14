@@ -8,7 +8,7 @@ import { BackgroundJobsService } from '../../../../src/services/background-jobs.
 import { SystemLogsService } from '../../../../src/services/system-logs.service';
 import { AnnouncementsService } from '../../../../src/services/announcements.service';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
-import { SuperAdminGuard } from '../../../../src/guards/super-admin.guard';
+import { AdminGuard } from '../../../../src/guards/admin.guard';
 
 describe('SystemAdminController', () => {
   let controller: SystemAdminController;
@@ -39,7 +39,7 @@ describe('SystemAdminController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard)
+      .overrideGuard(AdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

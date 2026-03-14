@@ -3,7 +3,7 @@ import { BackupsAdminController } from '../../../../src/controllers/admin/backup
 import { BackupsService } from '../../../../src/services/backups.service';
 import { BackupSchedulerService } from '../../../../src/services/backup-scheduler.service';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
-import { SuperAdminGuard } from '../../../../src/guards/super-admin.guard';
+import { AdminGuard } from '../../../../src/guards/admin.guard';
 
 describe('BackupsAdminController', () => {
   let controller: BackupsAdminController;
@@ -35,7 +35,7 @@ describe('BackupsAdminController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard)
+      .overrideGuard(AdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

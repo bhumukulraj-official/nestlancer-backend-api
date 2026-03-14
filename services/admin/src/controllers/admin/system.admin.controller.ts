@@ -13,7 +13,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, SuccessResponse } from '@nestlancer/common';
-import { SuperAdminGuard } from '../../guards/super-admin.guard';
+import { AdminGuard } from '../../guards/admin.guard';
 
 import { SystemConfigService } from '../../services/system-config.service';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
@@ -40,7 +40,7 @@ import { SendAnnouncementDto } from '../../dto/send-announcement.dto';
  */
 @ApiTags('Admin - System')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
+@UseGuards(JwtAuthGuard, AdminGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Controller('system')
 export class SystemAdminController {

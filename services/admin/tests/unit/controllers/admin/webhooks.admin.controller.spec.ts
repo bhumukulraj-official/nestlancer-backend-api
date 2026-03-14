@@ -4,7 +4,7 @@ import { WebhooksManagementService } from '../../../../src/services/webhooks-man
 import { WebhookDeliveriesService } from '../../../../src/services/webhook-deliveries.service';
 import { WebhookTestingService } from '../../../../src/services/webhook-testing.service';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
-import { SuperAdminGuard } from '../../../../src/guards/super-admin.guard';
+import { AdminGuard } from '../../../../src/guards/admin.guard';
 
 describe('WebhooksAdminController', () => {
   let controller: WebhooksAdminController;
@@ -31,7 +31,7 @@ describe('WebhooksAdminController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard)
+      .overrideGuard(AdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

@@ -2029,7 +2029,7 @@ For each service we will list the required files based on `dir-structure.md` and
 - [ ] `src/entities/backup-schedule.entity.ts` – `cronExpression`, `retentionDays`, `enabled`, `lastRunAt`, `nextRunAt`.
 - [ ] `src/entities/background-job.entity.ts` – View/wrapper over BullMQ job data for admin UI.
 - [ ] `src/entities/announcement.entity.ts` – `title`, `message`, `type`, `dismissable`, `scheduledFor`, `expiresAt`, `createdBy`, `createdAt`.
-- [ ] `src/guards/super-admin.guard.ts` – Additional guard for destructive operations (backup restore, impersonation). May require re-authentication or 2FA confirmation.
+- [ ] `src/guards/admin.guard.ts` – Admin-only guard for admin routes (backup restore, impersonation, etc.). May require re-authentication or 2FA confirmation for destructive operations.
 - [ ] `src/interfaces/dashboard.interface.ts` – `DashboardOverview`, `RevenueData`, `UserMetrics`, `ProjectMetrics`, `PerformanceMetrics`.
 - [ ] `src/interfaces/system-config.interface.ts` – `SystemConfigEntry`, `ConfigChangeEvent`.
 - [ ] `src/interfaces/webhook.interface.ts` – `WebhookConfig`, `DeliveryResult`, `WebhookEvent`.

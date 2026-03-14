@@ -1,8 +1,12 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { UserRole } from '@nestlancer/common';
 
+/**
+ * Guard that restricts access to ADMIN role only.
+ * Use on admin-service routes; throws 403 with code ADMIN_001 when the user is not an admin.
+ */
 @Injectable()
-export class SuperAdminGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
@@ -13,9 +17,6 @@ export class SuperAdminGuard implements CanActivate {
         message: 'Admin access required',
       });
     }
-
-    // In a real scenario, this might check a specific "isSuperAdmin" flag or specific permission scope
-    // Currently relying on UserRole.ADMIN but leaving structure for extension per project requirements.
 
     return true;
   }

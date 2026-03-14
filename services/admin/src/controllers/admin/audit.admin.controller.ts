@@ -2,7 +2,7 @@ import { Controller, Get, Post, Param, Query, UseGuards, Res, Body } from '@nest
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, SuccessResponse } from '@nestlancer/common';
-import { SuperAdminGuard } from '../../guards/super-admin.guard';
+import { AdminGuard } from '../../guards/admin.guard';
 
 import { AuditService } from '../../services/audit.service';
 import { AuditExportService } from '../../services/audit-export.service';
@@ -17,7 +17,7 @@ import { ExportAuditDto } from '../../dto/export-audit.dto';
  */
 @ApiTags('Admin - Audit')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
+@UseGuards(JwtAuthGuard, AdminGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Controller('audit')
 export class AuditAdminController {

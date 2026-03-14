@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SystemAdminController } from '../../src/controllers/admin/system.admin.controller';
 import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
-import { SuperAdminGuard } from '../../src/guards/super-admin.guard';
+import { AdminGuard } from '../../src/guards/admin.guard';
 import { SystemConfigService } from '../../src/services/system-config.service';
 import { FeatureFlagsService } from '../../src/services/feature-flags.service';
 import { MaintenanceModeService } from '../../src/services/maintenance-mode.service';
@@ -35,7 +35,7 @@ describe('SystemAdminController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard)
+      .overrideGuard(AdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

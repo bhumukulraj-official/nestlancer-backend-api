@@ -3,7 +3,7 @@ import { AuditAdminController } from '../../../../src/controllers/admin/audit.ad
 import { AuditService } from '../../../../src/services/audit.service';
 import { AuditExportService } from '../../../../src/services/audit-export.service';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
-import { SuperAdminGuard } from '../../../../src/guards/super-admin.guard';
+import { AdminGuard } from '../../../../src/guards/admin.guard';
 
 describe('AuditAdminController', () => {
   let controller: AuditAdminController;
@@ -29,7 +29,7 @@ describe('AuditAdminController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard)
+      .overrideGuard(AdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

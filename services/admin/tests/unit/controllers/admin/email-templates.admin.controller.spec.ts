@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EmailTemplatesAdminController } from '../../../../src/controllers/admin/email-templates.admin.controller';
 import { EmailTemplatesService } from '../../../../src/services/email-templates.service';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
-import { SuperAdminGuard } from '../../../../src/guards/super-admin.guard';
+import { AdminGuard } from '../../../../src/guards/admin.guard';
 
 describe('EmailTemplatesAdminController', () => {
   let controller: EmailTemplatesAdminController;
@@ -27,7 +27,7 @@ describe('EmailTemplatesAdminController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard)
+      .overrideGuard(AdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

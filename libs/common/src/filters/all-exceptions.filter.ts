@@ -45,6 +45,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const exResponse = httpEx.getResponse();
       if (typeof exResponse === 'string') {
         message = exResponse;
+        code = `HTTP_${status}`;
       } else {
         const res = exResponse as Record<string, unknown>;
         const nestedError = res?.error as Record<string, unknown> | undefined;
@@ -53,8 +54,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
           (nestedError?.message as string) ??
           (res?.error as string) ??
           'Unknown error';
+        // Preserve custom error code from guard/exception when provided
+        const customCode =
+          (nestedError?.code as string) ?? (res?.code as string) ?? undefined;
+        code = customCode ?? `HTTP_${status}`;
       }
-      code = `HTTP_${status}`;
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = 'INTERNAL_ERROR';

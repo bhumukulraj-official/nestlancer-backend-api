@@ -68,11 +68,18 @@ export class ImpersonationService {
   }
 
   async endImpersonation(sessionId: string) {
-    const session = await this.prismaWrite.impersonationSession.update({
-      where: { id: sessionId },
-      data: { endedAt: new Date() },
-    });
-    return { success: true, message: 'Impersonation ended', session };
+    try {
+      const session = await this.prismaWrite.impersonationSession.update({
+        where: { id: sessionId },
+        data: { endedAt: new Date() },
+      });
+      return { success: true, message: 'Impersonation ended', session };
+    } catch (err: any) {
+      if (err?.code === 'P2025') {
+        throw new NotFoundException('Impersonation session not found');
+      }
+      throw err;
+    }
   }
 
   async getActiveSessions() {

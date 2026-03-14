@@ -12,7 +12,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, SuccessResponse } from '@nestlancer/common';
-import { SuperAdminGuard } from '../../guards/super-admin.guard';
+import { AdminGuard } from '../../guards/admin.guard';
 
 import { WebhooksManagementService } from '../../services/webhooks-management.service';
 import { WebhookDeliveriesService } from '../../services/webhook-deliveries.service';
@@ -32,7 +32,7 @@ import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
  */
 @ApiTags('Admin - Webhooks')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
+@UseGuards(JwtAuthGuard, AdminGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Controller()
 export class WebhooksAdminController {

@@ -6,7 +6,7 @@ import { DashboardUsersService } from '../../../../src/services/dashboard-users.
 import { DashboardProjectsService } from '../../../../src/services/dashboard-projects.service';
 import { DashboardPerformanceService } from '../../../../src/services/dashboard-performance.service';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
-import { SuperAdminGuard } from '../../../../src/guards/super-admin.guard';
+import { AdminGuard } from '../../../../src/guards/admin.guard';
 
 describe('DashboardAdminController', () => {
   let controller: DashboardAdminController;
@@ -41,7 +41,7 @@ describe('DashboardAdminController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(SuperAdminGuard)
+      .overrideGuard(AdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Req } fro
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles } from '@nestlancer/auth-lib';
 import { UserRole, SuccessResponse } from '@nestlancer/common';
-import { SuperAdminGuard } from '../../guards/super-admin.guard';
+import { AdminGuard } from '../../guards/admin.guard';
 
 import { BackupsService } from '../../services/backups.service';
 import { BackupSchedulerService } from '../../services/backup-scheduler.service';
@@ -19,7 +19,7 @@ import { UpdateBackupScheduleDto } from '../../dto/update-backup-schedule.dto';
  */
 @ApiTags('Admin - Backups')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, SuperAdminGuard)
+@UseGuards(JwtAuthGuard, AdminGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Controller('backups')
 export class BackupsAdminController {
@@ -59,6 +59,21 @@ export class BackupsAdminController {
   @SuccessResponse('Backup initiated')
   async create(@Body() dto: CreateBackupDto, @Req() req: any): Promise<any> {
     return this.backupsService.createBackup(dto, req.user.sub);
+  }
+
+  /**
+   * Retrieves the current automated backup schedule configuration.
+   *
+   * @returns Schedule details including frequency and retention policy
+   */
+  @Get('schedule')
+  @ApiOperation({
+    summary: 'Get backup schedule',
+    description: 'Retrieve the current configuration for automated recurring database backups.',
+  })
+  @SuccessResponse('Schedule retrieved')
+  async getSchedule(): Promise<any> {
+    return this.schedulerService.getSchedule();
   }
 
   /**
@@ -115,21 +130,6 @@ export class BackupsAdminController {
   ): Promise<any> {
     dto.backupId = id;
     return this.backupsService.restoreBackup(dto, req.user.sub);
-  }
-
-  /**
-   * Retrieves the current automated backup schedule configuration.
-   *
-   * @returns Schedule details including frequency and retention policy
-   */
-  @Get('schedule')
-  @ApiOperation({
-    summary: 'Get backup schedule',
-    description: 'Retrieve the current configuration for automated recurring database backups.',
-  })
-  @SuccessResponse('Schedule retrieved')
-  async getSchedule(): Promise<any> {
-    return this.schedulerService.getSchedule();
   }
 
   /**

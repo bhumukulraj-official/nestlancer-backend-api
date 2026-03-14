@@ -53,8 +53,11 @@ model User {
   adminNotes          AdminNote[]
   verificationTokens  VerificationToken[]
   authSessions        AuthSession[]
-  quotes              Quote[]         @relation("UserQuotes")
-  createdQuotes       Quote[]         @relation("CreatedQuotes")
+  quotes              Quote[]                  @relation("UserQuotes")
+  createdQuotes       Quote[]                  @relation("CreatedQuotes")
+  backupsInitiated    Backup[]
+  impersonationSessionsAsAdmin ImpersonationSession[] @relation("ImpersonationAdmin")
+  impersonationSessionsAsTarget ImpersonationSession[] @relation("ImpersonationTarget")
 
   @@index([email])
   @@index([role])
