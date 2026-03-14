@@ -1,39 +1,41 @@
-import axios from 'axios';
-import { setupApp, teardownApp, getAppUrl, getBasePath } from './setup';
+import request from 'supertest';
+import { setupApp, teardownApp, getApp, getBasePath } from './setup';
 
 /**
- * Rate limiting E2E: verifies gateway responds to health (no rate limit on health).
- * If rate limiting is added to the gateway later, assertions can be extended
- * to check 429 after N requests.
+ * Rate limiting E2E: verifies gateway responds to health without rate limit rejection.
+ * If rate limiting is added to the gateway later, add tests that assert 429 after N requests.
  */
 describe('Gateway - Rate Limiting (E2E)', () => {
-  let baseUrl: string;
-  const basePath = getBasePath();
-
   beforeAll(async () => {
     await setupApp();
-    baseUrl = getAppUrl();
   });
 
   afterAll(async () => {
     await teardownApp();
   });
 
-  it('health endpoint is accessible without rate limit rejection', async () => {
-    const res = await axios.get(`${baseUrl}${basePath}/health`, {
-      validateStatus: () => true,
+  describe('Health (smoke)', () => {
+    it('GET /api/v1/health returns 200 and healthy status', async () => {
+      const prefix = getBasePath();
+      const res = await request(getApp().getHttpServer())
+        .get(`${prefix}/health`)
+        .expect(200);
+      expect(res.body?.data?.status).toBe('healthy');
     });
-    expect(res.status).toBe(200);
-    expect(res.data?.data?.status).toBe('healthy');
   });
 
-  it('multiple health requests succeed', async () => {
-    const requests = Array.from({ length: 5 }, () =>
-      axios.get(`${baseUrl}${basePath}/health`, { validateStatus: () => true }),
-    );
-    const results = await Promise.all(requests);
-    results.forEach((res) => {
-      expect(res.status).toBe(200);
+  describe('Rate limit behavior', () => {
+    it('multiple GET /api/v1/health requests all return 200 with healthy body', async () => {
+      const prefix = getBasePath();
+      const server = getApp().getHttpServer();
+      const requests = Array.from({ length: 5 }, () =>
+        request(server).get(`${prefix}/health`),
+      );
+      const results = await Promise.all(requests);
+      results.forEach((res) => {
+        expect(res.status).toBe(200);
+        expect(res.body?.data?.status).toBe('healthy');
+      });
     });
   });
 });
