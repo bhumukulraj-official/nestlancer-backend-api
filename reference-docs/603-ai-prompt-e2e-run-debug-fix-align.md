@@ -2,7 +2,7 @@
 
 Use this prompt when asking an AI (or following it yourself) to **run** E2E tests, **interpret** their output, **locate** failures, **debug** and **fix** them, and **align** the project so tests and code stay consistent.
 
-Companion doc: **602-ai-prompt-e2e-service-tests.md** (rules for writing correct service-level E2E tests).
+Companion doc: **602-ai-prompt-e2e-service-tests.md** (rules for writing correct E2E tests for services, workers, gateway, and ws-gateway).
 
 ---
 
@@ -44,7 +44,7 @@ Companion doc: **602-ai-prompt-e2e-service-tests.md** (rules for writing correct
 **How to use in the prompt:**  
 Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **services/users** and **workers/email-worker**.”*
 
-- **Single target:** Run and fix E2E only for that service or worker.
+- **Single target:** Run and fix E2E only for that service, worker, gateway, or ws-gateway.
 - **Multiple targets:** Run E2E for each listed target; debug and fix failures in those targets only.
 - **System E2E (root):** If the target is “system” or “tests/e2e”, use `pnpm test:e2e:suite <pattern>` or `pnpm test:e2e:docker` and work only under `tests/e2e/`.
 
@@ -82,7 +82,11 @@ Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **ser
 
 - **Single spec file (within target):** From the target’s directory:  
   `pnpm exec jest --config e2e/jest.e2e.config.ts e2e/<file>.e2e-spec.ts --runInBand`.  
-  Example: `cd services/auth && pnpm exec jest --config e2e/jest.e2e.config.ts e2e/registration.e2e-spec.ts --runInBand`.
+  Examples:  
+  - Service: `cd services/auth && pnpm exec jest --config e2e/jest.e2e.config.ts e2e/registration.e2e-spec.ts --runInBand`.  
+  - Worker: `cd workers/email-worker && pnpm exec jest --config e2e/jest.e2e.config.ts e2e/email-worker.e2e-spec.ts --runInBand`.  
+  - Gateway: `cd gateway && pnpm exec jest --config e2e/jest.e2e.config.ts e2e/proxy-routing.e2e-spec.ts --runInBand`.  
+  - WS-Gateway: `cd ws-gateway && pnpm exec jest --config e2e/jest.e2e.config.ts e2e/connection.e2e-spec.ts --runInBand`.
 
 - **System E2E (only when target is “system” or “tests/e2e”):**  
   `pnpm test:e2e:suite <pattern>` or `pnpm test:e2e:docker` / `bash scripts/test/run-e2e.sh [filter]`.
@@ -150,16 +154,18 @@ Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **ser
 
 ### 5. Align the Project
 
-- **Same service:** All specs in `services/<name>/e2e/` should follow the same setup (same `getApp`, `getGlobalPrefix`, auth helper). Same assertion style: exact status and body checks per 602.
+- **Same target:** All specs in that target's `e2e/` folder should follow the same setup (same `getApp`, `getGlobalPrefix` where applicable, auth helper for HTTP). Same assertion style: exact status and body checks per 602 (or, for workers/WS, exact bootstrap/connection/message behavior).
 
 - **Across services:** Use the same patterns where possible:
-  - **setup.ts:** Load `.env.e2e`, set `NODE_ENV=e2e`, use `GLOBAL_PREFIX = 'api/v1'`, apply `ValidationPipe`, `TransformResponseInterceptor`, `AllExceptionsFilter`, then `app.init()` and `app.listen(0)`.
-  - **Auth:** Use a shared test JWT helper (e.g. from `libs/testing`) and the same header shape `Authorization: Bearer <token>`.
+  - **setup.ts:** Load `.env.e2e`, set `NODE_ENV=e2e`, use `GLOBAL_PREFIX = 'api/v1'` for HTTP apps, apply `ValidationPipe`, `TransformResponseInterceptor`, `AllExceptionsFilter`, then `app.init()` and `app.listen(0)` (or worker bootstrap / WS server listen).
+  - **Auth (services / gateway):** Use a shared test JWT helper (e.g. from `libs/testing`) and the same header shape `Authorization: Bearer <token>`.
   - **Jest e2e config:** Same `testRegex`, `testTimeout`, `maxWorkers: 1`, and similar `moduleNameMapper` only for dependencies that must be mocked (external infra or determinism); use real libs otherwise (see 602 “Libs vs Mocks”).
 
 - **Docs and prompts:** After changing how e2e works (e.g. new env var, new mock), update `reference-docs/601-e2e-test-plan.md` or `reference-docs/602-ai-prompt-e2e-service-tests.md` if they’re affected, so future test creation stays aligned.
 
-- **Package scripts:** Each service that has e2e should have in its `package.json`: `"test:e2e": "jest --config e2e/jest.e2e.config.ts --runInBand"` (or equivalent). Root `package.json` should keep `test:e2e` (turbo) and `test:e2e:suite` for system e2e.
+- **Workers and gateways:** Align with 602: workers use `workers/<name>/e2e/` (mock queue/external infra); gateway uses `gateway/e2e/` (routing, auth, rate limit); ws-gateway uses `ws-gateway/e2e/` (socket.io-client, connection/presence/messaging). Same setup/teardown and strict assertions; no loose status sets.
+
+- **Package scripts:** Each **service**, **worker**, **gateway**, and **ws-gateway** that has e2e should have in its `package.json`: `"test:e2e": "jest --config e2e/jest.e2e.config.ts --runInBand"` (or equivalent). Root `package.json` should keep `test:e2e` (turbo) and `test:e2e:suite` for system e2e.
 
 ---
 
@@ -170,10 +176,12 @@ Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **ser
 | Goal | Command |
 |------|--------|
 | **Service** E2E (by target) | `pnpm --filter @nestlancer/<target>-service test:e2e` or `cd services/<target> && pnpm run test:e2e` |
-| **Worker** E2E (by target) | `cd workers/<target> && pnpm run test:e2e` |
+| **Worker** E2E (by target) | `pnpm --filter @nestlancer/<target> test:e2e` or `cd workers/<target> && pnpm run test:e2e` |
 | **Gateway** E2E | `cd gateway && pnpm run test:e2e` |
 | **WS-Gateway** E2E | `cd ws-gateway && pnpm run test:e2e` |
-| One spec file (inside target) | `cd services/<target> && pnpm exec jest --config e2e/jest.e2e.config.ts e2e/<file>.e2e-spec.ts --runInBand` |
+| One spec file (service) | `cd services/<target> && pnpm exec jest --config e2e/jest.e2e.config.ts e2e/<file>.e2e-spec.ts --runInBand` |
+| One spec file (worker) | `cd workers/<target> && pnpm exec jest --config e2e/jest.e2e.config.ts e2e/<file>.e2e-spec.ts --runInBand` |
+| One spec file (gateway / ws-gateway) | `cd gateway && pnpm exec jest ...` or `cd ws-gateway && pnpm exec jest ...` (same pattern) |
 | System E2E (target = system) | `pnpm test:e2e:suite smoke` or `pnpm test:e2e:suite <pattern>` |
 | E2E with Docker (target = system or filter) | `pnpm test:e2e:docker` or `bash scripts/test/run-e2e.sh [auth\|users\|...]` |
 | All E2E (only if user asked “all”) | `pnpm test:e2e` |
@@ -183,7 +191,7 @@ Example: *“Target: **auth**, **requests**”* or *“Run and fix E2E for **ser
 
 ## Checklist After Run–Debug–Fix
 
-- [ ] **Target(s)** were clearly specified; only those service(s)/worker(s)/gateway were run and modified.
+- [ ] **Target(s)** were clearly specified; only those service(s)/worker(s)/gateway/ws-gateway were run and modified.
 - [ ] Failing test(s) identified from Jest output (test name, file, line, expected/received).
 - [ ] Root cause classified: assertion, setup, app code, env/DB, or mock/dependency.
 - [ ] Fix applied to the correct layer; no loosening of assertions per 602.

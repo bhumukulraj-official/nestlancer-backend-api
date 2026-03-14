@@ -1,18 +1,29 @@
-# AI Prompt: Create or Update Service-Level E2E Tests
+# AI Prompt: Create or Update E2E Tests (Services, Workers, Gateway, WS-Gateway)
 
-Use this prompt when asking an AI (or following it yourself) to **create** or **update** E2E test files for a microservice in this monorepo. The goal is **correct service-level E2E testing**, not only dry runs or smoke tests.
+Use this prompt when asking an AI (or following it yourself) to **create** or **update** E2E test files for a **service**, **worker**, **gateway**, or **ws-gateway** in this monorepo. The goal is **correct E2E testing** for each target type, not only dry runs or smoke tests.
+
+---
+
+## Target Types
+
+| Type | Example | Path | What E2E tests |
+|------|---------|------|----------------|
+| **Service** | auth, users, requests | `services/<service-name>/e2e/` | Real NestJS app (AppModule), HTTP endpoints, status + body |
+| **Worker** | email-worker, notification-worker | `workers/<worker-name>/e2e/` | Real worker app (in-process), bootstrap, job/handler behavior or health if exposed |
+| **Gateway** | gateway | `gateway/e2e/` | Real gateway app, routing/proxy, auth middleware, rate limiting |
+| **WS-Gateway** | ws-gateway | `ws-gateway/e2e/` | Real WebSocket gateway, connection, presence, messaging (e.g. socket.io-client) |
 
 ---
 
 ## Your Task
 
-Create or update E2E test files for the microservice **`services/<service-name>`** so that:
+Create or update E2E test files for the **target** (service, worker, gateway, or ws-gateway) so that:
 
-- Tests run against the **real service app** (NestJS `AppModule`, in-process, no gateway).
-- Tests are **correct E2E**: they verify **expected status codes** and **response shape/behavior**, not just "any 2xx/4xx".
-- **Smoke tests** (health, routing, auth rejection) are explicit and minimal; **behavioral E2E tests** cover success paths, validation errors, and auth/authorization with **strict assertions**.
+- Tests run against the **real app** (NestJS `AppModule` or worker bootstrap, in-process; for gateway/ws-gateway, no cross-service calls to real backends unless documented).
+- Tests are **correct E2E**: they verify **expected status codes** and **response shape/behavior** (or, for workers/WS: bootstrap success, message handling, connection behavior), not just "any 2xx/4xx" or "no crash".
+- **Smoke tests** (health, routing, auth rejection, worker startup) are explicit and minimal; **behavioral E2E tests** cover success paths, validation errors, and auth/authorization with **strict assertions**.
 
-If the service already has e2e specs, **update** them to follow the rules below. If not, **create** `e2e/setup.ts`, `e2e/jest.e2e.config.ts`, and one or more `e2e/*.e2e-spec.ts` files.
+If the target already has e2e specs, **update** them to follow the rules below. If not, **create** `e2e/setup.ts`, `e2e/jest.e2e.config.ts`, and one or more `e2e/*.e2e-spec.ts` files.
 
 ---
 
@@ -49,12 +60,16 @@ For **known error cases** (e.g. unauthenticated, invalid body), assert the **exa
 
 ### 3. Structure and Layout
 
-- **Location**: All service E2E live under `services/<service-name>/e2e/`.
-- **Files**:
-  - `setup.ts`: Bootstraps the Nest app (load `.env.e2e`, `Test.createTestingModule`, `AppModule`, global prefix, pipes, filters, interceptors), exports `setupApp`, `teardownApp`, `getApp`, `getAppUrl`, `getGlobalPrefix`.
+- **Location** (by target type):
+  - **Service:** `services/<service-name>/e2e/`
+  - **Worker:** `workers/<worker-name>/e2e/`
+  - **Gateway:** `gateway/e2e/`
+  - **WS-Gateway:** `ws-gateway/e2e/`
+- **Files** (same pattern for all; workers/gateways may omit global prefix if not HTTP):
+  - `setup.ts`: Bootstraps the app (load `.env.e2e`, `Test.createTestingModule`, `AppModule` or worker module, global prefix if HTTP, pipes, filters, interceptors), exports `setupApp`, `teardownApp`, `getApp`, `getAppUrl`, `getGlobalPrefix` (or equivalent for workers/WS).
   - `jest.e2e.config.ts`: Jest config for e2e (displayName, testRegex `e2e/.*\\.e2e-spec\\.ts$`, testTimeout, maxWorkers: 1).
   - `*.e2e-spec.ts`: Test files; use `beforeAll(setupApp)` and `afterAll(teardownApp)`.
-- **Naming**: Use `describe('ServiceName - Feature (E2E)', …)` and clear `it('…')` descriptions that state the scenario and expected result (e.g. "POST /resource returns 201 and body with id when payload is valid").
+- **Naming**: Use `describe('TargetName - Feature (E2E)', …)` and clear `it('…')` descriptions (e.g. "POST /resource returns 201 and body with id when payload is valid" for services; "consumes job and updates state" for workers; "GET /api/v1/health returns 200" for gateway; "client connects and receives presence update" for ws-gateway).
 
 ---
 
@@ -95,10 +110,11 @@ For **known error cases** (e.g. unauthenticated, invalid body), assert the **exa
 
 ---
 
-### 7. HTTP Client and Prefix
+### 7. HTTP Client and Prefix (Services / Gateway)
 
-- Use **supertest** with `request(getApp().getHttpServer())` or `request(getAppUrl())` so requests hit the in-process app.
-- Use the **global prefix** from setup (e.g. `api/v1`) in every URL: `get(`${getGlobalPrefix()}/users/profile`)` or equivalent. Do not hardcode prefixes that differ from the app.
+- **Services and Gateway:** Use **supertest** with `request(getApp().getHttpServer())` or `request(getAppUrl())` so requests hit the in-process app. Use the **global prefix** from setup (e.g. `api/v1`) in every URL: `get(\`${getGlobalPrefix()}/users/profile\`)` or equivalent. Do not hardcode prefixes that differ from the app.
+- **Workers:** May have no HTTP server; tests typically bootstrap the worker and invoke handlers or assert on health endpoint if present. Use the same setup/teardown pattern.
+- **WS-Gateway:** Use a WebSocket client (e.g. `socket.io-client`) to connect to the in-process server; assert connection, events, and message payloads. Use the base URL from setup (e.g. `getAppUrl()`).
 
 ---
 
@@ -114,7 +130,7 @@ For **known error cases** (e.g. unauthenticated, invalid body), assert the **exa
 - **No loose status sets** for a specific scenario: e.g. do not use `expect([200, 404, 500]).toContain(res.status)` when the scenario has a single correct outcome.
 - **No silent skips** in the middle of a flow: do not `if (res.status !== 201) return;` without failing; either fail the test or ensure preconditions so the test can assert the success path.
 - **No smoke-only suites**: If the only checks are "returns some 2xx/4xx", add proper tests with exact status and body assertions for at least the main success and main error cases.
-- **No gateway or cross-service calls** in service E2E: service E2E hits **one** service only; cross-service flows belong in system E2E (see reference-docs/601-e2e-test-plan.md).
+- **Scope per target:** **Service** E2E hits **one** service only (no gateway, no cross-service calls). **Worker** E2E hits **one** worker only (mock queues/external infra as in rule 4). **Gateway** E2E tests the gateway app in isolation (mock or stub downstream services if needed). **WS-Gateway** E2E tests the WebSocket server in isolation. Cross-service flows belong in system E2E (see reference-docs/601-e2e-test-plan.md).
 
 ---
 
@@ -122,7 +138,11 @@ For **known error cases** (e.g. unauthenticated, invalid body), assert the **exa
 
 - **E2E strategy and structure**: `reference-docs/601-e2e-test-plan.md`
 - **API contracts (endpoints, payloads, errors)**: `reference-docs/10x-*-endpoints.md` and `reference-docs/100-api-standards-endpoints.md`
-- **Existing examples in repo**: `services/auth/e2e/`, `services/users/e2e/`, `services/requests/e2e/` — align structure with these, but **tighten assertions** to match this prompt’s rules.
+- **Existing examples in repo:**
+  - **Services:** `services/auth/e2e/`, `services/users/e2e/`, `services/requests/e2e/` — align structure with these; **tighten assertions** to match this prompt’s rules.
+  - **Workers:** `workers/email-worker/e2e/`, `workers/audit-worker/e2e/`, `workers/notification-worker/e2e/` — same setup/spec pattern; mock queue/external infra.
+  - **Gateway:** `gateway/e2e/` — proxy routing, auth middleware, rate limiting.
+  - **WS-Gateway:** `ws-gateway/e2e/` — connection, presence, realtime messaging with socket.io-client.
 
 ---
 
