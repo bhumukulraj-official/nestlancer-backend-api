@@ -15,6 +15,7 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
         : { code: 'WS_ERROR', message: typeof error === 'string' ? error : 'WebSocket error' };
 
     this.logger.debug(`WsException for client ${client.id}: ${JSON.stringify(payload)}`);
-    client.emit('error', payload);
+    // Use 'exception' so client can listen; 'error' is reserved in socket.io-client and may not be delivered.
+    client.emit('exception', payload);
   }
 }

@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { setupApp, teardownApp, getWsUrl } from './setup';
+import { createTestJwt } from '../../libs/testing/src/helpers/test-auth.helper';
 
 /**
  * Presence E2E: connection updates presence (setOnline/setOffline) via ConnectionService and PresenceService.
@@ -8,6 +9,14 @@ import { setupApp, teardownApp, getWsUrl } from './setup';
 describe('WsGateway - Presence (E2E)', () => {
   let socket: Socket;
   let baseUrl: string;
+  const secret = process.env.JWT_ACCESS_SECRET || 'test-secret-key-for-testing-only-32char';
+
+  function createToken(userId: string) {
+    return createTestJwt(
+      { sub: userId, email: `${userId}@example.com`, role: 'USER' },
+      { secret },
+    );
+  }
 
   beforeAll(async () => {
     await setupApp();
@@ -19,21 +28,31 @@ describe('WsGateway - Presence (E2E)', () => {
     await teardownApp();
   });
 
-  it('should connect and allow presence to be updated', async () => {
-    socket = io(`${baseUrl}/messages`, { transports: ['websocket'], timeout: 5000 });
-    await new Promise<void>((resolve, reject) => {
-      socket.on('connect', () => resolve());
-      socket.on('connect_error', (err) => reject(err));
+  describe('Connection (smoke)', () => {
+    it('connects to /messages namespace with valid token', async () => {
+      const token = createToken('e2e-user-1');
+      socket = io(`${baseUrl}/messages`, {
+        transports: ['websocket'],
+        auth: { token },
+        timeout: 5000,
+      });
+      await new Promise<void>((resolve, reject) => {
+        socket.on('connect', () => resolve());
+        socket.on('connect_error', (err) => reject(err));
+      });
+      expect(socket.connected).toBe(true);
     });
-    expect(socket.connected).toBe(true);
   });
 
-  it('should handle disconnect and clear presence for user', (done) => {
-    if (!socket?.connected) return done();
-    socket.once('disconnect', () => {
-      expect(socket.connected).toBe(false);
-      done();
+  describe('Disconnect and presence', () => {
+    it('on disconnect socket is disconnected and disconnect event fires', (done) => {
+      expect(socket?.connected).toBe(true);
+      socket.once('disconnect', (reason: string) => {
+        expect(socket.connected).toBe(false);
+        expect(reason).toBeDefined();
+        done();
+      });
+      socket.disconnect();
     });
-    socket.disconnect();
   });
 });

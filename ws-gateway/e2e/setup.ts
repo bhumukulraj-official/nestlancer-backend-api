@@ -18,6 +18,9 @@ import { WsAppModule } from '../src/app.module';
 import { CacheService } from '@nestlancer/cache';
 import { RedisSubscriberService } from '../src/services/redis-subscriber.service';
 import { WsAuthGuard } from '@nestlancer/websocket';
+import { WsException } from '@nestjs/websockets';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const jwt = require('jsonwebtoken');
 
 const mockRedisClient = () => {
   const store: Record<string, string> = {};
@@ -69,14 +72,34 @@ export async function setupApp(): Promise<INestApplication> {
     .useValue({
       canActivate: (context: any) => {
         const client = context.switchToWs().getClient();
-        client.data = client.data || {};
-        client.data.user = { userId: 'e2e-user-1' };
-        return true;
+        const token =
+          client.handshake?.auth?.token ||
+          client.handshake?.headers?.authorization?.replace('Bearer ', '');
+
+        if (!token) {
+          throw new WsException({
+            code: 'AUTH_WS_UNAUTHORIZED',
+            message: 'WebSocket authentication required',
+          });
+        }
+
+        try {
+          const secret = process.env.JWT_ACCESS_SECRET || 'test-secret-key-for-testing-only-32char';
+          const decoded = jwt.verify(token, secret) as any;
+          client.data = client.data || {};
+          client.data.user = { userId: decoded.sub, role: decoded.role || 'USER' };
+          return true;
+        } catch (err) {
+          throw new WsException({
+            code: 'AUTH_WS_UNAUTHORIZED',
+            message: 'Invalid token',
+          });
+        }
       },
     })
     .compile();
 
-  app = moduleRef.createNestApplication();
+  app = moduleRef.createNestApplication() as unknown as INestApplication;
   app.useGlobalFilters(new WsExceptionFilter());
   await app.init();
   await app.listen(0);
@@ -85,6 +108,13 @@ export async function setupApp(): Promise<INestApplication> {
 
 export async function teardownApp(): Promise<void> {
   await app?.close();
+}
+
+export function getApp(): INestApplication {
+  if (!app) {
+    throw new Error('App has not been initialized. Call setupApp() first.');
+  }
+  return app;
 }
 
 export function getWsUrl(): string {
