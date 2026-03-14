@@ -1,17 +1,20 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { Request } from 'express';
 import { HttpProxyService } from '../../proxy';
 
 /**
  * Notifications Gateway Controller
- * Routes notification requests to the Notifications Service
+ * Routes notification requests to the Notifications Service.
+ *
+ * Notifications service: prefix api/v1, @Controller('notifications')
+ * User-facing: list, unread-count, history, read/unread, read-all, read-selected, clear-read, delete
  */
 @Controller('notifications')
 @ApiTags('notifications')
 @ApiBearerAuth()
 export class NotificationsController {
-  constructor(private readonly proxy: HttpProxyService) {}
+  constructor(private readonly proxy: HttpProxyService) { }
 
   @Get()
   @ApiOperation({ summary: 'List notifications' })
@@ -19,27 +22,15 @@ export class NotificationsController {
     return this.proxy.forward('notifications', req);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get notification by ID' })
-  async findOne(@Req() req: Request) {
+  @Get('unread-count')
+  @ApiOperation({ summary: 'Get unread notification count' })
+  async getUnreadCount(@Req() req: Request) {
     return this.proxy.forward('notifications', req);
   }
 
-  @Patch(':id/read')
-  @ApiOperation({ summary: 'Mark notification as read' })
-  async markAsRead(@Req() req: Request) {
-    return this.proxy.forward('notifications', req);
-  }
-
-  @Post('mark-all-read')
-  @ApiOperation({ summary: 'Mark all notifications as read' })
-  async markAllAsRead(@Req() req: Request) {
-    return this.proxy.forward('notifications', req);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete notification' })
-  async remove(@Req() req: Request) {
+  @Get('history')
+  @ApiOperation({ summary: 'Get notification history' })
+  async getHistory(@Req() req: Request) {
     return this.proxy.forward('notifications', req);
   }
 
@@ -55,15 +46,55 @@ export class NotificationsController {
     return this.proxy.forward('notifications', req);
   }
 
-  @Get('unread-count')
-  @ApiOperation({ summary: 'Get unread notification count' })
-  async getUnreadCount(@Req() req: Request) {
-    return this.proxy.forward('notifications', req);
-  }
-
   @Get('health')
   @ApiOperation({ summary: 'Notifications service health check' })
   async health(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get notification by ID' })
+  @ApiParam({ name: 'id', description: 'Notification UUID' })
+  async findOne(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Patch(':id/read')
+  @ApiOperation({ summary: 'Mark notification as read' })
+  @ApiParam({ name: 'id', description: 'Notification UUID' })
+  async markAsRead(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Patch(':id/unread')
+  @ApiOperation({ summary: 'Mark notification as unread' })
+  @ApiParam({ name: 'id', description: 'Notification UUID' })
+  async markAsUnread(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Post('read-all')
+  @ApiOperation({ summary: 'Mark all notifications as read' })
+  async markAllAsRead(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Post('read-selected')
+  @ApiOperation({ summary: 'Mark selected notifications as read' })
+  async markSelectedAsRead(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Delete('clear-read')
+  @ApiOperation({ summary: 'Clear all read notifications' })
+  async clearReadNotifications(@Req() req: Request) {
+    return this.proxy.forward('notifications', req);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete notification' })
+  @ApiParam({ name: 'id', description: 'Notification UUID' })
+  async remove(@Req() req: Request) {
     return this.proxy.forward('notifications', req);
   }
 }

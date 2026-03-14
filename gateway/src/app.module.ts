@@ -1,9 +1,5 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { NestlancerConfigModule } from '@nestlancer/config';
-import { DatabaseModule } from '@nestlancer/database';
-import { CacheModule } from '@nestlancer/cache';
-import { QueueModule } from '@nestlancer/queue';
-import { OutboxModule } from '@nestlancer/outbox';
 import { AuthLibModule } from '@nestlancer/auth-lib';
 import { CryptoModule } from '@nestlancer/crypto';
 import { LoggerModule, RequestLoggerMiddleware } from '@nestlancer/logger';
@@ -11,10 +7,6 @@ import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule, CorrelationIdMiddleware } from '@nestlancer/tracing';
 import { HealthLibModule } from '@nestlancer/health-lib';
 import { AuditModule } from '@nestlancer/audit';
-import { StorageModule } from '@nestlancer/storage';
-import { MailModule } from '@nestlancer/mail';
-import { PdfModule } from '@nestlancer/pdf';
-import { SearchModule } from '@nestlancer/search';
 import { CircuitBreakerModule } from '@nestlancer/circuit-breaker';
 
 // Proxy infrastructure
@@ -41,13 +33,9 @@ import { SwaggerDocsModule } from './swagger/swagger.module';
 
 @Module({
   imports: [
-    // Infrastructure
+    // Infrastructure — only what the gateway needs
     NestlancerConfigModule.forRoot(),
     ProxyModule,
-    DatabaseModule.forRoot(),
-    CacheModule.forRoot(),
-    QueueModule,
-    OutboxModule,
     AuthLibModule,
     CryptoModule,
     LoggerModule,
@@ -55,10 +43,6 @@ import { SwaggerDocsModule } from './swagger/swagger.module';
     TracingModule,
     HealthLibModule,
     AuditModule,
-    StorageModule,
-    MailModule,
-    PdfModule,
-    SearchModule,
     CircuitBreakerModule,
 
     // Domain modules

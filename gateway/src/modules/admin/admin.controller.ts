@@ -12,7 +12,7 @@ import { HttpProxyService } from '../../proxy';
 @ApiTags('admin')
 @ApiBearerAuth()
 export class AdminController {
-  constructor(private readonly proxy: HttpProxyService) {}
+  constructor(private readonly proxy: HttpProxyService) { }
 
   // --- Dashboard ---
 
@@ -151,17 +151,15 @@ export class AdminController {
   }
 
   @Get('users/logs')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Auth audit logs (documented path)' })
+  @ApiOperation({ summary: 'Admin audit logs' })
   async getUsersLogs(@Req() req: Request) {
-    return this.proxy.forward('users', req);
+    return this.proxy.forward('admin', req);
   }
 
   @Get('users/security-stats')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Security metrics (documented path)' })
+  @ApiOperation({ summary: 'Security metrics' })
   async getUsersSecurityStats(@Req() req: Request) {
-    return this.proxy.forward('users', req);
+    return this.proxy.forward('admin', req);
   }
 
   // --- Audit Logs ---
@@ -345,13 +343,13 @@ export class AdminController {
   @Post('users/:userId/export')
   @ApiOperation({ summary: 'Export user data' })
   async exportUserData(@Req() req: Request) {
-    return this.proxy.forward('users', req);
+    return this.proxy.forward('admin', req);
   }
 
   @Post('users/impersonate/end/:sessionId')
   @ApiOperation({ summary: 'End impersonation' })
   async endImpersonation(@Req() req: Request) {
-    return this.proxy.forward('users', req);
+    return this.proxy.forward('admin', req);
   }
 
   @Post('impersonate/end')

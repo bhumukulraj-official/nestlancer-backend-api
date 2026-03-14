@@ -13,7 +13,7 @@ import { getServiceConfig, isServiceRegistered } from './service-registry';
 export class HttpProxyService {
   private readonly logger = new Logger(HttpProxyService.name);
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly httpService: HttpService) { }
 
   /**
    * Forward a request to a downstream service
@@ -208,8 +208,26 @@ export class HttpProxyService {
   }
 
   /**
-   * Extract the service-specific path from the request
-   * Ensures the downstream service receives the path it expects
+   * Extract the service-specific path from the request.
+   * Ensures the downstream service receives the path it expects.
+   *
+   * Service prefix reference (all resolve to /api/v1/... unless noted):
+   *  - auth:          prefix api/v1/auth  + @Controller()  → forward as-is
+   *  - users:         prefix api/v1       + no controller prefix → strip 'users'
+   *  - requests:      prefix api/v1       + @Controller('requests') → forward as-is
+   *  - quotes:        prefix api/v1       + @Controller('quotes') → forward as-is
+   *  - projects:      prefix api/v1       + @Controller('projects') → forward as-is
+   *  - payments:      prefix api + v1 URI + @Controller('payments') → forward as-is
+   *  - media:         prefix api/v1       + @Controller('media') → forward as-is
+   *  - messaging:     prefix api + v1 URI + @Controller('messages') → forward as-is
+   *  - notifications: prefix api/v1       + @Controller('notifications') → forward as-is
+   *  - portfolio:     prefix api + v1 URI + @Controller('portfolio') → forward as-is
+   *  - blog:          prefix api + v1 URI + @Controller('posts'|'categories'|'tags') → strip 'blog'
+   *  - contact:       prefix api/v1       + @Controller('contact') → forward as-is
+   *  - progress:      prefix api + v1 URI + @Controller('projects/:projectId/progress') → forward as-is
+   *  - admin:         prefix api (no v1)  + various controllers → adjust /api/v1 to /api
+   *  - webhooks:      prefix api/v1/webhooks + @Controller(...) → forward as-is
+   *  - health:        prefix api/v1/health   + @Controller() → uses pathOverride
    */
   private extractServicePath(serviceName: string, originalPath: string): string {
     const gatewayPrefix = '/api/v1';
@@ -218,33 +236,29 @@ export class HttpProxyService {
       return originalPath;
     }
 
-    // Most services follow the pattern: http://service:port/api/v1/[service-name]/...
-    // In these cases, we forward the full original path.
-
-    // Some services are mounted directly at /api/v1 and don't include their name in the prefix
-    // For these, we strip the service name segment from the gateway path.
-    const servicesToStrip = [
-      'users',
-      'blog',
-      'portfolio',
-      'projects',
-      'requests',
-      'quotes',
-      'progress',
-      'notifications',
-      'media',
-      'contact',
-    ];
-
-    if (servicesToStrip.includes(serviceName)) {
-      // e.g., /api/v1/users/profile -> /api/v1/profile
-      const serviceSegment = `/${serviceName}`;
-      return originalPath.replace(serviceSegment, '');
+    // Users service: prefix api/v1 with no controller name prefix.
+    // Gateway path /api/v1/users/profile → service expects /api/v1/profile
+    if (serviceName === 'users') {
+      return originalPath.replace('/users', '');
     }
 
-    // Default: forward the path exactly as it came to the gateway
-    // This works for services like 'auth', 'webhooks', 'admin', 'messages'
-    // which expect /api/v1/[service-name]/...
+    // Blog service: prefix api + URI v1,  controllers use 'posts', 'categories',
+    // 'tags', 'authors', 'feed', 'bookmarks' — NOT 'blog'.
+    // Gateway path /api/v1/blog/posts/hello → service expects /api/v1/posts/hello
+    if (serviceName === 'blog') {
+      return originalPath.replace('/blog', '');
+    }
+
+    // Admin service: prefix is 'api' without versioning.
+    // Gateway path /api/v1/admin/dashboard/overview → service expects /api/admin/dashboard/overview
+    // Strip '/v1' and '/admin' because admin controllers are at /api/dashboard, /api/users, etc.
+    if (serviceName === 'admin') {
+      return originalPath.replace('/api/v1/admin', '/api/admin');
+    }
+
+    // All other services: their controller path includes their service name,
+    // and they all resolve to /api/v1/[service-name]/...
+    // Forward the gateway path exactly as-is.
     return originalPath;
   }
 

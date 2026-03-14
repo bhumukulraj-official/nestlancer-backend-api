@@ -1,70 +1,77 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { Request } from 'express';
-import { Public } from '@nestlancer/common';
 import { HttpProxyService } from '../../proxy';
+import { Public } from '@nestlancer/common';
 
 /**
  * Portfolio Gateway Controller
- * Routes portfolio requests to the Portfolio Service
+ * Routes portfolio requests to the Portfolio Service.
+ *
+ * Portfolio service: prefix api + URI v1, @Controller('portfolio')
+ * Public: list, featured, categories, tags, search, detail, like
+ * Health: at portfolio/health
  */
 @Controller('portfolio')
 @ApiTags('portfolio')
 export class PortfolioController {
-  constructor(private readonly proxy: HttpProxyService) {}
+  constructor(private readonly proxy: HttpProxyService) { }
 
+  @Public()
   @Get()
+  @ApiOperation({ summary: 'List published portfolio items' })
+  async list(@Req() req: Request) {
+    return this.proxy.forward('portfolio', req);
+  }
+
   @Public()
-  @ApiOperation({ summary: 'List public portfolio items' })
-  async findAll(@Req() req: Request) {
+  @Get('featured')
+  @ApiOperation({ summary: 'Get featured portfolio items' })
+  async getFeatured(@Req() req: Request) {
     return this.proxy.forward('portfolio', req);
   }
 
-  @Get(':id')
   @Public()
-  @ApiOperation({ summary: 'Get portfolio item by ID' })
-  async findOne(@Req() req: Request) {
-    return this.proxy.forward('portfolio', req);
-  }
-
-  @Post()
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create portfolio item' })
-  async create(@Req() req: Request) {
-    return this.proxy.forward('portfolio', req);
-  }
-
-  @Patch(':id')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update portfolio item' })
-  async update(@Req() req: Request) {
-    return this.proxy.forward('portfolio', req);
-  }
-
-  @Delete(':id')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete portfolio item' })
-  async remove(@Req() req: Request) {
-    return this.proxy.forward('portfolio', req);
-  }
-
-  @Get(':id/related')
-  @Public()
-  @ApiOperation({ summary: 'Get related portfolio items' })
-  async getRelated(@Req() req: Request) {
-    return this.proxy.forward('portfolio', req);
-  }
-
   @Get('categories')
-  @Public()
-  @ApiOperation({ summary: 'List portfolio categories' })
+  @ApiOperation({ summary: 'Get portfolio categories' })
   async getCategories(@Req() req: Request) {
     return this.proxy.forward('portfolio', req);
   }
 
+  @Public()
+  @Get('tags')
+  @ApiOperation({ summary: 'Get all portfolio tags' })
+  async getTags(@Req() req: Request) {
+    return this.proxy.forward('portfolio', req);
+  }
+
+  @Public()
+  @Get('search')
+  @ApiOperation({ summary: 'Search portfolio items' })
+  async search(@Req() req: Request) {
+    return this.proxy.forward('portfolio', req);
+  }
+
+  @Public()
   @Get('health')
   @ApiOperation({ summary: 'Portfolio service health check' })
   async health(@Req() req: Request) {
+    return this.proxy.forward('portfolio', req);
+  }
+
+  @Public()
+  @Get(':idOrSlug')
+  @ApiOperation({ summary: 'Get portfolio item details' })
+  @ApiParam({ name: 'idOrSlug', description: 'Item UUID or URL slug' })
+  async getDetail(@Req() req: Request) {
+    return this.proxy.forward('portfolio', req);
+  }
+
+  @Post(':id/like')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Toggle like on portfolio item' })
+  @ApiParam({ name: 'id', description: 'Portfolio item UUID' })
+  async toggleLike(@Req() req: Request) {
     return this.proxy.forward('portfolio', req);
   }
 }

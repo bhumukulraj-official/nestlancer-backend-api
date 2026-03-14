@@ -1,17 +1,29 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiConsumes } from '@nestjs/swagger';
 import { Request } from 'express';
 import { HttpProxyService } from '../../proxy';
+import { Public } from '@nestlancer/common';
 
 /**
  * Requests Gateway Controller
- * Routes project requests to the Requests Service
+ * Routes project request operations to the Requests Service.
+ *
+ * Requests service: prefix api/v1, @Controller('requests')
+ * Available: health, list, create, details, update, submit, delete, stats,
+ *            status-timeline, attachments CRUD, quotes
  */
 @Controller('requests')
 @ApiTags('requests')
 @ApiBearerAuth()
 export class RequestsController {
-  constructor(private readonly proxy: HttpProxyService) {}
+  constructor(private readonly proxy: HttpProxyService) { }
+
+  @Public()
+  @Get('health')
+  @ApiOperation({ summary: 'Requests service health check' })
+  async health(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
 
   @Get()
   @ApiOperation({ summary: 'List project requests' })
@@ -20,56 +32,81 @@ export class RequestsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create project request' })
+  @ApiOperation({ summary: 'Create a project request' })
   async create(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 
-  @Get(':id/status')
-  @ApiOperation({ summary: 'Get request status timeline' })
-  async getStatus(@Req() req: Request) {
+  @Get('stats')
+  @ApiOperation({ summary: 'Get request statistics' })
+  async getStats(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get request by ID' })
+  @ApiOperation({ summary: 'Get request details' })
+  @ApiParam({ name: 'id', description: 'Request UUID' })
   async findOne(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update request' })
+  @ApiParam({ name: 'id', description: 'Request UUID' })
   async update(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete request' })
+  @ApiParam({ name: 'id', description: 'Request UUID' })
   async remove(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 
   @Post(':id/submit')
   @ApiOperation({ summary: 'Submit request for review' })
+  @ApiParam({ name: 'id', description: 'Request UUID' })
   async submit(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 
-  @Post(':id/cancel')
-  @ApiOperation({ summary: 'Cancel request' })
-  async cancel(@Req() req: Request) {
+  @Get(':id/status')
+  @ApiOperation({ summary: 'Get request status timeline' })
+  @ApiParam({ name: 'id', description: 'Request UUID' })
+  async getStatusTimeline(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 
   @Get(':id/quotes')
   @ApiOperation({ summary: 'Get quotes for request' })
-  async getQuotes(@Req() req: Request) {
+  @ApiParam({ name: 'id', description: 'Request UUID' })
+  async getRequestQuotes(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 
-  @Get('health')
-  @ApiOperation({ summary: 'Requests service health check' })
-  async health(@Req() req: Request) {
+  // --- Attachments ---
+
+  @Get(':id/attachments')
+  @ApiOperation({ summary: 'List request attachments' })
+  @ApiParam({ name: 'id', description: 'Request UUID' })
+  async getAttachments(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
+
+  @Post(':id/attachments')
+  @ApiOperation({ summary: 'Add attachment to request' })
+  @ApiParam({ name: 'id', description: 'Request UUID' })
+  @ApiConsumes('multipart/form-data')
+  async addAttachment(@Req() req: Request) {
+    return this.proxy.forward('requests', req);
+  }
+
+  @Delete(':id/attachments/:attachmentId')
+  @ApiOperation({ summary: 'Remove request attachment' })
+  @ApiParam({ name: 'id', description: 'Request UUID' })
+  @ApiParam({ name: 'attachmentId', description: 'Attachment UUID' })
+  async removeAttachment(@Req() req: Request) {
     return this.proxy.forward('requests', req);
   }
 }

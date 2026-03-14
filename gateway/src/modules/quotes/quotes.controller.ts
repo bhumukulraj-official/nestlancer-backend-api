@@ -1,17 +1,20 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { Request } from 'express';
 import { HttpProxyService } from '../../proxy';
 
 /**
  * Quotes Gateway Controller
- * Routes quote requests to the Quotes Service
+ * Routes quote requests to the Quotes Service.
+ *
+ * Quotes service: prefix api/v1, @Controller('quotes')
+ * User-facing: list, details, accept, decline, request-changes, pdf, stats
  */
 @Controller('quotes')
 @ApiTags('quotes')
 @ApiBearerAuth()
 export class QuotesController {
-  constructor(private readonly proxy: HttpProxyService) {}
+  constructor(private readonly proxy: HttpProxyService) { }
 
   @Get()
   @ApiOperation({ summary: 'List quotes' })
@@ -19,57 +22,50 @@ export class QuotesController {
     return this.proxy.forward('quotes', req);
   }
 
-  @Post()
-  @ApiOperation({ summary: 'Create quote' })
-  async create(@Req() req: Request) {
-    return this.proxy.forward('quotes', req);
-  }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Get quote by ID' })
-  async findOne(@Req() req: Request) {
-    return this.proxy.forward('quotes', req);
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Update quote' })
-  async update(@Req() req: Request) {
-    return this.proxy.forward('quotes', req);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete quote' })
-  async remove(@Req() req: Request) {
-    return this.proxy.forward('quotes', req);
-  }
-
-  @Post(':id/accept')
-  @ApiOperation({ summary: 'Accept quote' })
-  async accept(@Req() req: Request) {
-    return this.proxy.forward('quotes', req);
-  }
-
-  @Post(':id/reject')
-  @ApiOperation({ summary: 'Reject quote' })
-  async reject(@Req() req: Request) {
-    return this.proxy.forward('quotes', req);
-  }
-
-  @Post(':id/negotiate')
-  @ApiOperation({ summary: 'Negotiate quote' })
-  async negotiate(@Req() req: Request) {
-    return this.proxy.forward('quotes', req);
-  }
-
-  @Get(':id/pdf')
-  @ApiOperation({ summary: 'Download quote PDF' })
-  async downloadPdf(@Req() req: Request) {
+  @Get('stats')
+  @ApiOperation({ summary: 'Get user quote statistics' })
+  async getStats(@Req() req: Request) {
     return this.proxy.forward('quotes', req);
   }
 
   @Get('health')
   @ApiOperation({ summary: 'Quotes service health check' })
   async health(@Req() req: Request) {
+    return this.proxy.forward('quotes', req);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get quote details' })
+  @ApiParam({ name: 'id', description: 'Quote UUID' })
+  async findOne(@Req() req: Request) {
+    return this.proxy.forward('quotes', req);
+  }
+
+  @Post(':id/accept')
+  @ApiOperation({ summary: 'Accept quote' })
+  @ApiParam({ name: 'id', description: 'Quote UUID' })
+  async accept(@Req() req: Request) {
+    return this.proxy.forward('quotes', req);
+  }
+
+  @Post(':id/decline')
+  @ApiOperation({ summary: 'Decline quote' })
+  @ApiParam({ name: 'id', description: 'Quote UUID' })
+  async decline(@Req() req: Request) {
+    return this.proxy.forward('quotes', req);
+  }
+
+  @Post(':id/request-changes')
+  @ApiOperation({ summary: 'Request changes to quote' })
+  @ApiParam({ name: 'id', description: 'Quote UUID' })
+  async requestChanges(@Req() req: Request) {
+    return this.proxy.forward('quotes', req);
+  }
+
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Download quote PDF' })
+  @ApiParam({ name: 'id', description: 'Quote UUID' })
+  async downloadPdf(@Req() req: Request) {
     return this.proxy.forward('quotes', req);
   }
 }
