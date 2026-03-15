@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CdnWorkerService } from '../../../src/services/cdn-worker.service';
 import { ConfigService } from '@nestjs/config';
 import { CloudflareInvalidationService } from '../../../src/services/cloudflare-invalidation.service';
-import { CloudFrontInvalidationService } from '../../../src/services/cloudfront-invalidation.service';
 import { BatchCollectorService } from '../../../src/services/batch-collector.service';
 import { Logger } from '@nestjs/common';
 
@@ -10,7 +9,6 @@ describe('CdnWorkerService', () => {
   let service: CdnWorkerService;
   let configService: jest.Mocked<ConfigService>;
   let cloudflareService: jest.Mocked<CloudflareInvalidationService>;
-  let cloudfrontService: jest.Mocked<CloudFrontInvalidationService>;
   let batchCollector: jest.Mocked<BatchCollectorService>;
 
   beforeEach(async () => {
@@ -26,10 +24,6 @@ describe('CdnWorkerService', () => {
           useValue: { invalidate: jest.fn(), purgeAll: jest.fn() },
         },
         {
-          provide: CloudFrontInvalidationService,
-          useValue: { invalidate: jest.fn(), purgeAll: jest.fn() },
-        },
-        {
           provide: BatchCollectorService,
           useValue: { setFlushCallback: jest.fn(), add: jest.fn() },
         },
@@ -39,11 +33,10 @@ describe('CdnWorkerService', () => {
     service = module.get<CdnWorkerService>(CdnWorkerService);
     configService = module.get(ConfigService);
     cloudflareService = module.get(CloudflareInvalidationService);
-    cloudfrontService = module.get(CloudFrontInvalidationService);
     batchCollector = module.get(BatchCollectorService);
     // Suppress console output for tests
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
-    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => { });
   });
 
   afterEach(() => {

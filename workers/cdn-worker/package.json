@@ -23,20 +23,19 @@
     "dev": "pnpm run start:dev"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0",
-    "@nestjs/config": "^3.1.1",
     "@nestjs/axios": "^3.0.0",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.1.1",
+    "@nestjs/core": "^10.0.0",
     "@nestlancer/common": "workspace:*",
     "@nestlancer/config": "workspace:*",
-    "@nestlancer/queue": "workspace:*",
     "@nestlancer/logger": "workspace:*",
     "@nestlancer/metrics": "workspace:*",
+    "@nestlancer/queue": "workspace:*",
     "@nestlancer/tracing": "workspace:*",
-    "@aws-sdk/client-cloudfront": "^3.450.0",
+    "axios": "^1.6.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "axios": "^1.6.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

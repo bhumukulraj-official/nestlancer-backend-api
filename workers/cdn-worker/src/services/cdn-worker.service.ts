@@ -1,24 +1,17 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CdnProvider } from '../interfaces/cdn-provider.interface';
 import { CloudflareInvalidationService } from './cloudflare-invalidation.service';
-import { CloudFrontInvalidationService } from './cloudfront-invalidation.service';
 import { BatchCollectorService } from './batch-collector.service';
 
 @Injectable()
 export class CdnWorkerService implements OnModuleInit {
   private readonly logger = new Logger(CdnWorkerService.name);
-  private provider: CdnProvider;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly cloudflareService: CloudflareInvalidationService,
-    private readonly cloudfrontService: CloudFrontInvalidationService,
     private readonly batchCollector: BatchCollectorService,
-  ) {
-    const providerName = this.configService.get<string>('cdn.provider');
-    this.provider = providerName === 'cloudfront' ? this.cloudfrontService : this.cloudflareService;
-  }
+  ) { }
 
   onModuleInit() {
     this.batchCollector.setFlushCallback(async (paths) => {
@@ -33,7 +26,7 @@ export class CdnWorkerService implements OnModuleInit {
   async invalidateBatch(paths: string[]) {
     this.logger.log(`Processing batch of ${paths.length} paths`);
     try {
-      const result = await this.provider.invalidate(paths);
+      const result = await this.cloudflareService.invalidate(paths);
       this.logger.log(`Successfully invalidated batch. Invalidation ID: ${result.id}`);
     } catch (e: any) {
       const error = e as Error;
@@ -45,7 +38,7 @@ export class CdnWorkerService implements OnModuleInit {
   async purgeAll() {
     this.logger.log('Processing purge all');
     try {
-      await this.provider.purgeAll();
+      await this.cloudflareService.purgeAll();
       this.logger.log('Successfully purged all cache');
     } catch (e: any) {
       const error = e as Error;
