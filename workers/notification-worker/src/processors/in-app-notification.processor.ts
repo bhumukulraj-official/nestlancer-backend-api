@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaWriteService } from '@nestlancer/database';
 import { RedisPublisherService } from '../services/redis-publisher.service';
-import { NotificationJob } from '../interfaces/notification-job.interface';
+import { NotificationJob } from '@nestlancer/common';
 
 @Injectable()
 export class InAppNotificationProcessor {
@@ -10,7 +10,7 @@ export class InAppNotificationProcessor {
   constructor(
     private readonly prisma: PrismaWriteService,
     private readonly redisPublisher: RedisPublisherService,
-  ) {}
+  ) { }
 
   async process(job: NotificationJob): Promise<void> {
     const { userId, notification, priority } = job;

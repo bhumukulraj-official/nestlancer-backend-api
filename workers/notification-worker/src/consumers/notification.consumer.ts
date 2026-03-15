@@ -1,8 +1,11 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { QueueConsumerService } from '@nestlancer/queue';
 import { NotificationWorkerService } from '../services/notification-worker.service';
-import { NotificationJob } from '../interfaces/notification-job.interface';
+import { NotificationJob } from '@nestlancer/common';
 import { ConfigService } from '@nestjs/config';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { NotificationJobDto } from '../dto/notification-job.dto';
 
 @Injectable()
 export class NotificationConsumer implements OnModuleInit {
@@ -12,7 +15,7 @@ export class NotificationConsumer implements OnModuleInit {
     private readonly queueConsumer: QueueConsumerService,
     private readonly notificationWorkerService: NotificationWorkerService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     const queueName =
@@ -22,8 +25,17 @@ export class NotificationConsumer implements OnModuleInit {
     await this.queueConsumer.consume(queueName, async (msg) => {
       const content = msg.content.toString();
       try {
-        const job: NotificationJob = JSON.parse(content);
-        await this.notificationWorkerService.processNotification(job);
+        const rawJob = JSON.parse(content);
+        const jobDto = plainToInstance(NotificationJobDto, rawJob);
+        const errors = await validate(jobDto);
+
+        if (errors.length > 0) {
+          const validationErrors = errors.map(err => Object.values(err.constraints || {}).join(', ')).join('; ');
+          this.logger.error(`Validation failed for notification message: ${validationErrors} | Content: ${content}`);
+          return; // Skip invalid message
+        }
+
+        await this.notificationWorkerService.processNotification(jobDto);
       } catch (error: any) {
         this.logger.error(`Error processing notification message: ${content}`, error);
         throw error;

@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NotificationJob, NotificationChannel } from '../interfaces/notification-job.interface';
+import { NotificationJob, NotificationChannel } from '@nestlancer/common';
 import { InAppNotificationProcessor } from '../processors/in-app-notification.processor';
 import { PushProviderService } from './push-provider.service';
+import { NotificationRetryService } from './notification-retry.service';
 import { PrismaWriteService } from '@nestlancer/database';
 
 /**
@@ -17,7 +18,8 @@ export class NotificationWorkerService {
     private readonly inAppProcessor: InAppNotificationProcessor,
     private readonly pushProvider: PushProviderService,
     private readonly prisma: PrismaWriteService,
-  ) {}
+    private readonly retryService: NotificationRetryService,
+  ) { }
 
   /**
    * Processes a notification job by dispatching to all requested channels.
@@ -48,13 +50,18 @@ export class NotificationWorkerService {
     );
 
     // Aggregate and log delivery results
-    results.forEach((res, index) => {
+    for (let i = 0; i < results.length; i++) {
+      const res = results[i];
       if (res.status === 'rejected') {
-        this.logger.error(
-          `[NotificationWorker] Failure in channel ${channels[index]}: ${res.reason?.message || res.reason}`,
-        );
+        const channel = channels[i];
+        this.logger.error(`[NotificationWorker] Failure in channel ${channel}: ${res.reason?.message || res.reason}`);
+
+        // For PUSH notifications, we trigger the retry service
+        if (channel === NotificationChannel.PUSH) {
+          await this.retryService.handleFailure(job, res.reason);
+        }
       }
-    });
+    }
   }
 
   /**

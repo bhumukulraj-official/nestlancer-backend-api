@@ -8,6 +8,7 @@ import { AppModule } from '../../src/app.module';
 import { NotificationWorkerService } from '../../src/services/notification-worker.service';
 import { NotificationConsumer } from '../../src/consumers/notification.consumer';
 import { InAppNotificationProcessor } from '../../src/processors/in-app-notification.processor';
+import { NotificationRetryService } from '../../src/services/notification-retry.service';
 import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { CacheService } from '@nestlancer/cache';
@@ -69,6 +70,8 @@ describe('Notification Worker (Integration)', () => {
           .fn()
           .mockReturnValue({ get: jest.fn(), set: jest.fn(), del: jest.fn(), publish: jest.fn() }),
       })
+      .overrideProvider(NotificationRetryService)
+      .useValue({ handleFailure: jest.fn() })
       .compile();
 
     app = moduleRef.createNestApplication();
@@ -165,12 +168,20 @@ describe('Notification Worker (Integration)', () => {
         const consumeCalls = (queueConsumer.consume as jest.Mock).mock.calls;
         const callback = consumeCalls[consumeCalls.length - 1][1];
 
-        const payload = { userId: 'u1', notification: { title: 'Hi' } };
+        const payload = {
+          type: 'IN_APP',
+          userId: 'u1',
+          notification: { title: 'Hi', message: 'Body' },
+          channels: ['IN_APP']
+        };
         const msg: any = { content: Buffer.from(JSON.stringify(payload)) };
 
         await callback(msg);
 
-        expect(service.processNotification).toHaveBeenCalledWith(payload);
+        expect(service.processNotification).toHaveBeenCalledWith(expect.objectContaining({
+          userId: 'u1',
+          notification: expect.objectContaining({ title: 'Hi' })
+        }));
       });
     });
   });

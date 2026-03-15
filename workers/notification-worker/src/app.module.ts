@@ -10,6 +10,7 @@ import { notificationWorkerConfig } from './config/notification-worker.config';
 import { NotificationWorkerService } from './services/notification-worker.service';
 import { RedisPublisherService } from './services/redis-publisher.service';
 import { PushProviderService } from './services/push-provider.service';
+import { NotificationRetryService } from './services/notification-retry.service';
 import { InAppNotificationProcessor } from './processors/in-app-notification.processor';
 import { NotificationConsumer } from './consumers/notification.consumer';
 
@@ -34,8 +35,9 @@ import { NotificationConsumer } from './consumers/notification.consumer';
     NotificationWorkerService,
     RedisPublisherService,
     PushProviderService,
+    NotificationRetryService,
     InAppNotificationProcessor,
     NotificationConsumer,
   ],
 })
-export class AppModule {}
+export class AppModule { }

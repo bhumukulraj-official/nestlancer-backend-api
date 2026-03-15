@@ -23,6 +23,7 @@ export * from './types/error-response.type';
 export * from './interfaces/base-entity.interface';
 export * from './interfaces/pagination.interface';
 export * from './interfaces/request-context.interface';
+export * from './interfaces/notification.interface';
 
 // Decorators
 export * from './decorators/public.decorator';
