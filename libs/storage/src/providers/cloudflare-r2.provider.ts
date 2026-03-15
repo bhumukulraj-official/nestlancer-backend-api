@@ -21,7 +21,7 @@ import {
 @Injectable()
 export class CloudflareR2Provider implements StorageProvider {
   private readonly logger = new Logger(CloudflareR2Provider.name);
-  private readonly client: S3Client;
+  private client!: S3Client;
 
   constructor(@Inject('S3_CONFIG') private readonly config: S3StorageConfig) {
     if (config.endpoint) {
@@ -77,6 +77,15 @@ export class CloudflareR2Provider implements StorageProvider {
   }
 
   async download(bucket: string, key: string): Promise<Buffer> {
+    const stream = await this.downloadStream(bucket, key);
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  }
+
+  async downloadStream(bucket: string, key: string): Promise<any> {
     this.checkClient();
     const command = new GetObjectCommand({ Bucket: bucket, Key: key });
     const result = await this.client.send(command);
@@ -85,14 +94,8 @@ export class CloudflareR2Provider implements StorageProvider {
       throw new Error(`Empty body for R2 ${bucket}/${key}`);
     }
 
-    const chunks: Uint8Array[] = [];
-    const stream = result.Body as AsyncIterable<Uint8Array>;
-    for await (const chunk of stream) {
-      chunks.push(chunk);
-    }
-
-    this.logger.debug(`Downloaded ${key} from R2 bucket ${bucket}`);
-    return Buffer.concat(chunks);
+    this.logger.debug(`Streaming download of ${key} from R2 bucket ${bucket}`);
+    return result.Body as any;
   }
 
   async delete(bucket: string, key: string): Promise<void> {
@@ -109,14 +112,14 @@ export class CloudflareR2Provider implements StorageProvider {
     const command =
       options.operation === 'put'
         ? new PutObjectCommand({
-            Bucket: options.bucket,
-            Key: options.key,
-            ContentType: options.contentType,
-          })
+          Bucket: options.bucket,
+          Key: options.key,
+          ContentType: options.contentType,
+        })
         : new GetObjectCommand({
-            Bucket: options.bucket,
-            Key: options.key,
-          });
+          Bucket: options.bucket,
+          Key: options.key,
+        });
 
     const url = await awsGetSignedUrl(this.client, command, { expiresIn });
     this.logger.debug(

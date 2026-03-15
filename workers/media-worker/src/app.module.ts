@@ -6,6 +6,7 @@ import { TracingModule } from '@nestlancer/tracing';
 import { DatabaseModule } from '@nestlancer/database';
 import { QueueModule } from '@nestlancer/queue';
 import { StorageModule } from '@nestlancer/storage';
+import { CacheModule } from '@nestlancer/cache';
 import { MediaConsumer } from './consumers/media.consumer';
 import { MediaWorkerService } from './services/media-worker.service';
 import { ImageProcessingService } from './services/image-processing.service';
@@ -28,6 +29,7 @@ import { mediaWorkerConfig } from './config/media-worker.config';
     DatabaseModule.forRoot(),
     StorageModule.forRoot(),
     QueueModule.forRoot(),
+    CacheModule.forRoot(),
   ],
   providers: [
     MediaConsumer,
@@ -40,4 +42,4 @@ import { mediaWorkerConfig } from './config/media-worker.config';
     MetadataExtractorProcessor,
   ],
 })
-export class AppModule {}
+export class AppModule { }

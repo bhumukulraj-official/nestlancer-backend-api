@@ -9,6 +9,8 @@ import { S3Provider } from './providers/s3.provider';
 import { LocalProvider } from './providers/local.provider';
 import { CloudflareR2Provider } from './providers/cloudflare-r2.provider';
 
+import { Readable } from 'stream';
+
 @Injectable()
 export class StorageService implements OnModuleInit {
   private readonly logger = new Logger(StorageService.name);
@@ -18,7 +20,7 @@ export class StorageService implements OnModuleInit {
     @Inject('STORAGE_OPTIONS') private readonly options: StorageModuleOptions,
     @Inject('S3_CONFIG') private readonly s3Config: any,
     @Inject('LOCAL_STORAGE_CONFIG') private readonly localConfig: any,
-  ) {}
+  ) { }
 
   onModuleInit(): void {
     switch (this.options.provider) {
@@ -49,6 +51,10 @@ export class StorageService implements OnModuleInit {
 
   async download(bucket: string, key: string): Promise<Buffer> {
     return this.provider.download(bucket, key);
+  }
+
+  async downloadStream(bucket: string, key: string): Promise<Readable> {
+    return this.provider.downloadStream(bucket, key);
   }
 
   async delete(bucket: string, key: string): Promise<void> {

@@ -13,6 +13,7 @@ import { ThumbnailGeneratorProcessor } from '../../src/processors/thumbnail-gene
 import { MetadataExtractorProcessor } from '../../src/processors/metadata-extractor.processor';
 import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
 import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
+import { MediaJobType, MediaContext } from '../../src/interfaces/media-job.interface';
 import { StorageService } from '@nestlancer/storage';
 
 function loadDevEnv() {
@@ -208,12 +209,19 @@ describe('Media Worker (Integration)', () => {
         const consumeCalls = (queueConsumer.consume as jest.Mock).mock.calls;
         const callback = consumeCalls[consumeCalls.length - 1][1];
 
-        const payload = { mediaId: 'media-99', s3Key: 'rabbit.mp4', contentType: 'video/mp4' };
+        const payload = {
+          type: MediaJobType.VIDEO_PROCESS,
+          mediaId: '550e8400-e29b-41d4-a716-446655440000',
+          s3Key: 'rabbit.mp4',
+          contentType: 'video/mp4',
+          context: MediaContext.PROJECT,
+          userId: '550e8400-e29b-41d4-a716-446655440001',
+        };
         const msg: any = { content: Buffer.from(JSON.stringify(payload)) };
 
         await callback(msg);
 
-        expect(service.processJob).toHaveBeenCalledWith(payload);
+        expect(service.processJob).toHaveBeenCalledWith(expect.objectContaining(payload));
       });
     });
   });

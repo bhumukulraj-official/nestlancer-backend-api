@@ -1,29 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import sharp from 'sharp';
+import { Worker } from 'worker_threads';
+import { join } from 'path';
 import { ImageVariant, MediaMetadata } from '../interfaces/processing-options.interface';
 
 @Injectable()
 export class ImageProcessingService {
+  private readonly workerPath = join(__dirname, 'image-worker.worker.js');
+
+  private runWorker(action: string, input: Buffer, options: any = {}): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const worker = new Worker(this.workerPath, {
+        workerData: { action, input, options },
+      });
+
+      worker.on('message', (message) => {
+        if (message.error) {
+          reject(new Error(message.error));
+        } else {
+          resolve(message.result);
+        }
+      });
+
+      worker.on('error', reject);
+      worker.on('exit', (code) => {
+        if (code !== 0) {
+          reject(new Error(`Worker stopped with exit code ${code}`));
+        }
+      });
+    });
+  }
+
   async resize(input: Buffer, variant: ImageVariant): Promise<Buffer> {
-    return sharp(input).resize(variant.width, variant.height, { fit: variant.fit }).toBuffer();
+    return this.runWorker('resize', input, variant);
   }
 
   async compress(input: Buffer, quality = 80): Promise<Buffer> {
-    return sharp(input).webp({ quality }).toBuffer();
+    return this.runWorker('compress', input, { quality });
   }
 
   async extractMetadata(input: Buffer): Promise<MediaMetadata> {
-    const metadata = await sharp(input).metadata();
-    return {
-      width: metadata.width,
-      height: metadata.height,
-      format: metadata.format,
-      colorSpace: metadata.space,
-      exif: metadata.exif ? 'present' : undefined, // Stripping full exif for privacy
-    };
+    return this.runWorker('metadata', input);
   }
 
   async generateThumbnail(input: Buffer): Promise<Buffer> {
-    return sharp(input).resize(300, 200, { fit: 'cover' }).webp({ quality: 70 }).toBuffer();
+    return this.runWorker('thumbnail', input);
   }
 }

@@ -39,9 +39,16 @@ export class VirusScanProcessor {
     const bucket = this.configService.get<string>('storage.privateBucket', 'nestlancer-private');
 
     try {
-      this.logger.debug(`[VirusScan] Downloading ${s3Key} for verification...`);
-      const buffer = await this.storage.download(bucket, s3Key);
-      await fs.promises.writeFile(localPath, buffer);
+      this.logger.debug(`[VirusScan] Streaming ${s3Key} for verification...`);
+      const stream = await this.storage.downloadStream(bucket, s3Key);
+
+      // Pipe to local file efficiently
+      await new Promise((resolve, reject) => {
+        const writeStream = fs.createWriteStream(localPath);
+        stream.pipe(writeStream);
+        writeStream.on('finish', resolve);
+        writeStream.on('error', reject);
+      });
 
       const scanner = clamav.createScanner(
         this.configService.get<string>('media-worker.clamavHost', 'localhost'),

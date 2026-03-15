@@ -5,6 +5,7 @@ import { MetadataExtractorProcessor } from '../processors/metadata-extractor.pro
 import { ThumbnailGeneratorProcessor } from '../processors/thumbnail-generator.processor';
 import { PrismaWriteService } from '@nestlancer/database';
 import { LoggerService } from '@nestlancer/logger';
+import { CacheService } from '@nestlancer/cache';
 import { MediaJob } from '../interfaces/media-job.interface';
 import { MediaStatus } from '@prisma/client';
 
@@ -25,7 +26,8 @@ export class MediaWorkerService {
     private readonly prisma: PrismaWriteService,
     private readonly logger: LoggerService,
     private readonly configService: ConfigService,
-  ) {}
+    private readonly cache: CacheService,
+  ) { }
 
   /**
    * Processes a single media job from the queue.
@@ -35,7 +37,15 @@ export class MediaWorkerService {
    * @returns A promise that resolves when all processing steps are complete
    */
   async processJob(job: MediaJob): Promise<void> {
+    const lockKey = `media_process_lock:${job.mediaId}`;
     this.logger.log(`[MediaWorker] Starting processing pipeline for Media ID: ${job.mediaId}`);
+
+    // Idempotency: Try to acquire a lock for 10 minutes
+    const lockAcquired = await this.cache.getClient().set(lockKey, 'locked', 'NX', 'EX', 600);
+    if (!lockAcquired) {
+      this.logger.warn(`[MediaWorker] Job for Media ID ${job.mediaId} is already being processed. Skipping.`);
+      return;
+    }
 
     try {
       // 1. Update status to PROCESSING
@@ -92,6 +102,8 @@ export class MediaWorkerService {
         data: { status: MediaStatus.FAILED },
       });
       throw error;
+    } finally {
+      await this.cache.del(lockKey);
     }
   }
 }

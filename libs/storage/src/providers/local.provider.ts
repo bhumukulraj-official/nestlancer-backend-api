@@ -9,6 +9,9 @@ import {
   LocalStorageConfig,
 } from '../interfaces/storage.interface';
 
+import { createReadStream } from 'fs';
+import { Readable } from 'stream';
+
 @Injectable()
 export class LocalProvider implements StorageProvider {
   private readonly logger = new Logger(LocalProvider.name);
@@ -55,18 +58,26 @@ export class LocalProvider implements StorageProvider {
   }
 
   async download(bucket: string, key: string): Promise<Buffer> {
+    const stream = await this.downloadStream(bucket, key);
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  }
+
+  async downloadStream(bucket: string, key: string): Promise<Readable> {
     const filePath = this.resolvePath(bucket, key);
-    const buffer = await fs.readFile(filePath);
-    this.logger.debug(`Downloaded ${key} from ${bucket} (${buffer.length} bytes)`);
-    return buffer;
+    this.logger.debug(`Streaming download of ${key} from ${bucket}`);
+    return createReadStream(filePath);
   }
 
   async delete(bucket: string, key: string): Promise<void> {
     const filePath = this.resolvePath(bucket, key);
     const metaPath = filePath + '.meta.json';
 
-    await fs.unlink(filePath).catch(() => {});
-    await fs.unlink(metaPath).catch(() => {});
+    await fs.unlink(filePath).catch(() => { });
+    await fs.unlink(metaPath).catch(() => { });
 
     this.logger.debug(`Deleted ${key} from ${bucket}`);
   }

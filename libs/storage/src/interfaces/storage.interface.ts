@@ -1,6 +1,9 @@
+import { Readable } from 'stream';
+
 export interface StorageProvider {
   upload(bucket: string, key: string, body: Buffer, contentType: string): Promise<UploadResult>;
   download(bucket: string, key: string): Promise<Buffer>;
+  downloadStream(bucket: string, key: string): Promise<Readable>;
   delete(bucket: string, key: string): Promise<void>;
   getSignedUrl(options: SignedUrlOptions): Promise<string>;
   exists(bucket: string, key: string): Promise<boolean>;

@@ -29,6 +29,7 @@
     "@nestlancer/common": "workspace:*",
     "@nestlancer/config": "workspace:*",
     "@nestlancer/database": "workspace:*",
+    "@nestlancer/cache": "workspace:*",
     "@nestlancer/logger": "workspace:*",
     "@nestlancer/metrics": "workspace:*",
     "@nestlancer/tracing": "workspace:*",

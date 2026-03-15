@@ -58,6 +58,15 @@ export class S3Provider implements StorageProvider {
   }
 
   async download(bucket: string, key: string): Promise<Buffer> {
+    const stream = await this.downloadStream(bucket, key);
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  }
+
+  async downloadStream(bucket: string, key: string): Promise<any> {
     const command = new GetObjectCommand({ Bucket: bucket, Key: key });
     const result = await this.client.send(command);
 
@@ -65,14 +74,8 @@ export class S3Provider implements StorageProvider {
       throw new Error(`Empty body for ${bucket}/${key}`);
     }
 
-    const chunks: Uint8Array[] = [];
-    const stream = result.Body as AsyncIterable<Uint8Array>;
-    for await (const chunk of stream) {
-      chunks.push(chunk);
-    }
-
-    this.logger.debug(`Downloaded ${key} from ${bucket}`);
-    return Buffer.concat(chunks);
+    this.logger.debug(`Streaming download of ${key} from ${bucket}`);
+    return result.Body;
   }
 
   async delete(bucket: string, key: string): Promise<void> {
@@ -87,14 +90,14 @@ export class S3Provider implements StorageProvider {
     const command =
       options.operation === 'put'
         ? new PutObjectCommand({
-            Bucket: options.bucket,
-            Key: options.key,
-            ContentType: options.contentType,
-          })
+          Bucket: options.bucket,
+          Key: options.key,
+          ContentType: options.contentType,
+        })
         : new GetObjectCommand({
-            Bucket: options.bucket,
-            Key: options.key,
-          });
+          Bucket: options.bucket,
+          Key: options.key,
+        });
 
     const url = await awsGetSignedUrl(this.client, command, { expiresIn });
     this.logger.debug(
