@@ -57,7 +57,7 @@ describe('Webhook Worker (Integration)', () => {
         payment: { findFirst: jest.fn(), update: jest.fn() },
         refund: { findFirst: jest.fn() },
         dispute: { create: jest.fn() },
-        webhookLog: { update: jest.fn() },
+        webhookLog: { findUnique: jest.fn().mockResolvedValue(null), update: jest.fn() },
         webhookDelivery: { create: jest.fn() },
         $transaction: jest.fn(),
       })

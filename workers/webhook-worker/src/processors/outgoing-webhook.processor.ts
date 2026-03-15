@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Processor, Process } from '@nestlancer/queue';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
 import { generateUuid } from '@nestlancer/common';
 import { SignatureVerifierService } from '../services/signature-verifier.service';
@@ -15,6 +16,7 @@ export class OutgoingWebhookProcessor {
   constructor(
     private readonly logger: LoggerService,
     private readonly http: HttpService,
+    private readonly configService: ConfigService,
     private readonly signatureVerifier: SignatureVerifierService,
     private readonly webhookLogger: WebhookLoggerService,
     private readonly prisma: PrismaReadService,
@@ -24,6 +26,9 @@ export class OutgoingWebhookProcessor {
   async handleOutgoing(job: OutgoingWebhookJob): Promise<void> {
     const webhook = await this.prisma.webhook.findUnique({ where: { id: job.webhookId } });
     if (!webhook || !webhook.enabled) return;
+
+    const timeoutMs =
+      this.configService.get<number>('webhook-worker.outgoingTimeoutMs', 10000);
 
     const signature = this.signatureVerifier.sign(job.payload, webhook.secret);
     const startTime = Date.now();
@@ -37,7 +42,7 @@ export class OutgoingWebhookProcessor {
             'X-Webhook-Delivery-ID': generateUuid(),
             'Content-Type': 'application/json',
           },
-          timeout: 10000,
+          timeout: timeoutMs,
         }),
       );
 

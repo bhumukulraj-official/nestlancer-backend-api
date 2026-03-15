@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { OutgoingWebhookProcessor } from '../../../src/processors/outgoing-webhook.processor';
 import { HttpService } from '@nestjs/axios';
 import { LoggerService } from '@nestlancer/logger';
@@ -36,6 +37,10 @@ describe('OutgoingWebhookProcessor', () => {
         {
           provide: WebhookLoggerService,
           useValue: { logDelivery: jest.fn() },
+        },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn((key: string, def?: number) => (key === 'webhook-worker.outgoingTimeoutMs' ? 10000 : def)) },
         },
         {
           provide: PrismaReadService,
