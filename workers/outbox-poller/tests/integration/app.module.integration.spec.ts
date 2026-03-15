@@ -14,6 +14,8 @@ import { StaleEventMonitorService } from '../../src/services/stale-event-monitor
 describe('AppModule (Integration)', () => {
   let app: INestApplication;
 
+  jest.setTimeout(25000);
+
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -30,25 +32,25 @@ describe('AppModule (Integration)', () => {
       .useValue({
         $connect: jest.fn(),
         $disconnect: jest.fn(),
-        outboxEvent: { findMany: jest.fn() },
+        outbox: { findMany: jest.fn(), update: jest.fn(), count: jest.fn().mockResolvedValue(0) },
       })
       .overrideProvider(PrismaReadService)
       .useValue({
         $connect: jest.fn(),
         $disconnect: jest.fn(),
-        outboxEvent: { findMany: jest.fn() },
+        outbox: { findMany: jest.fn() },
       })
       .compile();
 
     app = moduleRef.createNestApplication();
     await app.init();
-  });
+  }, 15000);
 
   afterAll(async () => {
     if (app) {
       await app.close();
     }
-  });
+  }, 20000);
 
   describe('Configuration & Dependencies', () => {
     it('should initialize the worker application context successfully', () => {

@@ -56,4 +56,14 @@ describe('LeaderElectionService', () => {
 
     expect(result).toBe(false);
   });
+
+  it('should release lock on application shutdown', async () => {
+    redis.get.mockResolvedValue('instance-1');
+    redis.del.mockResolvedValue(1);
+
+    await service.onApplicationShutdown();
+
+    expect(redis.get).toHaveBeenCalledWith('test:lock');
+    expect(redis.del).toHaveBeenCalledWith('test:lock');
+  });
 });

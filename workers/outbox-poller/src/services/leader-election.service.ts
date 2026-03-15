@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
@@ -8,7 +8,7 @@ import Redis from 'ioredis';
  * Uses atomic Redis SET NX with TTL to manage the distributed lock.
  */
 @Injectable()
-export class LeaderElectionService {
+export class LeaderElectionService implements OnApplicationShutdown {
   private readonly logger = new Logger(LeaderElectionService.name);
   private readonly redis: Redis;
   private readonly lockKey: string;
@@ -86,5 +86,9 @@ export class LeaderElectionService {
   async isLeader(): Promise<boolean> {
     const val = await this.redis.get(this.lockKey);
     return val === this.instanceId;
+  }
+
+  async onApplicationShutdown(): Promise<void> {
+    await this.releaseLock();
   }
 }

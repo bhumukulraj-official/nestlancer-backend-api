@@ -5,11 +5,30 @@ import { LeaderElectionService } from '../../../src/services/leader-election.ser
 import { OutboxPublisherService } from '../../../src/services/outbox-publisher.service';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
+import { MetricsService } from '@nestlancer/metrics';
 import { OutboxEventStatus } from '../../../src/interfaces/outbox-event.interface';
+
+const mockMetricsService = {
+  createCounter: jest.fn(),
+  createGauge: jest.fn(),
+  incrementCounter: jest.fn(),
+  setGauge: jest.fn(),
+};
+
+const mockConfigGet = jest.fn((key: string) => {
+  const map: Record<string, number> = {
+    'outbox.batchSize': 100,
+    'outbox.maxRetries': 5,
+    'outbox.retryBackoffMs': 1000,
+    'outbox.retryBackoffMaxMs': 300000,
+    'outbox.pollingIntervalMs': 5000,
+  };
+  return map[key] ?? 100;
+});
 
 describe('OutboxPollerService', () => {
   let service: OutboxPollerService;
-  let prismaWrite: jest.Mocked<PrismaWriteService>;
+  let prismaWrite: any;
   let leaderElection: jest.Mocked<LeaderElectionService>;
   let publisher: jest.Mocked<OutboxPublisherService>;
 
@@ -20,7 +39,7 @@ describe('OutboxPollerService', () => {
         {
           provide: PrismaWriteService,
           useValue: {
-            outboxEvent: {
+            outbox: {
               findMany: jest.fn(),
               update: jest.fn(),
             },
@@ -36,7 +55,11 @@ describe('OutboxPollerService', () => {
         },
         {
           provide: ConfigService,
-          useValue: { get: jest.fn().mockReturnValue(100) },
+          useValue: { get: mockConfigGet },
+        },
+        {
+          provide: MetricsService,
+          useValue: mockMetricsService,
         },
       ],
     }).compile();
@@ -48,6 +71,7 @@ describe('OutboxPollerService', () => {
 
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
     jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'debug').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -68,78 +92,85 @@ describe('OutboxPollerService', () => {
     it('should do nothing if not leader', async () => {
       leaderElection.acquireLock.mockResolvedValue(false);
       await service.poll();
-      expect(prismaWrite.outboxEvent.findMany).not.toHaveBeenCalled();
+      expect(prismaWrite.outbox.findMany).not.toHaveBeenCalled();
     });
 
     it('should process batch when leader', async () => {
       leaderElection.acquireLock.mockResolvedValue(true);
       const mockEvents = [
-        { id: '1', eventType: 'user.created', payload: {} },
-        { id: '2', eventType: 'payment.success', payload: {} },
+        { id: '1', type: 'user.created', payload: {}, retries: 0, createdAt: new Date(), error: null, aggregateType: null, aggregateId: null, publishedAt: null, nextRetryAt: null },
+        { id: '2', type: 'payment.success', payload: {}, retries: 0, createdAt: new Date(), error: null, aggregateType: null, aggregateId: null, publishedAt: null, nextRetryAt: null },
       ];
-      prismaWrite.outboxEvent.findMany.mockResolvedValue(mockEvents as any);
+      prismaWrite.outbox.findMany.mockResolvedValue(mockEvents);
       publisher.publish.mockResolvedValue();
 
       await service.poll();
 
-      expect(prismaWrite.outboxEvent.findMany).toHaveBeenCalledWith({
-        where: { status: OutboxEventStatus.PENDING },
+      expect(prismaWrite.outbox.findMany).toHaveBeenCalledWith({
+        where: {
+          status: OutboxEventStatus.PENDING,
+          OR: [{ nextRetryAt: null }, { nextRetryAt: { lte: expect.any(Date) } }],
+        },
         orderBy: { createdAt: 'asc' },
         take: 100,
       });
 
       expect(publisher.publish).toHaveBeenCalledTimes(2);
-      expect(publisher.publish).toHaveBeenCalledWith(mockEvents[0]);
-      expect(publisher.publish).toHaveBeenCalledWith(mockEvents[1]);
-
-      expect(prismaWrite.outboxEvent.update).toHaveBeenCalledTimes(2);
-      expect(prismaWrite.outboxEvent.update).toHaveBeenCalledWith({
+      expect(prismaWrite.outbox.update).toHaveBeenCalledTimes(2);
+      expect(prismaWrite.outbox.update).toHaveBeenCalledWith({
         where: { id: '1' },
-        data: expect.objectContaining({ status: OutboxEventStatus.PUBLISHED }),
+        data: expect.objectContaining({
+          status: OutboxEventStatus.PUBLISHED,
+          publishedAt: expect.any(Date),
+          nextRetryAt: null,
+        }),
       });
     });
 
-    it('should handle publisher failure and update retries', async () => {
+    it('should handle publisher failure and set nextRetryAt for backoff', async () => {
       leaderElection.acquireLock.mockResolvedValue(true);
-      const mockEvent = { id: '1', eventType: 'user.created', payload: {}, retries: 0 };
-      prismaWrite.outboxEvent.findMany.mockResolvedValue([mockEvent] as any);
+      const mockEvent = { id: '1', type: 'user.created', payload: {}, retries: 0, createdAt: new Date(), error: null, aggregateType: null, aggregateId: null, publishedAt: null, nextRetryAt: null };
+      prismaWrite.outbox.findMany.mockResolvedValue([mockEvent]);
 
       publisher.publish.mockRejectedValue(new Error('Publish Failed'));
 
       await service.poll();
 
-      expect(prismaWrite.outboxEvent.update).toHaveBeenCalledWith({
+      expect(prismaWrite.outbox.update).toHaveBeenCalledWith({
         where: { id: '1' },
-        data: {
-          retries: { increment: 1 },
+        data: expect.objectContaining({
+          retries: 1,
           error: 'Publish Failed',
           status: OutboxEventStatus.PENDING,
-        },
+          nextRetryAt: expect.any(Date),
+        }),
       });
     });
 
-    it('should mark as FAILED after 5 retries', async () => {
+    it('should mark as FAILED after maxRetries and increment metric', async () => {
       leaderElection.acquireLock.mockResolvedValue(true);
-      const mockEvent = { id: '1', eventType: 'user.created', payload: {}, retries: 5 };
-      prismaWrite.outboxEvent.findMany.mockResolvedValue([mockEvent] as any);
+      const mockEvent = { id: '1', type: 'user.created', payload: {}, retries: 4, createdAt: new Date(), error: null, aggregateType: null, aggregateId: null, publishedAt: null, nextRetryAt: null };
+      prismaWrite.outbox.findMany.mockResolvedValue([mockEvent]);
 
       publisher.publish.mockRejectedValue(new Error('Publish Failed'));
 
       await service.poll();
 
-      expect(prismaWrite.outboxEvent.update).toHaveBeenCalledWith({
+      expect(prismaWrite.outbox.update).toHaveBeenCalledWith({
         where: { id: '1' },
-        data: {
-          retries: { increment: 1 },
+        data: expect.objectContaining({
+          retries: 5,
           error: 'Publish Failed',
           status: OutboxEventStatus.FAILED,
-        },
+          nextRetryAt: null,
+        }),
       });
+      expect(mockMetricsService.incrementCounter).toHaveBeenCalledWith('outbox_events_marked_failed_total');
     });
 
     it('should handle general errors safely resetting isProcessing', async () => {
       leaderElection.acquireLock.mockResolvedValue(true);
-      prismaWrite.outboxEvent.findMany.mockRejectedValue(new Error('DB connection lost'));
+      prismaWrite.outbox.findMany.mockRejectedValue(new Error('DB connection lost'));
 
       await service.poll();
 

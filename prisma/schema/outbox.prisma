@@ -17,9 +17,11 @@ model Outbox {
   status        OutboxStatus @default(PENDING)
   error         String?
   retries       Int          @default(0)
+  nextRetryAt   DateTime?    // Used for exponential backoff; event is eligible when null or <= now
   createdAt     DateTime     @default(now())
   publishedAt   DateTime?
 
   @@index([status])
   @@index([aggregateType, aggregateId])
+  @@index([status, nextRetryAt])
 }

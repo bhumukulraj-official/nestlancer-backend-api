@@ -54,7 +54,7 @@ describe('Outbox Poller (Integration)', () => {
       .useValue({
         $connect: jest.fn(),
         $disconnect: jest.fn(),
-        outboxEvent: { findMany: jest.fn(), updateMany: jest.fn(), deleteMany: jest.fn() },
+        outbox: { findMany: jest.fn(), update: jest.fn() },
         $transaction: jest.fn(),
       })
       .overrideProvider(PrismaReadService)
@@ -132,7 +132,18 @@ describe('Outbox Poller (Integration)', () => {
 
       it('should poll pending events and publish successfully', async () => {
         const pendingEvents = [
-          { id: 1, eventType: 'user.created', payload: {}, retries: 0 }
+          {
+            id: 'evt-1',
+            type: 'user.created',
+            payload: {},
+            retries: 0,
+            createdAt: new Date(),
+            error: null,
+            aggregateType: null,
+            aggregateId: null,
+            publishedAt: null,
+            nextRetryAt: null,
+          },
         ];
 
         (prisma as any).outbox = {
@@ -145,9 +156,16 @@ describe('Outbox Poller (Integration)', () => {
 
         expect(leaderElection.acquireLock).toHaveBeenCalled();
         expect((prisma as any).outbox.findMany).toHaveBeenCalled();
-        expect(publisher.publish).toHaveBeenCalledWith(pendingEvents[0]);
+        expect(publisher.publish).toHaveBeenCalledWith(
+          expect.objectContaining({
+            id: 'evt-1',
+            eventType: 'user.created',
+            payload: {},
+            retryCount: 0,
+          }),
+        );
         expect((prisma as any).outbox.update).toHaveBeenCalledWith(
-          expect.objectContaining({ data: expect.objectContaining({ status: 'PUBLISHED' }) })
+          expect.objectContaining({ data: expect.objectContaining({ status: 'PUBLISHED' }) }),
         );
       });
     });
