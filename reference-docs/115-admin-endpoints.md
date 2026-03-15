@@ -73,20 +73,7 @@ Administrative dashboard, system configuration, audit logging, webhook managemen
 | `POST` | `/impersonate/end`            | End impersonation           | 100/hour   | admin |
 | `GET`  | `/impersonate/sessions`       | List impersonation sessions | 100/hour   | admin |
 
-### 16.7 Backup Management Endpoints
-
-| Method   | Endpoint                 | Description         | Rate Limit | Role  |
-| -------- | ------------------------ | ------------------- | ---------- | ----- |
-| `GET`    | `/backups`               | List backups        | 100/hour   | admin |
-| `POST`   | `/backups`               | Trigger backup      | 5/hour     | admin |
-| `GET`    | `/backups/{id}`          | Get backup details  | 100/hour   | admin |
-| `GET`    | `/backups/{id}/download` | Download backup     | 10/hour    | admin |
-| `POST`   | `/backups/{id}/restore`  | Restore backup      | 2/hour     | admin |
-| `DELETE` | `/backups/{id}`          | Delete backup       | 20/hour    | admin |
-| `GET`    | `/backups/schedule`      | Get backup schedule | 100/hour   | admin |
-| `PATCH`  | `/backups/schedule`      | Update schedule     | 20/hour    | admin |
-
-### 16.8 Request/Response Examples
+### 16.7 Request/Response Examples
 
 > **Note:** For brevity, `X-CSRF-Token` is omitted from state-changing examples unless specifically highlighted. It is only required when using cookie-based authentication. Rate limit headers are shown in the first example as a reference for all responses.
 
@@ -427,7 +414,7 @@ X-Request-ID: reqAbc123
 }
 ```
 
-### 16.9 Error Codes
+### 16.8 Error Codes
 
 | Code        | HTTP Status | Description                                      | Retryable  |
 | ----------- | ----------- | ------------------------------------------------ | ---------- |
@@ -438,8 +425,6 @@ X-Request-ID: reqAbc123
 | `ADMIN_008` | 403         | Cannot impersonate admin users                   | No         |
 | `ADMIN_009` | 429         | Admin rate limit exceeded                        | Yes (wait) |
 | `ADMIN_010` | 422         | Invalid announcement format                      | No         |
-| `ADMIN_011` | 500         | Backup creation failed                           | Yes        |
-| `ADMIN_012` | 500         | Backup restore failed                            | No         |
 | `ADMIN_013` | 404         | Email template not found                         | No         |
 | `ADMIN_014` | 404         | Feature flag not found                           | No         |
 | `ADMIN_015` | 400         | Maintenance mode already active                  | No         |

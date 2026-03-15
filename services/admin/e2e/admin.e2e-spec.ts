@@ -13,7 +13,7 @@ function authHeader(userId: string, role: 'USER' | 'ADMIN' = 'USER') {
 }
 
 function adminAuthHeader() {
-  // Use seeded admin user id so Backup.initiatedBy and SystemConfig.updatedBy FKs resolve (dev seed: test-admin-001).
+  // Use seeded admin user id so SystemConfig.updatedBy FK resolves (dev seed: test-admin-001).
   return authHeader('test-admin-001', 'ADMIN');
 }
 
@@ -235,60 +235,6 @@ describe('Admin Service - E2E', () => {
       expect([200, 201, 202]).toContain(res.status);
       expect(res.body).toHaveProperty('status');
       expect(res.body.status).toMatch(/^(success|partial)$/);
-    });
-  });
-
-  describe('Backups (admin success and errors)', () => {
-    it('GET /backups with ADMIN returns 200 and array', async () => {
-      const res = await request(getApp().getHttpServer())
-        .get(`/${prefix}/backups`)
-        .set(adminAuthHeader())
-        .expect('Content-Type', /json/);
-      expect(res.status).toBe(200);
-      expect(res.body.status).toBe('success');
-      expect(res.body).toHaveProperty('data');
-      expect(Array.isArray(res.body.data)).toBe(true);
-    });
-
-    it('GET /backups/schedule with ADMIN returns 200 and schedule data', async () => {
-      const res = await request(getApp().getHttpServer())
-        .get(`/${prefix}/backups/schedule`)
-        .set(adminAuthHeader())
-        .expect('Content-Type', /json/);
-      expect(res.status).toBe(200);
-      expect(res.body.status).toBe('success');
-      expect(res.body).toHaveProperty('data');
-      expect(typeof res.body.data).toBe('object');
-    });
-
-    it('GET /backups without token returns 401', async () => {
-      const res = await request(getApp().getHttpServer())
-        .get(`/${prefix}/backups`)
-        .expect('Content-Type', /json/);
-      expect(res.status).toBe(401);
-      expect(res.body?.error?.message).toBeDefined();
-    });
-
-    it('GET /backups/:id with non-existent id returns 404', async () => {
-      const res = await request(getApp().getHttpServer())
-        .get(`/${prefix}/backups/non-existent-backup-id`)
-        .set(adminAuthHeader())
-        .expect('Content-Type', /json/);
-      expect(res.status).toBe(404);
-      expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toHaveProperty('message');
-    });
-
-    it('POST /backups with ADMIN returns 201 or 200 and backup metadata', async () => {
-      const res = await request(getApp().getHttpServer())
-        .post(`/${prefix}/backups`)
-        .set(adminAuthHeader())
-        .send({ description: 'E2E test backup' })
-        .set('Content-Type', 'application/json')
-        .expect('Content-Type', /json/);
-      expect([200, 201]).toContain(res.status);
-      expect(res.body).toHaveProperty('status', 'success');
-      expect(res.body).toHaveProperty('data');
     });
   });
 

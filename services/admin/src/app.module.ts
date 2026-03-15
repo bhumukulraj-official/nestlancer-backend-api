@@ -1,4 +1,4 @@
-import { Module, Logger } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { NestlancerConfigModule } from '@nestlancer/config';
 import { DatabaseModule, PrismaReadService, PrismaWriteService } from '@nestlancer/database';
 import { CacheModule } from '@nestlancer/cache';
@@ -13,7 +13,6 @@ import { AuthLibModule } from '@nestlancer/auth-lib';
 
 // Controllers
 import { AuditAdminController } from './controllers/admin/audit.admin.controller';
-import { BackupsAdminController } from './controllers/admin/backups.admin.controller';
 import { DashboardAdminController } from './controllers/admin/dashboard.admin.controller';
 import { EmailTemplatesAdminController } from './controllers/admin/email-templates.admin.controller';
 import { ImpersonationAdminController } from './controllers/admin/impersonation.admin.controller';
@@ -25,8 +24,6 @@ import { AnnouncementsService } from './services/announcements.service';
 import { AuditExportService } from './services/audit-export.service';
 import { AuditService } from './services/audit.service';
 import { BackgroundJobsService } from './services/background-jobs.service';
-import { BackupSchedulerService } from './services/backup-scheduler.service';
-import { BackupsService } from './services/backups.service';
 import { CacheManagementService } from './services/cache-management.service';
 import { DashboardPerformanceService } from './services/dashboard-performance.service';
 import { DashboardProjectsService } from './services/dashboard-projects.service';
@@ -59,7 +56,6 @@ import { WebhooksManagementService } from './services/webhooks-management.servic
   ],
   controllers: [
     AuditAdminController,
-    BackupsAdminController,
     DashboardAdminController,
     EmailTemplatesAdminController,
     ImpersonationAdminController,
@@ -71,8 +67,6 @@ import { WebhooksManagementService } from './services/webhooks-management.servic
     AuditExportService,
     AuditService,
     BackgroundJobsService,
-    BackupSchedulerService,
-    BackupsService,
     CacheManagementService,
     DashboardPerformanceService,
     DashboardProjectsService,

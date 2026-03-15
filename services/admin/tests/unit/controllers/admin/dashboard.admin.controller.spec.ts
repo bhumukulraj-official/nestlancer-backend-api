@@ -5,6 +5,7 @@ import { DashboardRevenueService } from '../../../../src/services/dashboard-reve
 import { DashboardUsersService } from '../../../../src/services/dashboard-users.service';
 import { DashboardProjectsService } from '../../../../src/services/dashboard-projects.service';
 import { DashboardPerformanceService } from '../../../../src/services/dashboard-performance.service';
+import { AuditService } from '../../../../src/services/audit.service';
 import { JwtAuthGuard, RolesGuard } from '@nestlancer/auth-lib';
 import { AdminGuard } from '../../../../src/guards/admin.guard';
 
@@ -34,6 +35,10 @@ describe('DashboardAdminController', () => {
         {
           provide: DashboardPerformanceService,
           useValue: { getPerformance: jest.fn() },
+        },
+        {
+          provide: AuditService,
+          useValue: { getRecentActivity: jest.fn() },
         },
       ],
     })

@@ -79,7 +79,7 @@ export async function setupApp(): Promise<INestApplication> {
   app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
   await app.init();
 
-  // Ensure E2E admin user exists so Backup.initiatedBy and SystemConfig.updatedBy FKs resolve.
+  // Ensure E2E admin user exists so SystemConfig.updatedBy FK resolves.
   const testPasswordHash = '$2b$12$LJ3m4ys3Gz8m.O1lHUkJQeT6bJxHlqJ5kKDqQ1p7rF4YJx8vXxJzS';
   const prisma = moduleRef.get(PrismaWriteService);
   await prisma.user.upsert({

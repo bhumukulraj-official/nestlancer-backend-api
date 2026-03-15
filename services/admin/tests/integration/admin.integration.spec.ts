@@ -16,8 +16,6 @@ import { AppModule } from '../../src/app.module';
 import { createTestJwt } from '@nestlancer/testing/helpers/test-auth.helper';
 import { ConfigModule } from '@nestjs/config';
 import { QueuePublisherService, QueueConsumerService } from '@nestlancer/queue';
-import { BackupsService } from '../../src/services/backups.service';
-import { BackupSchedulerService } from '../../src/services/backup-scheduler.service';
 import { ImpersonationService } from '../../src/services/impersonation.service';
 import { EmailTemplatesService } from '../../src/services/email-templates.service';
 
@@ -80,19 +78,6 @@ describe('Admin Service (Integration)', () => {
         getChannel: jest.fn(),
         onModuleInit: jest.fn(),
         onModuleDestroy: jest.fn(),
-      })
-      .overrideProvider(BackupsService)
-      .useValue({
-        findAll: jest.fn().mockResolvedValue([]),
-        findOne: jest.fn().mockResolvedValue(null),
-        getDownloadUrl: jest.fn().mockResolvedValue({ url: 'https://example.com/backup' }),
-        createBackup: jest.fn().mockResolvedValue({ id: 'backup-1' }),
-        restoreBackup: jest.fn().mockResolvedValue({ status: 'queued' }),
-      })
-      .overrideProvider(BackupSchedulerService)
-      .useValue({
-        getSchedule: jest.fn().mockResolvedValue({ enabled: false }),
-        updateSchedule: jest.fn().mockResolvedValue({ enabled: true }),
       })
       .overrideProvider(ImpersonationService)
       .useValue({
@@ -414,73 +399,6 @@ describe('Admin Service (Integration)', () => {
         .post(`${basePath}/audit/export`)
         .set(authHeader('regular-user-1'))
         .send({ format: 'json', from: '2025-01-01', to: '2025-12-31' });
-      expect(response.status).toBe(403);
-    });
-  });
-
-  describe('Backups', () => {
-    it(`GET ${basePath}/backups - should reject unauthenticated`, async () => {
-      const response = await request(app.getHttpServer()).get(`${basePath}/backups`);
-      expect(response.status).toBe(401);
-    });
-
-    it(`GET ${basePath}/backups - should accept admin token and return backups list`, async () => {
-      const response = await request(app.getHttpServer())
-        .get(`${basePath}/backups`)
-        .set(adminAuthHeader());
-
-      expect(response.status).toBe(200);
-      {
-        expect(response.body).toBeDefined();
-      }
-    });
-
-    it(`POST ${basePath}/backups - should reject unauthenticated`, async () => {
-      const response = await request(app.getHttpServer())
-        .post(`${basePath}/backups`)
-        .send({ notes: 'Test backup' });
-
-      expect(response.status).toBe(401);
-    });
-
-    it(`GET ${basePath}/backups/:id - should reject unauthenticated`, async () => {
-      const response = await request(app.getHttpServer()).get(
-        `${basePath}/backups/550e8400-e29b-41d4-a716-446655440000`,
-      );
-      expect(response.status).toBe(401);
-    });
-
-    it(`GET ${basePath}/backups/:id - should accept admin token and return backup or 404`, async () => {
-      const response = await request(app.getHttpServer())
-        .get(`${basePath}/backups/550e8400-e29b-41d4-a716-446655440000`)
-        .set(adminAuthHeader());
-      expect([200, 404]).toContain(response.status);
-    });
-
-    it(`GET ${basePath}/backups/:id/download - should reject non-admin user`, async () => {
-      const response = await request(app.getHttpServer())
-        .get(`${basePath}/backups/550e8400-e29b-41d4-a716-446655440000/download`)
-        .set(authHeader('regular-user-1'));
-      expect(response.status).toBe(403);
-    });
-
-    it(`POST ${basePath}/backups/:id/restore - should reject unauthenticated`, async () => {
-      const response = await request(app.getHttpServer()).post(
-        `${basePath}/backups/550e8400-e29b-41d4-a716-446655440000/restore`,
-      );
-      expect(response.status).toBe(401);
-    });
-
-    it(`GET ${basePath}/backups/schedule - should reject unauthenticated`, async () => {
-      const response = await request(app.getHttpServer()).get(`${basePath}/backups/schedule`);
-      expect(response.status).toBe(401);
-    });
-
-    it(`PATCH ${basePath}/backups/schedule - should reject non-admin user`, async () => {
-      const response = await request(app.getHttpServer())
-        .patch(`${basePath}/backups/schedule`)
-        .set(authHeader('regular-user-1'))
-        .send({ cron: '0 2 * * *' });
       expect(response.status).toBe(403);
     });
   });

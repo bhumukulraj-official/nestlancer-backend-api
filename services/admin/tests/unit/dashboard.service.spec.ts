@@ -7,6 +7,8 @@ describe('DashboardService', () => {
   let mockUsersService: any;
   let mockProjectsService: any;
   let mockPerformanceService: any;
+  let mockAuditService: any;
+  let mockPrismaRead: any;
   let mockHttpService: any;
 
   beforeEach(() => {
@@ -45,6 +47,14 @@ describe('DashboardService', () => {
     };
     mockPerformanceService = {
       getSystemPerformance: jest.fn().mockResolvedValue({ health: { status: 'healthy' } }),
+      getAlerts: jest.fn().mockResolvedValue([]),
+    };
+    mockAuditService = {
+      getRecentActivity: jest.fn().mockResolvedValue([]),
+    };
+    mockPrismaRead = {
+      projectRequest: { count: jest.fn().mockResolvedValue(0) },
+      quote: { count: jest.fn().mockResolvedValue(0) },
     };
     mockHttpService = {};
     service = new DashboardService(
@@ -53,6 +63,8 @@ describe('DashboardService', () => {
       mockUsersService,
       mockProjectsService,
       mockPerformanceService,
+      mockAuditService,
+      mockPrismaRead,
       mockHttpService,
     );
   });

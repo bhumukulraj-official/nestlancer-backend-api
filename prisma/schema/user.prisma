@@ -55,7 +55,6 @@ model User {
   authSessions        AuthSession[]
   quotes              Quote[]                  @relation("UserQuotes")
   createdQuotes       Quote[]                  @relation("CreatedQuotes")
-  backupsInitiated    Backup[]
   impersonationSessionsAsAdmin ImpersonationSession[] @relation("ImpersonationAdmin")
   impersonationSessionsAsTarget ImpersonationSession[] @relation("ImpersonationTarget")
 

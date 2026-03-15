@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaWriteService, PrismaReadService } from '@nestlancer/database';
 import { WebhooksAdminController } from '../../../../src/controllers/admin/webhooks.admin.controller';
 import { WebhooksManagementService } from '../../../../src/services/webhooks-management.service';
 import { WebhookDeliveriesService } from '../../../../src/services/webhook-deliveries.service';
@@ -25,6 +26,8 @@ describe('WebhooksAdminController', () => {
         },
         { provide: WebhookDeliveriesService, useValue: { findAll: jest.fn() } },
         { provide: WebhookTestingService, useValue: { testDelivery: jest.fn() } },
+        { provide: PrismaWriteService, useValue: {} },
+        { provide: PrismaReadService, useValue: {} },
       ],
     })
       .overrideGuard(JwtAuthGuard)

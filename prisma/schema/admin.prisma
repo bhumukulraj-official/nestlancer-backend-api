@@ -43,34 +43,6 @@ model EmailTemplate {
   @@index([name])
 }
 
-model Backup {
-  id          String    @id @default(uuid(7))
-  description String?
-  type        String    @default("FULL")
-  status      String    @default("IN_PROGRESS")
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
-  initiatedBy String
-  s3Key       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  admin       User?     @relation(fields: [initiatedBy], references: [id], onDelete: SetNull)
-
-  @@index([initiatedBy])
-  @@index([status])
-  @@index([startedAt])
-}
-
-model BackupSchedule {
-  id              String   @id @default(uuid(7))
-  cronExpression  String   @default("0 0 * * *")
-  retentionDays   Int      @default(30)
-  enabled         Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
 model ImpersonationSession {
   id           String    @id @default(uuid(7))
   adminId      String
