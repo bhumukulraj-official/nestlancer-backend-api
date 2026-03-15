@@ -199,8 +199,8 @@ services:
       RABBITMQ_DEFAULT_USER: e2e_user
       RABBITMQ_DEFAULT_PASS: e2e_password
 
-  mailhog:
-    image: mailhog/mailhog
+  mailpit:
+    image: axllent/mailpit
     ports:
       - '1026:1025' # SMTP
       - '8026:8025' # Web UI for inspecting emails

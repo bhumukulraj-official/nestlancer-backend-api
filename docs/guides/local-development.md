@@ -6,7 +6,7 @@
 
 ```bash
 scripts/dev/start-services.sh
-# Starts: PostgreSQL, Redis (cache + pubsub), RabbitMQ, MailHog
+# Starts: PostgreSQL, Redis (cache + pubsub), RabbitMQ, Mailpit
 ```
 
 ### Start with full observability stack

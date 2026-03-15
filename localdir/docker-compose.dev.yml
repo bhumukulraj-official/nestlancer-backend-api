@@ -15,7 +15,7 @@ services:
     networks:
       - nestlancer-network
     depends_on:
-      - mailhog
+      - mailpit
       - minio
       - jaeger
 
@@ -35,7 +35,7 @@ services:
     networks:
       - nestlancer-network
     depends_on:
-      - mailhog
+      - mailpit
       - minio
       - jaeger
 

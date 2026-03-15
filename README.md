@@ -87,7 +87,7 @@ cd backend-api
 make install
 # or: pnpm install && pnpm db:generate
 
-# 3. Start infrastructure services (PostgreSQL, Redis, RabbitMQ, MailHog)
+# 3. Start infrastructure services (PostgreSQL, Redis, RabbitMQ, Mailpit)
 make dev-services
 # or: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
@@ -109,7 +109,7 @@ curl http://localhost:3000/api/v1/health
 # RabbitMQ Management UI
 open http://localhost:15672  # guest/guest
 
-# MailHog Web UI
+# Mailpit Web UI
 open http://localhost:8025
 ```
 

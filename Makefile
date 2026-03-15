@@ -18,7 +18,7 @@ dev: ## Start Docker services + run all apps in dev mode
 	docker compose -f docker-compose.yml up -d
 	pnpm dev
 
-dev-services: ## Start only infrastructure services (MailHog, MinIO, Jaeger)
+dev-services: ## Start only infrastructure services (Mailpit, MinIO, Jaeger)
 	docker compose -f docker-compose.yml up -d
 
 dev-full: ## Start all infra including MinIO and Jaeger

@@ -9,10 +9,10 @@ FULL="${1:-}"
 echo "🐳 Starting infrastructure services..."
 
 if [[ "${FULL}" == "--full" ]]; then
-  echo "  Starting full stack (PostgreSQL, Redis, RabbitMQ, MailHog, MinIO, Jaeger)..."
+  echo "  Starting full stack (PostgreSQL, Redis, RabbitMQ, Mailpit, MinIO, Jaeger)..."
   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 else
-  echo "  Starting core stack (PostgreSQL, Redis, RabbitMQ, MailHog)..."
+  echo "  Starting core stack (PostgreSQL, Redis, RabbitMQ, Mailpit)..."
   docker compose up -d
 fi
 
@@ -37,4 +37,4 @@ echo "  PostgreSQL:  localhost:5432"
 echo "  Redis Cache: localhost:6379"
 echo "  Redis PubSub: localhost:6380"
 echo "  RabbitMQ:    localhost:5672 (management: localhost:15672)"
-echo "  MailHog:     localhost:8025"
+echo "  Mailpit:     localhost:8025"

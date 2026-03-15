@@ -33,7 +33,7 @@ cp infisical.json.example infisical.json
 
 ```bash
 make dev
-# This starts PostgreSQL, Redis, RabbitMQ, MailHog via Docker Compose
+# This starts PostgreSQL, Redis, RabbitMQ, Mailpit via Docker Compose
 # Then runs Prisma migrations and starts all services with Turborepo
 ```
 
@@ -52,7 +52,7 @@ curl http://localhost:3000/api/v1/health
 | Swagger UI          | http://localhost:3000/api/docs                   |
 | WebSocket Gateway   | ws://localhost:3001                              |
 | RabbitMQ Management | http://localhost:15672 (guest/guest)             |
-| MailHog (Email)     | http://localhost:8025                            |
+| Mailpit (Email)     | http://localhost:8025                            |
 | Prisma Studio       | Run `pnpm prisma studio` → http://localhost:5555 |
 
 ## Common Commands
