@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaWriteService } from '@nestlancer/database';
-import { AuditEntry } from '../interfaces/audit-job.interface';
+import { AuditEntryDto } from '../dto/audit-entry.dto';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
 
@@ -19,7 +19,7 @@ export class AuditBatchInsertProcessor {
     );
   }
 
-  async insertBatch(entries: AuditEntry[]): Promise<void> {
+  async insertBatch(entries: AuditEntryDto[]): Promise<void> {
     if (entries.length === 0) return;
 
     try {
@@ -45,7 +45,7 @@ export class AuditBatchInsertProcessor {
     }
   }
 
-  private async handleFallback(entries: AuditEntry[]): Promise<void> {
+  private async handleFallback(entries: AuditEntryDto[]): Promise<void> {
     this.logger.warn(
       `Writing ${entries.length} entries to fallback file: ${this.fallbackFilePath}`,
     );

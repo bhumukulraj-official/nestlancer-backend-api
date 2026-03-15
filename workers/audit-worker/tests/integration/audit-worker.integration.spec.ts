@@ -46,7 +46,7 @@ describe('Audit Worker (Integration)', () => {
       .overrideProvider(QueueConsumerService)
       .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
       .overrideProvider(DlqService)
-      .useValue({})
+      .useValue({ sendToDlq: jest.fn().mockResolvedValue(undefined) })
       .overrideProvider(PrismaWriteService)
       .useValue({
         $connect: jest.fn(),
@@ -115,6 +115,8 @@ describe('Audit Worker (Integration)', () => {
       it('should handle audit entry and process batch insertion correctly', async () => {
         const entryProps = {
           action: 'USER_LOGIN',
+          category: 'AUTH',
+          description: 'User logged in',
           userId: 'test-user-123',
           ip: '127.0.0.1',
         };
@@ -135,7 +137,11 @@ describe('Audit Worker (Integration)', () => {
         jest.spyOn(fs.promises, 'appendFile').mockResolvedValue(undefined);
         (prisma.auditLog.createMany as jest.Mock).mockRejectedValueOnce(new Error('DB Error'));
 
-        const entryProps = { action: 'DB_FAILED_ACTION' as any };
+        const entryProps = {
+          action: 'DB_FAILED_ACTION',
+          category: 'TEST',
+          description: 'Failed action test'
+        };
 
         await processor.insertBatch([entryProps]);
 
@@ -154,12 +160,16 @@ describe('Audit Worker (Integration)', () => {
       });
 
       it('should parse RabbitMQ messages and forward to AuditWorkerService', async () => {
-        const payload = { action: 'RABBITMQ_TEST' };
+        const payload = {
+          action: 'RABBITMQ_TEST',
+          category: 'TEST',
+          description: 'RabbitMQ test description'
+        };
         const msg: any = { content: Buffer.from(JSON.stringify(payload)) };
 
         await (consumer as any).handleMessage(msg);
 
-        expect(service.handleAuditEntry).toHaveBeenCalledWith(payload);
+        expect(service.handleAuditEntry).toHaveBeenCalledWith(expect.objectContaining(payload));
       });
 
       it('should throw error for invalid JSON payload', async () => {

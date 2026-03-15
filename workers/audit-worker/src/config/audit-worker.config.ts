@@ -6,4 +6,5 @@ export const auditConfig = registerAs('audit', () => ({
   maxBufferSize: parseInt(process.env.AUDIT_MAX_BUFFER_SIZE ?? '1000', 10),
   fallbackFilePath: process.env.AUDIT_FALLBACK_FILE_PATH ?? '/tmp/audit-fallback.jsonl',
   retryOnFailure: process.env.AUDIT_RETRY_ON_FAILURE !== 'false',
+  queueName: process.env.AUDIT_QUEUE_NAME ?? 'audit.queue',
 }));

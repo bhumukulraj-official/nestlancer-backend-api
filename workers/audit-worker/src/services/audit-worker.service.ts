@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/commo
 import { BatchBufferService } from './batch-buffer.service';
 import { AuditBatchInsertProcessor } from '../processors/audit-batch-insert.processor';
 import { MetricsService } from '@nestlancer/metrics';
-import { AuditEntry } from '../interfaces/audit-job.interface';
+import { AuditEntryDto } from '../dto/audit-entry.dto';
 import { ConfigService } from '@nestjs/config';
 
 /**
@@ -53,7 +53,7 @@ export class AuditWorkerService implements OnModuleInit, OnModuleDestroy {
    * @param entry - The audit log entry to process
    * @returns A promise that resolves when the entry is buffered (and potentially flushed)
    */
-  async handleAuditEntry(entry: AuditEntry): Promise<void> {
+  async handleAuditEntry(entry: AuditEntryDto): Promise<void> {
     this.metrics.incrementCounter('audit.entries_received');
     const shouldFlush = this.bufferService.add(entry);
     this.metrics.setGauge('audit.buffer_size', this.bufferService.size());
