@@ -4,7 +4,7 @@ import { MailOptions } from './interfaces/mail.interface';
 import { renderTemplate } from './templates/handlebars.engine';
 
 export interface MailModuleConfig {
-  provider?: 'smtp' | 'zeptomail' | 'ses';
+  provider?: 'smtp' | 'zeptomail';
   from?: string;
   smtp?: {
     host: string;
@@ -20,7 +20,7 @@ export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
   private transporter!: Transporter;
 
-  constructor(@Inject('MAIL_OPTIONS') private readonly options: MailModuleConfig) {}
+  constructor(@Inject('MAIL_OPTIONS') private readonly options: MailModuleConfig) { }
 
   onModuleInit(): void {
     const provider = this.options.provider || process.env.EMAIL_PROVIDER || 'smtp';
@@ -34,9 +34,9 @@ export class MailService implements OnModuleInit {
           this.options.smtp?.auth ||
           (process.env.SMTP_USER
             ? {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS || '',
-              }
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS || '',
+            }
             : undefined),
       });
       this.logger.log('MailService initialized with SMTP transport');
@@ -62,7 +62,7 @@ export class MailService implements OnModuleInit {
 
   async send(mail: MailOptions): Promise<{ messageId: string }> {
     const from =
-      mail.from || this.options.from || process.env.SES_FROM_EMAIL || 'noreply@nestlancer.com';
+      mail.from || this.options.from || 'noreply@nestlancer.com';
 
     this.logger.log(`Sending email to ${mail.to}: ${mail.subject}`);
 

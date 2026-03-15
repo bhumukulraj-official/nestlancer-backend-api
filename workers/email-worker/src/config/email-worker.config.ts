@@ -20,8 +20,4 @@ export const emailWorkerConfig = registerAs('emailWorker', () => ({
   concurrency: parseInt(process.env.EMAIL_CONCURRENCY || '5', 10),
   templatesPath: process.env.TEMPLATES_PATH || './src/templates',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
-  dkim: {
-    domain: process.env.DKIM_DOMAIN,
-    privateKey: process.env.DKIM_PRIVATE_KEY,
-  },
 }));

@@ -10,8 +10,6 @@ describe('SMTP Config Schema', () => {
         SMTP_HOST: 'localhost',
         SMTP_PORT: 587,
         SMTP_SECURE: false,
-        SES_REGION: 'us-east-1',
-        SES_FROM_EMAIL: 'noreply@localhost',
       });
     }
   });
