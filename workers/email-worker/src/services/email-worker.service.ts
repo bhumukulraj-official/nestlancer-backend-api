@@ -1,14 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailService } from '@nestlancer/mail';
+import { CacheService } from '@nestlancer/cache';
 import { EmailJob } from '../interfaces/email-job.interface';
 import { EmailRendererService } from './email-renderer.service';
 import { EmailRetryService } from './email-retry.service';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 
 /**
  * Orchestrator service for the Email Worker.
  * Handles template selection, rendering, and dispatching emails via SMTP.
  * Implements a retry mechanism for failed delivery attempts.
+ * Now includes an idempotency layer to prevent duplicate sends.
  */
 @Injectable()
 export class EmailWorkerService {
@@ -19,7 +22,8 @@ export class EmailWorkerService {
     private readonly emailRenderer: EmailRendererService,
     private readonly configService: ConfigService,
     private readonly retryService: EmailRetryService,
-  ) {}
+    private readonly cacheService: CacheService,
+  ) { }
 
   /**
    * Processes a single email job from the queue.
@@ -30,9 +34,19 @@ export class EmailWorkerService {
    */
   async processEmail(job: EmailJob): Promise<void> {
     const { type, to, data, attachments } = job;
-    this.logger.log(`[EmailWorker] Processing notification: Type=${type} | To=${to}`);
+
+    // Idempotency check
+    const idempotencyKey = this.generateIdempotencyKey(job);
+    const cacheKey = `email_idempotency:${idempotencyKey}`;
 
     try {
+      if (await this.cacheService.exists(cacheKey)) {
+        this.logger.log(`[EmailWorker] Skipping duplicate email for key: ${idempotencyKey}`);
+        return;
+      }
+
+      this.logger.log(`[EmailWorker] Processing notification: Type=${type} | To=${to}`);
+
       const html = await this.emailRenderer.render(type.toLowerCase(), {
         ...this.getCommonData(),
         ...data,
@@ -47,6 +61,10 @@ export class EmailWorkerService {
         attachments: attachments as any, // Cast to MailOptions attachments
       });
 
+      // Mark as processed
+      const ttl = this.configService.get('emailWorker.idempotencyTtl') || 86400;
+      await this.cacheService.set(cacheKey, { processedAt: new Date().toISOString() }, ttl);
+
       this.logger.log(`[EmailWorker] Successfully sent email: ${type} -> ${to}`);
     } catch (error: any) {
       this.logger.error(
@@ -54,11 +72,25 @@ export class EmailWorkerService {
         error.stack,
       );
       await this.retryService.handleFailure(
-        this.configService.get('email-worker.rabbitmq.queue') || 'email.queue',
+        this.configService.get('emailWorker.rabbitmq.queue') || 'email.queue',
         job,
         error,
       );
     }
+  }
+
+  /**
+   * Generates a unique idempotency key for the email job.
+   */
+  private generateIdempotencyKey(job: EmailJob): string {
+    const payload = JSON.stringify({
+      type: job.type,
+      to: job.to,
+      data: job.data,
+      // We don't include attachments in the hash as they might be large
+      // but usually the combination of type, to, and data is unique enough.
+    });
+    return crypto.createHash('sha256').update(payload).digest('hex');
   }
 
   /**
@@ -69,9 +101,9 @@ export class EmailWorkerService {
   private getCommonData(): Record<string, any> {
     return {
       currentYear: new Date().getFullYear(),
-      companyName: this.configService.get('email-worker.from.name'),
-      supportEmail: this.configService.get('email-worker.from.email'),
-      logoUrl: `${this.configService.get('email-worker.frontendUrl')}/logo.png`,
+      companyName: this.configService.get('emailWorker.from.name'),
+      supportEmail: this.configService.get('emailWorker.from.email'),
+      logoUrl: `${this.configService.get('emailWorker.frontendUrl')}/logo.png`,
     };
   }
 

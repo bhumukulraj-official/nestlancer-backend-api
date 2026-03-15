@@ -5,13 +5,14 @@ import { EmailRendererService } from '../../../src/services/email-renderer.servi
 import { EmailRetryService } from '../../../src/services/email-retry.service';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
-import { EmailJob } from '../../../src/interfaces/email-job.interface';
+import { CacheService } from '@nestlancer/cache';
 
 describe('EmailWorkerService', () => {
   let service: EmailWorkerService;
   let mailService: jest.Mocked<MailService>;
   let emailRenderer: jest.Mocked<EmailRendererService>;
   let retryService: jest.Mocked<EmailRetryService>;
+  let cacheService: jest.Mocked<CacheService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,13 +31,22 @@ describe('EmailWorkerService', () => {
           useValue: { handleFailure: jest.fn() },
         },
         {
+          provide: CacheService,
+          useValue: {
+            exists: jest.fn().mockResolvedValue(false),
+            set: jest.fn(),
+            get: jest.fn(),
+          },
+        },
+        {
           provide: ConfigService,
           useValue: {
             get: jest.fn().mockImplementation((key) => {
-              if (key === 'email-worker.rabbitmq.queue') return 'email.queue';
-              if (key === 'email-worker.from.name') return 'Test Company';
-              if (key === 'email-worker.from.email') return 'support@test.com';
-              if (key === 'email-worker.frontendUrl') return 'https://test.com';
+              if (key === 'emailWorker.rabbitmq.queue') return 'email.queue';
+              if (key === 'emailWorker.from.name') return 'Test Company';
+              if (key === 'emailWorker.from.email') return 'support@test.com';
+              if (key === 'emailWorker.frontendUrl') return 'https://test.com';
+              if (key === 'emailWorker.idempotencyTtl') return 86400;
               return null;
             }),
           },
@@ -48,9 +58,10 @@ describe('EmailWorkerService', () => {
     mailService = module.get(MailService);
     emailRenderer = module.get(EmailRendererService);
     retryService = module.get(EmailRetryService);
+    cacheService = module.get(CacheService);
 
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
-    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => { });
   });
 
   afterEach(() => {

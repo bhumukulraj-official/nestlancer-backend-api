@@ -6,6 +6,7 @@ import { MetricsModule } from '@nestlancer/metrics';
 import { TracingModule } from '@nestlancer/tracing';
 import { QueueModule } from '@nestlancer/queue';
 import { MailModule } from '@nestlancer/mail';
+import { CacheModule } from '@nestlancer/cache';
 import { emailWorkerConfig } from './config/email-worker.config';
 import { EmailWorkerService } from './services/email-worker.service';
 import { EmailRendererService } from './services/email-renderer.service';
@@ -20,8 +21,19 @@ import { EmailConsumer } from './consumers/email.consumer';
     MetricsModule,
     TracingModule.forRoot(),
     QueueModule.forRoot(),
-    MailModule.forRoot(),
+    MailModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        provider: configService.get('emailWorker.provider'),
+        smtp: configService.get('emailWorker.smtp'),
+        zeptomail: configService.get('emailWorker.zeptomail'),
+        from: `${configService.get('emailWorker.from.name')} <${configService.get(
+          'emailWorker.from.email',
+        )}>`,
+      }),
+    }),
+    CacheModule.forRoot(),
   ],
   providers: [EmailWorkerService, EmailRendererService, EmailRetryService, EmailConsumer],
 })
-export class AppModule {}
+export class AppModule { }

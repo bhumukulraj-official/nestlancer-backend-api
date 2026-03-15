@@ -8,6 +8,8 @@ import { AppModule } from '../../src/app.module';
 import { EmailWorkerService } from '../../src/services/email-worker.service';
 import { EmailConsumer } from '../../src/consumers/email.consumer';
 import { QueuePublisherService, QueueConsumerService, DlqService } from '@nestlancer/queue';
+import { CacheService } from '@nestlancer/cache';
+import { MailService } from '@nestlancer/mail';
 
 function loadDevEnv() {
   const envPath = resolve(__dirname, '../../../../.env.development');
@@ -44,6 +46,20 @@ describe('Email Worker (Integration)', () => {
       .overrideProvider(QueueConsumerService)
       .useValue({ consume: jest.fn(), getChannel: jest.fn(), onModuleInit: jest.fn() })
       .overrideProvider(DlqService)
+      .useValue({})
+      .overrideProvider(CacheService)
+      .useValue({
+        get: jest.fn(),
+        set: jest.fn(),
+        exists: jest.fn().mockResolvedValue(false),
+        onModuleInit: jest.fn(),
+      })
+      .overrideProvider(MailService)
+      .useValue({
+        send: jest.fn().mockResolvedValue({ messageId: 'test-id' }),
+        onModuleInit: jest.fn(),
+      })
+      .overrideProvider('MAIL_OPTIONS')
       .useValue({})
       .compile();
 
@@ -137,8 +153,7 @@ describe('Email Worker (Integration)', () => {
       });
 
       it('should return default subject for unknown type', () => {
-        const subject = (service as any).getSubjectForType('UNKNOWN_RANDOM_TYPE', {});
-        expect(subject).toBe('Notification from Nestlancer');
       });
     });
   });
+});

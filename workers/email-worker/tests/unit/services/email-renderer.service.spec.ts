@@ -67,10 +67,11 @@ describe('EmailRendererService', () => {
       expect(handlebars.compile).toHaveBeenCalledTimes(2); // layout + welcome template
     });
 
-    it('should ignore if templatesPath is not configured', async () => {
+    it('should fallback to default templates path if not configured', async () => {
       configService.get.mockReturnValueOnce(undefined);
+      delete process.env.TEMPLATES_PATH;
       await service.onModuleInit();
-      expect(fs.readdir).not.toHaveBeenCalled();
+      expect(fs.readdir).toHaveBeenCalledWith('./src/templates');
     });
 
     it('should handle errors during loading', async () => {
