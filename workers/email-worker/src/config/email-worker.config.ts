@@ -17,7 +17,7 @@ export const emailWorkerConfig = registerAs('emailWorker', () => ({
     token: process.env.ZEPTOMAIL_TOKEN,
   },
   from: {
-    email: process.env.FROM_EMAIL || 'hello@nestlancer.com',
+    email: process.env.FROM_EMAIL || 'noreply@nestlancer.com',
     name: process.env.FROM_NAME || 'Nestlancer',
   },
   replyTo: process.env.REPLY_TO,

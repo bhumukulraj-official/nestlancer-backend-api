@@ -14,7 +14,7 @@ export const notificationWorkerConfig = registerAs('notificationWorker', () => (
   vapid: {
     publicKey: process.env.NOTIFICATION_WORKER_VAPID_PUBLIC_KEY,
     privateKey: process.env.NOTIFICATION_WORKER_VAPID_PRIVATE_KEY,
-    subject: process.env.NOTIFICATION_WORKER_VAPID_SUBJECT || 'mailto:hello@nestlancer.com',
+    subject: process.env.NOTIFICATION_WORKER_VAPID_SUBJECT || 'mailto:noreply@nestlancer.com',
   },
   concurrency: parseInt(process.env.NOTIFICATION_CONCURRENCY || '10', 10),
 }));

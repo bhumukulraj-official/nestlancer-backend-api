@@ -2081,7 +2081,7 @@ Each worker follows a pattern: `src/main.ts`, `src/app.module.ts`, `src/consumer
   - [ ] `quote-email.processor.ts` – Handles quote-related emails. Sub-types: `QUOTE_SENT` (renders `quote-sent.hbs`, attaches PDF from S3), `QUOTE_ACCEPTED` (renders `quote-accepted.hbs`), `QUOTE_EXPIRED` (renders `quote-expired.hbs`). Quote PDF attached as inline attachment.
   - [ ] `payment-email.processor.ts` – Payment emails. Sub-types: `PAYMENT_RECEIVED` (renders `payment-received.hbs`, attaches receipt PDF), `PAYMENT_FAILED` (renders `payment-failed.hbs` with retry link), `PAYMENT_REFUND` (renders `payment-refund.hbs`). Amounts formatted in INR (₹).
   - [ ] `project-email.processor.ts` – Project lifecycle emails. Sub-types: `PROJECT_UPDATE` (progress entry created), `PROJECT_COMPLETED` (admin marks complete, client review needed). Renders respective templates.
-  - [ ] `contact-response.processor.ts` – Renders `contact-response.hbs`. Sends admin's response to contact form submitter. From: configurable reply address (e.g., `hello@nestlancer.com`).
+  - [ ] `contact-response.processor.ts` – Renders `contact-response.hbs`. Sends admin's response to contact form submitter. From: configurable reply address (e.g., `noreply@nestlancer.com`).
   - [ ] `announcement-email.processor.ts` – Bulk email for system announcements. Processes batches of recipients. Renders `announcement.hbs` with `{ title, message, unsubscribeUrl }`. Includes unsubscribe link per CAN-SPAM compliance.
 - [ ] `src/services/`
   - [ ] `email-worker.service.ts` – `sendEmail(to, subject, html, attachments?): Promise<void>`. Wraps Nodemailer `transporter.sendMail()`. Configures: from address, reply-to, DKIM signing. Records send result. Emits metrics.
@@ -2102,7 +2102,7 @@ Each worker follows a pattern: `src/main.ts`, `src/app.module.ts`, `src/consumer
   - [ ] `project-completed.hbs` – Completion notice, review/approve CTA, feedback request.
   - [ ] `contact-response.hbs` – Admin's response text, original message reference.
   - [ ] `announcement.hbs` – System announcement with type-based styling (info=blue, warning=yellow, critical=red).
-- [ ] `src/config/email-worker.config.ts` – `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `FROM_EMAIL` ('hello@nestlancer.com'), `FROM_NAME` ('Nestlancer'), `REPLY_TO`, `MAX_RETRIES` (3), `CONCURRENCY` (5), `DKIM_DOMAIN`, `DKIM_PRIVATE_KEY`.
+- [ ] `src/config/email-worker.config.ts` – `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `FROM_EMAIL` ('noreply@nestlancer.com'), `FROM_NAME` ('Nestlancer'), `REPLY_TO`, `MAX_RETRIES` (3), `CONCURRENCY` (5), `DKIM_DOMAIN`, `DKIM_PRIVATE_KEY`.
 - [ ] `src/interfaces/email-job.interface.ts` – `EmailJob { type: EmailJobType, to: string, data: Record<string, any>, attachments?: Attachment[], priority?: number }`.
 - [ ] `src/interfaces/email-template-data.interface.ts` – Per-template data interfaces: `VerificationEmailData`, `PasswordResetEmailData`, `QuoteEmailData`, `PaymentEmailData`, etc.
 - [ ] `tests/unit/` – Template rendering tests (snapshot testing), processor routing, retry logic. Mock SMTP transport.
