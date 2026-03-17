@@ -6,7 +6,7 @@ import {
   StorageModuleOptions,
 } from './interfaces/storage.interface';
 import { LocalProvider } from './providers/local.provider';
-import { B2Provider } from './providers/cloudflare-r2.provider';
+import { CloudflareR2Provider } from './providers/cloudflare-r2.provider';
 
 import { Readable } from 'stream';
 
@@ -14,6 +14,8 @@ import { Readable } from 'stream';
 export class StorageService implements OnModuleInit {
   private readonly logger = new Logger(StorageService.name);
   private provider!: StorageProvider;
+  private primaryProvider?: StorageProvider;
+  private fallbackProvider?: StorageProvider;
 
   constructor(
     @Inject('STORAGE_OPTIONS') private readonly options: StorageModuleOptions,
@@ -22,13 +24,17 @@ export class StorageService implements OnModuleInit {
   ) { }
 
   onModuleInit(): void {
+    const local = new LocalProvider(this.localConfig);
+
     switch (this.options.provider) {
       case 'b2':
-        this.provider = new B2Provider(this.s3Config);
+        this.primaryProvider = new CloudflareR2Provider(this.s3Config);
+        this.fallbackProvider = local;
+        this.provider = this.primaryProvider;
         break;
       case 'local':
       default:
-        this.provider = new LocalProvider(this.localConfig);
+        this.provider = local;
         break;
     }
     this.logger.log(`StorageService initialized with provider: ${this.options.provider}`);
@@ -39,8 +45,22 @@ export class StorageService implements OnModuleInit {
     key: string,
     body: Buffer,
     contentType: string,
+    metadata?: Record<string, any>,
   ): Promise<UploadResult> {
-    return this.provider.upload(bucket, key, body, contentType);
+    if (this.options.provider === 'b2' && this.primaryProvider && this.fallbackProvider) {
+      try {
+        return await this.primaryProvider.upload(bucket, key, body, contentType, metadata);
+      } catch (error: any) {
+        this.logger.warn(
+          `Cloud storage upload failed for bucket ${bucket}, falling back to local: ${error.message}`,
+        );
+        return await this.fallbackProvider.upload(bucket, key, body, contentType, {
+          ...metadata,
+          needsSync: true,
+        });
+      }
+    }
+    return this.provider.upload(bucket, key, body, contentType, metadata);
   }
 
   async download(bucket: string, key: string): Promise<Buffer> {
@@ -61,6 +81,21 @@ export class StorageService implements OnModuleInit {
 
   async exists(bucket: string, key: string): Promise<boolean> {
     return this.provider.exists(bucket, key);
+  }
+
+  async checkConnection(): Promise<void> {
+    await this.provider.checkConnection();
+  }
+
+  /**
+   * Returns the primary and fallback providers.
+   * Useful for background synchronization tasks.
+   */
+  getProviders(): { primary?: StorageProvider; fallback?: StorageProvider } {
+    return {
+      primary: this.primaryProvider,
+      fallback: this.fallbackProvider,
+    };
   }
 
   async getFileSize(bucket: string, key: string): Promise<number> {

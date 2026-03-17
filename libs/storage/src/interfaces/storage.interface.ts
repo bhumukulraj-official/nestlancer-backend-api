@@ -1,12 +1,19 @@
 import { Readable } from 'stream';
 
 export interface StorageProvider {
-  upload(bucket: string, key: string, body: Buffer, contentType: string): Promise<UploadResult>;
+  upload(
+    bucket: string,
+    key: string,
+    body: Buffer,
+    contentType: string,
+    metadata?: Record<string, any>,
+  ): Promise<UploadResult>;
   download(bucket: string, key: string): Promise<Buffer>;
   downloadStream(bucket: string, key: string): Promise<Readable>;
   delete(bucket: string, key: string): Promise<void>;
   getSignedUrl(options: SignedUrlOptions): Promise<string>;
   exists(bucket: string, key: string): Promise<boolean>;
+  checkConnection(): Promise<void>;
   /** Returns size in bytes, or 0 if object not found / unknown. */
   getFileSize?(bucket: string, key: string): Promise<number>;
 }

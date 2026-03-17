@@ -5,6 +5,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
+  HeadBucketCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl as awsGetSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
@@ -15,8 +16,8 @@ import {
 } from '../interfaces/storage.interface';
 
 @Injectable()
-export class B2Provider implements StorageProvider {
-  private readonly logger = new Logger(B2Provider.name);
+export class CloudflareR2Provider implements StorageProvider {
+  private readonly logger = new Logger(CloudflareR2Provider.name);
   private client!: S3Client;
 
   constructor(@Inject('S3_CONFIG') private readonly config: S3StorageConfig) {
@@ -30,10 +31,10 @@ export class B2Provider implements StorageProvider {
         },
         forcePathStyle: config.forcePathStyle ?? true,
       });
-      this.logger.log(`B2Provider initialized (endpoint: ${config.endpoint})`);
+      this.logger.log(`CloudflareR2Provider initialized (endpoint: ${config.endpoint})`);
     } else {
-      this.logger.warn(
-        'B2Provider: No endpoint provided, client will not be initialized',
+      throw new Error(
+        'CloudflareR2Provider requires an endpoint and must be properly initialized before use',
       );
     }
   }
@@ -51,6 +52,7 @@ export class B2Provider implements StorageProvider {
     key: string,
     body: Buffer,
     contentType: string,
+    _metadata?: Record<string, any>,
   ): Promise<UploadResult> {
     this.checkClient();
     const command = new PutObjectCommand({
@@ -132,6 +134,26 @@ export class B2Provider implements StorageProvider {
     } catch {
       return false;
     }
+  }
+
+  async checkConnection(): Promise<void> {
+    this.checkClient();
+    // Use a simple command to check if we can reach the service
+    // We don't necessarily need a specific bucket, but HeadBucket is standard.
+    // We'll try to list buckets or head a common one if known.
+    // Since we don't have a specific "test" bucket, we'll try to list buckets.
+    // However, permissions might be restricted. Let's use ListObjects with MaxKeys: 1 on a likely bucket.
+    // Or just a simple HeadBucket on whatever bucket we can.
+    // For now, let's just use a simple exists check on a non-existent object in a likely bucket
+    // or better, use ListBuckets.
+    await this.client.send(new HeadBucketCommand({ Bucket: 'healthcheck' })).catch(err => {
+      // 404 is fine, it means we reached the service. 403 is also fine (accessible but no permission).
+      // Only network errors or 5xx should fail the connection check.
+      if (err.name === 'NoSuchBucket' || err.name === 'AccessDenied' || err.$metadata?.httpStatusCode === 403 || err.$metadata?.httpStatusCode === 404) {
+        return;
+      }
+      throw err;
+    });
   }
 
   async getFileSize(bucket: string, key: string): Promise<number> {

@@ -15,6 +15,8 @@ import { VirusScanProcessor } from './processors/virus-scan.processor';
 import { ImageResizeProcessor } from './processors/image-resize.processor';
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail-generator.processor';
 import { MetadataExtractorProcessor } from './processors/metadata-extractor.processor';
+import { ScheduleModule } from '@nestjs/schedule';
+import { StorageSyncCron } from './cron/storage-sync.cron';
 import { mediaWorkerConfig } from './config/media-worker.config';
 
 @Module({
@@ -23,6 +25,7 @@ import { mediaWorkerConfig } from './config/media-worker.config';
       load: [mediaWorkerConfig],
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     LoggerModule.forRoot(),
     MetricsModule,
     TracingModule.forRoot(),
@@ -40,6 +43,7 @@ import { mediaWorkerConfig } from './config/media-worker.config';
     ImageResizeProcessor,
     ThumbnailGeneratorProcessor,
     MetadataExtractorProcessor,
+    StorageSyncCron,
   ],
 })
 export class AppModule { }

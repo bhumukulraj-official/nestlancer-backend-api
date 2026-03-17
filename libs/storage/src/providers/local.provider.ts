@@ -1,5 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { promises as fs } from 'fs';
+import { createReadStream } from 'fs';
 import { join, dirname } from 'path';
 import { createHash } from 'crypto';
 import {
@@ -9,7 +10,6 @@ import {
   LocalStorageConfig,
 } from '../interfaces/storage.interface';
 
-import { createReadStream } from 'fs';
 import { Readable } from 'stream';
 
 @Injectable()
@@ -28,6 +28,7 @@ export class LocalProvider implements StorageProvider {
     key: string,
     body: Buffer,
     contentType: string,
+    metadata?: Record<string, any>,
   ): Promise<UploadResult> {
     const filePath = this.resolvePath(bucket, key);
     await fs.mkdir(dirname(filePath), { recursive: true });
@@ -44,10 +45,13 @@ export class LocalProvider implements StorageProvider {
         size: body.length,
         etag,
         uploadedAt: new Date().toISOString(),
+        ...metadata,
       }),
     );
 
-    this.logger.debug(`Uploaded ${key} to ${bucket} (${body.length} bytes)`);
+    this.logger.debug(
+      `Uploaded ${key} to ${bucket} (${body.length} bytes)${metadata?.needsSync ? ' [NEEDS SYNC]' : ''}`,
+    );
 
     return {
       key,
@@ -98,6 +102,58 @@ export class LocalProvider implements StorageProvider {
     } catch {
       return false;
     }
+  }
+
+  async checkConnection(): Promise<void> {
+    // Local storage is always "connected" if the basePath is accessible
+    await fs.access(this.config.basePath).catch(async () => {
+      await fs.mkdir(this.config.basePath, { recursive: true });
+    });
+  }
+
+  async listPendingSync(): Promise<Array<{ bucket: string; key: string; contentType: string }>> {
+    const pending: Array<{ bucket: string; key: string; contentType: string }> = [];
+    const rootPath = this.config.basePath;
+
+    try {
+      await fs.access(rootPath);
+    } catch {
+      return [];
+    }
+
+    const traverse = async (dir: string) => {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          await traverse(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith('.meta.json')) {
+          try {
+            const content = await fs.readFile(fullPath, 'utf-8');
+            const meta = JSON.parse(content);
+            if (meta.needsSync === true) {
+              // Extract bucket and key from path
+              // fullPath is rootPath/bucket/key.meta.json
+              const relativePath = fullPath.slice(rootPath.length + 1); // remove rootPath and leading slash
+              const parts = relativePath.split('/');
+              const bucket = parts[0];
+              const key = parts.slice(1).join('/').replace('.meta.json', '');
+
+              pending.push({
+                bucket,
+                key,
+                contentType: meta.contentType || 'application/octet-stream',
+              });
+            }
+          } catch (e: any) {
+            this.logger.error(`Failed to read metadata file ${fullPath}: ${e.message}`);
+          }
+        }
+      }
+    };
+
+    await traverse(rootPath);
+    return pending;
   }
 
   async getFileSize(bucket: string, key: string): Promise<number> {

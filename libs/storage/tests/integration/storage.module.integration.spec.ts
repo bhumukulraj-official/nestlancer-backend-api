@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { StorageModule } from '../../src/storage.module';
 import { StorageService } from '../../src/storage.service';
 import { ConfigModule } from '@nestjs/config';
+import { NestlancerConfigService } from '@nestlancer/config';
 import { promises as fs } from 'fs';
 
 // Mock fs
@@ -25,16 +26,30 @@ describe('StorageModule (Integration)', () => {
   let service: StorageService;
 
   beforeAll(async () => {
+    const mockConfigService = {
+      storageProvider: 'local',
+      localStoragePath: '/tmp/nestlancer-storage',
+      localStorageUrl: 'http://localhost:3000/storage',
+      b2KeyId: 'test-key-id',
+      b2ApplicationKey: 'test-app-key',
+      b2Endpoint: 'test-endpoint',
+      b2Region: 'test-region',
+    };
+
     module = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),
         StorageModule.forRoot({
           provider: 'local',
           local: { basePath: '/tmp/nestlancer-storage', baseUrl: '' },
         }),
       ],
-      providers: [],
-    }).compile();
+    })
+      .useMocker((token) => {
+        if (token === NestlancerConfigService) {
+          return mockConfigService;
+        }
+      })
+      .compile();
 
     service = module.get<StorageService>(StorageService);
     service.onModuleInit();

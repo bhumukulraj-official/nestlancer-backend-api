@@ -2,7 +2,7 @@ import { Module, DynamicModule, Global } from '@nestjs/common';
 import { NestlancerConfigService } from '@nestlancer/config';
 import { StorageService } from './storage.service';
 import { LocalProvider } from './providers/local.provider';
-import { B2Provider } from './providers/cloudflare-r2.provider';
+import { CloudflareR2Provider } from './providers/cloudflare-r2.provider';
 import {
   StorageModuleOptions,
   S3StorageConfig,
@@ -52,7 +52,7 @@ export class StorageModule {
           useFactory: (opts: StorageModuleOptions): LocalStorageConfig => opts.local,
         },
         LocalProvider,
-        B2Provider,
+        CloudflareR2Provider,
         StorageService,
       ],
       exports: [StorageService],

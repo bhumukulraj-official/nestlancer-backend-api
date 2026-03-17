@@ -5,6 +5,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
+  HeadBucketCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl as awsGetSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
@@ -37,6 +38,7 @@ export class S3Provider implements StorageProvider {
     key: string,
     body: Buffer,
     contentType: string,
+    _metadata?: Record<string, any>,
   ): Promise<UploadResult> {
     const command = new PutObjectCommand({
       Bucket: bucket,
@@ -113,6 +115,15 @@ export class S3Provider implements StorageProvider {
     } catch {
       return false;
     }
+  }
+
+  async checkConnection(): Promise<void> {
+    await this.client.send(new HeadBucketCommand({ Bucket: 'healthcheck' })).catch(err => {
+      if (err.name === 'NoSuchBucket' || err.name === 'AccessDenied' || err.$metadata?.httpStatusCode === 403 || err.$metadata?.httpStatusCode === 404) {
+        return;
+      }
+      throw err;
+    });
   }
 
   async getFileSize(bucket: string, key: string): Promise<number> {
