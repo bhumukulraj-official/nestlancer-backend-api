@@ -1,8 +1,8 @@
 import { Module, DynamicModule, Global } from '@nestjs/common';
+import { NestlancerConfigService } from '@nestlancer/config';
 import { StorageService } from './storage.service';
-import { S3Provider } from './providers/s3.provider';
 import { LocalProvider } from './providers/local.provider';
-import { CloudflareR2Provider } from './providers/cloudflare-r2.provider';
+import { B2Provider } from './providers/cloudflare-r2.provider';
 import {
   StorageModuleOptions,
   S3StorageConfig,
@@ -13,31 +13,46 @@ import {
 @Module({})
 export class StorageModule {
   static forRoot(options?: Partial<StorageModuleOptions>): DynamicModule {
-    const provider =
-      options?.provider || (process.env.STORAGE_PROVIDER as 's3' | 'b2' | 'local') || 'local';
-
-    const s3Config: S3StorageConfig = options?.s3 || {
-      accessKeyId: process.env.B2_KEY_ID || '',
-      secretAccessKey: process.env.B2_APPLICATION_KEY || '',
-      endpoint: process.env.B2_ENDPOINT ? `https://${process.env.B2_ENDPOINT}` : undefined,
-      region: process.env.B2_REGION || 'us-east-1',
-      forcePathStyle: true,
-    };
-
-    const localConfig: LocalStorageConfig = options?.local || {
-      basePath: process.env.LOCAL_STORAGE_PATH || './data/storage',
-      baseUrl: process.env.LOCAL_STORAGE_URL,
-    };
-
     return {
       module: StorageModule,
       providers: [
-        { provide: 'STORAGE_OPTIONS', useValue: { ...options, provider } },
-        { provide: 'S3_CONFIG', useValue: s3Config },
-        { provide: 'LOCAL_STORAGE_CONFIG', useValue: localConfig },
-        S3Provider,
+        {
+          provide: 'STORAGE_OPTIONS',
+          inject: [NestlancerConfigService],
+          useFactory: (config: NestlancerConfigService): StorageModuleOptions => {
+            const provider =
+              options?.provider ||
+              (config.storageProvider as 'b2' | 'local') ||
+              'local';
+
+            const s3Config: S3StorageConfig = options?.s3 || {
+              accessKeyId: config.b2KeyId,
+              secretAccessKey: config.b2ApplicationKey,
+              endpoint: config.b2Endpoint ? `https://${config.b2Endpoint}` : undefined,
+              region: config.b2Region,
+              forcePathStyle: true,
+            };
+
+            const localConfig: LocalStorageConfig = options?.local || {
+              basePath: config.localStoragePath,
+              baseUrl: config.localStorageUrl,
+            };
+
+            return { ...(options || {}), provider, s3: s3Config, local: localConfig };
+          },
+        },
+        {
+          provide: 'S3_CONFIG',
+          inject: ['STORAGE_OPTIONS'],
+          useFactory: (opts: StorageModuleOptions): S3StorageConfig => opts.s3,
+        },
+        {
+          provide: 'LOCAL_STORAGE_CONFIG',
+          inject: ['STORAGE_OPTIONS'],
+          useFactory: (opts: StorageModuleOptions): LocalStorageConfig => opts.local,
+        },
         LocalProvider,
-        CloudflareR2Provider,
+        B2Provider,
         StorageService,
       ],
       exports: [StorageService],

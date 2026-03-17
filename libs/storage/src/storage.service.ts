@@ -5,9 +5,8 @@ import {
   StorageProvider,
   StorageModuleOptions,
 } from './interfaces/storage.interface';
-import { S3Provider } from './providers/s3.provider';
 import { LocalProvider } from './providers/local.provider';
-import { CloudflareR2Provider } from './providers/cloudflare-r2.provider';
+import { B2Provider } from './providers/cloudflare-r2.provider';
 
 import { Readable } from 'stream';
 
@@ -25,12 +24,7 @@ export class StorageService implements OnModuleInit {
   onModuleInit(): void {
     switch (this.options.provider) {
       case 'b2':
-      case 's3':
-        if (this.options.provider === 'b2') {
-          this.provider = new CloudflareR2Provider(this.s3Config);
-        } else {
-          this.provider = new S3Provider(this.s3Config);
-        }
+        this.provider = new B2Provider(this.s3Config);
         break;
       case 'local':
       default:

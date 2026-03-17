@@ -6,7 +6,14 @@ describe('StorageConfig Schema', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.STORAGE_PROVIDER).toBe('local');
-      expect(result.data.B2_BUCKET_PRIVATE).toBe('nestlancer-private');
+      expect(result.data.STORAGE_BUCKET_PRIVATE).toBe('nestlancer-private');
+      expect(result.data.STORAGE_BUCKET_PUBLIC).toBe('nestlancer-public');
+      expect(result.data.STORAGE_BUCKET_AVATARS).toBe('nestlancer-avatars');
+      expect(result.data.STORAGE_BUCKET_ATTACHMENTS).toBe('nestlancer-requests');
+      expect(result.data.STORAGE_BUCKET_QUOTES).toBe('nestlancer-quotes-pdfs');
+      expect(result.data.STORAGE_BUCKET_DELIVERABLES).toBe('nestlancer-deliverables');
+      expect(result.data.STORAGE_BUCKET_REPORTS).toBe('nestlancer-reports');
+      expect(result.data.STORAGE_BUCKET_PDFS).toBe('nestlancer-pdfs');
     }
   });
 
@@ -16,10 +23,10 @@ describe('StorageConfig Schema', () => {
   });
 
   it('should validate with valid provider overrides', () => {
-    const result = storageConfigSchema.safeParse({ STORAGE_PROVIDER: 's3' });
+    const result = storageConfigSchema.safeParse({ STORAGE_PROVIDER: 'b2' });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.STORAGE_PROVIDER).toBe('s3');
+      expect(result.data.STORAGE_PROVIDER).toBe('b2');
     }
   });
 

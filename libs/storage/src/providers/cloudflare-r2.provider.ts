@@ -14,30 +14,26 @@ import {
   S3StorageConfig,
 } from '../interfaces/storage.interface';
 
-/**
- * Cloudflare R2 provider — S3-compatible but uses Cloudflare's endpoint.
- * R2 has no egress fees and supports the S3 API.
- */
 @Injectable()
-export class CloudflareR2Provider implements StorageProvider {
-  private readonly logger = new Logger(CloudflareR2Provider.name);
+export class B2Provider implements StorageProvider {
+  private readonly logger = new Logger(B2Provider.name);
   private client!: S3Client;
 
   constructor(@Inject('S3_CONFIG') private readonly config: S3StorageConfig) {
     if (config.endpoint) {
       this.client = new S3Client({
-        region: 'auto', // R2 uses 'auto' for region
+        region: config.region || 'us-east-1',
         endpoint: config.endpoint,
         credentials: {
           accessKeyId: config.accessKeyId,
           secretAccessKey: config.secretAccessKey,
         },
-        forcePathStyle: true, // Required for R2
+        forcePathStyle: config.forcePathStyle ?? true,
       });
-      this.logger.log(`CloudflareR2Provider initialized (endpoint: ${config.endpoint})`);
+      this.logger.log(`B2Provider initialized (endpoint: ${config.endpoint})`);
     } else {
       this.logger.warn(
-        'CloudflareR2Provider: No endpoint provided, client will not be initialized',
+        'B2Provider: No endpoint provided, client will not be initialized',
       );
     }
   }

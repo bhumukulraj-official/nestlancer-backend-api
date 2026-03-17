@@ -121,6 +121,9 @@ export class NestlancerConfigService {
   get storageProvider(): string {
     return this.getOptional('STORAGE_PROVIDER') || 'local';
   }
+  get b2Region(): string {
+    return this.getOptional('B2_REGION') || 'us-east-1';
+  }
   get b2KeyId(): string {
     return this.getOptional('B2_KEY_ID') || '';
   }
@@ -131,13 +134,58 @@ export class NestlancerConfigService {
     return this.getOptional('B2_ENDPOINT') || '';
   }
   get b2BucketPrivate(): string {
-    return this.getOptional('B2_BUCKET_PRIVATE') || 'nestlancer-private';
+    return this.storageBucketPrivate;
   }
   get b2BucketPublic(): string {
-    return this.getOptional('B2_BUCKET_PUBLIC') || 'nestlancer-public';
+    return this.storageBucketPublic;
   }
   get storageMaxFileSize(): number {
     return Number(this.getOptional('STORAGE_MAX_FILE_SIZE') || 104857600);
+  }
+  get storageAllowedMimeTypes(): string[] {
+    const value =
+      this.getOptional('STORAGE_ALLOWED_MIME_TYPES') ||
+      'image/jpeg,image/png,application/pdf';
+    return value.split(',').map((t) => t.trim());
+  }
+  get localStoragePath(): string {
+    return this.getOptional('LOCAL_STORAGE_PATH') || './data/storage';
+  }
+  get localStorageUrl(): string | undefined {
+    return this.getOptional('LOCAL_STORAGE_URL');
+  }
+
+  // Canonical bucket accessors
+  get storageBucketPrivate(): string {
+    return this.getOptional('STORAGE_BUCKET_PRIVATE') || 'nestlancer-private';
+  }
+
+  get storageBucketPublic(): string {
+    return this.getOptional('STORAGE_BUCKET_PUBLIC') || 'nestlancer-public';
+  }
+
+  get storageBucketAvatars(): string {
+    return this.getOptional('STORAGE_BUCKET_AVATARS') || 'nestlancer-avatars';
+  }
+
+  get storageBucketAttachments(): string {
+    return this.getOptional('STORAGE_BUCKET_ATTACHMENTS') || 'nestlancer-requests';
+  }
+
+  get storageBucketQuotes(): string {
+    return this.getOptional('STORAGE_BUCKET_QUOTES') || 'nestlancer-quotes-pdfs';
+  }
+
+  get storageBucketDeliverables(): string {
+    return this.getOptional('STORAGE_BUCKET_DELIVERABLES') || 'nestlancer-deliverables';
+  }
+
+  get storageBucketReports(): string {
+    return this.getOptional('STORAGE_BUCKET_REPORTS') || 'nestlancer-reports';
+  }
+
+  get storageBucketPdfs(): string {
+    return this.getOptional('STORAGE_BUCKET_PDFS') || 'pdfs';
   }
 
   // ── Email ────────────────────────────────────────────────
