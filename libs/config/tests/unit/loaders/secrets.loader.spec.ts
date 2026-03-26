@@ -15,38 +15,24 @@ describe('loadSecrets', () => {
     process.env = originalEnv;
   });
 
-  it('should return empty if infisical token is missing', async () => {
-    delete process.env.INFISICAL_TOKEN;
-    const secrets = await loadSecrets();
-
-    expect(secrets).toEqual({});
-    expect(Logger.prototype.warn).toHaveBeenCalledWith(expect.stringContaining('not configured'));
-  });
-
-  it('should return empty if infisical token is a dummy token', async () => {
-    process.env.INFISICAL_TOKEN = 'st.dev_dummy_token';
-    const secrets = await loadSecrets();
-
-    expect(secrets).toEqual({});
-  });
-
-  it('should load required secrets if token is valid', async () => {
-    process.env.INFISICAL_TOKEN = 'valid_token';
+  it('should load required secrets if they are set in environment', async () => {
     process.env.JWT_ACCESS_SECRET = 'access123';
     process.env.DATABASE_URL = 'postgres://localhost';
+    process.env.JWT_REFRESH_SECRET = 'refresh123';
 
     const secrets = await loadSecrets();
 
     expect(secrets).toHaveProperty('JWT_ACCESS_SECRET', 'access123');
     expect(secrets).toHaveProperty('DATABASE_URL', 'postgres://localhost');
-    expect(secrets).not.toHaveProperty('JWT_REFRESH_SECRET'); // Was not set in env
+    expect(secrets).toHaveProperty('JWT_REFRESH_SECRET', 'refresh123');
 
-    expect(Logger.prototype.log).toHaveBeenCalledWith(expect.stringContaining('Secrets loaded'));
+    expect(Logger.prototype.log).toHaveBeenCalledWith(expect.stringContaining('Secrets validated'));
   });
 
-  it('should warn if required secrets are missing but token is valid', async () => {
-    process.env.INFISICAL_TOKEN = 'valid_token';
-    // None of the required secrets are set
+  it('should warn if required secrets are missing', async () => {
+    delete process.env.JWT_ACCESS_SECRET;
+    delete process.env.DATABASE_URL;
+    delete process.env.JWT_REFRESH_SECRET;
 
     const secrets = await loadSecrets();
 

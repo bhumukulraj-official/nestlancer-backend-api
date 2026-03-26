@@ -20,7 +20,7 @@ CDN_NODE["CDN Edge<br/>(CloudFront / Cloudflare)<br/>Cache Invalidation API"]
 SMTP[("SMTP / SES")]
 PAY[("Razorpay")]
 THIRD["Third-Party APIs<br/>(Git, CI, etc.)"]
-INFISICAL[("Secrets Manager<br/>Infisical")]
+Secrets Manager[("Secrets Manager<br/>Secrets Manager")]
 end
 
 %% ═══════════════════════════════════════════════════
@@ -273,11 +273,8 @@ OUTBOX_POLL -->|"publish events"| MQ
 %% ═════════════════════════════════════════════════
 PUBLIC_STORAGE -->|"origin pull"| CDN_NODE
 
-%% ═════════════════════════════════════════════════
-%% CORE WIRING — Config + Secrets
-%% ═════════════════════════════════════════════════
-INFISICAL --> CONFIG
-CONFIG --> DB_W & DB_R & CACHE & QUEUE
+CORE["🧱 Core Infrastructure"]
+CONFIG["Config Module<br/>(env + secrets injection)"]
 CONFIG --> CORS & MAINT & FF & RATE
 
 %% ═════════════════════════════════════════════════

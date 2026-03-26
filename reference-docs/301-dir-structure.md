@@ -1077,7 +1077,6 @@
 │   ├── tsconfig.json
 │   ├── nest-cli.json
 │   ├── Dockerfile
-│   ├── infisical.json
 │   ├── .eslintrc.js
 │   ├── .prettierrc
 │   └── README.md
@@ -1128,7 +1127,6 @@
 │   ├── tsconfig.json
 │   ├── nest-cli.json
 │   ├── Dockerfile
-│   ├── infisical.json
 │   ├── .eslintrc.js
 │   ├── .prettierrc
 │   └── README.md
@@ -1188,8 +1186,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1263,8 +1260,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1346,8 +1342,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1409,8 +1404,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1475,8 +1469,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1549,8 +1542,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1627,8 +1619,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1719,8 +1710,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1790,8 +1780,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1868,8 +1857,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -1952,8 +1940,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -2020,8 +2007,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -2137,8 +2123,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -2221,8 +2206,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -2343,8 +2327,7 @@
 │   │   ├── tsconfig.json
 │   │   ├── nest-cli.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   ├── .eslintrc.js
+│   │   │   ├── .eslintrc.js
 │   │   ├── .prettierrc
 │   │   └── README.md
 │   │
@@ -2401,7 +2384,6 @@
 │       ├── tsconfig.json
 │       ├── nest-cli.json
 │       ├── Dockerfile
-│       ├── infisical.json
 │       ├── .eslintrc.js
 │       ├── .prettierrc
 │       └── README.md
@@ -2472,8 +2454,7 @@
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   └── README.md
+│   │   │   └── README.md
 │   │
 │   │ ────────────────────────────────────────
 │   │  NOTIFICATION WORKER
@@ -2509,8 +2490,7 @@
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   └── README.md
+│   │   │   └── README.md
 │   │
 │   │ ────────────────────────────────────────
 │   │  AUDIT WORKER
@@ -2541,8 +2521,7 @@
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   └── README.md
+│   │   │   └── README.md
 │   │
 │   │ ────────────────────────────────────────
 │   │  MEDIA WORKER
@@ -2587,8 +2566,7 @@
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   └── README.md
+│   │   │   └── README.md
 │   │
 │   │ ────────────────────────────────────────
 │   │  ANALYTICS WORKER
@@ -2627,8 +2605,7 @@
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   └── README.md
+│   │   │   └── README.md
 │   │
 │   │ ────────────────────────────────────────
 │   │  WEBHOOK WORKER
@@ -2681,8 +2658,7 @@
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   └── README.md
+│   │   │   └── README.md
 │   │
 │   │ ────────────────────────────────────────
 │   │  CDN WORKER
@@ -2718,8 +2694,7 @@
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── Dockerfile
-│   │   ├── infisical.json
-│   │   └── README.md
+│   │   │   └── README.md
 │   │
 │   │ ────────────────────────────────────────
 │   │  OUTBOX POLLER WORKER
@@ -2748,7 +2723,6 @@
 │       ├── package.json
 │       ├── tsconfig.json
 │       ├── Dockerfile
-│       ├── infisical.json
 │       └── README.md
 │
 │
@@ -2765,9 +2739,6 @@
 ├── .gitattributes
 ├── .nvmrc
 ├── .editorconfig
-├── infisical.json
-├── infisical.json
-├── infisical.json
 ├── .eslintrc.js
 ├── .prettierrc
 ├── .prettierignore

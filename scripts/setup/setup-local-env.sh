@@ -9,24 +9,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 echo "🔧 Setting up local environment..."
 
-# Create infisical.json if not exists
-if [[ ! -f "${ROOT_DIR}/infisical.json" ]]; then
-  if [[ -f "${ROOT_DIR}/infisical.json.example" ]]; then
-    cp "${ROOT_DIR}/infisical.json.example" "${ROOT_DIR}/infisical.json"
-    echo "  ✅ Created infisical.json from example"
-  else
-    cat > "${ROOT_DIR}/infisical.json" << 'EOF'
-{
-  "workspaceId": "",
-  "defaultEnvironment": "dev",
-  "gitBranchToEnvironmentMapping": null
-}
-EOF
-    echo "  ✅ Created default infisical.json"
-  fi
-else
-  echo "  ℹ️ infisical.json already exists"
-fi
+echo "🔧 Setting up local environment..."
 
 # Create .env if not exists (for Docker Compose)
 if [[ ! -f "${ROOT_DIR}/.env" ]]; then

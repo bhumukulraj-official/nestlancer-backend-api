@@ -61,7 +61,7 @@
 - **Crypto Utilities** `[Free]` – Hashing (bcrypt), encryption, HMAC, TOTP (2FA).
 - **Cloudflare Turnstile** `[Free]` – Privacy-friendly bot protection (replaces Captcha).
 - **Virus Scanning (ClamAV)** `[Free]` – Open-source media file scanning.
-- **Secrets Management** `[Freemium]` – **Infisical** `[Freemium]` (Centralized secret management, replaces `.env` files).
+- **Secrets Management** `[Free]` – Centralized secret management via standard environment variables (integrated with Vault, K8s Secrets, or AWS Secrets Manager in production).
 
 ## 💳 Payment & Third-Party Integrations
 

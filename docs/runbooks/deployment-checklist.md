@@ -4,7 +4,7 @@
 
 - [ ] All CI checks pass (lint, test, build)
 - [ ] Database migrations reviewed and tested on staging
-- [ ] Environment variables updated in Infisical for target environment
+- [ ] Environment variables updated in production environment (Vault/K8s/etc.)
 - [ ] Feature flags configured for gradual rollout (if applicable)
 - [ ] Rollback plan documented
 - [ ] Monitoring dashboards open (Grafana)

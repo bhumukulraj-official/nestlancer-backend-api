@@ -16,10 +16,10 @@ JWT_REFRESH_SECRET=$(generate_secret 48)
 CSRF_SECRET=$(generate_secret 32)
 
 echo ""
-echo "Generated secrets (copy to .env or Infisical):"
+echo "Generated secrets (copy to .env):"
 echo ""
 echo "JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}"
 echo "JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}"
 echo "CSRF_SECRET=${CSRF_SECRET}"
 echo ""
-echo "⚠️  These are for development only. Production secrets should be in Infisical/Secrets Manager."
+echo "⚠️  These are for development only. Production secrets should be managed via secure environment variables (Vault, K8s Secrets, etc.)."

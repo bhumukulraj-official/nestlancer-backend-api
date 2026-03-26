@@ -25,8 +25,8 @@ pnpm install
 ### 3. Set Up Environment
 
 ```bash
-cp infisical.json.example infisical.json
-# Edit infisical.json with your local settings (defaults work for Docker)
+cp .env.development .env
+# Edit .env with your local settings (defaults work for Docker)
 ```
 
 ### 4. Start Infrastructure

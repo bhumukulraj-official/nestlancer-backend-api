@@ -34,7 +34,7 @@ If automatic failover fails:
    ```
 
 4. **Update connection strings** (if not using Patroni DNS):
-   - Update `DATABASE_URL` in Kubernetes Secrets / Infisical
+   - Update `DATABASE_URL` in Kubernetes Secrets / Secrets Manager
    - Restart affected services: `kubectl rollout restart deployment -l app.kubernetes.io/part-of=nestlancer`
 
 5. **Verify write operations**:
