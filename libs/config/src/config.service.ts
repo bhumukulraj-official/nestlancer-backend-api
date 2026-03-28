@@ -185,7 +185,7 @@ export class NestlancerConfigService {
   }
 
   get storageBucketPdfs(): string {
-    return this.getOptional('STORAGE_BUCKET_PDFS') || 'pdfs';
+    return this.getOptional('STORAGE_BUCKET_PDFS') || 'nestlancer-pdfs';
   }
 
   // ── Email ────────────────────────────────────────────────

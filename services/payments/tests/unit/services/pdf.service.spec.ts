@@ -24,7 +24,10 @@ describe('PdfService', () => {
       getSignedUrl: jest.fn(),
     } as any;
     configService = {
-      get: jest.fn().mockImplementation((key, defaultValue) => defaultValue),
+      get: jest.fn().mockImplementation((key, defaultValue) => {
+        if (key === 'STORAGE_BUCKET_PDFS') return 'nestlancer-pdfs';
+        return defaultValue;
+      }),
     } as any;
   });
 
@@ -79,7 +82,7 @@ describe('PdfService', () => {
           expect.objectContaining({ template: 'receipt' }),
         );
         expect(storageService.upload).toHaveBeenCalledWith(
-          'pdfs',
+          'nestlancer-pdfs',
           expect.stringContaining('receipts/p1'),
           expect.any(Buffer),
           'application/pdf',
@@ -130,7 +133,7 @@ describe('PdfService', () => {
           expect.objectContaining({ template: 'invoice' }),
         );
         expect(storageService.upload).toHaveBeenCalledWith(
-          'pdfs',
+          'nestlancer-pdfs',
           expect.stringContaining('invoices/p1'),
           expect.any(Buffer),
           'application/pdf',

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@nestlancer/logger';
 import { AnalyticsJobType, Period, ExportFormat } from '../interfaces/analytics-job.interface';
 import { StorageService } from '@nestlancer/storage';
@@ -11,6 +12,7 @@ export class ReportGeneratorService {
     private readonly logger: LoggerService,
     private readonly storageService: StorageService,
     private readonly analyticsWorkerService: AnalyticsWorkerService,
+    private readonly configService: ConfigService,
   ) {}
 
   async generateReport(
@@ -30,7 +32,8 @@ export class ReportGeneratorService {
     }
 
     const filename = `report_${type}_${period}_${Date.now()}.${format === ExportFormat.PDF ? 'pdf' : 'csv'}`;
-    const result = await this.storageService.upload('reports', filename, buffer, contentType);
+    const reportsBucket = this.configService.get<string>('analytics-worker.reportS3Bucket', 'nestlancer-reports');
+    const result = await this.storageService.upload(reportsBucket, filename, buffer, contentType);
     return result.url;
   }
 

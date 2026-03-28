@@ -68,9 +68,10 @@ export class ReceiptPdfService {
 
     // Upload to storage
     const key = `receipts/${payment.id}-${Date.now()}.pdf`;
-    await this.storage.upload('pdfs', key, pdfResult.buffer, pdfResult.mimeType);
+    const pdfsBucket = this.configService.get<string>('STORAGE_BUCKET_PDFS', 'nestlancer-pdfs');
+    await this.storage.upload(pdfsBucket, key, pdfResult.buffer, pdfResult.mimeType);
 
-    const url = await this.storage.getSignedUrl({ bucket: 'pdfs', key, expiresIn: 3600 });
+    const url = await this.storage.getSignedUrl({ bucket: pdfsBucket, key, expiresIn: 3600 });
 
     return {
       url,
@@ -184,9 +185,10 @@ export class InvoicePdfService {
 
     // Upload to storage
     const key = `invoices/${payment.id}-${Date.now()}.pdf`;
-    await this.storage.upload('pdfs', key, pdfResult.buffer, pdfResult.mimeType);
+    const pdfsBucket = this.configService.get<string>('STORAGE_BUCKET_PDFS', 'nestlancer-pdfs');
+    await this.storage.upload(pdfsBucket, key, pdfResult.buffer, pdfResult.mimeType);
 
-    const url = await this.storage.getSignedUrl({ bucket: 'pdfs', key, expiresIn: 3600 });
+    const url = await this.storage.getSignedUrl({ bucket: pdfsBucket, key, expiresIn: 3600 });
 
     return {
       url,

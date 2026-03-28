@@ -14,7 +14,7 @@ export default registerAs('requestsService', () => ({
       'text/plain',
       'text/csv',
     ],
-    s3Bucket: process.env.ATTACHMENT_S3_BUCKET || 'nestlancer-requests',
+    s3Bucket: process.env.STORAGE_BUCKET_ATTACHMENTS || 'nestlancer-requests',
   },
   quotes: {
     defaultExpirationDays: parseInt(process.env.QUOTE_EXPIRATION_DAYS || '14', 10),

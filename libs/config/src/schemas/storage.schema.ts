@@ -7,7 +7,7 @@ export const storageConfigSchema = z.object({
   B2_KEY_ID: z.string().optional(),
   B2_APPLICATION_KEY: z.string().optional(),
   B2_ENDPOINT: z.string().optional(),
-  B2_REGION: z.string().default('us-east-1'),
+  B2_REGION: z.string().default('eu-central-003'),
   B2_PRESIGNED_URL_EXPIRY: z.coerce.number().default(3600),
 
   // Canonical bucket names

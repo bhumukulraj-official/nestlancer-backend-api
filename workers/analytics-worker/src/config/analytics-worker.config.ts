@@ -7,5 +7,5 @@ export default registerAs('analytics-worker', () => ({
   cacheTtlHourly: parseInt(process.env.CACHE_TTL_HOURLY || '3600', 10),
   cacheTtlDaily: parseInt(process.env.CACHE_TTL_DAILY || '86400', 10),
   useReadReplica: process.env.USE_READ_REPLICA === 'true',
-  reportS3Bucket: process.env.REPORT_S3_BUCKET || 'nestlancer-reports',
+  reportS3Bucket: process.env.STORAGE_BUCKET_REPORTS || 'nestlancer-reports',
 }));

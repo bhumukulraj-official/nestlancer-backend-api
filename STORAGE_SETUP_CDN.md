@@ -79,7 +79,9 @@ From `storage.schema.ts` and `config.service.ts`, the application uses these log
 | 7 | `nestlancer-reports` | `STORAGE_BUCKET_REPORTS` | Admin/analytics reports | **Private** |
 | 8 | `nestlancer-pdfs` | `STORAGE_BUCKET_PDFS` | Receipts & invoices (hard-coded as `pdfs` in some services) | **Private** |
 
-### 2.2 Plan A: Two Physical Buckets + Two Replicas (Recommended)
+### 2.2 Plan A: Two Physical Buckets + Two Replicas (Optional Simplification)
+
+> **Note**: The default `.env.production` in this project uses **Plan B (8 separate physical buckets)** — one per logical use case. Plan A below is an optional simplification you can adopt if you want to reduce the number of buckets to manage.
 
 Collapse 8 logical buckets into **2 physical B2 buckets** + 2 replica buckets for backup:
 
@@ -274,28 +276,26 @@ B2_KEY_ID=<your-keyID-from-step-3.5>
 B2_APPLICATION_KEY=<your-applicationKey-from-step-3.5>
 B2_ENDPOINT=https://s3.eu-central-003.backblazeb2.com
 B2_REGION=eu-central-003
+B2_PRESIGNED_URL_EXPIRY=3600
 
 # ──────────────────────────────────────────────
-# Bucket names — Plan A (2 physical buckets)
+# Bucket names — Plan B (8 physical buckets, current default)
+# Set all to nestlancer-private / nestlancer-public for Plan A
 # ──────────────────────────────────────────────
 STORAGE_BUCKET_PRIVATE=nestlancer-private
 STORAGE_BUCKET_PUBLIC=nestlancer-public
-STORAGE_BUCKET_AVATARS=nestlancer-public
-STORAGE_BUCKET_ATTACHMENTS=nestlancer-private
-STORAGE_BUCKET_QUOTES=nestlancer-private
-STORAGE_BUCKET_DELIVERABLES=nestlancer-private
-STORAGE_BUCKET_REPORTS=nestlancer-private
-STORAGE_BUCKET_PDFS=nestlancer-private
+STORAGE_BUCKET_AVATARS=nestlancer-avatars
+STORAGE_BUCKET_ATTACHMENTS=nestlancer-requests
+STORAGE_BUCKET_QUOTES=nestlancer-quotes-pdfs
+STORAGE_BUCKET_DELIVERABLES=nestlancer-deliverables
+STORAGE_BUCKET_REPORTS=nestlancer-reports
+STORAGE_BUCKET_PDFS=nestlancer-pdfs
 
 # ──────────────────────────────────────────────
 # CDN (Cloudflare) — public asset base URL
+# Read by services/media as CDN_DOMAIN
 # ──────────────────────────────────────────────
-CDN_URL=https://cdn.yourdomain.com
-
-# ──────────────────────────────────────────────
-# Presigned URL config
-# ──────────────────────────────────────────────
-SIGNED_URL_EXPIRES_IN=3600
+CDN_DOMAIN=https://cdn.yourdomain.com
 ```
 
 > **Note on `STORAGE_BUCKET_AVATARS`**: Set to `nestlancer-public` if avatars are public (recommended). Set to `nestlancer-private` if avatars must be private (served via signed URLs).
@@ -319,17 +319,18 @@ B2_KEY_ID=<your-dev-keyID>
 B2_APPLICATION_KEY=<your-dev-applicationKey>
 B2_ENDPOINT=https://s3.eu-central-003.backblazeb2.com
 B2_REGION=eu-central-003
+B2_PRESIGNED_URL_EXPIRY=3600
 
 STORAGE_BUCKET_PRIVATE=nestlancer-private
 STORAGE_BUCKET_PUBLIC=nestlancer-public
-STORAGE_BUCKET_AVATARS=nestlancer-public
-STORAGE_BUCKET_ATTACHMENTS=nestlancer-private
-STORAGE_BUCKET_QUOTES=nestlancer-private
-STORAGE_BUCKET_DELIVERABLES=nestlancer-private
-STORAGE_BUCKET_REPORTS=nestlancer-private
-STORAGE_BUCKET_PDFS=nestlancer-private
+STORAGE_BUCKET_AVATARS=nestlancer-avatars
+STORAGE_BUCKET_ATTACHMENTS=nestlancer-requests
+STORAGE_BUCKET_QUOTES=nestlancer-quotes-pdfs
+STORAGE_BUCKET_DELIVERABLES=nestlancer-deliverables
+STORAGE_BUCKET_REPORTS=nestlancer-reports
+STORAGE_BUCKET_PDFS=nestlancer-pdfs
 
-CDN_URL=https://cdn.yourdomain.com
+CDN_DOMAIN=https://cdn.yourdomain.com
 
 # Next.js frontend
 NEXT_PUBLIC_CDN_URL=https://cdn.yourdomain.com
@@ -1117,7 +1118,8 @@ After sending some CDN traffic:
 - [ ] `B2_ENDPOINT=https://s3.eu-central-003.backblazeb2.com`
 - [ ] `B2_REGION=eu-central-003`
 - [ ] All `STORAGE_BUCKET_*` env vars match actual B2 bucket names
-- [ ] `CDN_URL=https://cdn.yourdomain.com` set
+- [ ] `CDN_DOMAIN=https://cdn.nestlancer.com` set (read by `services/media`)
+- [ ] `B2_PRESIGNED_URL_EXPIRY=3600` set
 - [ ] Health check returns healthy storage status
 - [ ] Public uploads return CDN URLs
 - [ ] Private uploads return presigned URLs

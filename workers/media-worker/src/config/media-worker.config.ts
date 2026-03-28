@@ -4,7 +4,7 @@ export const mediaWorkerConfig = registerAs('media-worker', () => ({
   concurrency: parseInt(process.env.MEDIA_CONCURRENCY ?? '3', 10),
   tempDir: process.env.MEDIA_TEMP_DIR ?? '/tmp/media-worker',
   /** Private bucket for uploads (used when storage.privateBucket not set). */
-  privateBucket: process.env.STORAGE_PRIVATE_BUCKET ?? 'nestlancer-private',
+  privateBucket: process.env.STORAGE_BUCKET_PRIVATE ?? 'nestlancer-private',
   clamavHost: process.env.MEDIA_WORKER_CLAMAV_HOST ?? 'localhost',
   clamavPort: parseInt(process.env.MEDIA_WORKER_CLAMAV_PORT ?? '3310', 10),
   clamavTimeoutMs: parseInt(process.env.CLAMAV_TIMEOUT_MS ?? '60000', 10),
